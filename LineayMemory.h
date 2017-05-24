@@ -9,6 +9,7 @@ public:
 	linear_memory();
 	~linear_memory();
 	int lm_alloc(Value &value);
+	int lm_free(); // default memory free (using sp & fp to free)
 	int lm_free(int length);
 
 private:
