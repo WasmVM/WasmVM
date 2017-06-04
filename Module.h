@@ -3,6 +3,8 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
+#include <cstdint>
 
 class Module{
 public:
@@ -13,9 +15,9 @@ public:
     int current_memory(); 
     // load & store => FIXME: support every instruction 
     int i32_load(int loc);      // fetch data which start from loc
-    double i64_load(int loc);   
+    uint64_t i64_load(int loc);   
     int i32_store(int value);   // store value into linear memory
-    int i64_store(double value);
+    int i64_store(uint64_t value);
 private:
     std::vector<char> *linear_m; // Each module deploy one linear memory
     int page_counter;   // record how many page (64KB) usage 
