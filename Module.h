@@ -22,8 +22,12 @@ public:
     uint64_t i64_load8_u(int loc);
     uint64_t i64_load16_u(int loc);
     uint64_t i64_load32_u(int loc);
-    int i32_store(uint32_t value);   // store value into linear memory
-    int i64_store(uint64_t value);
+    
+    int i32_store(uint32_t value);  // store value(4 bytes) into linear memory
+    int i32_store8(uint8_t value);  // store 1 byte
+    int i32_store16(uint16_t value);// store 2 bytes
+
+    int i64_store(uint64_t value);  
     // Print out the Memory Map
     void mem_map();
 private:

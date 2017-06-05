@@ -95,11 +95,50 @@ int Module::i32_store(uint32_t value){
         return -1;
     }
     // if memory storage is enough, then we store
-    this->linear_m->at(this->current_memory()) = (uint32_t)value & 255; 
-    this->linear_m->at(this->current_memory() + 1) = (uint32_t)(value>>8) & 255;
-    this->linear_m->at(this->current_memory() + 2) = (uint32_t)(value>>16) & 255;
-    this->linear_m->at(this->current_memory() + 3) = (uint32_t)(value>>24) & 255;
+    this->linear_m->at(this->current_memory()) = (uint8_t)value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (uint8_t)(value>>8) & 255;
+    this->linear_m->at(this->current_memory() + 2) = (uint8_t)(value>>16) & 255;
+    this->linear_m->at(this->current_memory() + 3) = (uint8_t)(value>>24) & 255;
     this->current_loc += 4;
+    return 0;
+}
+
+int Module::i32_store8(uint8_t value){
+    try{
+        if(this->current_memory() + 1 >= (this->page_counter*64*1024)){
+            // Memory shortage
+            throw -1;
+        }
+    }catch(const uint8_t flag){
+        // Notify the user, need to grow memory
+        if(flag == -1){
+            std::cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << std::endl;
+        }
+        return -1;
+    }
+    // if memory storage is enough, then we store
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->current_loc++;
+    return 0;
+}
+
+int Module::i32_store16(uint16_t value){
+    try{
+        if(this->current_memory() + 2 >= (this->page_counter*64*1024)){
+            // Memory shortage
+            throw -1;
+        }
+    }catch(const uint8_t flag){
+        // Notify the user, need to grow memory
+        if(flag == -1){
+            std::cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << std::endl;
+        }
+        return -1;
+    }
+    // if memory storage is enough, then we store
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (value >> 8) & 255; 
+    this->current_loc += 2;
     return 0;
 }
 
