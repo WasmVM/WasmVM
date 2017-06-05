@@ -2,9 +2,10 @@
 #define MODULE
 
 #include <iostream>
-#include <vector>
-#include <string>
-#include <cstdint>
+#include <vector>       // linear memory usage
+#include <string>       // for normal string usage
+#include <cstdint>      // for specific type
+#include <iomanip>      // std::setw
 
 class Module{
 public:
@@ -23,6 +24,8 @@ public:
     uint64_t i64_load32_u(int loc);
     int i32_store(uint32_t value);   // store value into linear memory
     int i64_store(uint64_t value);
+    // Print out the Memory Map
+    void mem_map();
 private:
     std::vector<char> *linear_m; // Each module deploy one linear memory
     int page_counter;   // record how many page (64KB) usage 

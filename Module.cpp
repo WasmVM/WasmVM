@@ -116,14 +116,23 @@ int Module::i64_store(uint64_t value){
         }
         return -1;
     }
-    linear_m->at(this->current_memory()) = value & 255; 
-    linear_m->at(this->current_memory() + 1) = (value>>8) & 255;
-    linear_m->at(this->current_memory() + 2) = (value>>16) & 255;
-    linear_m->at(this->current_memory() + 3) = (value>>24) & 255;
-    linear_m->at(this->current_memory() + 4) = (value>>32) & 255;
-    linear_m->at(this->current_memory() + 5) = (value>>40) & 255;
-    linear_m->at(this->current_memory() + 6) = (value>>48) & 255;
-    linear_m->at(this->current_memory() + 7) = (value>>54) & 255;
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (value>>8) & 255;
+    this->linear_m->at(this->current_memory() + 2) = (value>>16) & 255;
+    this->linear_m->at(this->current_memory() + 3) = (value>>24) & 255;
+    this->linear_m->at(this->current_memory() + 4) = (value>>32) & 255;
+    this->linear_m->at(this->current_memory() + 5) = (value>>40) & 255;
+    this->linear_m->at(this->current_memory() + 6) = (value>>48) & 255;
+    this->linear_m->at(this->current_memory() + 7) = (value>>54) & 255;
     this->current_loc += 8;
     return 0;
+}
+
+void Module::mem_map(){
+    std::cout << std::left << std::setw(36) << "Linear Memory: " << std::endl;
+    std::cout << std::left << std::setw(16) << "Index" << std::setw(4) << "|" << std::setw(16) << "Value" << std::endl;
+    std::cout << std::setfill('-') << std::setw(36) << "-" << std::setfill(' ') << std::endl; // setfill to - and then set back to blank
+    for(int index = 0; index < this->current_memory(); index++){
+        std::cout << std::left << std::setw(16) << std::setbase(16) << index << std::setw(4) << "|" << std::setw(16) << std::setbase(10) << this->i32_load8_u(index) << std::endl;
+    }
 }
