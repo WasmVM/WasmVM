@@ -6,10 +6,9 @@
 #include "Module.h"
 #include "Fetcher.h"
 
-struct stat results;
-
 // get file size
 uint32_t file_size(const char *filename){
+    struct stat results;
     if(stat(filename,&results) == 0){
         std::cout << "Binary file size: " << results.st_size << std::endl;
         return results.st_size;
@@ -114,6 +113,7 @@ int main(int argc,char *argv[]){
     if(flag){
         // Print out the linear map (treat as verbose)
         wa_bin->mem_map();
+        // Print out the linear section 
         ft->show_section();
     }
 } 

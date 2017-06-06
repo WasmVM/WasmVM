@@ -17,18 +17,22 @@ Fetcher::Fetcher(Module *wa)
             // error occur!
             return;
         }
+        // Find location
         section_loc[parsing_wa->i32_load8_u(i)] = i;
+        // Find the size of this section
         section_size[parsing_wa->i32_load8_u(i)] = parsing_wa->i32_load8_u(i+1);
-        i+=(section_size[parsing_wa->i32_load8_u(i)]+2);    // Skip 2 (section tag & section size) and sizeof section 
+        // Skip 2 (section tag & section size) and sizeof section 
+        i+=(section_size[parsing_wa->i32_load8_u(i)]+2);    
     }
 }
 
 void Fetcher::show_section(){
+    // Output the fetching result of current Module.
     std::cout << std::left << std::setw(14) << "Section Name" << std::setw(2) << "|" << std::setw(10) << "Location" << std::setw(4) << "|" << std::setw(10) << "Size" << std::endl; 
     std::cout << std::setfill('-') << std::setw(40) << "-" << std::setfill(' ') << std::endl; // setfill to - and then set back to blank    
     for(int i=1;i<=11;i++){
         if(section_loc[i] != -1 && section_loc[i] != 0){
-            std::cout << std::left << std::setw(14) << get_section_name(i) << std::setw(2) << "|" << std::setw(10) << section_loc[i] << std::setw(4) << "|" << std::setw(10) << section_size[i] << std::endl;
+            std::cout << std::left << std::setw(14) << get_section_name(i) << std::setw(2) << "|" << std::setw(10) << std::setbase(16) << section_loc[i] << std::setw(4) << "|" << std::setw(10) << std::setbase(10) << section_size[i] << std::endl;
         }
     }
     std::cout << std::setfill('-') << std::setw(40) << "-" << std::setfill(' ') << std::endl; // setfill to - and then set back to blank    
@@ -71,6 +75,7 @@ std::string Fetcher::get_section_name(int section_id){
             return std::string("Data");
             break;
         default:
+            return std::string("Not found");
             break;
     }
 }

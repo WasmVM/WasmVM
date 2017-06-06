@@ -1,10 +1,19 @@
-EXEC:=lm
+LINEAR_M:=lm
+LINEAR_M_DEST:=Linear_Memory_map.txt
 LOADER_TEST:=loader_test
+LOADER_SRC:=Test/stuff.wasm
+LOADER_DEST:=Linear_Memory_section.txt
 
-all: $(EXEC) $(LOADER_TEST)
+.PHONY:all run clean
 
-$(EXEC): Module.o main.o 
-	g++ -o $(EXEC) Module.o main.o 
+all: $(LINEAR_M) $(LOADER_TEST)
+
+run: 
+	./$(LINEAR_M) 4000 > $(LINEAR_M_DEST)
+	./$(LOADER_TEST) -i $(LOADER_SRC) -v > $(LOADER_DEST)
+
+$(LINEAR_M): Module.o main.o 
+	g++ -o $(LINEAR_M) Module.o main.o 
 
 $(LOADER_TEST): Module.o loader.o Fetcher.o
 	g++ -o $(LOADER_TEST) Module.o loader.o Fetcher.o
@@ -22,4 +31,4 @@ Module.o: Module.cpp Module.h
 	g++ -c Module.cpp -std=gnu++11
 
 clean:
-	rm *.o $(EXEC) $(LOADER_TEST)
+	rm *.o $(LINEAR_M) $(LINEAR_M_DEST) $(LOADER_TEST) $(LOADER_DEST)
