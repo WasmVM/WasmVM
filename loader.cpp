@@ -2,11 +2,13 @@
 #include <fstream>
 #include <cstdlib>
 #include <unistd.h>
-#include "Module.h"
 #include "commonTypes.h"
+#include "Module.h"
+#include "Fetcher.h"
 
 struct stat results;
 
+// get file size
 uint32_t file_size(const char *filename){
     if(stat(filename,&results) == 0){
         std::cout << "Binary file size: " << results.st_size << std::endl;
@@ -17,6 +19,7 @@ uint32_t file_size(const char *filename){
     }
 }
 
+// load this file into our current webassembly
 void load_file(const char *filename,Module *wa){
     // Get reading file size
     int filesize = file_size(filename);
@@ -52,18 +55,18 @@ int main(int argc,char *argv[]){
     std::string output_file = "a.kevin";
     std::vector<std::string> input_files(0);
     // getopt
-    while((c = getopt(argc,argv,"imo:hv")) != -1){
+    while((c = getopt(argc,argv,"i:m:o:hv")) != -1){
         switch(c){
             case 'h':
                 help_cmd();
                 break;
             case 'i':
-                if(*argv[optind] == '-'){
+                if(*argv[optind-1] == '-'){
                     std::cout << "Error - " << *argv[optind-1] << ",Please specify the input filename" << optind << std::endl;
                     return 0;
                 }
                 else{
-                    input_file.assign(argv[optind]);
+                    input_file.assign(argv[--optind]);
                     std::cout << "Get input file: " << input_file << std::endl;
                 }
                 break;
@@ -86,6 +89,7 @@ int main(int argc,char *argv[]){
                 break;
             case '?':
                 std::cout << "Not match variable: " << (char)optopt << std::endl;
+                return 0;
                 break;
             default:
                 std::cout << "Not match, print help" << std::endl;
@@ -98,9 +102,18 @@ int main(int argc,char *argv[]){
         // only one file => load one file into wa
         load_file(input_file.c_str(),wa_bin);
     }
+    else{
+        // loading several files
+        std::cout << "Not support yet!" << std::endl;
+        for(int i=0;i<input_files.size();i++){
+            std::cout << input_files[i] << std::endl;
+        }
+    }
+    Fetcher *ft = new Fetcher(wa_bin);
 
     if(flag){
         // Print out the linear map (treat as verbose)
         wa_bin->mem_map();
+        ft->show_section();
     }
 } 

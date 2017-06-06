@@ -11,6 +11,7 @@ class Module{
 public:
     // constructor
     Module(int init_page_size = 1); 
+    Module(Module *other_wa);
     // memory operator
     int grow_memory(int page_size = 1); // grow memory (unit: page)
     int current_memory(); 

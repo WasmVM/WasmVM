@@ -8,6 +8,13 @@ Module::Module(int init_page_size){
     this->current_loc = 0;
 }
 
+Module::Module(Module *other_wa){
+    // Copy another wa 
+    this->linear_m = other_wa->linear_m;
+    this->page_counter = other_wa->page_counter;
+    this->current_loc = other_wa->current_loc;
+}
+
 int Module::grow_memory(int page_size){
     this->linear_m->resize((page_size+this->page_counter)*64*1024);
     this->page_counter += page_size;
@@ -174,4 +181,5 @@ void Module::mem_map(){
     for(int index = 0; index < this->current_memory(); index++){
         std::cout << std::left << std::setw(16) << std::setbase(16) << index << std::setw(4) << "|" << std::setw(16) << std::setbase(10) << this->i32_load8_u(index) << std::endl;
     }
+    std::cout << std::endl;
 }

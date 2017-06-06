@@ -6,11 +6,14 @@ all: $(EXEC) $(LOADER_TEST)
 $(EXEC): Module.o main.o 
 	g++ -o $(EXEC) Module.o main.o 
 
-$(LOADER_TEST): Module.o loader.o 
-	g++ -o $(LOADER_TEST) Module.o loader.o
+$(LOADER_TEST): Module.o loader.o Fetcher.o
+	g++ -o $(LOADER_TEST) Module.o loader.o Fetcher.o
 
 loader.o: loader.cpp Module.h commonTypes.h
 	g++ -c loader.cpp -std=gnu++11
+
+Fetcher.o: Fetcher.cpp Fetcher.h Module.h
+	g++ -c Fetcher.cpp -std=gnu++11
 
 main.o: main.cpp Module.h commonTypes.h
 	g++ -c main.cpp -std=gnu++11
