@@ -1,7 +1,7 @@
 LINEAR_M:=lm
 LINEAR_M_DEST:=Linear_Memory_map.txt
 LOADER_TEST:=loader_test
-LOADER_SRC:=Test/stuff.wasm
+LOADER_SRC:=Test/0x1/Test.wasm
 LOADER_DEST:=Linear_Memory_section.txt
 
 .PHONY:all run clean
