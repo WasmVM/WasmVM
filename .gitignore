@@ -1,1 +1,6 @@
+# ignore all object file 
 *.o
+# ignore .vscode
+.vscode/
+# lm
+lm

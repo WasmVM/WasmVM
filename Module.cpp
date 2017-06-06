@@ -8,6 +8,13 @@ Module::Module(int init_page_size){
     this->current_loc = 0;
 }
 
+Module::Module(Module *other_wa){
+    // Copy another wa 
+    this->linear_m = other_wa->linear_m;
+    this->page_counter = other_wa->page_counter;
+    this->current_loc = other_wa->current_loc;
+}
+
 int Module::grow_memory(int page_size){
     this->linear_m->resize((page_size+this->page_counter)*64*1024);
     this->page_counter += page_size;
@@ -95,11 +102,50 @@ int Module::i32_store(uint32_t value){
         return -1;
     }
     // if memory storage is enough, then we store
-    this->linear_m->at(this->current_memory()) = (uint32_t)value & 255; 
-    this->linear_m->at(this->current_memory() + 1) = (uint32_t)(value>>8) & 255;
-    this->linear_m->at(this->current_memory() + 2) = (uint32_t)(value>>16) & 255;
-    this->linear_m->at(this->current_memory() + 3) = (uint32_t)(value>>24) & 255;
+    this->linear_m->at(this->current_memory()) = (uint8_t)value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (uint8_t)(value>>8) & 255;
+    this->linear_m->at(this->current_memory() + 2) = (uint8_t)(value>>16) & 255;
+    this->linear_m->at(this->current_memory() + 3) = (uint8_t)(value>>24) & 255;
     this->current_loc += 4;
+    return 0;
+}
+
+int Module::i32_store8(uint8_t value){
+    try{
+        if(this->current_memory() + 1 >= (this->page_counter*64*1024)){
+            // Memory shortage
+            throw -1;
+        }
+    }catch(const uint8_t flag){
+        // Notify the user, need to grow memory
+        if(flag == -1){
+            std::cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << std::endl;
+        }
+        return -1;
+    }
+    // if memory storage is enough, then we store
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->current_loc++;
+    return 0;
+}
+
+int Module::i32_store16(uint16_t value){
+    try{
+        if(this->current_memory() + 2 >= (this->page_counter*64*1024)){
+            // Memory shortage
+            throw -1;
+        }
+    }catch(const uint8_t flag){
+        // Notify the user, need to grow memory
+        if(flag == -1){
+            std::cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << std::endl;
+        }
+        return -1;
+    }
+    // if memory storage is enough, then we store
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (value >> 8) & 255; 
+    this->current_loc += 2;
     return 0;
 }
 
@@ -116,14 +162,24 @@ int Module::i64_store(uint64_t value){
         }
         return -1;
     }
-    linear_m->at(this->current_memory()) = value & 255; 
-    linear_m->at(this->current_memory() + 1) = (value>>8) & 255;
-    linear_m->at(this->current_memory() + 2) = (value>>16) & 255;
-    linear_m->at(this->current_memory() + 3) = (value>>24) & 255;
-    linear_m->at(this->current_memory() + 4) = (value>>32) & 255;
-    linear_m->at(this->current_memory() + 5) = (value>>40) & 255;
-    linear_m->at(this->current_memory() + 6) = (value>>48) & 255;
-    linear_m->at(this->current_memory() + 7) = (value>>54) & 255;
+    this->linear_m->at(this->current_memory()) = value & 255; 
+    this->linear_m->at(this->current_memory() + 1) = (value>>8) & 255;
+    this->linear_m->at(this->current_memory() + 2) = (value>>16) & 255;
+    this->linear_m->at(this->current_memory() + 3) = (value>>24) & 255;
+    this->linear_m->at(this->current_memory() + 4) = (value>>32) & 255;
+    this->linear_m->at(this->current_memory() + 5) = (value>>40) & 255;
+    this->linear_m->at(this->current_memory() + 6) = (value>>48) & 255;
+    this->linear_m->at(this->current_memory() + 7) = (value>>54) & 255;
     this->current_loc += 8;
     return 0;
+}
+
+void Module::mem_map(){
+    std::cout << std::left << std::setw(36) << "Linear Memory: " << std::endl;
+    std::cout << std::left << std::setw(16) << "Index" << std::setw(4) << "|" << std::setw(16) << "Value" << std::endl;
+    std::cout << std::setfill('-') << std::setw(36) << "-" << std::setfill(' ') << std::endl; // setfill to - and then set back to blank
+    for(int index = 0; index < this->current_memory(); index++){
+        std::cout << std::left << std::setw(16) << std::setbase(16) << index << std::setw(4) << "|" << std::setw(16) << std::setbase(10) << this->i32_load8_u(index) << std::endl;
+    }
+    std::cout << std::endl;
 }
