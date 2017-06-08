@@ -13,6 +13,8 @@ int main(int argc,char *argv[]){
     // Load program
     Loader::load_file(argv[1], memory);
 
+    Memory::dump(memory);
+
     // TODO: Core
 
     return 0;
