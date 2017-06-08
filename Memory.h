@@ -7,10 +7,12 @@
 #include <cstdint>
 #include <iomanip>
 
+using namespace std;
+
 class Memory{
 public:
     Memory(int init_page_size = 1); 
-    Memory(Memory *other_wa);
+    Memory(Memory *memory);
     // memory operator
     int grow_memory(int page_size = 1); // grow memory (unit: page)
     int current_memory(); 
@@ -28,14 +30,12 @@ public:
     int i32_store16(uint16_t value);// store 2 bytes
 
     int i64_store(uint64_t value); 
-
-#ifdef DEBUG 
+ 
     // Print out the Memory Map
-    void mem_map();
-#endif
+    static void dump(Memory &memory);
 
 private:
-    std::vector<char> *linear_m; // Each Memory deploy one linear memory
+    vector<char> *linear_m; // Each Memory deploy one linear memory
     int page_counter;   // record how many page (64KB) usage 
     int current_loc;    // record latest(current) elements location (in this vector)
 };
