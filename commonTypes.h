@@ -1,3 +1,6 @@
+#ifndef COMMON_TYPES
+#define COMMON_TYPES
+
 #include <cstdint>
 
 enum ValueType {i32, i64, u32, u64, f32, f64};
@@ -13,3 +16,4 @@ class Value{
   } data;
   ValueType type;
 };
+#endif

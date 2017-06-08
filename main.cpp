@@ -2,6 +2,7 @@
 
 #include "Memory.h"
 #include "Loader.h"
+#include "Core.h"
 
 int main(int argc,char *argv[]){
 
@@ -13,7 +14,8 @@ int main(int argc,char *argv[]){
     // Load program
     Loader::load_file(argv[1], memory);
 
-    Memory::dump(memory);
+    // Core
+    Core core(memory);
 
     // TODO: Core
 
