@@ -10,9 +10,9 @@ using namespace std;
 class OperandStack{
 public:
   OperandStack();
-  void push();
-  pop();
-  size();
+  void push(const Value &val);
+  Value pop();
+  size_t size();
 private:
   stack<Value> _stack;
 };

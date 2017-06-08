@@ -1,17 +1,16 @@
-#ifndef MODULE
-#define MODULE
+#ifndef MEMORY
+#define MEMORY
 
 #include <iostream>
-#include <vector>       // linear memory usage
-#include <string>       // for normal string usage
-#include <cstdint>      // for specific type
-#include <iomanip>      // std::setw
+#include <vector>
+#include <string>
+#include <cstdint>
+#include <iomanip>
 
-class Module{
+class Memory{
 public:
-    // constructor
-    Module(int init_page_size = 1); 
-    Module(Module *other_wa);
+    Memory(int init_page_size = 1); 
+    Memory(Memory *other_wa);
     // memory operator
     int grow_memory(int page_size = 1); // grow memory (unit: page)
     int current_memory(); 
@@ -28,11 +27,15 @@ public:
     int i32_store8(uint8_t value);  // store 1 byte
     int i32_store16(uint16_t value);// store 2 bytes
 
-    int i64_store(uint64_t value);  
+    int i64_store(uint64_t value); 
+
+#ifdef DEBUG 
     // Print out the Memory Map
     void mem_map();
+#endif
+
 private:
-    std::vector<char> *linear_m; // Each module deploy one linear memory
+    std::vector<char> *linear_m; // Each Memory deploy one linear memory
     int page_counter;   // record how many page (64KB) usage 
     int current_loc;    // record latest(current) elements location (in this vector)
 };

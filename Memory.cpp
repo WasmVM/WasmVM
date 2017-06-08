@@ -1,6 +1,6 @@
-#include "Module.h"
+#include "Memory.h"
 
-Module::Module(int init_page_size){
+Memory::Memory(int init_page_size){
     // memory 
     this->linear_m = new std::vector<char>(init_page_size*64*1024);
     // attributes
@@ -8,24 +8,24 @@ Module::Module(int init_page_size){
     this->current_loc = 0;
 }
 
-Module::Module(Module *other_wa){
+Memory::Memory(Memory *other_wa){
     // Copy another wa 
     this->linear_m = other_wa->linear_m;
     this->page_counter = other_wa->page_counter;
     this->current_loc = other_wa->current_loc;
 }
 
-int Module::grow_memory(int page_size){
+int Memory::grow_memory(int page_size){
     this->linear_m->resize((page_size+this->page_counter)*64*1024);
     this->page_counter += page_size;
     return 0;
 }
 
-int Module::current_memory(){
+int Memory::current_memory(){
     return (this->page_counter-1)*64*1024 + this->current_loc;
 }
 
-uint32_t Module::i32_load(int loc){
+uint32_t Memory::i32_load(int loc){
     uint32_t return_v = (uint8_t)this->linear_m->at(loc);
     return_v += (uint32_t)((uint8_t)this->linear_m->at(loc+1) << 8);
     return_v += (uint32_t)((uint8_t)this->linear_m->at(loc+2) << 16);
@@ -35,14 +35,14 @@ uint32_t Module::i32_load(int loc){
     return return_v;
 }
 
-uint32_t Module::i32_load8_u(int loc){
+uint32_t Memory::i32_load8_u(int loc){
     // load 1 byte and set 0 to other
     uint32_t return_v = (uint8_t)this->linear_m->at(loc);
     // return the value
     return return_v;
 }
 
-uint32_t Module::i32_load16_u(int loc){
+uint32_t Memory::i32_load16_u(int loc){
     // load 2 byte and set 0 to other
     uint32_t return_v = (uint8_t)this->linear_m->at(loc);
     return_v += (uint32_t)((uint8_t)this->linear_m->at(loc+1) << 8);
@@ -50,7 +50,7 @@ uint32_t Module::i32_load16_u(int loc){
     return return_v;
 }
 
-uint64_t Module::i64_load(int loc){
+uint64_t Memory::i64_load(int loc){
     uint64_t return_v = (uint8_t)this->linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)this->linear_m->at(loc+1) << 8);
     return_v += (uint64_t)((uint8_t)this->linear_m->at(loc+2) << 16);
@@ -63,14 +63,14 @@ uint64_t Module::i64_load(int loc){
     return return_v;
 }
 
-uint64_t Module::i64_load8_u(int loc){
+uint64_t Memory::i64_load8_u(int loc){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)this->linear_m->at(loc);
     // return the value
     return return_v;
 }
 
-uint64_t Module::i64_load16_u(int loc){
+uint64_t Memory::i64_load16_u(int loc){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)this->linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)this->linear_m->at(loc+1) << 8);
@@ -78,7 +78,7 @@ uint64_t Module::i64_load16_u(int loc){
     return return_v;
 }
 
-uint64_t Module::i64_load32_u(int loc){
+uint64_t Memory::i64_load32_u(int loc){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)this->linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)this->linear_m->at(loc+1) << 8);
@@ -88,7 +88,7 @@ uint64_t Module::i64_load32_u(int loc){
     return return_v;
 }
 
-int Module::i32_store(uint32_t value){
+int Memory::i32_store(uint32_t value){
     try{
         if(this->current_memory() + 4 >= (this->page_counter*64*1024)){
             // Memory shortage
@@ -110,7 +110,7 @@ int Module::i32_store(uint32_t value){
     return 0;
 }
 
-int Module::i32_store8(uint8_t value){
+int Memory::i32_store8(uint8_t value){
     try{
         if(this->current_memory() + 1 >= (this->page_counter*64*1024)){
             // Memory shortage
@@ -129,7 +129,7 @@ int Module::i32_store8(uint8_t value){
     return 0;
 }
 
-int Module::i32_store16(uint16_t value){
+int Memory::i32_store16(uint16_t value){
     try{
         if(this->current_memory() + 2 >= (this->page_counter*64*1024)){
             // Memory shortage
@@ -149,7 +149,7 @@ int Module::i32_store16(uint16_t value){
     return 0;
 }
 
-int Module::i64_store(uint64_t value){
+int Memory::i64_store(uint64_t value){
     try{
         if(this->current_memory() + 8 >= (this->page_counter*64*1024)){
             // Memory shortage
@@ -174,7 +174,8 @@ int Module::i64_store(uint64_t value){
     return 0;
 }
 
-void Module::mem_map(){
+#ifdef DEBUG
+void Memory::mem_map(){
     std::cout << std::left << std::setw(36) << "Linear Memory: " << std::endl;
     std::cout << std::left << std::setw(16) << "Index" << std::setw(4) << "|" << std::setw(16) << "Value" << std::endl;
     std::cout << std::setfill('-') << std::setw(36) << "-" << std::setfill(' ') << std::endl; // setfill to - and then set back to blank
@@ -183,3 +184,4 @@ void Module::mem_map(){
     }
     std::cout << std::endl;
 }
+#endif
