@@ -1,6 +1,6 @@
 #include "Fetcher.h"
 
-Fetcher::Fetcher(Module *wa)
+Fetcher::Fetcher(Memory *wa)
     :parsing_wa(wa)
 {
     // init elements

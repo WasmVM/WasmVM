@@ -1,15 +1,15 @@
 #ifndef FETCHER
 #define FETCHER 
 
-#include "Module.h"
+#include "../Memory.h"
 
 class Fetcher{
 public:
-    Fetcher(Module *wa);
+    Fetcher(Memory *wa);
     void show_section();
 private:
     std::string get_section_name(int section_id);
-    Module *parsing_wa;
+    Memory *parsing_wa;
     // loc
     int section_loc[12];
     // size
