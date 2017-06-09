@@ -16,8 +16,7 @@ int main(int argc,char *argv[]){
 
     // Core
     Core core(memory);
-
-    // TODO: Core
+    core.run();
 
     return 0;
 }

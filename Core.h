@@ -14,6 +14,7 @@ private:
     Memory &memory;
     OperandStack stack;
     uint64_t pc;
+    bool running;
 };
 
 #endif
