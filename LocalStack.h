@@ -6,8 +6,10 @@
 
 #include "commonTypes.h"
 
-class LocalStack
-{
+using namespace std;
+
+class LocalStack{
+
 public:
   LocalStack();
   Value get_local(uint32_t index);
@@ -19,7 +21,9 @@ public:
   void append_Indices();
   void pop_Indices();
 
+#ifndef TEST
 private:
+#endif
   stack<vector<Value>> _localsValues;
   stack<uint32_t> _localIndices;
 };

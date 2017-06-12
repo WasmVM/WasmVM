@@ -1,7 +1,7 @@
 CXX = g++
 CFLAGS = -std=c++11
 
-OBJS = Memory.o OperandStack.o Loader.o Core.o Fetch.o
+OBJS = Memory.o OperandStack.o Loader.o Core.o Fetch.o LocalStack.o
 
 .PHONY:all clean
 
