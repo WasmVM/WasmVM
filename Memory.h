@@ -31,13 +31,23 @@ public:
 
     int i64_store(uint64_t value); 
  
+    // section 
+    int section_init();
+
     // Print out the Memory Map
     static void dump(Memory &memory);
-
+    static void show_section(Memory &memory);
+    
 private:
     vector<char> *linear_m; // Each Memory deploy one linear memory
     int page_counter;   // record how many page (64KB) usage 
     int current_loc;    // record latest(current) elements location (in this vector)
+    // section 
+    string get_section_name(int section_id);
+    int get_section_loc(int section_index);
+    int get_section_size(int section_index);
+    int section_loc[12];
+    int section_size[12];
 };
 
 #endif
