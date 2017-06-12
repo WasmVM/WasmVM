@@ -174,6 +174,35 @@ int Memory::i64_store(uint64_t value){
     return 0;
 }
 
+int Memory::section_init(){
+    if(current_memory() < 8){
+        // has no memory
+        return -1;
+    }
+    else{
+        section_loc[0] = -1;
+        section_size[0] = -1;
+        for(int i=1;i<=11;i++){
+            section_loc[i] = 0;
+            section_size[i] = 0;
+        }
+        // start Parsing (except the previous 8 elements)
+        for(int i=8;i<=current_memory();){
+            // parsing start!
+            if(i32_load8_u(i) > 11 || i32_load8_u(i) <= 0){
+                // error occur!
+                return -1;
+            }
+            // Find location
+            section_loc[i32_load8_u(i)] = i;
+            // Find the size of this section
+            section_size[i32_load8_u(i)] = i32_load8_u(i+1);
+            // Skip 2 (section tag & section size) and sizeof section 
+            i+=(section_size[i32_load8_u(i)]+2);    
+        }
+    }
+}
+
 void Memory::dump(Memory &memory){
     cout << left << setw(36) << "Linear Memory: " << endl;
     cout << left << setw(16) << "Index" << setw(4) << "|" << setw(16) << "Value" << endl;
@@ -182,4 +211,80 @@ void Memory::dump(Memory &memory){
         cout << left << setw(16) << setbase(16) << index << setw(4) << "|" << setw(16) << setbase(10) << memory.i32_load8_u(index) << endl;
     }
     cout << endl;
+}
+
+void Memory::show_section(Memory &memory){
+    // section init 
+    if(memory.section_init() == -1){
+        return;
+    }
+    // Output the fetching result of current Module.
+    cout << left << setw(14) << "Section Name" << setw(2) << "|" << setw(10) << "Location" << setw(4) << "|" << setw(10) << "Size" << endl; 
+    cout << setfill('-') << setw(40) << "-" << setfill(' ') << endl; // setfill to - and then set back to blank    
+    for(int i=1;i<=11;i++){
+        if(memory.get_section_loc(i) != -1){
+            cout << left << setw(14) << memory.get_section_name(i) << setw(2) << "|" << setw(10) << setbase(16) << memory.get_section_loc(i) << setw(4) << "|" << setw(10) << setbase(10) << memory.get_section_size(i) << endl;
+        }
+    }
+    cout << setfill('-') << setw(40) << "-" << setfill(' ') << endl; // setfill to - and then set back to blank    
+    cout << endl;
+}
+
+string Memory::get_section_name(int section_id){
+    switch(section_id){
+        case 1:
+            return string("Type");
+            break;
+        case 2:
+            return string("Import");
+            break;
+        case 3:
+            return string("Function");
+            break;
+        case 4:
+            return string("Table");
+            break;
+        case 5:
+            return string("Memory");
+            break;
+        case 6:
+            return string("Global");
+            break;
+        case 7:
+            return string("Export");
+            break;
+        case 8:
+            return string("Start");
+            break;
+        case 9:
+            return string("Element");
+            break;
+        case 10:
+            return string("Code");
+            break;
+        case 11:
+            return string("Data");
+            break;
+        default:
+            return string("Not found");
+            break;
+    }
+}
+
+int Memory::get_section_loc(int section_index){
+    if(section_index >= 1 && section_index <= 11){
+        return section_loc[section_index];
+    }
+    else{
+        return -1;
+    }
+}
+
+int Memory::get_section_size(int section_index){
+    if(section_index >= 1 && section_index <= 11){
+        return section_size[section_index];
+    }
+    else{
+        return -1;
+    }
 }
