@@ -29,15 +29,15 @@
     return val;
   }
 
-  void LocalStack::appendValues(){
+  void LocalStack::append_Values(){
     _localsValues.push(vector<Value>());
   }
 
-  void LocalStack::popValues(){
+  void LocalStack::pop_Values(){
     _localsValues.pop();
   }
 
-  void LocalStack::appendIndices(){
+  void LocalStack::append_Indices(){
     _localIndices.push(_localIndices.size() - 1);
   }
 
