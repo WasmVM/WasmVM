@@ -15,7 +15,7 @@ Value OperandStack::pop(){
 }
 
 size_t OperandStack::size(){
-  return _stack.size();
+  return _stacks.size();
 }
 
 void OperandStack::appendStack(){

@@ -6,6 +6,7 @@
 enum ValueType {i32, i64, u32, u64, f32, f64};
 
 class Value{
+public:
   union{
     int32_t  i32;
     int64_t  i64;

@@ -6,23 +6,26 @@
 
 #include "commonTypes.h"
 
-class LocalStack
-{
+using namespace std;
+
+class LocalStack{
+
 public:
   LocalStack();
   Value get_local(uint32_t index);
   void set_local(uint32_t index, Value val);
   Value tee_local(uint32_t index, Value val);
 
-  void appendValues();
-  void popValues();
-  void appendIndices();
-  void popIndices();
+  void append_Values();
+  void pop_Values();
+  void append_Indices();
+  void pop_Indices();
 
+#ifndef TEST
 private:
+#endif
   stack<vector<Value>> _localsValues;
   stack<uint32_t> _localIndices;
 };
-
 
 #endif
