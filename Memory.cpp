@@ -187,7 +187,7 @@ int Memory::section_init(){
             section_size[i] = 0;
         }
         // start Parsing (except the previous 8 elements)
-        for(int i=8;i<=current_memory();){
+        for(int i=8;i<current_memory();){
             // parsing start!
             if(i32_load8_u(i) > 11 || i32_load8_u(i) <= 0){
                 // error occur!
@@ -200,6 +200,9 @@ int Memory::section_init(){
             // Skip 2 (section tag & section size) and sizeof section 
             i+=(section_size[i32_load8_u(i)]+2);    
         }
+        // FIXME: Add each section denote
+
+        return 1;
     }
 }
 
