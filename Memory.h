@@ -57,7 +57,7 @@ private:
     int num_funcs;
     vector<types> type_elements;
     vector<imports> import_elements;
-    vector<funcs> funcs_elements;
+    vector<functions> funcs_elements;
 };
 
 #endif

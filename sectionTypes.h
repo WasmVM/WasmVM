@@ -9,6 +9,7 @@ using namespace std;
 
 // define element structure in Type Section (Based on num_types)
 class types{
+public:
     int function_form;
     int num_param;
     int num_result;
@@ -29,7 +30,7 @@ class imports{
 // define element structure in Function Section
 class functions{
     int func_signature_index;
-}
+};
 
 // define element structure in Table Section 
 class tables{
@@ -37,13 +38,13 @@ class tables{
     int table_limit_flag;
     int table_limit_init;
     int table_limit_max;
-}
+};
 
 // define element structure in Memory Section
 class memories{
     int mem_limit_flag;
     int mem_limit_init;
     int mem_limit_max;
-}
+};
 
 #endif

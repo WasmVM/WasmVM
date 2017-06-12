@@ -201,20 +201,35 @@ int Memory::section_init(){
             i+=(section_size[i32_load8_u(i)]+2);    
         }
         // FIXME: Add each section denote
-
+        section_detail();
         return 1;
     }
 }
 
 int Memory::section_detail(){
     // Type 
-    num_types = i32_load8_u(get_section_loc(1)+2);
-    
+    int offset = 2;
+    num_types = i32_load8_u(get_section_loc(1)+(offset++));
+    type_elements.resize(num_types);
     if(num_types >= 1){
         for(int i = 0;i<num_types;i++){
-
+            type_elements[i].function_form = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].num_param = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].param_type.resize(type_elements[i].num_param);
+            // store param type into vector!
+            for(int j=0;j<type_elements[i].num_param;j++){
+                type_elements[i].param_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
+            }
+            // get result number 
+            type_elements[i].num_result = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].result_type.resize(type_elements[i].num_result);
+            // store result type into vector!
+            for(int j=0;j<type_elements[i].num_result;j++){
+                type_elements[i].result_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
+            }
         }
     }
+    
 }
 
 void Memory::dump(Memory &memory){
@@ -238,10 +253,31 @@ void Memory::show_section(Memory &memory){
     for(int i=1;i<=11;i++){
         if(memory.get_section_loc(i) != -1){
             cout << left << setw(14) << memory.get_section_name(i) << setw(2) << "|" << setw(10) << setbase(16) << memory.get_section_loc(i) << setw(4) << "|" << setw(10) << setbase(10) << memory.get_section_size(i) << endl;
+            switch(i){
+                case 1:
+                    // type section
+                    cout << left << setw(6) << " " << "Type Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Types: " << setw(6) << memory.num_types << endl;
+                    for(int j=0;j<memory.num_types;j++){
+                        cout << left << setw(10) << " " << "Function Form: " << setw(6) << memory.type_elements[j].function_form << endl;
+                        cout << left << setw(10) << " " << "Number of Parameters: " << setw(6) << memory.type_elements[j].num_param << endl;
+                        for(int k=0;k<memory.type_elements[j].num_param;k++){
+                            cout << left << setw(14) << " " << "Type of Parameter: " << setw(6) << memory.type_elements[j].param_type[k] << endl;
+                        }
+                        cout << left << setw(10) << " " << "Number of Results: " << setw(6) << memory.type_elements[j].num_result << endl;
+                        for(int k=0;k<memory.type_elements[j].num_result;k++){
+                            cout << left << setw(14) << " " << "Type of Result: " << setw(6) << memory.type_elements[j].result_type[k] << endl;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
         }
     }
     cout << setfill('-') << setw(40) << "-" << setfill(' ') << endl; // setfill to - and then set back to blank    
     cout << endl;
+    // Print out the type section
 }
 
 string Memory::get_section_name(int section_id){
