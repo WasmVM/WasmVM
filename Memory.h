@@ -7,6 +7,8 @@
 #include <cstdint>
 #include <iomanip>
 
+#include "sectionTypes.h"
+
 using namespace std;
 
 class Memory{
@@ -32,7 +34,8 @@ public:
     int i64_store(uint64_t value); 
  
     // section 
-    int section_init();
+    int section_init();         // Tag each index space
+    int section_detail();       // Tag details loc in each index space (Must go after section_init)
 
     // Print out the Memory Map
     static void dump(Memory &memory);
@@ -48,6 +51,13 @@ private:
     int get_section_size(int section_index);
     int section_loc[12];
     int section_size[12];
+    // type section 
+    int num_types;
+    int num_imports;
+    int num_funcs;
+    vector<types> type_elements;
+    vector<imports> import_elements;
+    vector<funcs> funcs_elements;
 };
 
 #endif

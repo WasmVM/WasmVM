@@ -206,6 +206,17 @@ int Memory::section_init(){
     }
 }
 
+int Memory::section_detail(){
+    // Type 
+    num_types = i32_load8_u(get_section_loc(1)+2);
+    
+    if(num_types >= 1){
+        for(int i = 0;i<num_types;i++){
+
+        }
+    }
+}
+
 void Memory::dump(Memory &memory){
     cout << left << setw(36) << "Linear Memory: " << endl;
     cout << left << setw(16) << "Index" << setw(4) << "|" << setw(16) << "Value" << endl;
