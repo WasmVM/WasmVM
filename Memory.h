@@ -55,9 +55,25 @@ private:
     int num_types;
     int num_imports;
     int num_funcs;
+    int num_tables;
+    int num_memories;
+    int num_globals;
+    int num_exports;
+    int start_entry;
+    int num_elements;
+    int num_codes;
+    int num_datas;
     vector<types> type_elements;
     vector<imports> import_elements;
     vector<functions> funcs_elements;
+    vector<tables> table_elements;
+    vector<memories> memory_elements;
+    vector<globals> global_elements;
+    vector<exports> export_elements;
+    // vector<starts> start_elements;
+    vector<elements> element_elements;
+    vector<codes> code_elements;
+    vector<datas> data_elements;
 };
 
 #endif
