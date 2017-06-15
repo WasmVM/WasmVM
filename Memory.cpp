@@ -393,6 +393,7 @@ void Memory::show_section(Memory &memory){
                             cout << left << setw(14) << " " << "Type of Result: " << setw(6) << memory.type_elements[j].result_type[k] << endl;
                         }
                     }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 2:
                     // Print out the import section
@@ -404,6 +405,7 @@ void Memory::show_section(Memory &memory){
                         cout << left << setw(14) << " " << "Imported Function Kind: " << setw(6) << memory.import_elements[j].kind << endl;
                         cout << left << setw(14) << " " << "Imported Function Signature Index: " << setw(6) << memory.import_elements[j].signature_index << endl;
                     }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 3:
                     // Print out the function section
@@ -412,30 +414,80 @@ void Memory::show_section(Memory &memory){
                     for(int j=0;j<memory.num_funcs;j++){
                         cout << left << setw(14) << " " << "Function Signature Index: " << setw(6) << memory.funcs_elements[j].func_signature_index << endl;
                     }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 4:
                     // Print out the table section 
+                    cout << left << setw(6) << " " << "Table Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Table Type: " << setw(6) << memory.num_tables << endl;
+                    for(int j=0;j<memory.num_tables;j++){
+                        cout << left << setw(14) << " " << "Type: " << setw(6) << memory.table_elements[j].table_type << endl;
+                        cout << left << setw(14) << " " << "Limit Flag: " << setw(6) << memory.table_elements[j].table_limit_flag << endl;
+                        cout << left << setw(14) << " " << "Limit Initial: " << setw(6) << memory.table_elements[j].table_limit_init << endl;
+                        cout << left << setw(14) << " " << "Limit Maximum: " << setw(6) << memory.table_elements[j].table_limit_max << endl;
+                    }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 5:
                     // Print out the memory section
+                    cout << left << setw(6) << " " << "Memory Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Memory: " << setw(6) << memory.num_memories << endl;
+                    for(int j=0;j<memory.num_memories;j++){
+                        cout << left << setw(14) << " " << "Limit Flag: " << setw(6) << memory.memory_elements[j].mem_limit_flag << endl;
+                        cout << left << setw(14) << " " << "Limit Initial: " << setw(6) << memory.memory_elements[j].mem_limit_init << endl;
+                        cout << left << setw(14) << " " << "Limit Maximum: " << setw(6) << memory.memory_elements[j].mem_limit_max << endl;
+                    }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 6:
                     // Print out the global section 
+                    cout << left << setw(6) << " " << "Not Support yet!" << endl;
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 7: 
                     // Print out the export section 
+                    cout << left << setw(6) << " " << "Export Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Exports: " << setw(6) << memory.num_exports << endl;
+                    for(int j=0;j<memory.num_exports;j++){
+                        cout << left << setw(14) << " " << "Exported Name: " << setw(6) << memory.export_elements[j].export_name << endl;
+                        cout << left << setw(14) << " " << "Exported func kind: " << setw(6) << memory.export_elements[j].kind << endl;
+                        cout << left << setw(14) << " " << "Exported func index: " << setw(6) << memory.export_elements[j].func_index << endl;
+                    }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 8: 
                     // Print out the start section
+                    cout << left << setw(6) << " " << "Start Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Entry of start: " << setw(6) << memory.start_entry << endl;
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 9:
                     // Print out the element section 
+                    cout << left << setw(6) << " " << "Not Support yet!" << endl;
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 10:
                     // Print out the code section
+                    cout << left << setw(6) << " " << "Code Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Code: " << setw(6) << memory.num_codes << endl;
+                    for(int j=0;j<memory.num_codes;j++){
+                        cout << left << setw(14) << " " << "Function memory location: " << setw(6) << memory.code_elements[j].func_mem_loc << endl;
+                        cout << left << setw(14) << " " << "Function body size: " << setw(6) << memory.code_elements[j].func_body_size << endl;
+                    }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 11:
                     // Print out the data section
+                    cout << left << setw(6) << " " << "Data Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Data: " << setw(6) << memory.num_datas << endl;
+                    for(int j=0;j<memory.num_datas;j++){
+                        cout << left << setw(14) << " " << "Memory Index: " << setw(6) << memory.data_elements[j].memory_index << endl;
+                        cout << left << setw(14) << " " << "Data Segment Size: " << setw(6) << memory.data_elements[j].data_segment_size << endl;
+                        for(int k=0;k<memory.data_elements[j].data_segment_size;k++){
+                            cout << left << setw(14) << " " << "Initialized Data: " << setw(6) << memory.data_elements[j].data[k] << endl;
+                        }
+                    }
+                    cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 default:
                     break;
