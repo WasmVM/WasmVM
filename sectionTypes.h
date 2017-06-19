@@ -54,10 +54,10 @@ public:
 // #6 define element structure in Global Section
 class globals{
 public:
-    char global_type;
-    char global_mutability;
-    char global_instr_type;
-    char global_instr_init;
+    int global_type;
+    int global_mutability;
+    int global_offset_type;
+    int global_offset_init;
 };
 
 // #7 define element structure in Export Section
@@ -71,7 +71,12 @@ public:
 
 // #9 define element structure in Element Section
 class elements{
-
+public:
+    int element_index;
+    int element_offset_type;
+    int element_offset_init;
+    int element_num;
+    vector<uint32_t> element_indices; 
 };
 
 // #10 define element structure in Code Section
@@ -86,8 +91,8 @@ class datas{
 public:
     int memory_index;
     int data_segment_size;
-    char data_instr_type;
-    char data_instr_init;
+    int data_offset_type;
+    int data_offset_init;
     vector<char> data; 
 };
 

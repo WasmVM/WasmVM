@@ -291,8 +291,8 @@ int Memory::section_detail(){
         for(int i = 0; i<num_globals; i++){
             global_elements[i].global_type = i32_load8_u(get_section_loc(6)+(offset++));
             global_elements[i].global_mutability = i32_load8_u(get_section_loc(6)+(offset++));
-            global_elements[i].global_instr_type = i32_load8_u(get_section_loc(6)+(offset++));
-            global_elements[i].global_instr_init = i32_load8_u(get_section_loc(6)+(offset++));
+            global_elements[i].global_offset_type = i32_load8_u(get_section_loc(6)+(offset++));
+            global_elements[i].global_offset_init = i32_load8_u(get_section_loc(6)+(offset++));
             offset++;
         }
     }
@@ -317,7 +317,20 @@ int Memory::section_detail(){
     }
     // Element 
     if(get_section_loc(9) != 0){
-        // TODO
+      int offset = 2;
+        num_elements = i32_load8_u(get_section_loc(9)+(offset++));
+        element_elements.resize(num_elements);
+        for(int i = 0; i<num_elements; i++){
+            element_elements[i].element_index = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_offset_type = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_offset_init = i32_load8_u(get_section_loc(9)+(offset++));
+            offset++;
+            element_elements[i].element_num = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_indices.resize(element_elements[i].element_num);
+            for(int j=0;j<element_elements[i].element_num;j++){
+                element_elements[i].element_indices[j] = (char)i32_load8_u(get_section_loc(9)+(offset++));
+            }
+        }
     }
     // Code 
     if(get_section_loc(10) != 0){
@@ -340,8 +353,8 @@ int Memory::section_detail(){
         if(num_datas >= 1){
             for(int i=0;i<num_datas;i++){
                 data_elements[i].memory_index = i32_load8_u(get_section_loc(11)+(offset++));
-                data_elements[i].data_instr_type = i32_load8_u(get_section_loc(11)+(offset++));
-                data_elements[i].data_instr_init = i32_load8_u(get_section_loc(11)+(offset++));
+                data_elements[i].data_offset_type = i32_load8_u(get_section_loc(11)+(offset++));
+                data_elements[i].data_offset_init = i32_load8_u(get_section_loc(11)+(offset++));
                 offset++; // Skip end instruction
                 data_elements[i].data_segment_size = i32_load8_u(get_section_loc(11)+(offset++));
                 data_elements[i].data.resize(data_elements[i].data_segment_size);
@@ -441,10 +454,10 @@ void Memory::show_section(Memory &memory){
                     cout << left << setw(6) << " " << "Global Section Detail:" << endl;
                     cout << left << setw(6) << " " << "Number of Globals: " << setw(6) << memory.num_globals << endl;
                     for(int j = 0; j < memory.num_globals; j++){
-                        cout << left << setw(14) << " " << "Global Type: " << setw(6) << (int) memory.global_elements[j].global_type << endl;
-                        cout << left << setw(14) << " " << "Global Mutability: " << setw(6) << (int) memory.global_elements[j].global_mutability << endl;
-                        cout << left << setw(14) << " " << "Global Init Instruction: " << setw(6) << (int) memory.global_elements[j].global_instr_type << endl;
-                        cout << left << setw(14) << " " << "Global Init value: " << setw(6) << (int) memory.global_elements[j].global_instr_init << endl;
+                        cout << left << setw(14) << " " << "Global Type: " << setw(6) << memory.global_elements[j].global_type << endl;
+                        cout << left << setw(14) << " " << "Global Mutability: " << setw(6) << memory.global_elements[j].global_mutability << endl;
+                        cout << left << setw(14) << " " << "Global Offset Instruction: " << setw(6) << memory.global_elements[j].global_offset_type << endl;
+                        cout << left << setw(14) << " " << "Global Offset value: " << setw(6) << memory.global_elements[j].global_offset_init << endl;
                     }
                     cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
@@ -467,7 +480,17 @@ void Memory::show_section(Memory &memory){
                     break;
                 case 9:
                     // Print out the element section 
-                    cout << left << setw(6) << " " << "Not Support yet!" << endl;
+                    cout << left << setw(6) << " " << "Elements Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Element: " << setw(6) << memory.num_elements << endl;
+                    for(int j=0;j<memory.num_elements;j++){
+                        cout << left << setw(14) << " " << "Element Index: " << setw(6) << memory.element_elements[j].element_index << endl;
+                        cout << left << setw(14) << " " << "Element Offset Type: " << setw(6) << memory.element_elements[j].element_offset_type << endl;
+                        cout << left << setw(14) << " " << "Element Offset Init: " << setw(6) << memory.element_elements[j].element_offset_init << endl;
+                        cout << left << setw(14) << " " << "Number of Function Index: " << setw(6) << memory.element_elements[j].element_num << endl;
+                        for(int k=0;k<memory.element_elements[j].element_num;k++){
+                            cout << left << setw(22) << " " << "Element Function Index: " << setw(6) << memory.element_elements[j].element_indices[k] << endl;
+                        }
+                    }
                     cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 10:
