@@ -13,10 +13,12 @@ public:
   void push(const Value &val);
   Value pop();
   size_t size();
-  void appendStack();
-  void popStack();
+  void append_Stack();
+  void pop_Stack();
 
+#ifndef TEST
 private:
+#endif
   stack<stack<Value>> _stacks;
 };
 
