@@ -2,6 +2,8 @@
   (import "foo" "bar" (func (param f32)))
   (memory (data "hi"))
   (type (func (param i32) (result i32)))
+  (global $dd i32 i32.const 42)
+  (global $aa i32 i32.const 42)
   (start 1)
   (table 0 1 anyfunc)
   (func)

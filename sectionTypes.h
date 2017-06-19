@@ -53,7 +53,11 @@ public:
 
 // #6 define element structure in Global Section
 class globals{
-
+public:
+    char global_type;
+    char global_mutability;
+    char global_instr_type;
+    char global_instr_init;
 };
 
 // #7 define element structure in Export Section
