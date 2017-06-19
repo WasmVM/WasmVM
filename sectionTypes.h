@@ -65,11 +65,6 @@ public:
     int func_index;
 };
 
-// #8 define element structure in Start Section
-/*class starts{
-
-};*/
-
 // #9 define element structure in Element Section
 class elements{
 
@@ -87,6 +82,8 @@ class datas{
 public:
     int memory_index;
     int data_segment_size;
+    char data_instr_type;
+    char data_instr_init;
     vector<char> data; 
 };
 

@@ -70,7 +70,6 @@ private:
     vector<memories> memory_elements;
     vector<globals> global_elements;
     vector<exports> export_elements;
-    // vector<starts> start_elements;
     vector<elements> element_elements;
     vector<codes> code_elements;
     vector<datas> data_elements;

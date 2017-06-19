@@ -344,8 +344,9 @@ int Memory::section_detail(){
         if(num_datas >= 1){
             for(int i=0;i<num_datas;i++){
                 data_elements[i].memory_index = i32_load8_u(get_section_loc(11)+(offset++));
-                // FIXME: skip 3 elements (See demo)
-                offset+=3;
+                data_elements[i].data_instr_type = i32_load8_u(get_section_loc(11)+(offset++));
+                data_elements[i].data_instr_init = i32_load8_u(get_section_loc(11)+(offset++));
+                offset++; // Skip end instruction
                 data_elements[i].data_segment_size = i32_load8_u(get_section_loc(11)+(offset++));
                 data_elements[i].data.resize(data_elements[i].data_segment_size);
                 for(int j=0;j<data_elements[i].data_segment_size;j++){
