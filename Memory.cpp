@@ -212,22 +212,20 @@ int Memory::section_detail(){
         int offset = 2;
         num_types = i32_load8_u(get_section_loc(1)+(offset++));
         type_elements.resize(num_types);
-        if(num_types >= 1){
-            for(int i = 0;i<num_types;i++){
-                type_elements[i].function_form = i32_load8_u(get_section_loc(1)+(offset++));
-                type_elements[i].num_param = i32_load8_u(get_section_loc(1)+(offset++));
-                type_elements[i].param_type.resize(type_elements[i].num_param);
-                // store param type into vector!
-                for(int j=0;j<type_elements[i].num_param;j++){
-                    type_elements[i].param_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
-                }
-                // get result number 
-                type_elements[i].num_result = i32_load8_u(get_section_loc(1)+(offset++));
-                type_elements[i].result_type.resize(type_elements[i].num_result);
-                // store result type into vector!
-                for(int j=0;j<type_elements[i].num_result;j++){
-                    type_elements[i].result_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
-                }
+        for(int i = 0; i<num_types; i++){
+            type_elements[i].function_form = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].num_param = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].param_type.resize(type_elements[i].num_param);
+            // store param type into vector!
+            for(int j=0;j<type_elements[i].num_param;j++){
+                type_elements[i].param_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
+            }
+            // get result number 
+            type_elements[i].num_result = i32_load8_u(get_section_loc(1)+(offset++));
+            type_elements[i].result_type.resize(type_elements[i].num_result);
+            // store result type into vector!
+            for(int j=0;j<type_elements[i].num_result;j++){
+                type_elements[i].result_type[j] = i32_load8_u(get_section_loc(1)+(offset++));
             }
         }
     }
@@ -236,23 +234,21 @@ int Memory::section_detail(){
         int offset = 2;
         num_imports = i32_load8_u(get_section_loc(2)+(offset++));
         import_elements.resize(num_imports);
-        if(num_imports >= 1){
-            for(int i=0;i<num_imports;i++){
-                import_elements[i].module_len = i32_load8_u(get_section_loc(2)+(offset++));
-                import_elements[i].module_name = string("");
-                // get the module name
-                for(int j=0;j<import_elements[i].module_len;j++){
-                    import_elements[i].module_name += string(1,(char)i32_load8_u(get_section_loc(2)+(offset++)));
-                }
-                import_elements[i].function_len = i32_load8_u(get_section_loc(2)+(offset++));
-                import_elements[i].function_name = string("");
-                // get the function name
-                for(int j=0;j<import_elements[i].function_len;j++){
-                    import_elements[i].function_name += string(1,(char)i32_load8_u(get_section_loc(2)+(offset++)));
-                }
-                import_elements[i].kind = i32_load8_u(get_section_loc(2)+(offset++));
-                import_elements[i].signature_index = i32_load8_u(get_section_loc(2)+(offset++));
+        for(int i = 0; i<num_imports; i++){
+            import_elements[i].module_len = i32_load8_u(get_section_loc(2)+(offset++));
+            import_elements[i].module_name = string("");
+            // get the module name
+            for(int j=0;j<import_elements[i].module_len;j++){
+                import_elements[i].module_name += string(1,(char)i32_load8_u(get_section_loc(2)+(offset++)));
             }
+            import_elements[i].function_len = i32_load8_u(get_section_loc(2)+(offset++));
+            import_elements[i].function_name = string("");
+            // get the function name
+            for(int j=0;j<import_elements[i].function_len;j++){
+                import_elements[i].function_name += string(1,(char)i32_load8_u(get_section_loc(2)+(offset++)));
+            }
+            import_elements[i].kind = i32_load8_u(get_section_loc(2)+(offset++));
+            import_elements[i].signature_index = i32_load8_u(get_section_loc(2)+(offset++));
         }
     }
     // Function
@@ -260,10 +256,8 @@ int Memory::section_detail(){
         int offset = 2;
         num_funcs = i32_load8_u(get_section_loc(3)+(offset++));
         funcs_elements.resize(num_funcs);
-        if(num_funcs >= 1){
-            for(int i=0;i<num_funcs;i++){
-                funcs_elements[i].func_signature_index = i32_load8_u(get_section_loc(3)+(offset++));
-            }
+        for(int i = 0; i<num_funcs; i++){
+            funcs_elements[i].func_signature_index = i32_load8_u(get_section_loc(3)+(offset++));
         }
     }
     // Table 
@@ -271,13 +265,11 @@ int Memory::section_detail(){
         int offset = 2;
         num_tables = i32_load8_u(get_section_loc(4)+(offset++));
         table_elements.resize(num_tables);
-        if(num_tables >= 1){
-            for(int i=0;i<num_tables;i++){
-                table_elements[i].table_type = i32_load8_u(get_section_loc(4)+(offset++));
-                table_elements[i].table_limit_flag = i32_load8_u(get_section_loc(4)+(offset++));
-                table_elements[i].table_limit_init = i32_load8_u(get_section_loc(4)+(offset++));
-                table_elements[i].table_limit_max = i32_load8_u(get_section_loc(4)+(offset++));
-            }
+        for(int i = 0; i<num_tables; i++){
+            table_elements[i].table_type = i32_load8_u(get_section_loc(4)+(offset++));
+            table_elements[i].table_limit_flag = i32_load8_u(get_section_loc(4)+(offset++));
+            table_elements[i].table_limit_init = i32_load8_u(get_section_loc(4)+(offset++));
+            table_elements[i].table_limit_max = i32_load8_u(get_section_loc(4)+(offset++));
         }
     }
     // Memory
@@ -285,34 +277,38 @@ int Memory::section_detail(){
         int offset = 2;
         num_memories = i32_load8_u(get_section_loc(5)+(offset++));
         memory_elements.resize(num_memories);
-        if(num_memories >= 1){
-            for(int i=0;i<num_memories;i++){
-                memory_elements[i].mem_limit_flag = i32_load8_u(get_section_loc(5)+(offset++));
-                memory_elements[i].mem_limit_init = i32_load8_u(get_section_loc(5)+(offset++));
-                memory_elements[i].mem_limit_max = i32_load8_u(get_section_loc(5)+(offset++));
-            }
+        for(int i = 0; i<num_memories; i++){
+            memory_elements[i].mem_limit_flag = i32_load8_u(get_section_loc(5)+(offset++));
+            memory_elements[i].mem_limit_init = i32_load8_u(get_section_loc(5)+(offset++));
+            memory_elements[i].mem_limit_max = i32_load8_u(get_section_loc(5)+(offset++));
         }
     }
     // Global 
     if(get_section_loc(6) != 0){
-        // TODO
+        int offset = 2;
+        num_globals = i32_load8_u(get_section_loc(6)+(offset++));
+        global_elements.resize(num_globals);
+        for(int i = 0; i<num_globals; i++){
+            global_elements[i].global_type = i32_load8_u(get_section_loc(6)+(offset++));
+            global_elements[i].global_mutability = i32_load8_u(get_section_loc(6)+(offset++));
+            global_elements[i].global_offset_type = i32_load8_u(get_section_loc(6)+(offset++));
+            global_elements[i].global_offset_init = i32_load8_u(get_section_loc(6)+(offset++));
+            offset++;
+        }
     }
     // Export 
     if(get_section_loc(7) != 0){
         int offset = 2;
         num_exports = i32_load8_u(get_section_loc(7)+(offset++));
         export_elements.resize(num_exports);
-        if(num_exports >= 1){
-            for(int i=0;i<num_exports;i++){
-                export_elements[i].str_len = i32_load8_u(get_section_loc(7)+(offset++));
-                for(int j=0;j<export_elements[i].str_len;j++){
-                    export_elements[i].export_name += string(1,(char)i32_load8_u(get_section_loc(7)+(offset++)));
-                }
-                export_elements[i].kind = i32_load8_u(get_section_loc(7)+(offset++));
-                export_elements[i].func_index = i32_load8_u(get_section_loc(7)+(offset++));
+        for(int i = 0; i<num_exports; i++){
+            export_elements[i].str_len = i32_load8_u(get_section_loc(7)+(offset++));
+            for(int j=0;j<export_elements[i].str_len;j++){
+                export_elements[i].export_name += string(1,(char)i32_load8_u(get_section_loc(7)+(offset++)));
             }
+            export_elements[i].kind = i32_load8_u(get_section_loc(7)+(offset++));
+            export_elements[i].func_index = i32_load8_u(get_section_loc(7)+(offset++));
         }
-        
     }
     // Start
     if(get_section_loc(8) != 0){
@@ -321,7 +317,20 @@ int Memory::section_detail(){
     }
     // Element 
     if(get_section_loc(9) != 0){
-        // TODO
+      int offset = 2;
+        num_elements = i32_load8_u(get_section_loc(9)+(offset++));
+        element_elements.resize(num_elements);
+        for(int i = 0; i<num_elements; i++){
+            element_elements[i].element_index = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_offset_type = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_offset_init = i32_load8_u(get_section_loc(9)+(offset++));
+            offset++;
+            element_elements[i].element_num = i32_load8_u(get_section_loc(9)+(offset++));
+            element_elements[i].element_indices.resize(element_elements[i].element_num);
+            for(int j=0;j<element_elements[i].element_num;j++){
+                element_elements[i].element_indices[j] = (char)i32_load8_u(get_section_loc(9)+(offset++));
+            }
+        }
     }
     // Code 
     if(get_section_loc(10) != 0){
@@ -344,8 +353,8 @@ int Memory::section_detail(){
         if(num_datas >= 1){
             for(int i=0;i<num_datas;i++){
                 data_elements[i].memory_index = i32_load8_u(get_section_loc(11)+(offset++));
-                data_elements[i].data_instr_type = i32_load8_u(get_section_loc(11)+(offset++));
-                data_elements[i].data_instr_init = i32_load8_u(get_section_loc(11)+(offset++));
+                data_elements[i].data_offset_type = i32_load8_u(get_section_loc(11)+(offset++));
+                data_elements[i].data_offset_init = i32_load8_u(get_section_loc(11)+(offset++));
                 offset++; // Skip end instruction
                 data_elements[i].data_segment_size = i32_load8_u(get_section_loc(11)+(offset++));
                 data_elements[i].data.resize(data_elements[i].data_segment_size);
@@ -442,7 +451,14 @@ void Memory::show_section(Memory &memory){
                     break;
                 case 6:
                     // Print out the global section 
-                    cout << left << setw(6) << " " << "Not Support yet!" << endl;
+                    cout << left << setw(6) << " " << "Global Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Globals: " << setw(6) << memory.num_globals << endl;
+                    for(int j = 0; j < memory.num_globals; j++){
+                        cout << left << setw(14) << " " << "Global Type: " << setw(6) << memory.global_elements[j].global_type << endl;
+                        cout << left << setw(14) << " " << "Global Mutability: " << setw(6) << memory.global_elements[j].global_mutability << endl;
+                        cout << left << setw(14) << " " << "Global Offset Instruction: " << setw(6) << memory.global_elements[j].global_offset_type << endl;
+                        cout << left << setw(14) << " " << "Global Offset value: " << setw(6) << memory.global_elements[j].global_offset_init << endl;
+                    }
                     cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 7: 
@@ -464,7 +480,17 @@ void Memory::show_section(Memory &memory){
                     break;
                 case 9:
                     // Print out the element section 
-                    cout << left << setw(6) << " " << "Not Support yet!" << endl;
+                    cout << left << setw(6) << " " << "Elements Section Detail:" << endl;
+                    cout << left << setw(6) << " " << "Number of Element: " << setw(6) << memory.num_elements << endl;
+                    for(int j=0;j<memory.num_elements;j++){
+                        cout << left << setw(14) << " " << "Element Index: " << setw(6) << memory.element_elements[j].element_index << endl;
+                        cout << left << setw(14) << " " << "Element Offset Type: " << setw(6) << memory.element_elements[j].element_offset_type << endl;
+                        cout << left << setw(14) << " " << "Element Offset Init: " << setw(6) << memory.element_elements[j].element_offset_init << endl;
+                        cout << left << setw(14) << " " << "Number of Function Index: " << setw(6) << memory.element_elements[j].element_num << endl;
+                        for(int k=0;k<memory.element_elements[j].element_num;k++){
+                            cout << left << setw(22) << " " << "Element Function Index: " << setw(6) << memory.element_elements[j].element_indices[k] << endl;
+                        }
+                    }
                     cout << setfill('-') << setw(36) << "-" << setfill(' ') << endl;
                     break;
                 case 10:
