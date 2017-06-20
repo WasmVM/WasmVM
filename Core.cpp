@@ -1,16 +1,15 @@
 #include "Core.h"
 Core::Core(Memory &memory):
-    memory(memory), running(false)
+    memory(memory), halted(false)
 {
     
 }
 
 void Core::run(){
-    running = true;
-    Instruction::ctrl_call(memory.start_entry, opStack, locals, memory, pcStack);
-    while(running){
-        Decode::decode(memory, pcStack);
-        running = false;
+    halted = false;
+    Instruction::ctrl_call(memory.start_entry, opStack, locals, memory);
+    while(!halted){
+        Decode::decode(memory, opStack, locals, halted);
     }
-    running = false;
+    halted = true;
 }

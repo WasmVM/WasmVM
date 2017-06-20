@@ -40,18 +40,24 @@ void LocalStack::shrink_Values(){
 }
 
 void LocalStack::append_Indices(){
-  _localIndices.push(stack<uint32_t>());
+  _localIndices.push(stack<LocalIndex>());
 }
 
 void LocalStack::shrink_Indices(){
   _localIndices.pop();
 }
 
-void LocalStack::push_Indices(){
-  _localIndices.top().push(_localIndices.size());
+void LocalStack::push_index(LocalIndex index){
+  _localIndices.top().push(index);
 }
 
-void LocalStack::pop_Indices(){
-  _localsValues.top().resize(_localIndices.top().top());
+LocalIndex LocalStack::pop_index(){
+  _localsValues.top().resize(_localIndices.top().top().index);
+  LocalIndex ret = _localIndices.top().top();
   _localIndices.top().pop();
+  return ret;
+}
+
+uint64_t &LocalStack::get_PC(){
+  return _localIndices.top().top().pc;
 }

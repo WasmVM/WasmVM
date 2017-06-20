@@ -21,8 +21,7 @@ namespace Instruction{
   void ctrl_call(uint32_t entry,
     OperandStack &stack,
     LocalStack &locals,
-    Memory &memory,
-    std::stack<uint64_t> &pcStack);
+    Memory &memory);
   void ctrl_end();
 }
 

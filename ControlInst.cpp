@@ -21,22 +21,23 @@ void Instruction::ctrl_return(){
 void Instruction::ctrl_call(uint32_t entry,
   OperandStack &stack,
   LocalStack &locals,
-  Memory &memory,
-  std::stack<uint64_t> &pcStack){
+  Memory &memory){
   // Set OperandStack
   stack.append_Stack();
   // Set LocalStack
   locals.append_Values();
   locals.append_Indices();
   // Set PC
-  pcStack.push(memory.code_elements[entry].func_mem_loc);
+  locals.push_index(LocalIndex(memory.code_elements[entry].func_mem_loc));
+  // Get PC
+  uint64_t &pc = locals.get_PC();
   // Set Params
   // TODO: Set Params
   // Set Locals
-  int localDeclCnt = memory.i32_load8_u(++pcStack.top());
+  int localDeclCnt = memory.i32_load8_u(++pc);
   for(int i = 0; i < localDeclCnt; ++i){
-    int localTypeCnt = memory.i32_load8_u(++pcStack.top());
-    int localType = memory.i32_load8_u(++pcStack.top());
+    int localTypeCnt = memory.i32_load8_u(++pc);
+    int localType = memory.i32_load8_u(++pc);
     Value newVal;
     newVal.data.i64 = 0;
     switch (localType){
@@ -59,7 +60,8 @@ void Instruction::ctrl_call(uint32_t entry,
       locals.push_local(newVal);
     }
   }
-  ++pcStack.top();
+  ++pc;
 }
 void Instruction::ctrl_end(){
+
 }

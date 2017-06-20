@@ -21,8 +21,7 @@ private:
     Memory &memory;
     OperandStack opStack;
     LocalStack locals;
-    stack<uint64_t> pcStack;
-    bool running;
+    bool halted;
 };
 
 #endif
