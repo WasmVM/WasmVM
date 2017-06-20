@@ -25,4 +25,6 @@ void Loader::load_file(const char *filename, Memory &memory){
         infile.read(&byte,1);
         memory.i32_store8(byte);
     }
+    // Initialize Memory
+    memory.section_init();
 }

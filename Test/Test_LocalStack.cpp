@@ -105,27 +105,27 @@ int main(int argc, char const *argv[])
     }
   }
 
-  // Pop values
+  // Shrink values
   {
     // Instrction
-    my_stack.pop_Values();
+    my_stack.shrink_Values();
     // Check
     if(my_stack._localsValues.size() == 0){
-      printf("[OK] pop_Values()\n");
+      printf("[OK] shrink_Values()\n");
     }else{
-      printf("[Error] pop_Values()\n");
+      printf("[Error] shrink_Values()\n");
     }
   }
 
-  // Pop indices
+  // Shrink indices
   {
     // Instrction
-    my_stack.pop_Indices();
+    my_stack.shrink_Indices();
     // Check
     if(my_stack._localIndices.size() == 0){
-      printf("[OK] pop_Indices()\n");
+      printf("[OK] shrink_Indices()\n");
     }else{
-      printf("[Error] pop_Indices()\n");
+      printf("[Error] shrink_Indices()\n");
     }
   }
   return 0;

@@ -1,5 +1,5 @@
-#ifndef TRAP_HANDLER
-#define TRAP_HANDLER
+#ifndef SYSTEM_CALL
+#define SYSTEM_CALL
 
 #include <cstdio>
 #include <cstdlib>
@@ -9,7 +9,7 @@
 
 using namespace std;
 
-namespace TrapHandler{
+namespace SystemCall{
 
 void handle(OperandStack &stack, Memory &memory);
 

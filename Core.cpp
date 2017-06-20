@@ -2,14 +2,15 @@
 Core::Core(Memory &memory):
     memory(memory), running(false)
 {
+    
 }
 
 void Core::run(){
     running = true;
+    Instruction::ctrl_call(memory.start_entry, opStack, locals, memory, pcStack);
     while(running){
-        // TODO: Do Fetsh & Decode here
-        Memory::dump(memory);
-        Memory::show_section(memory);
+        Decode::decode(memory, pcStack);
         running = false;
     }
+    running = false;
 }
