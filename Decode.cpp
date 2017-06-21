@@ -10,6 +10,9 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x0B:
     Instruction::ctrl_end(opStack, locals, halted);
     break;
+  case 0x10:
+    Instruction::ctrl_call(get_uleb128_32(memory, pc), opStack, locals, memory);
+    break;
   case 0x1A:
     Instruction::para_drop(opStack);
     break;
