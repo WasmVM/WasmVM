@@ -1,15 +1,14 @@
 #include "Core.h"
 Core::Core(Memory &memory):
-    memory(memory), running(false)
+    memory(memory), halted(false)
 {
+    
 }
 
 void Core::run(){
-    running = true;
-    while(running){
-        // TODO: Do Fetsh & Decode here
-        Memory::dump(memory);
-        Memory::show_section(memory);
-        running = false;
+    halted = false;
+    Instruction::ctrl_call(memory.start_entry, opStack, locals, memory);
+    while(!halted){
+        Decode::decode(memory, opStack, locals, halted);
     }
 }

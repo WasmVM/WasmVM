@@ -13,44 +13,49 @@ using namespace std;
 
 class Memory{
 public:
+
+    friend class SystemCall;
+
     Memory(int init_page_size = 1); 
     Memory(Memory *memory);
     // memory operator
     int grow_memory(int page_size = 1); // grow memory (unit: page)
-    int current_memory(); 
+    int current_memory();
     // load & store => FIXME: support every instruction 
-    uint32_t i32_load(int loc);      // fetch data which start from loc
-    uint32_t i32_load8_u(int loc);   // unsigned (load 1 byte and extend) i8 to i32 
-    uint32_t i32_load16_u(int loc);  // unsigned (load 2 byte and extend) i16 to i32
-    uint64_t i64_load(int loc);
-    uint64_t i64_load8_u(int loc);
-    uint64_t i64_load16_u(int loc);
-    uint64_t i64_load32_u(int loc);
+    uint32_t i32_load       (int32_t loc, uint32_t offset = 0, uint32_t align = 0); // fetch data which start from loc
+    uint32_t i32_load8_u    (int32_t loc, uint32_t offset = 0, uint32_t align = 0); // unsigned (load 1 byte and extend) i8 to i32 
+    uint32_t i32_load16_u   (int32_t loc, uint32_t offset = 0, uint32_t align = 0); // unsigned (load 2 byte and extend) i16 to i32
+    int32_t i32_load8_s    (int32_t loc, uint32_t offset = 0, uint32_t align = 0); // unsigned (load 1 byte and extend) i8 to i32 
+    int32_t i32_load16_s   (int32_t loc, uint32_t offset = 0, uint32_t align = 0); // unsigned (load 2 byte and extend) i16 to i32
+    //uint64_t i64_load       (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    uint64_t i64_load8_u    (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //uint64_t i64_load16_u   (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //uint64_t i64_load32_u   (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //uint64_t i64_load8_s    (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //uint64_t i64_load16_s   (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //uint64_t i64_load32_s   (int32_t loc, uint32_t offset = 0, uint32_t align = 0);
     
-    int i32_store(uint32_t value);  // store value(4 bytes) into linear memory
-    int i32_store8(uint8_t value);  // store 1 byte
-    int i32_store16(uint16_t value);// store 2 bytes
-
-    int i64_store(uint64_t value); 
+    //int i32_store   (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store value(4 bytes) into linear memory
+    void i32_store8  (uint8_t  value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store 1 byte
+    //int i32_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store 2 bytes
+    //int i64_store   (uint64_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //int i64_store8  (uint8_t  value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //int i64_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    //int i64_store32 (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
  
     // section 
     int section_init();         // Tag each index space
     int section_detail();       // Tag details loc in each index space (Must go after section_init)
-
-    // Print out the Memory Map
-    static void dump(Memory &memory);
-    static void show_section(Memory &memory);
-    
-private:
-    vector<char> *linear_m; // Each Memory deploy one linear memory
-    int page_counter;   // record how many page (64KB) usage 
-    int current_loc;    // record latest(current) elements location (in this vector)
-    // section 
-    string get_section_name(int section_id);
+    static string get_section_name(int section_id);
     int get_section_loc(int section_index);
     int get_section_size(int section_index);
     int section_loc[12];
     int section_size[12];
+
+    // Print out the Memory Map
+    static void dump(Memory &memory);
+    static void show_section(Memory &memory);
+
     // type section 
     int num_types;
     int num_imports;
@@ -73,6 +78,11 @@ private:
     vector<elements> element_elements;
     vector<codes> code_elements;
     vector<datas> data_elements;
+    
+private:
+    vector<char> *linear_m; // Each Memory deploy one linear memory
+    int page_counter;   // record how many page (64KB) usage 
+    int32_t accessed_loc;    // record latest(current) elements location (in this vector)
 };
 
 #endif

@@ -18,10 +18,10 @@ size_t OperandStack::size(){
   return _stacks.size();
 }
 
-void OperandStack::append_Stack(){
+void OperandStack::append(){
   _stacks.push(stack<Value>());
 }
 
-void OperandStack::pop_Stack(){
+void OperandStack::shrink(){
   _stacks.pop();
 }
