@@ -4,7 +4,7 @@ void SystemCall::handle(OperandStack &stack, Memory &memory){
   Value code = stack.pop();
   switch (code.data.i32){
   case 0:
-    printf(stack, memory);
+    printOperand(stack);
     break;
   default:
     printf("System Halted: Undefined system call (%d)\n", code.data.i32);
@@ -12,6 +12,6 @@ void SystemCall::handle(OperandStack &stack, Memory &memory){
   }
 }
 
-void SystemCall::printf(OperandStack &stack, Memory &memory){
+void SystemCall::printOperand(OperandStack &stack){
   
 }

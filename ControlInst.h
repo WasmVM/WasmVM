@@ -18,8 +18,8 @@ namespace Instruction{
   void ctrl_br();
   void ctrl_br_if();
   void ctrl_return();
-  void ctrl_call(uint32_t entry, OperandStack &stack, LocalStack &locals, Memory &memory);
-  void ctrl_end();
+  void ctrl_call(uint32_t entry, OperandStack &opStack, LocalStack &locals, Memory &memory);
+  void ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted);
 }
 
 #endif

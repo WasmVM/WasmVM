@@ -36,9 +36,14 @@ void LocalStack::append(uint64_t pc){
   _localIndices.push(LocalIndices(pc));
 }
 
-void LocalStack::shrink(){
+bool LocalStack::shrink(){
   _localsValues.pop();
   _localIndices.pop();
+  if(_localIndices.size() == 0){
+    return true;
+  }else{
+    return false;
+  }
 }
 
 void LocalStack::push_index(LocalIndex index){

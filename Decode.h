@@ -9,6 +9,7 @@
 #include "LocalStack.h"
 #include "NumericInst.h"
 #include "ParaVarInst.h"
+#include "ControlInst.h"
 
 namespace Decode{
     void decode(Memory &memory, OperandStack &opStack, LocalStack &locals, bool &halted);

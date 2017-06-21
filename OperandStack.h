@@ -13,8 +13,8 @@ public:
   void push(const Value &val);
   Value pop();
   size_t size();
-  void append_Stack();
-  void pop_Stack();
+  void append();
+  void shrink();
 
 #ifndef TEST
 private:

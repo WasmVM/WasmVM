@@ -11,5 +11,4 @@ void Core::run(){
     while(!halted){
         Decode::decode(memory, opStack, locals, halted);
     }
-    halted = true;
 }

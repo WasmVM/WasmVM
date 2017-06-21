@@ -15,7 +15,7 @@ void handle(OperandStack &stack, Memory &memory);
 
 /*** System calls ***/
 
-void printf(OperandStack &stack, Memory &memory);
+void printOperand(OperandStack &stack);
   
 };
 

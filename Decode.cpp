@@ -7,13 +7,14 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   uint64_t &pc = locals.get_PC();
   uint32_t opCode = memory.i32_load8_u(pc++);
   switch (opCode){
+  case 0x0B:
+    Instruction::ctrl_end(opStack, locals, halted);
+    break;
   case 0x1A:
     Instruction::para_drop(opStack);
     break;
   case 0x1B:
     Instruction::para_select(opStack);
-    printf("i32_const: %d\n", opStack.pop().data.i32);
-    halted = true;
     break;
   case 0x41:
     Instruction::i32_const(opStack, get_leb128_32(memory, pc));

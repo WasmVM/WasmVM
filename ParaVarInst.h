@@ -4,6 +4,8 @@
 #include "commonTypes.h"
 #include "OperandStack.h"
 
+using namespace std;
+
 namespace Instruction{
   void para_drop(OperandStack &opStack);
   void para_select(OperandStack &opStack);

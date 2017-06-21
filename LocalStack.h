@@ -38,7 +38,7 @@ public:
   Value tee_local(uint32_t index, Value val);
 
   void append(uint64_t pc);
-  void shrink();
+  bool shrink();
   void push_index(LocalIndex index);
   LocalIndex pop_index();
   uint64_t &get_PC();

@@ -1,7 +1,20 @@
 #include "ParaVarInst.h"
 
+#include <cstdio>
+
 void Instruction::para_drop(OperandStack &opStack){
-  opStack.pop();
+  Value val = opStack.pop();
+  ValueType type = val.type;
+  switch (type){
+    case i32:
+      printf("Operand dropped: Type: i32, Value: %d\n", val.data.i32);
+      break;
+    case i64:
+      printf("Operand dropped: Type: i64, Value: %ld\n", val.data.i64);
+      break;
+    default:
+      break;
+  }
 }
 void Instruction::para_select(OperandStack &opStack){
   Value val1, val2, val3;

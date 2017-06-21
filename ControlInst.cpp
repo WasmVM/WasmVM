@@ -1,7 +1,5 @@
 #include "ControlInst.h"
 
-#include <cstdio>
-
 void Instruction::ctrl_nop (){
 }
 void Instruction::ctrl_unreachable(){
@@ -19,11 +17,11 @@ void Instruction::ctrl_br_if(){
 void Instruction::ctrl_return(){
 }
 void Instruction::ctrl_call(uint32_t entry,
-  OperandStack &stack,
+  OperandStack &opStack,
   LocalStack &locals,
   Memory &memory){
   // Set OperandStack
-  stack.append_Stack();
+  opStack.append();
   // Set LocalStack & PC
   locals.append(memory.code_elements[entry].func_mem_loc);
   // Get PC
@@ -59,6 +57,10 @@ void Instruction::ctrl_call(uint32_t entry,
   }
   ++pc;
 }
-void Instruction::ctrl_end(){
-  
+void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted){
+  LocalIndex index = locals.pop_index();
+  if(index.type == i_function){
+    opStack.shrink();
+    halted = locals.shrink();
+  }
 }
