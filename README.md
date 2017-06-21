@@ -14,3 +14,7 @@
 
 - Step 4: usage of our program:
   - `./main <your wasm program file>`: you can see what's going on.
+  
+## Current support
+- `NumericInst.h`: the instruction we have implemented.
+- `Decode.cpp`: the instruction we support.
