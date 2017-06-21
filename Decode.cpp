@@ -22,6 +22,9 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x42:
     Instruction::i64_const(opStack, get_leb128_64(memory, pc));
     break;
+  case 0x6a:
+    Instruction::i32_add(opStack);
+    break;
   default:
     throw "Not implement yet";
     break;
