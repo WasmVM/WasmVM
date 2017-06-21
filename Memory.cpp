@@ -1,18 +1,17 @@
 #include "Memory.h"
 
-Memory::Memory(int init_page_size){
+Memory::Memory(int init_page_size):
+    page_counter(1), accessed_loc(0)
+{
     // memory 
     linear_m = new vector<char>(init_page_size*64*1024);
-    // attributes
-    page_counter = 1;
-    current_loc = 0;
 }
 
 Memory::Memory(Memory *memory){
     // Copy another memory
     linear_m = memory->linear_m;
     page_counter = memory->page_counter;
-    current_loc = memory->current_loc;
+    accessed_loc = memory->accessed_loc;
 }
 
 int Memory::grow_memory(int page_size){
@@ -22,35 +21,109 @@ int Memory::grow_memory(int page_size){
 }
 
 int Memory::current_memory(){
-    return (page_counter-1)*64*1024 + current_loc;
+    return page_counter*64*1024;
 }
 
-uint32_t Memory::i32_load(int loc){
+uint32_t Memory::i32_load(int32_t loc, uint32_t offset, uint32_t align){
     uint32_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+1) << 8);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+2) << 16);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+3) << 24);
 
+    uint32_t mask = 0xFFFFFFFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 32){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFFFFFFFF << (32 - (offset + align));
+    }
+
     // return the value
-    return return_v;
+    return return_v & mask;
 }
 
-uint32_t Memory::i32_load8_u(int loc){
+uint32_t Memory::i32_load8_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
     uint32_t return_v = (uint8_t)linear_m->at(loc);
+    uint8_t mask = 0xFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 8){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFF << (8 - (offset + align));
+    }
+
     // return the value
-    return return_v;
+    return return_v & mask;
 }
 
-uint32_t Memory::i32_load16_u(int loc){
-    // load 2 byte and set 0 to other
+uint32_t Memory::i32_load16_u(int32_t loc, uint32_t offset, uint32_t align){
+    // load 1 byte and set 0 to other
     uint32_t return_v = (uint8_t)linear_m->at(loc);
-    return_v += (uint32_t)((uint8_t)linear_m->at(loc+1) << 8);
+    uint16_t mask = 0xFFFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 16){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFFFF << (16 - (offset + align));
+    }
+
     // return the value
-    return return_v;
+    return return_v & mask;
 }
 
-uint64_t Memory::i64_load(int loc){
+int32_t Memory::i32_load8_s(int32_t loc, uint32_t offset, uint32_t align){
+    // load 1 byte and set 0 to other
+    uint32_t ret = (uint8_t)linear_m->at(loc);
+    uint8_t mask = 0xFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 8){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFF << (8 - (offset + align));
+    }
+    ret &= mask;
+    if(ret & 0x80){
+        ret |= 0xFFFFFF00;
+    }
+    return ret;
+}
+
+int32_t Memory::i32_load16_s(int32_t loc, uint32_t offset, uint32_t align){
+    // load 1 byte and set 0 to other
+    uint32_t ret = (uint8_t)linear_m->at(loc);
+    uint16_t mask = 0xFFFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 16){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFFFF << (16 - (offset + align));
+    }
+
+    ret &= mask;
+    if(ret & 0x8000){
+        ret |= 0xFFFF0000;
+    }
+    // return the value
+    return ret;
+}
+/*
+uint64_t Memory::i64_load(int32_t loc, uint32_t offset, uint32_t align){
     uint64_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)linear_m->at(loc+1) << 8);
     return_v += (uint64_t)((uint8_t)linear_m->at(loc+2) << 16);
@@ -62,15 +135,26 @@ uint64_t Memory::i64_load(int loc){
     // return the value
     return return_v;
 }
-
-uint64_t Memory::i64_load8_u(int loc){
+*/
+uint64_t Memory::i64_load8_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)linear_m->at(loc);
-    // return the value
-    return return_v;
-}
+    uint8_t mask = 0xFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 8){
+            throw "Offset + align must less then or equal to load size";
+        }
+        mask &= 0xFF << (8 - (offset + align));
+    }
 
-uint64_t Memory::i64_load16_u(int loc){
+    // return the value
+    return return_v & mask;
+}
+/*
+uint64_t Memory::i64_load16_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)linear_m->at(loc+1) << 8);
@@ -78,7 +162,7 @@ uint64_t Memory::i64_load16_u(int loc){
     return return_v;
 }
 
-uint64_t Memory::i64_load32_u(int loc){
+uint64_t Memory::i64_load32_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
     uint64_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint64_t)((uint8_t)linear_m->at(loc+1) << 8);
@@ -109,26 +193,34 @@ int Memory::i32_store(uint32_t value){
     current_loc += 4;
     return 0;
 }
-
-int Memory::i32_store8(uint8_t value){
-    try{
-        if(current_memory() + 1 >= (page_counter*64*1024)){
-            // Memory shortage
-            throw -1;
-        }
-    }catch(const uint8_t flag){
-        // Notify the user, need to grow memory
-        if(flag == -1){
-            cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << endl;
-        }
-        return -1;
+*/
+void Memory::i32_store8(uint8_t value, int32_t loc, uint32_t offset, uint32_t align){
+    if(loc > (page_counter*64*1024)){
+        // Memory shortage
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
     }
-    // if memory storage is enough, then we store
-    linear_m->at(current_memory()) = value & 255; 
-    current_loc++;
-    return 0;
-}
 
+    uint8_t mask = 0xFF;
+    if(offset > 0){
+        mask >>= offset;
+    }
+    if(align > 0){
+        if((offset + align) > 8){
+            throw "Offset + align must less then or equal to store size";
+        }
+        mask &= 0xFF << (8 - (offset + align));
+    }
+
+    // Set 0
+    linear_m->at(loc) &= value | (~mask);
+    // Set 1
+    linear_m->at(loc) |= value & mask;
+
+    if((loc + 1) > accessed_loc){
+        accessed_loc = loc + 1;
+    }
+}
+/*
 int Memory::i32_store16(uint16_t value){
     try{
         if(current_memory() + 2 >= (page_counter*64*1024)){
@@ -173,9 +265,9 @@ int Memory::i64_store(uint64_t value){
     current_loc += 8;
     return 0;
 }
-
+*/
 int Memory::section_init(){
-    if(current_memory() < 8){
+    if(accessed_loc < 8){
         // has no memory
         return -1;
     }
@@ -187,7 +279,7 @@ int Memory::section_init(){
             section_size[i] = 0;
         }
         // start Parsing (except the previous 8 elements)
-        for(int i=8;i<current_memory();){
+        for(int i = 8; i < accessed_loc;){
             // parsing start!
             if(i32_load8_u(i) > 11 || i32_load8_u(i) <= 0){
                 // error occur!

@@ -21,9 +21,9 @@ void Loader::load_file(const char *filename, Memory &memory){
     // one byte read
     char byte;
     // reading 
-    for(int index = 0; index < filesize; index++){
+    for(int32_t index = 0; index < filesize; ++index){
         infile.read(&byte,1);
-        memory.i32_store8(byte);
+        memory.i32_store8(byte, index);
     }
     // Initialize Memory
     memory.section_init();

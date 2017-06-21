@@ -12,7 +12,7 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
     break;
   case 0x1B:
     Instruction::para_select(opStack);
-    printf("%d\n", opStack.pop().data.i32);
+    printf("i32_const: %d\n", opStack.pop().data.i32);
     halted = true;
     break;
   case 0x41:

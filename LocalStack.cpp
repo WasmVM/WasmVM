@@ -31,33 +31,27 @@ Value LocalStack::tee_local(uint32_t index, Value val){
   return val;
 }
 
-void LocalStack::append_Values(){
+void LocalStack::append(uint64_t pc){
   _localsValues.push(vector<Value>());
+  _localIndices.push(LocalIndices(pc));
 }
 
-void LocalStack::shrink_Values(){
+void LocalStack::shrink(){
   _localsValues.pop();
-}
-
-void LocalStack::append_Indices(){
-  _localIndices.push(stack<LocalIndex>());
-}
-
-void LocalStack::shrink_Indices(){
   _localIndices.pop();
 }
 
 void LocalStack::push_index(LocalIndex index){
-  _localIndices.top().push(index);
+  _localIndices.top().indices.push(index);
 }
 
 LocalIndex LocalStack::pop_index(){
-  _localsValues.top().resize(_localIndices.top().top().index);
-  LocalIndex ret = _localIndices.top().top();
-  _localIndices.top().pop();
+  _localsValues.top().resize(_localIndices.top().indices.top().index);
+  LocalIndex ret = _localIndices.top().indices.top();
+  _localIndices.top().indices.pop();
   return ret;
 }
 
 uint64_t &LocalStack::get_PC(){
-  return _localIndices.top().top().pc;
+  return _localIndices.top().pc;
 }

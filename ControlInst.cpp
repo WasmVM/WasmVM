@@ -24,11 +24,8 @@ void Instruction::ctrl_call(uint32_t entry,
   Memory &memory){
   // Set OperandStack
   stack.append_Stack();
-  // Set LocalStack
-  locals.append_Values();
-  locals.append_Indices();
-  // Set PC
-  locals.push_index(LocalIndex(memory.code_elements[entry].func_mem_loc));
+  // Set LocalStack & PC
+  locals.append(memory.code_elements[entry].func_mem_loc);
   // Get PC
   uint64_t &pc = locals.get_PC();
   // Set Params
@@ -63,5 +60,5 @@ void Instruction::ctrl_call(uint32_t entry,
   ++pc;
 }
 void Instruction::ctrl_end(){
-
+  
 }
