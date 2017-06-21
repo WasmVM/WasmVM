@@ -1,10 +1,10 @@
 #include "SysCall.h"
 
-void SystemCall::handle(OperandStack &stack, Memory &memory){
-  Value code = stack.pop();
+SystemCall::SystemCall(OperandStack &opStack, LocalStack &locals, Memory &memory){
+  Value code = opStack._stacks.top().top();
   switch (code.data.i32){
   case 0:
-    printOperand(stack);
+    printOperand(opStack);
     break;
   default:
     printf("System Halted: Undefined system call (%d)\n", code.data.i32);
@@ -12,6 +12,6 @@ void SystemCall::handle(OperandStack &stack, Memory &memory){
   }
 }
 
-void SystemCall::printOperand(OperandStack &stack){
-  
+void SystemCall::printOperand(OperandStack &opStack){
+  printf("blah\n");
 }

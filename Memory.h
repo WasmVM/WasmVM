@@ -13,6 +13,9 @@ using namespace std;
 
 class Memory{
 public:
+
+    friend class SystemCall;
+
     Memory(int init_page_size = 1); 
     Memory(Memory *memory);
     // memory operator

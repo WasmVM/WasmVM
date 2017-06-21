@@ -7,6 +7,9 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   uint64_t &pc = locals.get_PC();
   uint32_t opCode = memory.i32_load8_u(pc++);
   switch (opCode){
+  case 0x00:
+    Instruction::ctrl_unreachable(opStack, locals, memory);
+    break;
   case 0x0B:
     Instruction::ctrl_end(opStack, locals, halted);
     break;

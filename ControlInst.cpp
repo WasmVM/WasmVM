@@ -2,7 +2,8 @@
 
 void Instruction::ctrl_nop (){
 }
-void Instruction::ctrl_unreachable(){
+void Instruction::ctrl_unreachable(OperandStack &opStack, LocalStack &locals, Memory &memory){
+  SystemCall sysCall(opStack, locals, memory);
 }
 void Instruction::ctrl_block(){
 }
