@@ -31,6 +31,12 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x6a:
     Instruction::i32_add(opStack);
     break;
+  case 0x6b:
+    Instruction::i32_sub(opStack);
+    break;
+  case 0x6c:
+    Instruction::i32_mul(opStack);
+    break;
   default:
     throw "Not implement yet";
     break;
