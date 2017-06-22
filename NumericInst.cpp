@@ -66,7 +66,7 @@ void Instruction::i32_lt_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = (val1.data.u32 < val2.data.u32) ? 1 : 0;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_gt_u (OperandStack &stack){
@@ -74,7 +74,7 @@ void Instruction::i32_gt_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = (val1.data.u32 > val2.data.u32) ? 1 : 0;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_le_u (OperandStack &stack){
@@ -82,7 +82,7 @@ void Instruction::i32_le_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = (val1.data.u32 <= val2.data.u32) ? 1 : 0;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_ge_u (OperandStack &stack){
@@ -90,7 +90,7 @@ void Instruction::i32_ge_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = (val1.data.u32 >= val2.data.u32) ? 1 : 0;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_clz (OperandStack &stack){
@@ -164,7 +164,7 @@ void Instruction::i32_div_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = val1.data.u32 / val2.data.u32;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_rem_u (OperandStack &stack){
@@ -172,7 +172,7 @@ void Instruction::i32_rem_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = val1.data.u32 % val2.data.u32;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_div_s (OperandStack &stack){
@@ -236,7 +236,7 @@ void Instruction::i32_shr_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u32 = val1.data.u32 >> val2.data.u32;
-  val.type = u32;
+  val.type = i32;
   stack.push(val);
 }
 void Instruction::i32_rotl (OperandStack &stack){
@@ -339,7 +339,7 @@ void Instruction::i64_lt_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = (val1.data.u64 < val2.data.u64) ? 1 : 0;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_gt_u (OperandStack &stack){
@@ -347,7 +347,7 @@ void Instruction::i64_gt_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = (val1.data.u64 > val2.data.u64) ? 1 : 0;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_le_u (OperandStack &stack){
@@ -355,7 +355,7 @@ void Instruction::i64_le_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = (val1.data.u64 <= val2.data.u64) ? 1 : 0;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_ge_u (OperandStack &stack){
@@ -363,7 +363,7 @@ void Instruction::i64_ge_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = (val1.data.u64 >= val2.data.u64) ? 1 : 0;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_clz (OperandStack &stack){
@@ -440,7 +440,7 @@ void Instruction::i64_div_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = val1.data.u64 / val2.data.u64;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_rem_u (OperandStack &stack){
@@ -448,7 +448,7 @@ void Instruction::i64_rem_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = val1.data.u64 % val2.data.u64;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_div_s (OperandStack &stack){
@@ -512,7 +512,7 @@ void Instruction::i64_shr_u (OperandStack &stack){
   Value val1 = stack.pop();
   Value val;
   val.data.u64 = val1.data.u64 >> val2.data.u64;
-  val.type = u64;
+  val.type = i64;
   stack.push(val);
 }
 void Instruction::i64_rotl (OperandStack &stack){
