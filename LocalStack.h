@@ -8,15 +8,15 @@
 
 using namespace std;
 
-enum IndexType{i_function, i_if, i_block, i_else};
+enum IndexType{i_function, i_if, i_block, i_else, i_loop};
 
 class LocalIndex{
 public:
-  LocalIndex(IndexType type, uint32_t index, uint64_t extra = 0):type(type), index(index), extra(extra){
+  LocalIndex(IndexType type, uint32_t index, void *extra = nullptr):type(type), index(index), extra(extra){
   }
   IndexType type;
   uint32_t index;
-  uint64_t extra;
+  void *extra;
 };
 
 class LocalIndices{
@@ -39,14 +39,15 @@ public:
 
   void append(uint64_t pc);
   bool shrink();
-  void push_index(LocalIndex index);
+  void push_index(IndexType type, void *extra = nullptr);
   LocalIndex pop_index();
   uint64_t &get_PC();
+  void set_PC(uint64_t pc);
 
 #ifndef TEST
 private:
 #endif
-  stack<vector<Value>> _localsValues;
+  stack<vector<Value>> _localValues;
   stack<LocalIndices> _localIndices;
 };
 

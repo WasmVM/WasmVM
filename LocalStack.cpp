@@ -5,26 +5,26 @@ LocalStack::LocalStack(){
 }
 
 Value LocalStack::get_local(uint32_t index){
-  return _localsValues.top().at(index);
+  return _localValues.top().at(index);
 }
 
 void LocalStack::set_local(uint32_t index, Value val){
-  if(index < _localsValues.top().size()){
-    _localsValues.top().at(index) = val;
+  if(index < _localValues.top().size()){
+    _localValues.top().at(index) = val;
   }else{
     // TODO: Exception Handling
   }
 }
 
 void LocalStack::push_local(Value val){
-  _localsValues.top().push_back(val);
+  _localValues.top().push_back(val);
 }
 
 Value LocalStack::tee_local(uint32_t index, Value val){
-  if(index < _localsValues.top().size()){
-    _localsValues.top().at(index) = val;
-  }else if(index == _localsValues.top().size()){
-    _localsValues.top().push_back(val);
+  if(index < _localValues.top().size()){
+    _localValues.top().at(index) = val;
+  }else if(index == _localValues.top().size()){
+    _localValues.top().push_back(val);
   }else{
     // TODO: Exception Handling
   }
@@ -32,12 +32,12 @@ Value LocalStack::tee_local(uint32_t index, Value val){
 }
 
 void LocalStack::append(uint64_t pc){
-  _localsValues.push(vector<Value>());
+  _localValues.push(vector<Value>());
   _localIndices.push(LocalIndices(pc));
 }
 
 bool LocalStack::shrink(){
-  _localsValues.pop();
+  _localValues.pop();
   _localIndices.pop();
   if(_localIndices.size() == 0){
     return true;
@@ -46,12 +46,12 @@ bool LocalStack::shrink(){
   }
 }
 
-void LocalStack::push_index(LocalIndex index){
-  _localIndices.top().indices.push(index);
+void LocalStack::push_index(IndexType type, void *extra){
+  _localIndices.top().indices.push(LocalIndex(type, _localValues.top().size(), extra));
 }
 
 LocalIndex LocalStack::pop_index(){
-  _localsValues.top().resize(_localIndices.top().indices.top().index);
+  _localValues.top().resize(_localIndices.top().indices.top().index);
   LocalIndex ret = _localIndices.top().indices.top();
   _localIndices.top().indices.pop();
   return ret;
@@ -59,4 +59,8 @@ LocalIndex LocalStack::pop_index(){
 
 uint64_t &LocalStack::get_PC(){
   return _localIndices.top().pc;
+}
+
+void LocalStack::set_PC(uint64_t pc){
+  _localIndices.top().pc = pc;
 }

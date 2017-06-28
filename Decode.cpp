@@ -11,6 +11,9 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x01:
     Instruction::ctrl_nop();
     break;
+  case 0x03:
+    Instruction::ctrl_loop(locals, memory.i32_load8_u(pc++));
+    break;
   case 0x0B:
     Instruction::ctrl_end(opStack, locals, halted);
     break;
@@ -204,6 +207,7 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
     Instruction::i64_rotr(opStack);
     break;
   default:
+    printf("%X ",opCode);
     throw "Not implement yet";
     break;
   }

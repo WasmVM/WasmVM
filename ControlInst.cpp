@@ -5,9 +5,14 @@ void Instruction::ctrl_nop (){
 void Instruction::ctrl_unreachable(OperandStack &opStack, LocalStack &locals, Memory &memory){
   SystemCall sysCall(opStack, locals, memory);
 }
-void Instruction::ctrl_block(){
+void Instruction::ctrl_block(LocalStack &locals){
+  locals.push_index(i_block);
 }
-void Instruction::ctrl_loop(){
+void Instruction::ctrl_loop(LocalStack &locals, uint32_t retType){
+  LoopExtra *extra = new LoopExtra;
+  extra->pc = locals.get_PC() - 2;
+  extra->retType = retType;
+  locals.push_index(i_loop, extra);
 }
 void Instruction::ctrl_if(){
 }
@@ -63,5 +68,10 @@ void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halt
   if(index.type == i_function){
     opStack.shrink();
     halted = locals.shrink();
+  }
+  if(index.type == i_loop){
+    LoopExtra *extra = (LoopExtra *)index.extra;
+    locals.set_PC(extra->pc);
+    delete extra;
   }
 }
