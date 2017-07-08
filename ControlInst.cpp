@@ -14,7 +14,25 @@ void Instruction::ctrl_loop(LocalStack &locals, uint32_t retType){
   extra->retType = retType;
   locals.push_index(i_loop, extra);
 }
-void Instruction::ctrl_if(){
+void Instruction::ctrl_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t retType){
+  // Get PC
+  uint64_t &pc = locals.get_PC();
+  // Extra
+  IfExtra *extra = new IfExtra;
+  extra->retType = retType;
+  locals.push_index(i_if);
+  // Get value
+  Value val = opStack.pop();
+  if(!val.data.i32){
+    bypass(memory, pc);
+    pc++;
+  }
+}
+void Instruction::ctrl_else(LocalStack &locals, Memory &memory){
+  // Get PC
+  uint64_t &pc = locals.get_PC();
+  pc++;
+  bypass(memory, pc);
 }
 void Instruction::ctrl_br(){
 }
@@ -73,5 +91,41 @@ void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halt
     LoopExtra *extra = (LoopExtra *)index.extra;
     locals.set_PC(extra->pc);
     delete extra;
+  }
+  if(index.type == i_if){
+    IfExtra *extra = (IfExtra *)index.extra;
+    delete extra;
+  }
+}
+
+void Instruction::bypass(Memory &memory, uint64_t &pc){
+  int endCount = 0;
+  while(1){
+    uint32_t opCode = memory.i32_load8_u(pc);
+    if(endCount){
+      if(opCode == 0x0B){ // end
+        endCount--;
+      }
+    }else{
+      if(opCode == 0x0B || opCode == 0x05){
+        break;
+      }
+    }
+    switch (opCode){
+    case 0x03: // loop
+    case 0x04: // if
+      endCount++;
+      memory.i32_load8_u(++pc);
+    break;
+    case 0x41: // i32.const
+      Common::get_leb128_32(memory, ++pc);
+    break;
+    case 0x42: // i64.const
+      Common::get_leb128_64(memory, ++pc);
+    break;
+    default:
+      break;
+    }
+    pc++;
   }
 }
