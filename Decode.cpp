@@ -4,6 +4,7 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   // Get opcode
   uint64_t &pc = locals.get_PC();
   uint32_t opCode = memory.i32_load8_u(pc++);
+  // Instructions
   switch (opCode){
   case 0x00:
     Instruction::ctrl_unreachable(opStack, locals, memory);
@@ -14,11 +15,17 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x03:
     Instruction::ctrl_loop(locals, memory.i32_load8_u(pc++));
     break;
+  case 0x04:
+    Instruction::ctrl_if(opStack, locals, memory, memory.i32_load8_u(pc++));
+  break;
+  case 0x05:
+    Instruction::ctrl_else(locals, memory);
+  break;
   case 0x0B:
     Instruction::ctrl_end(opStack, locals, halted);
     break;
   case 0x10:
-    Instruction::ctrl_call(get_uleb128_32(memory, pc), opStack, locals, memory);
+    Instruction::ctrl_call(Common::get_uleb128_32(memory, pc), opStack, locals, memory);
     break;
   case 0x1A:
     Instruction::para_drop(opStack);
@@ -27,10 +34,10 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
     Instruction::para_select(opStack);
     break;
   case 0x41:
-    Instruction::i32_const(opStack, get_leb128_32(memory, pc));
+    Instruction::i32_const(opStack, Common::get_leb128_32(memory, pc));
     break;
   case 0x42:
-    Instruction::i64_const(opStack, get_leb128_64(memory, pc));
+    Instruction::i64_const(opStack, Common::get_leb128_64(memory, pc));
     break;
   case 0x45:
     Instruction::i32_eqz(opStack);
@@ -207,122 +214,8 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
     Instruction::i64_rotr(opStack);
     break;
   default:
-    printf("%X ",opCode);
+    printf("0x%02X ",opCode);
     throw "Not implement yet";
     break;
   }
-}
-
-uint32_t Decode::get_uleb128_32(Memory &memory, uint64_t &pc){
-  uint32_t ret = 0;
-  for(int i = 0; i < 5; ++i){
-    int byte = memory.i32_load8_u(pc++);
-    ret |= (byte & 0x7F) << (7 * i);
-    // Check range
-    if(i == 4){
-      if(byte & 0x80){
-        throw "Too much bytes while decode uleb128_32.";
-      }
-      if(byte & 0xF0){
-        throw "Overflow occured while decode uleb128_32.";
-      }
-    }
-    // Finished
-    if((byte & 0x80) == 0){
-      break;
-    }
-  }
-  return ret;
-}
-
-int32_t Decode::get_leb128_32(Memory &memory, uint64_t &pc){
-  int32_t ret = 0;
-  for(int i = 0; i < 5; ++i){
-    int byte = memory.i32_load8_u(pc++);
-    ret |= (byte & 0x7F) << (7 * i);
-    // Check range
-    if(i == 4){
-      if(byte & 0x80){
-        throw "Too much bytes while decode leb128_32.";
-      }
-      if(byte & 0xF0){
-        throw "Overflow occured while decode leb128_32.";
-      }
-    }
-    // Finished
-    if((byte & 0x80) == 0){
-      if(byte & 0x40){
-        switch (i){
-          case 0:
-            ret |= 0xFFFFFF80;
-            break;
-          case 1:
-            ret |= 0xFFFFC000;
-            break;
-          case 2:
-            ret |= 0xFFE00000;
-            break;
-          case 3:
-            ret |= 0xF0000000;
-            break;
-          default:
-            break;
-        }
-      }
-      break;
-    }
-  }
-  return ret;
-}
-
-int64_t Decode::get_leb128_64(Memory &memory, uint64_t &pc){
-  uint64_t ret = 0;
-  for(int i = 0; i < 10; ++i){
-    int64_t byte = memory.i64_load8_u(pc++);
-    ret |= (byte & 0x7F) << (7 * i);
-    // Check range
-    if(i == 9){
-      if(byte & 0x80){
-        throw "Too much bytes while decode uleb128_64.";
-      }
-      if(byte & 0xFE){
-        throw "Overflow occured while decode uleb128_64.";
-      }
-    }
-    // Finished
-    if((byte & 0x80) == 0){
-      if(byte & 0x40){
-        switch (i){
-          case 0:
-            ret |= 0xFFFFFFFFFFFFFF80;
-            break;
-          case 1:
-            ret |= 0xFFFFFFFFFFFFC000;
-            break;
-          case 2:
-            ret |= 0xFFFFFFFFFFE00000;
-            break;
-          case 4:
-            ret |= 0xFFFFFFFFF0000000;
-            break;
-          case 5:
-            ret |= 0xFFFFFFF800000000;
-            break;
-          case 6:
-            ret |= 0xFFFFFC0000000000;
-            break;
-          case 7:
-            ret |= 0xFFFE000000000000;
-            break;
-          case 8:
-            ret |= 0xFF00000000000000;
-            break;
-          default:
-            break;
-        }
-      }
-      break;
-    }
-  }
-  return ret;
 }

@@ -8,7 +8,7 @@
 
 using namespace std;
 
-enum IndexType{i_function, i_if, i_block, i_else, i_loop};
+enum IndexType{i_function, i_if, i_block, i_loop};
 
 class LocalIndex{
 public:
