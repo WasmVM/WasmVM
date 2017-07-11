@@ -12,17 +12,26 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x01:
     Instruction::ctrl_nop();
     break;
+  case 0x02:
+    Instruction::ctrl_block(locals, memory.i32_load8_u(pc++));
+    break;
   case 0x03:
     Instruction::ctrl_loop(locals, memory.i32_load8_u(pc++));
     break;
   case 0x04:
     Instruction::ctrl_if(opStack, locals, memory, memory.i32_load8_u(pc++));
-  break;
+    break;
   case 0x05:
-    Instruction::ctrl_else(locals, memory);
-  break;
+    Instruction::ctrl_else(locals);
+    break;
   case 0x0B:
     Instruction::ctrl_end(opStack, locals, halted);
+    break;
+  case 0x0C:
+    Instruction::ctrl_br(locals, memory, Common::get_uleb128_32(memory, pc));
+    break;
+  case 0x0D:
+    Instruction::ctrl_br_if(opStack, locals, memory, Common::get_uleb128_32(memory, pc));
     break;
   case 0x10:
     Instruction::ctrl_call(Common::get_uleb128_32(memory, pc), opStack, locals, memory);

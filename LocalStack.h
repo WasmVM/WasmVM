@@ -42,7 +42,6 @@ public:
   void push_index(IndexType type, void *extra = nullptr);
   LocalIndex pop_index();
   uint64_t &get_PC();
-  void set_PC(uint64_t pc);
 
 #ifndef TEST
 private:

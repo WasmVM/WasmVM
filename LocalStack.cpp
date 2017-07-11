@@ -60,7 +60,3 @@ LocalIndex LocalStack::pop_index(){
 uint64_t &LocalStack::get_PC(){
   return _localIndices.top().pc;
 }
-
-void LocalStack::set_PC(uint64_t pc){
-  _localIndices.top().pc = pc;
-}

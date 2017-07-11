@@ -5,8 +5,10 @@ void Instruction::ctrl_nop (){
 void Instruction::ctrl_unreachable(OperandStack &opStack, LocalStack &locals, Memory &memory){
   SystemCall sysCall(opStack, locals, memory);
 }
-void Instruction::ctrl_block(LocalStack &locals){
-  locals.push_index(i_block);
+void Instruction::ctrl_block(LocalStack &locals, uint32_t retType){
+  BlockExtra *extra = new BlockExtra;
+  extra->retType = retType;
+  locals.push_index(i_block, extra);
 }
 void Instruction::ctrl_loop(LocalStack &locals, uint32_t retType){
   LoopExtra *extra = new LoopExtra;
@@ -19,24 +21,55 @@ void Instruction::ctrl_if(OperandStack &opStack, LocalStack &locals, Memory &mem
   uint64_t &pc = locals.get_PC();
   // Extra
   IfExtra *extra = new IfExtra;
+  extra->endPos = pc;
+  extra->elsePos = 0;
   extra->retType = retType;
-  locals.push_index(i_if);
+  if(bypass(memory, extra->endPos) == 0x05){
+    extra->elsePos = extra->endPos;
+    bypass(memory, ++extra->endPos);
+  }
+  locals.push_index(i_if, extra);
   // Get value
   Value val = opStack.pop();
   if(!val.data.i32){
-    bypass(memory, pc);
-    pc++;
+    pc = extra->elsePos + 1;
   }
 }
-void Instruction::ctrl_else(LocalStack &locals, Memory &memory){
-  // Get PC
-  uint64_t &pc = locals.get_PC();
-  pc++;
-  bypass(memory, pc);
+void Instruction::ctrl_else(LocalStack &locals){
+  LocalIndex index = locals.pop_index();
+  IfExtra *extra = (IfExtra *)index.extra;
+  locals.get_PC() = extra->endPos + 1;
+  delete extra;
 }
-void Instruction::ctrl_br(){
+void Instruction::ctrl_br(LocalStack &locals, Memory &memory, uint32_t label){
+  while(label--){
+    LocalIndex index = locals.pop_index();
+    if(index.type == i_function){
+      //TODO: exception
+      break;
+    }
+    if(index.type == i_block){
+      BlockExtra *extra = (BlockExtra *)index.extra;
+      delete extra;
+      bypass(memory, locals.get_PC());
+      break;
+    }
+    if(index.type == i_loop){
+      LoopExtra *extra = (LoopExtra *)index.extra;
+      delete extra;
+      bypass(memory, locals.get_PC());
+    }
+    if(index.type == i_if){
+      IfExtra *extra = (IfExtra *)index.extra;
+      locals.get_PC() = extra->endPos;
+      delete extra;
+    }
+  }
 }
-void Instruction::ctrl_br_if(){
+void Instruction::ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label){
+  if(opStack.pop().data.i32){
+    ctrl_br(locals, memory, label);
+  }
 }
 void Instruction::ctrl_return(){
 }
@@ -87,9 +120,13 @@ void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halt
     opStack.shrink();
     halted = locals.shrink();
   }
+  if(index.type == i_block){
+    BlockExtra *extra = (BlockExtra *)index.extra;
+    delete extra;
+  }
   if(index.type == i_loop){
     LoopExtra *extra = (LoopExtra *)index.extra;
-    locals.set_PC(extra->pc);
+    locals.get_PC() = extra->pc;
     delete extra;
   }
   if(index.type == i_if){
@@ -98,7 +135,7 @@ void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halt
   }
 }
 
-void Instruction::bypass(Memory &memory, uint64_t &pc){
+uint32_t Instruction::bypass(Memory &memory, uint64_t &pc){
   int endCount = 0;
   while(1){
     uint32_t opCode = memory.i32_load8_u(pc);
@@ -108,7 +145,7 @@ void Instruction::bypass(Memory &memory, uint64_t &pc){
       }
     }else{
       if(opCode == 0x0B || opCode == 0x05){
-        break;
+        return opCode;
       }
     }
     switch (opCode){
