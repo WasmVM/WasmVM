@@ -38,8 +38,9 @@ namespace Instruction{
   void ctrl_loop(OperandStack &opStack, LocalStack &locals, uint32_t retType);
   void ctrl_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t retType);
   void ctrl_else(LocalStack &locals);
-  void ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label);
-  void ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label);
+  void ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label, bool &halted);
+  void ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label, bool &halted);
+  void ctrl_br_table(OperandStack &opStack, LocalStack &locals, Memory &memory, bool &halted);
   void ctrl_return(OperandStack &opStack, LocalStack &locals, bool &halted);
   void ctrl_call(uint32_t entry, OperandStack &opStack, LocalStack &locals, Memory &memory);
   void ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted);

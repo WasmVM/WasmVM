@@ -44,7 +44,7 @@ void Instruction::ctrl_else(LocalStack &locals){
   IfExtra *extra = (IfExtra *)index.extra;
   locals.get_PC() = extra->endPos;
 }
-void Instruction::ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label){
+void Instruction::ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label, bool &halted){
   while(label--){
     LocalIndex index = locals.peek_index();
     if(index.type == i_function){
@@ -53,6 +53,7 @@ void Instruction::ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &mem
     }
     if(index.type == i_block){
       bypass(memory, locals.get_PC());
+      locals.get_PC() += 1;
     }
     if(index.type == i_loop){
       bypass(memory, locals.get_PC());
@@ -61,14 +62,31 @@ void Instruction::ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &mem
     }
     if(index.type == i_if){
       IfExtra *extra = (IfExtra *)index.extra;
-      locals.get_PC() = extra->endPos;
-      delete extra;
+      locals.get_PC() = extra->endPos + 1;
     }
+    ctrl_end(opStack, locals, halted);
   }
 }
-void Instruction::ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label){
+void Instruction::ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label, bool &halted){
   if(opStack.popVal().data.i32){
-    ctrl_br(opStack, locals, memory, label);
+    ctrl_br(opStack, locals, memory, label, halted);
+  }
+}
+void Instruction::ctrl_br_table(OperandStack &opStack, LocalStack &locals, Memory &memory, bool &halted){
+  uint64_t &pc = locals.get_PC();
+  // Get target count
+  uint32_t targetCount = Common::get_uleb128_32(memory, pc);
+  vector<uint32_t> targets;
+  for(uint32_t i = 0; i < targetCount; ++i){
+    targets.push_back(Common::get_uleb128_32(memory, pc));
+  }
+  // Default target
+  targets.push_back(Common::get_uleb128_32(memory, pc));
+  Value val = opStack.popVal();
+  if(val.data.i32 < 0 || val.data.i32 >= targetCount){
+    ctrl_br(opStack, locals, memory, targets.at(targets.size() - 1), halted);
+  }else{
+    ctrl_br(opStack, locals, memory, targets.at(val.data.i32), halted);
   }
 }
 void Instruction::ctrl_return(OperandStack &opStack, LocalStack &locals, bool &halted){
@@ -291,6 +309,7 @@ uint32_t Instruction::bypass(Memory &memory, uint64_t &pc){
       }
     }
     switch (opCode){
+    case 0x02: // block
     case 0x03: // loop
     case 0x04: // if
       endCount++;
