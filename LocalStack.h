@@ -22,7 +22,6 @@ public:
 class LocalIndices{
 public:
   LocalIndices(uint64_t pc = 0):pc(pc){
-    indices.push(LocalIndex(i_function, 0));
   }
   uint64_t pc;
   stack<LocalIndex> indices;
@@ -41,9 +40,10 @@ public:
   bool shrink();
   void push_index(IndexType type, void *extra = nullptr);
   LocalIndex pop_index();
+  LocalIndex peek_index();
   uint64_t &get_PC();
 
-#ifndef TEST
+#ifndef DEBUG
 private:
 #endif
   stack<vector<Value>> _localValues;

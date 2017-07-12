@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <stack>
+#include <vector>
 
 #include "commonTypes.h"
 #include "OperandStack.h"
@@ -13,6 +14,10 @@
 using namespace std;
 
 namespace Instruction{
+  class FuncExtra{
+  public:
+    vector<uint32_t> retTypes;
+  };
   class BlockExtra{
   public:
     uint32_t retType;
@@ -29,13 +34,13 @@ namespace Instruction{
   };
   void ctrl_nop();
   void ctrl_unreachable(OperandStack &opStack, LocalStack &locals, Memory &memory);
-  void ctrl_block(LocalStack &locals, uint32_t retType);
-  void ctrl_loop(LocalStack &locals, uint32_t retType);
+  void ctrl_block(OperandStack &opStack, LocalStack &locals, uint32_t retType);
+  void ctrl_loop(OperandStack &opStack, LocalStack &locals, uint32_t retType);
   void ctrl_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t retType);
   void ctrl_else(LocalStack &locals);
-  void ctrl_br(LocalStack &locals, Memory &memory, uint32_t label);
+  void ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label);
   void ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label);
-  void ctrl_return();
+  void ctrl_return(OperandStack &opStack, LocalStack &locals, bool &halted);
   void ctrl_call(uint32_t entry, OperandStack &opStack, LocalStack &locals, Memory &memory);
   void ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted);
 

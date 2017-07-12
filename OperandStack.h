@@ -13,8 +13,8 @@ public:
   friend class SystemCall;
 
   OperandStack();
-  void push(const Value &val);
-  Value pop();
+  void pushVal(const Value &val);
+  Value popVal();
   size_t size();
   void append();
   void shrink();

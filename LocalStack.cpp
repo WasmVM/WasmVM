@@ -57,6 +57,10 @@ LocalIndex LocalStack::pop_index(){
   return ret;
 }
 
+LocalIndex LocalStack::peek_index(){
+  return _localIndices.top().indices.top();
+}
+
 uint64_t &LocalStack::get_PC(){
   return _localIndices.top().pc;
 }

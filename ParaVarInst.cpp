@@ -1,9 +1,12 @@
 #include "ParaVarInst.h"
 
+#ifdef DEBUG
 #include <cstdio>
+#endif
 
 void Instruction::para_drop(OperandStack &opStack){
-  Value val = opStack.pop();
+  Value val = opStack.popVal();
+  #ifdef DEBUG
   ValueType type = val.type;
   switch (type){
     case i32:
@@ -15,16 +18,17 @@ void Instruction::para_drop(OperandStack &opStack){
     default:
       break;
   }
+  #endif
 }
 void Instruction::para_select(OperandStack &opStack){
   Value val1, val2, val3;
-  val3 = opStack.pop();
-  val2 = opStack.pop();
-  val1 = opStack.pop();
+  val3 = opStack.popVal();
+  val2 = opStack.popVal();
+  val1 = opStack.popVal();
   if(val3.data.i32){
-    opStack.push(val1);
+    opStack.pushVal(val1);
   }else{
-    opStack.push(val2);
+    opStack.pushVal(val2);
   }
 }
 void Instruction::get_local(){

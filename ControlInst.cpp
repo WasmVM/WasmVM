@@ -5,12 +5,14 @@ void Instruction::ctrl_nop (){
 void Instruction::ctrl_unreachable(OperandStack &opStack, LocalStack &locals, Memory &memory){
   SystemCall sysCall(opStack, locals, memory);
 }
-void Instruction::ctrl_block(LocalStack &locals, uint32_t retType){
+void Instruction::ctrl_block(OperandStack &opStack, LocalStack &locals, uint32_t retType){
+  opStack.append();
   BlockExtra *extra = new BlockExtra;
   extra->retType = retType;
   locals.push_index(i_block, extra);
 }
-void Instruction::ctrl_loop(LocalStack &locals, uint32_t retType){
+void Instruction::ctrl_loop(OperandStack &opStack, LocalStack &locals, uint32_t retType){
+  opStack.append();
   LoopExtra *extra = new LoopExtra;
   extra->pc = locals.get_PC() - 2;
   extra->retType = retType;
@@ -30,34 +32,32 @@ void Instruction::ctrl_if(OperandStack &opStack, LocalStack &locals, Memory &mem
   }
   locals.push_index(i_if, extra);
   // Get value
-  Value val = opStack.pop();
+  Value val = opStack.popVal();
   if(!val.data.i32){
     pc = extra->elsePos + 1;
   }
+  // Append stack
+  opStack.append();
 }
 void Instruction::ctrl_else(LocalStack &locals){
-  LocalIndex index = locals.pop_index();
+  LocalIndex index = locals.peek_index();
   IfExtra *extra = (IfExtra *)index.extra;
-  locals.get_PC() = extra->endPos + 1;
-  delete extra;
+  locals.get_PC() = extra->endPos;
 }
-void Instruction::ctrl_br(LocalStack &locals, Memory &memory, uint32_t label){
+void Instruction::ctrl_br(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label){
   while(label--){
-    LocalIndex index = locals.pop_index();
+    LocalIndex index = locals.peek_index();
     if(index.type == i_function){
-      //TODO: exception
+      throw "Can't branch from function";
       break;
     }
     if(index.type == i_block){
-      BlockExtra *extra = (BlockExtra *)index.extra;
-      delete extra;
       bypass(memory, locals.get_PC());
-      break;
     }
     if(index.type == i_loop){
-      LoopExtra *extra = (LoopExtra *)index.extra;
-      delete extra;
       bypass(memory, locals.get_PC());
+      LoopExtra *extra = (LoopExtra *)index.extra;
+      extra->pc = locals.get_PC() + 1;
     }
     if(index.type == i_if){
       IfExtra *extra = (IfExtra *)index.extra;
@@ -67,11 +67,12 @@ void Instruction::ctrl_br(LocalStack &locals, Memory &memory, uint32_t label){
   }
 }
 void Instruction::ctrl_br_if(OperandStack &opStack, LocalStack &locals, Memory &memory, uint32_t label){
-  if(opStack.pop().data.i32){
-    ctrl_br(locals, memory, label);
+  if(opStack.popVal().data.i32){
+    ctrl_br(opStack, locals, memory, label);
   }
 }
-void Instruction::ctrl_return(){
+void Instruction::ctrl_return(OperandStack &opStack, LocalStack &locals, bool &halted){
+  ctrl_end(opStack, locals, halted);
 }
 void Instruction::ctrl_call(uint32_t entry,
   OperandStack &opStack,
@@ -81,6 +82,13 @@ void Instruction::ctrl_call(uint32_t entry,
   opStack.append();
   // Set LocalStack & PC
   locals.append(memory.code_elements[entry].func_mem_loc);
+  // Get result info & Push LocalIndex
+  FuncExtra *extra = new FuncExtra;
+  int sigIndex = memory.funcs_elements[entry].func_signature_index;
+  for(int i = 0; i < memory.type_elements[sigIndex].num_result; ++i){
+    extra->retTypes.push_back(memory.type_elements[sigIndex].result_type.at(i));
+  }
+  locals.push_index(i_function, extra);
   // Get PC
   uint64_t &pc = locals.get_PC();
   // Set Params
@@ -88,8 +96,8 @@ void Instruction::ctrl_call(uint32_t entry,
   // Set Locals
   int localDeclCnt = memory.i32_load8_u(++pc);
   for(int i = 0; i < localDeclCnt; ++i){
-    int localTypeCnt = memory.i32_load8_u(++pc);
-    int localType = memory.i32_load8_u(++pc);
+    uint32_t localTypeCnt = memory.i32_load8_u(++pc);
+    uint32_t localType = memory.i32_load8_u(++pc);
     Value newVal;
     newVal.data.i64 = 0;
     switch (localType){
@@ -108,7 +116,7 @@ void Instruction::ctrl_call(uint32_t entry,
     default:
       continue;
     }
-    for(int j = 0; j < localTypeCnt; ++j){
+    for(uint32_t j = 0; j < localTypeCnt; ++j){
       locals.push_local(newVal);
     }
   }
@@ -117,20 +125,154 @@ void Instruction::ctrl_call(uint32_t entry,
 void Instruction::ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted){
   LocalIndex index = locals.pop_index();
   if(index.type == i_function){
+    vector<Value> retVals;
+    FuncExtra *extra = (FuncExtra *)index.extra;
+    for(uint32_t i = 0; i < extra->retTypes.size(); ++i){
+      Value val = opStack.popVal();
+      switch (extra->retTypes.at(i)){
+      case 0x7f:
+        if(val.type == i32){
+          retVals.push_back(val);
+        }else{
+          throw "Return type not match i32";
+        }
+        break;
+      case 0x7e:
+        if(val.type == i64){
+          retVals.push_back(val);
+        }else{
+          throw "Return type not match i64";
+        }
+        break;
+      case 0x7d:
+        if(val.type == f32){
+          retVals.push_back(val);
+        }else{
+          throw "Return type not match f32";
+        }
+        break;
+      case 0x7c:
+        if(val.type == f64){
+          retVals.push_back(val);
+        }else{
+          throw "Return type not match f64";
+        }
+        break;
+      default:
+        throw "No such types";
+      }
+    }
+    delete extra;
     opStack.shrink();
+    for(uint32_t i = 0; i < retVals.size(); ++i){
+      opStack.pushVal(retVals.at(i));
+    }
     halted = locals.shrink();
   }
   if(index.type == i_block){
     BlockExtra *extra = (BlockExtra *)index.extra;
+    if(extra->retType == 0x40){
+      opStack.shrink();
+    }else{
+      Value retVal = opStack.popVal();
+      switch (extra->retType){
+      case 0x7f:
+        if(retVal.type != i32){
+          throw "Return type not match i32";
+        }
+        break;
+      case 0x7e:
+        if(retVal.type != i64){
+          throw "Return type not match i64";
+        }
+        break;
+      case 0x7d:
+        if(retVal.type != f32){
+          throw "Return type not match f32";
+        }
+        break;
+      case 0x7c:
+        if(retVal.type != f64){
+          throw "Return type not match f64";
+        }
+        break;
+      default:
+        throw "No such types";
+      }
+      opStack.shrink();
+      opStack.pushVal(retVal);
+    }
     delete extra;
   }
   if(index.type == i_loop){
     LoopExtra *extra = (LoopExtra *)index.extra;
+    if(extra->retType == 0x40){
+      opStack.shrink();
+    }else{
+      Value retVal = opStack.popVal();
+      switch (extra->retType){
+      case 0x7f:
+        if(retVal.type != i32){
+          throw "Return type not match i32";
+        }
+        break;
+      case 0x7e:
+        if(retVal.type != i64){
+          throw "Return type not match i64";
+        }
+        break;
+      case 0x7d:
+        if(retVal.type != f32){
+          throw "Return type not match f32";
+        }
+        break;
+      case 0x7c:
+        if(retVal.type != f64){
+          throw "Return type not match f64";
+        }
+        break;
+      default:
+        throw "No such types";
+      }
+      opStack.shrink();
+      opStack.pushVal(retVal);
+    }
     locals.get_PC() = extra->pc;
     delete extra;
   }
   if(index.type == i_if){
     IfExtra *extra = (IfExtra *)index.extra;
+    if(extra->retType == 0x40){
+      opStack.shrink();
+    }else{
+      Value retVal = opStack.popVal();
+      switch (extra->retType){
+      case 0x7f:
+        if(retVal.type != i32){
+          throw "Return type not match i32";
+        }
+        break;
+      case 0x7e:
+        if(retVal.type != i64){
+          throw "Return type not match i64";
+        }
+        break;
+      case 0x7d:
+        if(retVal.type != f32){
+          throw "Return type not match f32";
+        }
+        break;
+      case 0x7c:
+        if(retVal.type != f64){
+          throw "Return type not match f64";
+        }
+        break;
+      default:
+        throw "No such types";
+      }
+      opStack.shrink();
+      opStack.pushVal(retVal);
+    }
     delete extra;
   }
 }

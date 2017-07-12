@@ -1,13 +1,11 @@
 (module
   (func $start
-    block
-    i32.const 20
-    drop
-    i32.const 1
-    br_if 1
-    i32.const 30
-    drop
+    block (result i32)
+    i32.const 2
+    i32.const 3
+    i32.add
     end
+    drop
   )
   (start $start)
 )

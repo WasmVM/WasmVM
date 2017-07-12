@@ -9,13 +9,13 @@ Core::Core(Memory &memory):
 }
 
 void Core::run(){
-    try{
+    //try{
         halted = false;
         Instruction::ctrl_call(memory.start_entry, opStack, locals, memory);
         while(!halted){
             Decode::decode(memory, opStack, locals, halted);
         }
-    }catch(char const *msg){
-        printf("%s\n", msg);
-    }
+    //}catch(char const *msg){
+        //printf("%s\n", msg);
+    //}
 }

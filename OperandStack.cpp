@@ -4,11 +4,14 @@ OperandStack::OperandStack(){
 
 }
 
-void OperandStack::push(const Value &val){
+void OperandStack::pushVal(const Value &val){
   _stacks.top().push(val);
 }
 
-Value OperandStack::pop(){
+Value OperandStack::popVal(){
+  if(_stacks.top().size() < 1){
+    throw "Stack empty";
+  }
   Value ret = _stacks.top().top();
   _stacks.top().pop();
   return ret;
