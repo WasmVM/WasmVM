@@ -25,6 +25,7 @@ int Memory::current_memory(){
 }
 
 uint32_t Memory::i32_load(int32_t loc, uint32_t offset, uint32_t align){
+    // FIXME: The alignment is wrong
     uint32_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+1) << 8);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+2) << 16);
@@ -47,6 +48,7 @@ uint32_t Memory::i32_load(int32_t loc, uint32_t offset, uint32_t align){
 
 uint32_t Memory::i32_load8_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
+    // FIXME: The alignment is wrong
     uint32_t return_v = (uint8_t)linear_m->at(loc);
     uint8_t mask = 0xFF;
     if(offset > 0){
@@ -65,6 +67,7 @@ uint32_t Memory::i32_load8_u(int32_t loc, uint32_t offset, uint32_t align){
 
 uint32_t Memory::i32_load16_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
+    // FIXME: The alignment is wrong
     uint32_t return_v = (uint8_t)linear_m->at(loc);
     uint16_t mask = 0xFFFF;
     if(offset > 0){
@@ -83,6 +86,7 @@ uint32_t Memory::i32_load16_u(int32_t loc, uint32_t offset, uint32_t align){
 
 int32_t Memory::i32_load8_s(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
+    // FIXME: The alignment is wrong
     uint32_t ret = (uint8_t)linear_m->at(loc);
     uint8_t mask = 0xFF;
     if(offset > 0){
@@ -103,6 +107,7 @@ int32_t Memory::i32_load8_s(int32_t loc, uint32_t offset, uint32_t align){
 
 int32_t Memory::i32_load16_s(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
+    // FIXME: The alignment is wrong
     uint32_t ret = (uint8_t)linear_m->at(loc);
     uint16_t mask = 0xFFFF;
     if(offset > 0){
@@ -138,6 +143,7 @@ uint64_t Memory::i64_load(int32_t loc, uint32_t offset, uint32_t align){
 */
 uint64_t Memory::i64_load8_u(int32_t loc, uint32_t offset, uint32_t align){
     // load 1 byte and set 0 to other
+    // FIXME: The alignment is wrong
     uint64_t return_v = (uint8_t)linear_m->at(loc);
     uint8_t mask = 0xFF;
     if(offset > 0){
@@ -197,6 +203,7 @@ int Memory::i32_store(uint32_t value){
 void Memory::i32_store8(uint8_t value, int32_t loc, uint32_t offset, uint32_t align){
     if(loc > (page_counter*64*1024)){
         // Memory shortage
+        // FIXME: The alignment is wrong
         throw "Address out of range... Using `grow_memory` to grow the size of memory.";
     }
 
@@ -266,6 +273,62 @@ int Memory::i64_store(uint64_t value){
     return 0;
 }
 */
+
+float Memory::f32_load (int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    union {
+        float f;
+        uint8_t b[4];
+    }u;
+    u.f = 0;
+    for(int i = 0; i < 4; ++i){
+        if(i < (1 << align)){
+            u.b[i] = linear_m->at(addlinear_m->at(loc) + i);
+        }else{
+            u.b[i] = 0;
+        }
+    }
+    return u.f;
+}
+double Memory::f64_load (int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    union {
+        double d;
+        uint8_t b[8];
+    }u;
+    u.d = 0;
+    for(int i = 0; i < 4; ++i){
+        if(i < (1 << align)){
+            u.b[i] = linear_m->at(addlinear_m->at(loc) + i);
+        }else{
+            u.b[i] = 0;
+        }
+    }
+    return u.d;
+}
+void Memory::f32_store (float value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    union {
+        float f;
+        uint8_t b[4];
+    }u;
+    u.f = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addlinear_m->at(loc)r + i) = u.b[i];
+    }
+}
+void Memory::f64_store (double value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    union {
+        double d;
+        uint8_t b[4];
+    }u;
+    u.d = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addlinear_m->at(loc)r + i) = u.b[i];
+    }
+}
+
 int Memory::section_init(){
     if(accessed_loc < 8){
         // has no memory
