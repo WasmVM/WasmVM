@@ -4,7 +4,7 @@ Memory::Memory(int init_page_size):
     page_counter(1), accessed_loc(0)
 {
     // memory 
-    linear_m = new vector<char>(init_page_size*64*1024);
+    linear_m = new vector<uint8_t>(init_page_size*64*1024);
 }
 
 Memory::Memory(Memory *memory){
@@ -283,7 +283,7 @@ float Memory::f32_load (int32_t loc, uint32_t offset, uint32_t align){
     u.f = 0;
     for(int i = 0; i < 4; ++i){
         if(i < (1 << align)){
-            u.b[i] = linear_m->at(addlinear_m->at(loc) + i);
+            u.b[i] = linear_m->at(addr + i);
         }else{
             u.b[i] = 0;
         }
@@ -299,7 +299,7 @@ double Memory::f64_load (int32_t loc, uint32_t offset, uint32_t align){
     u.d = 0;
     for(int i = 0; i < 4; ++i){
         if(i < (1 << align)){
-            u.b[i] = linear_m->at(addlinear_m->at(loc) + i);
+            u.b[i] = linear_m->at(addr + i);
         }else{
             u.b[i] = 0;
         }
@@ -314,7 +314,7 @@ void Memory::f32_store (float value, int32_t loc, uint32_t offset, uint32_t alig
     }u;
     u.f = value;
     for(int i = 0; i < (1 << align); ++i){
-        linear_m->at(addlinear_m->at(loc)r + i) = u.b[i];
+        linear_m->at(addr + i) = u.b[i];
     }
 }
 void Memory::f64_store (double value, int32_t loc, uint32_t offset, uint32_t align){
@@ -325,7 +325,7 @@ void Memory::f64_store (double value, int32_t loc, uint32_t offset, uint32_t ali
     }u;
     u.d = value;
     for(int i = 0; i < (1 << align); ++i){
-        linear_m->at(addlinear_m->at(loc)r + i) = u.b[i];
+        linear_m->at(addr + i) = u.b[i];
     }
 }
 

@@ -58,6 +58,8 @@ public:
     int global_mutability;
     int global_offset_type;
     int global_offset_init;
+    // Store fragment of value
+    vector<uint8_t> global_val;
 };
 
 // #7 define element structure in Export Section
