@@ -4,6 +4,7 @@
 #include "OperandStack.h"
 
 namespace Instruction{
+  // i32
   void i32_const (OperandStack &stack, uint32_t val);
   void i32_eqz (OperandStack &stack);
   void i32_eq (OperandStack &stack);
@@ -34,6 +35,7 @@ namespace Instruction{
   void i32_shr_u (OperandStack &stack);
   void i32_rotl (OperandStack &stack);
   void i32_rotr (OperandStack &stack);
+  // i64
   void i64_const (OperandStack &stack, uint64_t val);
   void i64_eqz (OperandStack &stack);
   void i64_eq (OperandStack &stack);
@@ -64,6 +66,51 @@ namespace Instruction{
   void i64_shr_u (OperandStack &stack);
   void i64_rotl (OperandStack &stack);
   void i64_rotr (OperandStack &stack);
+  // f32
+  void f32_const ();
+  void f32_eq ();
+  void f32_ne ();
+  void f32_lt ();
+  void f32_gt ();
+  void f32_le ();
+  void f32_ge ();
+  void f32_abs ();
+  void f32_neg ();
+  void f32_ceil ();
+  void f32_floor ();
+  void f32_trunc ();
+  void f32_nearest ();
+  void f32_sqrt ();
+  void f32_add ();
+  void f32_sub ();
+  void f32_mul ();
+  void f32_div ();
+  void f32_min ();
+  void f32_max ();
+  void f32_copysign ();
+  // f64
+  void f64_const ();
+  void f64_eq ();
+  void f64_ne ();
+  void f64_lt ();
+  void f64_gt ();
+  void f64_le ();
+  void f64_ge ();
+  void f64_abs ();
+  void f64_neg ();
+  void f64_ceil ();
+  void f64_floor ();
+  void f64_trunc ();
+  void f64_nearest ();
+  void f64_sqrt ();
+  void f64_add ();
+  void f64_sub ();
+  void f64_mul ();
+  void f64_div ();
+  void f64_min ();
+  void f64_max ();
+  void f64_copysign ();
+  // Conversion
   void i32_wrap_i64 (OperandStack &stack);
   void i64_extend_s_i32 (OperandStack &stack);
   void i64_extend_u_i32 (OperandStack &stack);

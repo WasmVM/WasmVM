@@ -273,6 +273,7 @@ void Instruction::i32_rotr (OperandStack &stack){
   val.type = i32;
   stack.pushVal(val);
 }
+
 /*** i64 ***/
 void Instruction::i64_const (OperandStack &stack, uint64_t val){
   Value value;
@@ -551,6 +552,96 @@ void Instruction::i64_rotr (OperandStack &stack){
   val.type = i64;
   stack.pushVal(val);
 }
+
+/*** f32 ***/
+void Instruction::f32_const (){
+}
+void Instruction::f32_eq (){
+}
+void Instruction::f32_ne (){
+}
+void Instruction::f32_lt (){
+}
+void Instruction::f32_gt (){
+}
+void Instruction::f32_le (){
+}
+void Instruction::f32_ge (){
+}
+void Instruction::f32_abs (){
+}
+void Instruction::f32_neg (){
+}
+void Instruction::f32_ceil (){
+}
+void Instruction::f32_floor (){
+}
+void Instruction::f32_trunc (){
+}
+void Instruction::f32_nearest (){
+}
+void Instruction::f32_sqrt (){
+}
+void Instruction::f32_add (){
+}
+void Instruction::f32_sub (){
+}
+void Instruction::f32_mul (){
+}
+void Instruction::f32_div (){
+}
+void Instruction::f32_min (){
+}
+void Instruction::f32_max (){
+}
+void Instruction::f32_copysign (){
+}
+
+/*** f64 ***/
+void Instruction::f64_const (){
+}
+void Instruction::f64_eq (){
+}
+void Instruction::f64_ne (){
+}
+void Instruction::f64_lt (){
+}
+void Instruction::f64_gt (){
+}
+void Instruction::f64_le (){
+}
+void Instruction::f64_ge (){
+}
+void Instruction::f64_abs (){
+}
+void Instruction::f64_neg (){
+}
+void Instruction::f64_ceil (){
+}
+void Instruction::f64_floor (){
+}
+void Instruction::f64_trunc (){
+}
+void Instruction::f64_nearest (){
+}
+void Instruction::f64_sqrt (){
+}
+void Instruction::f64_add (){
+}
+void Instruction::f64_sub (){
+}
+void Instruction::f64_mul (){
+}
+void Instruction::f64_div (){
+}
+void Instruction::f64_min (){
+}
+void Instruction::f64_max (){
+}
+void Instruction::f64_copysign (){
+}
+
+/*** Conversion ***/
 void Instruction::i32_wrap_i64 (OperandStack &stack){
   Value val = stack.popVal();
   Value ret;
