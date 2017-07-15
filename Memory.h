@@ -37,13 +37,13 @@ public:
     float f32_load (int32_t loc, uint32_t offset = 0, uint32_t align = 2);
     double f64_load (int32_t loc, uint32_t offset = 0, uint32_t align = 3);
     
-    //int i32_store   (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store value(4 bytes) into linear memory
+    void i32_store   (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 2); // store value(4 bytes) into linear memory
     void i32_store8   (uint8_t  value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store 1 byte
-    //int i32_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0); // store 2 bytes
-    //int i64_store   (uint64_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
-    //int i64_store8  (uint8_t  value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
-    //int i64_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
-    //int i64_store32 (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    void i32_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 1); // store 2 bytes
+    void i64_store   (uint64_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 4);
+    void i64_store8  (uint8_t  value, int32_t loc, uint32_t offset = 0, uint32_t align = 0);
+    void i64_store16 (uint16_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 1);
+    void i64_store32 (uint32_t value, int32_t loc, uint32_t offset = 0, uint32_t align = 2);
 
     void f32_store (float value, int32_t loc, uint32_t offset = 0, uint32_t align = 2);
     void f64_store (double value, int32_t loc, uint32_t offset = 0, uint32_t align = 3);

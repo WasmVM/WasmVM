@@ -26,7 +26,7 @@ int Memory::current_memory(){
 
 uint32_t Memory::i32_load(int32_t loc, uint32_t offset, uint32_t align){
     // FIXME: The alignment is wrong
-    uint32_t return_v = (uint8_t)linear_m->at(loc);
+    /*uint32_t return_v = (uint8_t)linear_m->at(loc);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+1) << 8);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+2) << 16);
     return_v += (uint32_t)((uint8_t)linear_m->at(loc+3) << 24);
@@ -43,7 +43,21 @@ uint32_t Memory::i32_load(int32_t loc, uint32_t offset, uint32_t align){
     }
 
     // return the value
-    return return_v & mask;
+    return return_v & mask;*/
+    uint32_t addr = loc + offset;
+    union {
+        uint32_t i;
+        uint8_t b[4];
+    }u;
+    u.i = 0;
+    for(int i = 0; i < 4; ++i){
+        if(i < (1 << align)){
+            u.b[i] = linear_m->at(addr + i);
+        }else{
+            u.b[i] = 0;
+        }
+    }
+    return u.i;
 }
 
 uint32_t Memory::i32_load8_u(int32_t loc, uint32_t offset, uint32_t align){
@@ -177,102 +191,139 @@ uint64_t Memory::i64_load32_u(int32_t loc, uint32_t offset, uint32_t align){
     // return the value
     return return_v;
 }
-
-int Memory::i32_store(uint32_t value){
-    try{
-        if(current_memory() + 4 >= (page_counter*64*1024)){
-            // Memory shortage
-            throw -1;
-        }
-    }catch(const uint8_t flag){
-        // Notify the user, need to grow memory
-        if(flag == -1){
-            cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << endl;
-        }
-        return -1;
-    }
-    // if memory storage is enough, then we store
-    linear_m->at(current_memory()) = (uint8_t)value & 255; 
-    linear_m->at(current_memory() + 1) = (uint8_t)(value>>8) & 255;
-    linear_m->at(current_memory() + 2) = (uint8_t)(value>>16) & 255;
-    linear_m->at(current_memory() + 3) = (uint8_t)(value>>24) & 255;
-    current_loc += 4;
-    return 0;
-}
 */
 void Memory::i32_store8(uint8_t value, int32_t loc, uint32_t offset, uint32_t align){
-    if(loc > (page_counter*64*1024)){
-        // Memory shortage
-        // FIXME: The alignment is wrong
+    uint32_t addr = loc + offset;
+    if((addr + 1) > (page_counter*64*1024)){
         throw "Address out of range... Using `grow_memory` to grow the size of memory.";
     }
-
-    uint8_t mask = 0xFF;
-    if(offset > 0){
-        mask >>= offset;
+    union {
+        uint32_t i;
+        uint8_t b[4];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
     }
-    if(align > 0){
-        if((offset + align) > 8){
-            throw "Offset + align must less then or equal to store size";
-        }
-        mask &= 0xFF << (8 - (offset + align));
-    }
-
-    // Set 0
-    linear_m->at(loc) &= value | (~mask);
-    // Set 1
-    linear_m->at(loc) |= value & mask;
-
+    // update accessed location
     if((loc + 1) > accessed_loc){
         accessed_loc = loc + 1;
     }
 }
-/*
-int Memory::i32_store16(uint16_t value){
-    try{
-        if(current_memory() + 2 >= (page_counter*64*1024)){
-            // Memory shortage
-            throw -1;
-        }
-    }catch(const uint8_t flag){
-        // Notify the user, need to grow memory
-        if(flag == -1){
-            cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << endl;
-        }
-        return -1;
+
+void Memory::i32_store16(uint16_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 2) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
     }
-    // if memory storage is enough, then we store
-    linear_m->at(current_memory()) = value & 255; 
-    linear_m->at(current_memory() + 1) = (value >> 8) & 255; 
-    current_loc += 2;
-    return 0;
+    union {
+        uint32_t i;
+        uint8_t b[4];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 2) > accessed_loc){
+        accessed_loc = loc + 2;
+    }
 }
 
-int Memory::i64_store(uint64_t value){
-    try{
-        if(current_memory() + 8 >= (page_counter*64*1024)){
-            // Memory shortage
-            throw -1;
-        }
-    }catch(const uint8_t flag){
-        // Notify the user, need to grow memory
-        if(flag == -1){
-            cout << "Linear Memory is starving... Using `grow_memory` to grow the size of memory." << endl;
-        }
-        return -1;
+void Memory::i32_store(uint32_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 4) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
     }
-    linear_m->at(current_memory()) = value & 255; 
-    linear_m->at(current_memory() + 1) = (value>>8) & 255;
-    linear_m->at(current_memory() + 2) = (value>>16) & 255;
-    linear_m->at(current_memory() + 3) = (value>>24) & 255;
-    linear_m->at(current_memory() + 4) = (value>>32) & 255;
-    linear_m->at(current_memory() + 5) = (value>>40) & 255;
-    linear_m->at(current_memory() + 6) = (value>>48) & 255;
-    linear_m->at(current_memory() + 7) = (value>>54) & 255;
-    current_loc += 8;
-    return 0;
+    union {
+        uint32_t i;
+        uint8_t b[4];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 4) > accessed_loc){
+        accessed_loc = loc + 4;
+    }
 }
-*/
+
+void Memory::i64_store(uint64_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 8) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
+    }
+    union {
+        uint64_t i;
+        uint8_t b[8];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 8) > accessed_loc){
+        accessed_loc = loc + 8;
+    }
+}
+
+void Memory::i64_store8(uint8_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 1) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
+    }
+    union {
+        uint64_t i;
+        uint8_t b[8];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 1) > accessed_loc){
+        accessed_loc = loc + 1;
+    }
+}
+
+void Memory::i64_store16(uint16_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 2) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
+    }
+    union {
+        uint64_t i;
+        uint8_t b[8];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 2) > accessed_loc){
+        accessed_loc = loc + 2;
+    }
+}
+
+void Memory::i64_store32(uint32_t value, int32_t loc, uint32_t offset, uint32_t align){
+    uint32_t addr = loc + offset;
+    if((addr + 4) > (page_counter*64*1024)){
+        throw "Address out of range... Using `grow_memory` to grow the size of memory.";
+    }
+    union {
+        uint64_t i;
+        uint8_t b[8];
+    }u;
+    u.i = value;
+    for(int i = 0; i < (1 << align); ++i){
+        linear_m->at(addr + i) = u.b[i];
+    }
+    // update accessed location
+    if((loc + 4) > accessed_loc){
+        accessed_loc = loc + 4;
+    }
+}
 
 float Memory::f32_load (int32_t loc, uint32_t offset, uint32_t align){
     uint32_t addr = loc + offset;
