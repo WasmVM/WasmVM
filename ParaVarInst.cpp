@@ -31,11 +31,20 @@ void Instruction::para_select(OperandStack &opStack){
     opStack.pushVal(val2);
   }
 }
-void Instruction::get_local(){
+void Instruction::get_local(OperandStack &opStack, LocalStack &locals, Memory memory){
+  uint32_t index = Common::get_uleb128_32(memory, locals.get_PC());
+  Value val = locals.get_local(index);
+  opStack.pushVal(val);
 }
-void Instruction::set_local(){
+void Instruction::set_local(OperandStack &opStack, LocalStack &locals, Memory memory){
+  uint32_t index = Common::get_uleb128_32(memory, locals.get_PC());
+  Value val = opStack.popVal();
+  locals.set_local(index, val);
 }
-void Instruction::tee_local(){
+void Instruction::tee_local(OperandStack &opStack, LocalStack &locals, Memory memory){
+  uint32_t index = Common::get_uleb128_32(memory, locals.get_PC());
+  Value val = opStack.popVal();
+  opStack.pushVal(locals.tee_local(index, val));
 }
 void Instruction::get_global(){
 }

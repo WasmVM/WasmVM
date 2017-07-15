@@ -1,13 +1,14 @@
-(module 
-	(func $addTwo (param i32 i32) (result i32)
-		(i32.add 
-			(get_local 0)
-			(get_local 1)))
-	(func $start
-		i32.const -10000
-		i32.const -20000
-		i32.add
-		drop
-	)
-	(start $start)
-	(export "addTwo" (func $addTwo)))
+(module
+  (func $addTwo (param i32 i32) (result i32)
+    get_local 0
+    i32.const 7
+    tee_local 1
+    i32.add)
+  (func $start
+    i32.const 3
+    i32.const 5
+    call $addTwo
+    drop
+  )
+  (start $start)
+)
