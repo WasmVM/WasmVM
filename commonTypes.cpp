@@ -1,5 +1,7 @@
 #include "commonTypes.h"
 
+#include <stdio.h>
+
 uint32_t Common::get_uleb128_32(Memory &memory, uint64_t &pc){
   uint32_t ret = 0;
   for(int i = 0; i < 5; ++i){
@@ -9,9 +11,6 @@ uint32_t Common::get_uleb128_32(Memory &memory, uint64_t &pc){
     if(i == 4){
       if(byte & 0x80){
         throw "Too much bytes while decode uleb128_32.";
-      }
-      if(byte & 0xF0){
-        throw "Overflow occured while decode uleb128_32.";
       }
     }
     // Finished
@@ -31,9 +30,6 @@ int32_t Common::get_leb128_32(Memory &memory, uint64_t &pc){
     if(i == 4){
       if(byte & 0x80){
         throw "Too much bytes while decode leb128_32.";
-      }
-      if(byte & 0xF0){
-        throw "Overflow occured while decode leb128_32.";
       }
     }
     // Finished
@@ -72,9 +68,6 @@ int64_t Common::get_leb128_64(Memory &memory, uint64_t &pc){
       if(byte & 0x80){
         throw "Too much bytes while decode uleb128_64.";
       }
-      if(byte & 0xFE){
-        throw "Overflow occured while decode uleb128_64.";
-      }
     }
     // Finished
     if((byte & 0x80) == 0){
@@ -89,20 +82,23 @@ int64_t Common::get_leb128_64(Memory &memory, uint64_t &pc){
           case 2:
             ret |= 0xFFFFFFFFFFE00000;
             break;
-          case 4:
+          case 3:
             ret |= 0xFFFFFFFFF0000000;
             break;
-          case 5:
+          case 4:
             ret |= 0xFFFFFFF800000000;
             break;
-          case 6:
+          case 5:
             ret |= 0xFFFFFC0000000000;
             break;
-          case 7:
+          case 6:
             ret |= 0xFFFE000000000000;
             break;
-          case 8:
+          case 7:
             ret |= 0xFF00000000000000;
+            break;
+          case 8:
+            ret |= 0x8000000000000000;
             break;
           default:
             break;

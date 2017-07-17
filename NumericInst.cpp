@@ -277,7 +277,7 @@ void Instruction::i32_rotr (OperandStack &stack){
 /*** i64 ***/
 void Instruction::i64_const (OperandStack &stack, uint64_t val){
   Value value;
-  value.data.i64 = val;
+  value.data.u64 = val;
   value.type = i64;
   stack.pushVal(value);
 }
@@ -668,4 +668,152 @@ void Instruction::i64_extend_u_i32 (OperandStack &stack){
   ret.data.i64 |= (int64_t) val.data.i32 & 0x00000000FFFFFFFF;
   ret.type = i64;
   stack.pushVal(ret);
+}
+void Instruction::i32_trunc_s_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i32 & 0x7F800000) == 0x7F800000){
+    if(val.data.i32 & 0x007FFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i32 = (int32_t) val.data.f32;
+  ret.type = i32;
+  stack.pushVal(ret);
+}
+void Instruction::i32_trunc_u_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i32 & 0x7F800000) == 0x7F800000){
+    if(val.data.i32 & 0x007FFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i32 = (int32_t) val.data.f32;
+  ret.data.i32 *= (-2) * (ret.data.i32 < 0) + 1;
+  ret.type = i32;
+  stack.pushVal(ret);
+}
+void Instruction::i32_trunc_s_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i64 & 0x7FF0000000000000) == 0x7FF0000000000000){
+    if(val.data.i64 & 0x000FFFFFFFFFFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i32 = (int32_t) val.data.f64;
+  ret.type = i32;
+  stack.pushVal(ret);
+}
+void Instruction::i32_trunc_u_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i64 & 0x7FF0000000000000) == 0x7FF0000000000000){
+    if(val.data.i64 & 0x000FFFFFFFFFFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i32 = (int32_t) val.data.f64;
+  ret.data.i32 *= (-2) * (ret.data.i32 < 0) + 1;
+  ret.type = i32;
+  stack.pushVal(ret);
+}
+void Instruction::i32_reinterpret_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != f32){
+    throw "Wrong type to reinterpret from f32 to i32";
+  }
+  val.type = i32;
+  stack.pushVal(val);
+}
+void Instruction::i64_trunc_s_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i32 & 0x7F800000) == 0x7F800000){
+    if(val.data.i32 & 0x007FFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i64 = (int64_t) val.data.f32;
+  ret.type = i64;
+  stack.pushVal(ret);
+}
+void Instruction::i64_trunc_u_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i32 & 0x7F800000) == 0x7F800000){
+    if(val.data.i32 & 0x007FFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i64 = (int64_t) val.data.f32;
+  ret.data.i64 *= (-2) * (ret.data.i64 < 0) + 1;
+  ret.type = i64;
+  stack.pushVal(ret);
+}
+void Instruction::i64_trunc_s_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i64 & 0x7FF0000000000000) == 0x7FF0000000000000){
+    if(val.data.i64 & 0x000FFFFFFFFFFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i64 = (int64_t) val.data.f64;
+  ret.type = i64;
+  stack.pushVal(ret);
+}
+void Instruction::i64_trunc_u_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if((val.data.i64 & 0x7FF0000000000000) == 0x7FF0000000000000){
+    if(val.data.i64 & 0x000FFFFFFFFFFFFF){ // NaN
+      throw "Can't truncate NaN";
+    }else{
+      throw "Can't truncate inf";
+    }
+  }
+  Value ret;
+  ret.data.i64 = (int64_t) val.data.f64;
+  ret.data.i64 *= (-2) * (ret.data.i64 < 0) + 1;
+  ret.type = i64;
+  stack.pushVal(ret);
+}
+void Instruction::i64_reinterpret_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != f64){
+    throw "Wrong type to reinterpret from f64 to i64";
+  }
+  val.type = i64;
+  stack.pushVal(val);
+}
+void Instruction::f32_reinterpret_i32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i32){
+    throw "Wrong type to reinterpret from i32 to f32";
+  }
+  val.type = f32;
+  stack.pushVal(val);
+}
+void Instruction::f64_reinterpret_i64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i64){
+    throw "Wrong type to reinterpret from i64 to f64";
+  }
+  val.type = f64;
+  stack.pushVal(val);
 }

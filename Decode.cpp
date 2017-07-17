@@ -228,6 +228,48 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x8A:
     Instruction::i64_rotr(opStack);
     break;
+  case 0xA8:
+    Instruction::i32_trunc_s_f32(opStack);
+    break;
+  case 0xA9:
+    Instruction::i32_trunc_u_f32(opStack);
+    break;
+  case 0xAA:
+    Instruction::i32_trunc_s_f64(opStack);
+    break;
+  case 0xAB:
+    Instruction::i32_trunc_u_f64(opStack);
+    break;
+  case 0xAC:
+    Instruction::i64_extend_s_i32(opStack);
+    break;
+  case 0xAD:
+    Instruction::i64_extend_u_i32(opStack);
+    break;
+  case 0xAE:
+    Instruction::i64_trunc_s_f32(opStack);
+    break;
+  case 0xAF:
+    Instruction::i64_trunc_u_f32(opStack);
+    break;
+  case 0xB0:
+    Instruction::i64_trunc_s_f64(opStack);
+    break;
+  case 0xB1:
+    Instruction::i64_trunc_u_f64(opStack);
+    break;
+  case 0xBC:
+    Instruction::i32_reinterpret_f32(opStack);
+    break;
+  case 0xBD:
+    Instruction::i64_reinterpret_f64(opStack);
+    break;
+  case 0xBE:
+    Instruction::f32_reinterpret_i32(opStack);
+    break;
+  case 0xBF:
+    Instruction::f64_reinterpret_i64(opStack);
+    break;
   default:
     printf("0x%02X ",opCode);
     throw "Not implement yet";
