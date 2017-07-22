@@ -817,3 +817,107 @@ void Instruction::f64_reinterpret_i64 (OperandStack &stack){
   val.type = f64;
   stack.pushVal(val);
 }
+void Instruction::f32_convert_s_i32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i32){
+    throw "Wrong type to convert from i32 to f32";
+  }
+  Value ret;
+  ret.type = f32;
+  ret.data.f32 = (float) val.data.i32;
+  stack.pushVal(ret);
+}
+void Instruction::f32_convert_u_i32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i32){
+    throw "Wrong type to convert from i32 to f32";
+  }
+  Value ret;
+  ret.type = f32;
+  ret.data.f32 = (float) (val.data.i32);
+  ret.data.f32 *= (-2) * (ret.data.f32 < 0) + 1;
+  stack.pushVal(ret);
+}
+void Instruction::f32_convert_s_i64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i64){
+    throw "Wrong type to convert from i64 to f32";
+  }
+  Value ret;
+  ret.type = f32;
+  ret.data.f32 = (float) val.data.i64;
+  stack.pushVal(ret);
+}
+void Instruction::f32_convert_u_i64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i64){
+    throw "Wrong type to convert from i64 to f32";
+  }
+  Value ret;
+  ret.type = f32;
+  ret.data.f32 = (float) val.data.i64;
+  ret.data.f32 *= (-2) * (ret.data.f32 < 0) + 1;
+  stack.pushVal(ret);
+}
+void Instruction::f64_convert_s_i32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i32){
+    throw "Wrong type to convert from i32 to f64";
+  }
+  Value ret;
+  ret.type = f64;
+  ret.data.f64 = (double) val.data.i32;
+  stack.pushVal(ret);
+}
+void Instruction::f64_convert_u_i32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i32){
+    throw "Wrong type to convert from i32 to f64";
+  }
+  Value ret;
+  ret.type = f64;
+  ret.data.f64 = (double) (val.data.i32);
+  ret.data.f64 *= (-2) * (ret.data.f64 < 0) + 1;
+  stack.pushVal(ret);
+}
+void Instruction::f64_convert_s_i64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i64){
+    throw "Wrong type to convert from i64 to f64";
+  }
+  Value ret;
+  ret.type = f64;
+  ret.data.f64 = (double) val.data.i64;
+  stack.pushVal(ret);
+}
+void Instruction::f64_convert_u_i64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != i64){
+    throw "Wrong type to convert from i64 to f64";
+  }
+  Value ret;
+  ret.type = f64;
+  ret.data.f64 = (double) val.data.i64;
+  ret.data.f64 *= (-2) * (ret.data.f64 < 0) + 1;
+  stack.pushVal(ret);
+}
+void Instruction::f32_demote_f64 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != f64){
+    throw "Wrong type to demote from f64 to f32";
+  }
+  Value ret;
+  ret.type = f32;
+  ret.data.f32 = (float) val.data.f64;
+  stack.pushVal(ret);
+}
+void Instruction::f64_promote_f32 (OperandStack &stack){
+  Value val = stack.popVal();
+  if(val.type != f32){
+    throw "Wrong type to promote from f32 to f64";
+  }
+  Value ret;
+  ret.type = f64;
+  ret.data.f64 = (double) val.data.f32;
+  stack.pushVal(ret);
+}

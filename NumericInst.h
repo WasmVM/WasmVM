@@ -126,6 +126,16 @@ namespace Instruction{
   void i64_reinterpret_f64 (OperandStack &stack);
   void f32_reinterpret_i32 (OperandStack &stack);
   void f64_reinterpret_i64 (OperandStack &stack);
+  void f32_convert_s_i32 (OperandStack &stack);
+  void f32_convert_u_i32 (OperandStack &stack);
+  void f32_convert_s_i64 (OperandStack &stack);
+  void f32_convert_u_i64 (OperandStack &stack);
+  void f64_convert_s_i32 (OperandStack &stack);
+  void f64_convert_u_i32 (OperandStack &stack);
+  void f64_convert_s_i64 (OperandStack &stack);
+  void f64_convert_u_i64 (OperandStack &stack);
+  void f32_demote_f64 (OperandStack &stack);
+  void f64_promote_f32 (OperandStack &stack);
 }
 
 #endif

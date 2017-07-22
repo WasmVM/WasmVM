@@ -258,6 +258,36 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0xB1:
     Instruction::i64_trunc_u_f64(opStack);
     break;
+  case 0xB2:
+    Instruction::f32_convert_s_i32(opStack);
+    break;
+  case 0xB3:
+    Instruction::f32_convert_u_i32(opStack);
+    break;
+  case 0xB4:
+    Instruction::f32_convert_s_i64(opStack);
+    break;
+  case 0xB5:
+    Instruction::f32_convert_u_i64(opStack);
+    break;
+  case 0xB6:
+    Instruction::f32_demote_f64(opStack);
+    break;
+  case 0xB7:
+    Instruction::f64_convert_s_i32(opStack);
+    break;
+  case 0xB8:
+    Instruction::f64_convert_u_i32(opStack);
+    break;
+  case 0xB9:
+    Instruction::f64_convert_s_i64(opStack);
+    break;
+  case 0xBA:
+    Instruction::f64_convert_u_i64(opStack);
+    break;
+  case 0xBB:
+    Instruction::f64_promote_f32(opStack);
+    break;
   case 0xBC:
     Instruction::i32_reinterpret_f32(opStack);
     break;
