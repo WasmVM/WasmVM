@@ -15,6 +15,12 @@ void Instruction::para_drop(OperandStack &opStack){
     case i64:
       printf("Operand dropped: Type: i64, Value: %ld\n", val.data.i64);
       break;
+    case f32:
+      printf("Operand dropped: Type: f32, Value: %f\n", val.data.f32);
+      break;
+    case f64:
+      printf("Operand dropped: Type: f64, Value: %lf\n", val.data.f64);
+      break;
     default:
       break;
   }
