@@ -42,11 +42,23 @@ void Decode::decode(Memory &memory, OperandStack &opStack, LocalStack &locals, b
   case 0x10:
     Instruction::ctrl_call(Common::get_uleb128_32(memory, pc), opStack, locals, memory);
     break;
+  case 0x11:
+    Instruction::ctrl_call_indirect(Common::get_uleb128_32(memory, pc), opStack, locals, memory);
+    break;
   case 0x1A:
     Instruction::para_drop(opStack);
     break;
   case 0x1B:
     Instruction::para_select(opStack);
+    break;
+  case 0x20:
+    Instruction::get_local(opStack, locals, memory);
+    break;
+  case 0x21:
+    Instruction::set_local(opStack, locals, memory);
+    break;
+  case 0x22:
+    Instruction::tee_local(opStack, locals, memory);
     break;
   case 0x41:
     Instruction::i32_const(opStack, Common::get_leb128_32(memory, pc));

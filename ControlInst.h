@@ -43,6 +43,7 @@ namespace Instruction{
   void ctrl_br_table(OperandStack &opStack, LocalStack &locals, Memory &memory, bool &halted);
   void ctrl_return(OperandStack &opStack, LocalStack &locals, bool &halted);
   void ctrl_call(uint32_t entry, OperandStack &opStack, LocalStack &locals, Memory &memory);
+  void ctrl_call_indirect(uint32_t typeIndex, OperandStack &opStack, LocalStack &locals, Memory &memory);
   void ctrl_end(OperandStack &opStack, LocalStack &locals, bool &halted);
 
   uint32_t bypass(Memory &memory, uint64_t &pc);
