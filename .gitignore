@@ -1,6 +1,7 @@
 # ignore all object file 
 *.o
 main
+build/
 
 # ignore .vscode
 .vscode/

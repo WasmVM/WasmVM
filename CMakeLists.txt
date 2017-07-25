@@ -1,3 +1,5 @@
 cmake_minimum_required(VERSION 2.6)
 project(Wasm_Interpret)
-add_executable(WasmInpr main.cpp)
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+include_directories(src)
+add_subdirectory(src)

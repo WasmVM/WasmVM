@@ -24,5 +24,5 @@ Value::Value(const Value &value){
         data.i64 = value.data.i64;
     }
 }
-Func::Func():type(func){
+ExternVal::ExternVal(ExternType type):type(type){
 }
