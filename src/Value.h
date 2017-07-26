@@ -8,11 +8,12 @@ enum ValType { i32, i64, f32, f64 };
 
 class Value {
 public:
-    Value(std::int32_t);
+    Value(std::int32_t = 0);
     Value(std::int64_t);
     Value(float);
     Value(double);
     Value(const Value&);
+    Value &operator=(Value);
 
     ValType type;
     union {

@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <vector>
 
-class MemInst{
+class MemInst {
 public:
     std::vector<char> data;
     uint32_t max;

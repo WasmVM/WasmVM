@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <vector>
 #include <Value.h>
+#include <ExportInst.h>
 
 class ModuleInst{
 public:
