@@ -6,10 +6,10 @@
 
 class Store{
 public:
-    std::vector<FuncInst> funcs;
-    std::vector<TableInst> tables;
-    std::vector<MemInst> mems;
-    std::vector<GlobalInst> globals;
+    std::vector<FuncInst *> funcs;
+    std::vector<TableInst *> tables;
+    std::vector<MemInst *> mems;
+    std::vector<GlobalInst *> globals;
 };
 
 #endif
