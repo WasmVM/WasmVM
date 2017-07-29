@@ -1,7 +1,7 @@
 #ifndef LOADER_DEF
 #define LOADER_DEF
 
-#include <stack>
+#include <map>
 #include <vector>
 #include <cstdio>
 #include <cerrno>
@@ -25,7 +25,7 @@ public:
 private:
     Store &store;
     std::vector<ModuleInst *> &moduleInsts;
-    std::stack<Module> modules;
+    std::map<std::string, Module *> modules;
 
     std::uint32_t allocFunc();
     std::uint32_t allocTable();
@@ -33,7 +33,7 @@ private:
     std::uint32_t allocGlobal();
     ModuleInst *allocModule();
     void instantiate();
-    void skipToSection(char sectionNum);
+    char skipToSection(char sectionNum, char* &cur, const char *endAddr); // return section size and go to content
 };
 
 #endif

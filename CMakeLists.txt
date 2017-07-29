@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.6)
 project(Wasm_Interpret)
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -g")
 include_directories(src src/Instance src/Component src/Exception)
 add_subdirectory(src/Component)
 add_subdirectory(src/Exception)

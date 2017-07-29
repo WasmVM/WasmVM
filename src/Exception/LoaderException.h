@@ -11,7 +11,7 @@ class LoaderException : public Exception{
 public:
     std::uint64_t address;
     bool showAddress;
-    LoaderException(std::string desc, bool showAddress = true, std::uint64_t addr = 0);
+    LoaderException(std::string desc, bool showAddress = false, std::uint64_t addr = 0);
 };
 
 std::ostream &operator<<(std::ostream &os, LoaderException &e);

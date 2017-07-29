@@ -27,6 +27,9 @@ int main(int argc, char const *argv[]){
             } catch (LoaderException &e){
                 std::cerr << e << std::endl;
                 return -1;
+            } catch (Exception &e){
+                std::cerr << argv[i] << ": " << e.desc << std::endl;
+                return -1;
             } catch (std::exception &e){
                 std::cerr << "System error: " << e.what() << std::endl;
             }

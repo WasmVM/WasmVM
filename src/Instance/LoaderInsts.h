@@ -37,23 +37,25 @@ class Import {
 public:
     std::string module;
     std::string name;
-    union{
-        std::uint32_t func;
-        Limits table;
-        Limits mem;
-        Global global;
-    }desc;
+    ExternType kind;
+    union {
+        std::uint32_t *func;
+        Limits *table;
+        Limits *mem;
+        Global *global;
+    } desc;
 };
 
 class Export {
 public:
     std::string name;
+    ExternType kind;
     union{
-        std::uint32_t func;
-        Limits table;
-        Limits mem;
-        Global global;
-    }desc;
+        std::uint32_t *func;
+        Limits *table;
+        Limits *mem;
+        Global *global;
+    } desc;
 };
 
 class Module {

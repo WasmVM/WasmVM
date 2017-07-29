@@ -1,11 +1,12 @@
 (module
-  (import "foo" "bar" (func (param f32)))
+  (import "addTwo.wasm" "addTwo" (func (param i32 i32) (result i32)))
+  (import "block.wasm" "start" (func))
   (memory (data "hi"))
   (type (func (param i32) (result i32)))
-  (global $dd i32 i32.const 42)
-  (global $aa i32 i32.const 42)
   (start 1)
   (table 0 1 anyfunc)
   (func)
-  (func (type 0) (drop (i32.const 42)))
+  (func
+    i32.const 420000000
+    drop)
   (export "e" (func 1)))

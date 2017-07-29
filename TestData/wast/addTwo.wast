@@ -10,5 +10,6 @@
     call $addTwo
     drop
   )
+  (export "addTwo" (func $addTwo))
   (start $start)
 )

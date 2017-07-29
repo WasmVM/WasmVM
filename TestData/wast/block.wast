@@ -7,5 +7,6 @@
     end
     drop
   )
+  (export "start" (func $start))
   (start $start)
 )
