@@ -22,7 +22,7 @@ public:
 class Elem {
 public:
     // The only tableidx is 0 now, ignore
-    std::uint64_t offset;
+    std::uint32_t offset;
     std::vector<std::uint32_t> init;
 };
 
@@ -50,12 +50,7 @@ class Export {
 public:
     std::string name;
     ExternType kind;
-    union{
-        std::uint32_t *func;
-        Limits *table;
-        Limits *mem;
-        Global *global;
-    } desc;
+    std::uint32_t desc;
 };
 
 class Module {
@@ -72,7 +67,7 @@ public:
     std::vector<Global> globals;
     std::vector<Elem> elem;
     std::vector<Data> data;
-    std::uint32_t *start; // Using nullptr to indicate no start
+    std::uint32_t *start = nullptr; // Using nullptr to indicate no start
     std::vector<Import> imports;
     std::vector<Export> exports;
 };
