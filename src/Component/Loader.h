@@ -19,19 +19,20 @@
 
 class Loader {
 public:
-    Loader(Store &store, std::vector<ModuleInst *> &moduleInsts);
+    Loader(Store &store, std::map<std::string, ModuleInst *> &moduleInsts);
     void load(const char *fileName);
-
 private:
     Store &store;
-    std::vector<ModuleInst *> &moduleInsts;
+    std::map<std::string, ModuleInst *> &moduleInsts;
     std::map<std::string, Module *> modules;
 
     std::uint32_t allocFunc();
     std::uint32_t allocTable();
     std::uint32_t allocMem();
     std::uint32_t allocGlobal();
-    ModuleInst *allocModule();
+    ModuleInst *allocModule(Module *module, std::vector<ExternVal> &importVals);
+
+    void getExternVals(Module *module, std::vector<ExternVal> &externVals);
     void instantiate();
     char skipToSection(char sectionNum, char* &cur, const char *endAddr); // return section size and go to content
 };

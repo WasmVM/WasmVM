@@ -1,4 +1,5 @@
 (module
+  (import "addTwo.wasm" "addTwo" (func (param i32 i32) (result i32)))
   (memory (data "hi"))
   (type (func (param i32) (result i32)))
   (global (mut i32) i32.const 1)

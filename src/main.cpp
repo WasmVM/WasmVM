@@ -15,7 +15,7 @@ int main(int argc, char const *argv[]){
     // Store
     Store mainStore;
     // Modules
-    std::vector<ModuleInst *> moduleInsts;
+    std::map<std::string, ModuleInst *> moduleInsts;
     // Check endianess
     Util::checkEndian();
     // Load modules

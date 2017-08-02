@@ -1,6 +1,6 @@
 #include <Loader.h>
 
-Loader::Loader(Store &store, std::vector<ModuleInst *> &moduleInsts):
+Loader::Loader(Store &store, std::map<std::string, ModuleInst *> &moduleInsts):
     store(store), moduleInsts(moduleInsts){
 }
 void Loader::load(const char *fileName){
@@ -376,6 +376,11 @@ void Loader::load(const char *fileName){
             newModule->data.push_back(newData);
         }
     }
+    // Get imports
+    std::vector<ExternVal> importVals;
+    getExternVals(newModule, importVals);
+    // Alloc module instance
+    moduleInsts[moduleName] = allocModule(newModule, importVals);
 }
 std::uint32_t Loader::allocFunc(){
 }
@@ -385,9 +390,16 @@ std::uint32_t Loader::allocMem(){
 }
 std::uint32_t Loader::allocGlobal(){
 }
-ModuleInst * Loader::allocModule(){
+ModuleInst * Loader::allocModule(Module *module, std::vector<ExternVal> &importVals){
+    ModuleInst *newModuleInst = new ModuleInst;
+
 }
 void Loader::instantiate(){
+}
+void Loader::getExternVals(Module *module, std::vector<ExternVal> &externVals){
+    for(std::vector<Import>::iterator it = module->imports.begin(); it != module->imports.end(); ++it){
+        printf("%s\n", it->module.c_str());
+    }
 }
 char Loader::skipToSection(char sectionNum, char* &cur, const char *endAddr){
     if(cur > endAddr){
