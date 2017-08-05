@@ -378,27 +378,125 @@ void Loader::load(const char *fileName){
     }
     // Get imports
     std::vector<ExternVal> importVals;
-    getExternVals(newModule, importVals);
+    getImportVals(newModule, importVals);
     // Alloc module instance
-    moduleInsts[moduleName] = allocModule(newModule, importVals);
+    moduleInsts[moduleName] = allocModule(*newModule, importVals);
 }
-std::uint32_t Loader::allocFunc(){
+std::uint32_t Loader::allocFunc(Func &func, ModuleInst *moduleInst){
+    FuncInst *funcInst = new FuncInst;
+    funcInst->type = moduleInst->types[func.typeidx];
+    funcInst->module = moduleInst;
+    funcInst->code = func;
+    store.funcs.push_back(funcInst);
+    return store.funcs.size() - 1;
 }
-std::uint32_t Loader::allocTable(){
+std::uint32_t Loader::allocTable(Module &module){
+    TableInst *tableInst = new TableInst;
+    tableInst->elem.resize(module.table.min);
+    if(module.table.flag){
+        tableInst->max = module.table.max;
+    }else{
+        tableInst->max = 0;
+    }
+    store.tables.push_back(tableInst);
+    return store.tables.size() - 1;
 }
-std::uint32_t Loader::allocMem(){
+std::uint32_t Loader::allocMem(Module &module){
+    MemInst *memInst = new MemInst;
+    memInst->data.resize(module.mem.min * 65536);
+    if(module.mem.flag){
+        memInst->max = module.mem.max * 65536;
+    }else{
+        memInst->max = 0;
+    }
+    store.mems.push_back(memInst);
+    return store.mems.size() - 1;
 }
-std::uint32_t Loader::allocGlobal(){
+std::uint32_t Loader::allocGlobal(Global &global){
+    GlobalInst *globalInst = new GlobalInst;
+    globalInst->val = global.value;
+    globalInst->mut = global.mut;
+    store.globals.push_back(globalInst);
+    return store.globals.size() - 1;
 }
-ModuleInst * Loader::allocModule(Module *module, std::vector<ExternVal> &importVals){
-    ModuleInst *newModuleInst = new ModuleInst;
-
+ModuleInst * Loader::allocModule(Module &module, std::vector<ExternVal> &importVals){
+    ModuleInst *moduleInst = new ModuleInst;
+    // Types
+    moduleInst->types = module.types;
+    // Imports
+    for(std::vector<ExternVal>::iterator importIt = importVals.begin(); importIt != importVals.end(); ++importIt){
+        switch(importIt->type){
+            case func:
+                moduleInst->funcaddrs.push_back(importIt->addr);
+            break;
+            case table:
+                moduleInst->tableaddrs.push_back(importIt->addr);
+            break;
+            case mem:
+                moduleInst->memaddrs.push_back(importIt->addr);
+            break;
+            case global:
+                moduleInst->globaladdrs.push_back(importIt->addr);
+            break;
+            default:
+                throw LoaderException("No such import type");
+        }
+    }
+    // Functions
+    for(std::vector<Func>::iterator funcIt = module.funcs.begin(); funcIt != module.funcs.end(); ++funcIt){
+        moduleInst->funcaddrs.push_back(allocFunc(*funcIt, moduleInst));
+    }
+    // Tables
+    moduleInst->tableaddrs.push_back(allocTable(module));
+    // Memory
+    moduleInst->memaddrs.push_back(allocMem(module));
+    // Globals
+    for(std::vector<Global>::iterator globIt = module.globals.begin(); globIt != module.globals.end(); ++globIt){
+        moduleInst->globaladdrs.push_back(allocGlobal(*globIt));
+    }
+    // Exports
+    for(std::vector<Export>::iterator expIt = module.exports.begin(); expIt != module.exports.end(); ++expIt){
+        ExportInst exportInst;
+        exportInst.externval.type = expIt->kind;
+        exportInst.name = expIt->name;
+        exportInst.externval.addr = expIt->desc;
+        moduleInst->exports.push_back(exportInst);
+    }
+    return moduleInst;
 }
 void Loader::instantiate(){
 }
-void Loader::getExternVals(Module *module, std::vector<ExternVal> &externVals){
+void Loader::getImportVals(Module *module, std::vector<ExternVal> &externVals){
     for(std::vector<Import>::iterator it = module->imports.begin(); it != module->imports.end(); ++it){
-        printf("%s\n", it->module.c_str());
+        std::vector<ExportInst> &modExports = moduleInsts[it->module]->exports;
+        bool found = false;
+        for(std::vector<ExportInst>::iterator expIt = modExports.begin(); expIt != modExports.end(); ++expIt){
+            ExternVal exp = expIt->externval;
+            if(expIt->name == it->name){
+                switch(exp.type){
+                    case func:
+                        exp.addr = moduleInsts[it->module]->funcaddrs[exp.addr];
+                    break;
+                    case table:
+                        exp.addr = moduleInsts[it->module]->tableaddrs[exp.addr];
+                    break;
+                    case mem:
+                        exp.addr = moduleInsts[it->module]->memaddrs[exp.addr];
+                    break;
+                    case global:
+                        exp.addr = moduleInsts[it->module]->globaladdrs[exp.addr];
+                    break;
+                    default:
+                        throw LoaderException("No such export type");
+                }
+                externVals.push_back(exp);
+                found = true;
+                break;
+            }
+        }
+        if(!found){
+            throw LoaderException("Can't find export name " + it->name + " in module " + it->module);
+        }
     }
 }
 char Loader::skipToSection(char sectionNum, char* &cur, const char *endAddr){

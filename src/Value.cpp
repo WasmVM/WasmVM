@@ -33,5 +33,3 @@ Value& Value::operator=(Value val){
     }
     return *this;
 }
-ExternVal::ExternVal(ExternType type):type(type){
-}

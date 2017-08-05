@@ -5,8 +5,8 @@
 
 class GlobalInst{
 public:
-    Value val();
     bool mut;
+    Value val;
 };
 
 #endif

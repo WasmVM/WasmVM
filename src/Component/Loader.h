@@ -26,13 +26,13 @@ private:
     std::map<std::string, ModuleInst *> &moduleInsts;
     std::map<std::string, Module *> modules;
 
-    std::uint32_t allocFunc();
-    std::uint32_t allocTable();
-    std::uint32_t allocMem();
-    std::uint32_t allocGlobal();
-    ModuleInst *allocModule(Module *module, std::vector<ExternVal> &importVals);
+    std::uint32_t allocFunc(Func &func, ModuleInst *moduleInst);
+    std::uint32_t allocTable(Module &module);
+    std::uint32_t allocMem(Module &module);
+    std::uint32_t allocGlobal(Global &global);
+    ModuleInst *allocModule(Module &module, std::vector<ExternVal> &importVals);
 
-    void getExternVals(Module *module, std::vector<ExternVal> &externVals);
+    void getImportVals(Module *module, std::vector<ExternVal> &externVals);
     void instantiate();
     char skipToSection(char sectionNum, char* &cur, const char *endAddr); // return section size and go to content
 };

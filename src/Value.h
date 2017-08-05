@@ -28,7 +28,6 @@ enum ExternType { func, table, mem, global };
 
 class ExternVal {
 public:
-    ExternVal(ExternType type);
     ExternType type;
     uint32_t addr;
 };
