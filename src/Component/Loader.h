@@ -33,7 +33,7 @@ private:
     ModuleInst *allocModule(Module &module, std::vector<ExternVal> &importVals);
 
     void getImportVals(Module *module, std::vector<ExternVal> &externVals);
-    void instantiate();
+    void instantiate(ModuleInst &moduleInst, Module &module, std::vector<ExternVal> &importVals);
     char skipToSection(char sectionNum, char* &cur, const char *endAddr); // return section size and go to content
 };
 

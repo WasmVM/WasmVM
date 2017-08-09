@@ -1,15 +1,15 @@
 (module
   (import "addTwo.wasm" "addTwo" (func (param i32 i32) (result i32)))
-  (memory (data "hi"))
+  (memory 0 6)
   (type (func (param i32) (result i32)))
   (global (mut i32) i32.const 1)
   (global i64 i64.const 1)
   (global (mut f32) f32.const 2.5)
   (global (mut f64) f64.const 4.2)
-  (elem 0 (i32.const 3) 0 1)
-  (data 0 (i32.const 4) "ggg")
+  (elem 0 (i32.const 2) 0 1)
+  (data 0 (i32.const 393213) "ggg")
   (start 1)
-  (table 2 4 anyfunc)
+  (table 2 6 anyfunc)
   (func (local i32 i32 i64 i32 i64))
   (func
     i32.const 420000000

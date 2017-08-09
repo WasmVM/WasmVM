@@ -79,6 +79,9 @@ void Loader::load(const char *fileName){
             }
             // Result
             std::uint32_t resultNum = Util::get_uleb128_32(cur);
+            if(resultNum > 1){
+                throw LoaderException("Only one or zero result is allowed currently.",true, cur - fileBuf);
+            }
             while(resultNum-- > 0){
                 switch(*cur){
                     case 0x7F:
@@ -132,11 +135,17 @@ void Loader::load(const char *fileName){
                     newImport.kind = func;
                     newImport.desc.func = new std::uint32_t;
                     *(newImport.desc.func) = Util::get_uleb128_32(cur);
+                    if(*(newImport.desc.func) >= newModule->types.size()){
+                        throw LoaderException(std::string(fileName) + ": Type index of imported function must be defined.", true, cur - 1 - fileBuf);
+                    }
+
                 break;
                 case 0x01:
                     newImport.kind = table;
                     newImport.desc.table = new Limits;
-                    cur++; // skip anyfunc
+                    if(*cur++ != 0x70){
+                        throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
+                    }
                     newImport.desc.table->flag = *(cur++);
                     newImport.desc.table->min = Util::get_uleb128_32(cur);
                     if(newImport.desc.table->flag){
@@ -171,7 +180,10 @@ void Loader::load(const char *fileName){
                         default:
                             throw LoaderException(std::string(fileName) + ": Unknown import global value type.", true, cur - 1 - fileBuf);
                     }
-                    newImport.desc.global->mut = *(cur++);
+                    if(*(cur++)){
+                        throw LoaderException(std::string(fileName) + ": Only immutable global can be imported.", true, cur - 1 - fileBuf);
+                    }
+                    newImport.desc.global->mut = false;
                 break;
                 default:
                     throw LoaderException(std::string(fileName) + ": Unknown import type.", true, cur - 1 - fileBuf);
@@ -190,7 +202,12 @@ void Loader::load(const char *fileName){
     }
     /** Section 4: Table **/
     if(skipToSection(4, cur, endAddr) == 4){
-        cur += 2; // There's only an anyfunc table currently, skip 2 bytes
+        if(*cur++ > 1){
+            throw LoaderException(std::string(fileName) + ": There's only one table allowed currently.", true, cur - 1 - fileBuf);
+        }
+        if(*cur++ != 0x70){
+            throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
+        }
         newModule->table.flag = *(cur++);
         newModule->table.min = Util::get_uleb128_32(cur);
         if(newModule->table.flag){
@@ -199,7 +216,9 @@ void Loader::load(const char *fileName){
     }
     /** Section 5: Memory **/
     if(skipToSection(5, cur, endAddr) == 5){
-        cur += 1; // There's only a mempry currently, skip 1 byte
+        if(*cur++ > 1){
+            throw LoaderException(std::string(fileName) + ": There's only one memory allowed currently.", true, cur - 1 - fileBuf);
+        }
         newModule->mem.flag = *(cur++);
         newModule->mem.min = Util::get_uleb128_32(cur);
         if(newModule->mem.flag){
@@ -268,6 +287,11 @@ void Loader::load(const char *fileName){
             strncpy(name, cur, nameLen);
             cur += nameLen;
             newExport.name = name;
+            for(std::vector<Export>::iterator expIt = newModule->exports.begin(); expIt != newModule->exports.end(); ++expIt){
+                if(expIt->name == newExport.name){
+                    throw LoaderException(std::string(fileName) + ": Export name must be unique.", true, cur - nameLen - fileBuf);
+                }
+            }
             // Export kind
             switch(*(cur++)){
                 case 0x00:
@@ -293,14 +317,23 @@ void Loader::load(const char *fileName){
     if(skipToSection(8, cur, endAddr) == 8){
         newModule->start = new std::uint32_t;
         *(newModule->start) = Util::get_uleb128_32(cur);
+        if(*(newModule->start) > newModule->funcs.size()){
+            throw LoaderException(std::string(fileName) + ": Index of start function must be defined.", true, cur - fileBuf);
+        }
+        FuncType &startFuncType = newModule->types.at(newModule->funcs.at(*(newModule->start)).typeidx);
+        if(startFuncType.paramTypes.size() > 0 || startFuncType.resultTypes.size() > 0){
+            throw LoaderException(std::string(fileName) + ": Start function must be a void function without parameters.", true, cur - fileBuf);
+        }
     }
     /** Section 9: Element **/
     if(skipToSection(9, cur, endAddr) == 9){
         std::uint32_t elemNum = Util::get_uleb128_32(cur);
         while(elemNum-- > 0){
             Elem newElem;
-            // Ignore table index
-            Util::get_uleb128_32(cur);
+            // Index
+            if(Util::get_uleb128_32(cur)){
+                throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
+            }
             // Offset
             if((*(cur++)) == 0x41){
                 newElem.offset = Util::get_leb128_32(cur);
@@ -311,7 +344,11 @@ void Loader::load(const char *fileName){
             // Init
             std::uint32_t initNum = Util::get_uleb128_32(cur);
             while(initNum-- > 0){
-                newElem.init.push_back(Util::get_leb128_32(cur));
+                std::uint32_t initIndex = Util::get_uleb128_32(cur);
+                if(initIndex > newModule->funcs.size()){
+                    throw LoaderException(std::string(fileName) + ": Index of element function must be defined.", true, cur - fileBuf);
+                }
+                newElem.init.push_back(initIndex);
             }
             newModule->elem.push_back(newElem);
         }
@@ -361,7 +398,10 @@ void Loader::load(const char *fileName){
         std::uint32_t dataNum = Util::get_uleb128_32(cur);
         while(dataNum-- > 0){
             Data newData;
-            Util::get_uleb128_32(cur); // Ignore memory index
+            // Index
+            if(Util::get_uleb128_32(cur)){
+                throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
+            }
             // Offset
             if((*(cur++)) == 0x41){
                 newData.offset = Util::get_leb128_32(cur);
@@ -381,6 +421,8 @@ void Loader::load(const char *fileName){
     getImportVals(newModule, importVals);
     // Alloc module instance
     moduleInsts[moduleName] = allocModule(*newModule, importVals);
+    // Instantiate
+    instantiate(*(moduleInsts[moduleName]), *newModule, importVals);
 }
 std::uint32_t Loader::allocFunc(Func &func, ModuleInst *moduleInst){
     FuncInst *funcInst = new FuncInst;
@@ -464,7 +506,42 @@ ModuleInst * Loader::allocModule(Module &module, std::vector<ExternVal> &importV
     }
     return moduleInst;
 }
-void Loader::instantiate(){
+void Loader::instantiate(ModuleInst &moduleInst, Module &module, std::vector<ExternVal> &importVals){
+    if(importVals.size() != module.imports.size()){
+        throw LoaderException("Import size does not match provided import count.");
+    }
+    for(std::vector<Elem>::iterator elemIt = module.elem.begin(); elemIt != module.elem.end(); ++elemIt){
+        TableInst *tableRef = store.tables.at(moduleInst.tableaddrs.at(0));
+        std::uint32_t totalSize = elemIt->offset + elemIt->init.size();
+        if(totalSize <= tableRef->max){
+            if(totalSize > tableRef->elem.size()){
+                tableRef->elem.resize(totalSize);
+            }
+        }else{
+            throw LoaderException("Element init exceed table max size.");
+        }
+        for(std::uint32_t i = 0; i < elemIt->init.size(); ++i){
+            if(elemIt->init.at(i) < moduleInst.funcaddrs.size()){
+                store.tables.at(moduleInst.tableaddrs.at(0))->elem.at(elemIt->offset + i) = moduleInst.funcaddrs.at(elemIt->init.at(i));
+            }else{
+                throw LoaderException("Element init function doesn't exist.");
+            }
+        }
+    }
+    for(std::vector<Data>::iterator dataIt = module.data.begin(); dataIt != module.data.end(); ++dataIt){
+        MemInst *memRef = store.mems.at(moduleInst.memaddrs.at(0));
+        std::uint32_t totalSize = dataIt->offset + dataIt->init.size();
+        if(totalSize <= memRef->max){
+            if(totalSize > memRef->data.size()){
+                memRef->data.resize(totalSize);
+            }
+        }else{
+            throw LoaderException("Data init exceed memory max size.");
+        }
+        for(std::uint32_t i = 0; i < dataIt->init.size(); ++i){
+            store.mems.at(moduleInst.memaddrs.at(0))->data.at(dataIt->offset + i) = dataIt->init.at(i);
+        }
+    }
 }
 void Loader::getImportVals(Module *module, std::vector<ExternVal> &externVals){
     for(std::vector<Import>::iterator it = module->imports.begin(); it != module->imports.end(); ++it){
