@@ -41,7 +41,7 @@ std::uint32_t Util::get_uleb128_32(char* &ptr){
         // Check range
         if(i == 4){
             if(byte & 0x80){
-                throw Exception("Error: Too much bytes while decode uleb128_32.");
+                throw "Too much bytes while decode uleb128_32.";
             }
         }
         // Finished
@@ -59,7 +59,7 @@ std::int32_t Util::get_leb128_32(char* &ptr){
         // Check range
         if(i == 4){
             if(byte & 0x80){
-                throw Exception("Error: Too much bytes while decode leb128_32.");
+                throw "Too much bytes while decode leb128_32.";
             }
         }
         // Finished
@@ -95,7 +95,7 @@ std::int64_t Util::get_leb128_64(char* &ptr){
         // Check range
         if(i == 9){
             if(byte & 0x80){
-            throw Exception("Error: Too much bytes while decode leb128_64.");
+            throw "Too much bytes while decode leb128_64.";
             }
         }
         // Finished

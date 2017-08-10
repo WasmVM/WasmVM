@@ -3,6 +3,9 @@
 Core::Core(Store &store): store(store){
 }
 
-void run(ModuleInst *module){
-	
+void Core::run(ModuleInst *moduleInst){
+	// Invoke start function
+	if(moduleInst->start == nullptr){
+		throw Exception("No start function in this module.", coreStack, moduleInst);
+	}
 }

@@ -1,13 +1,15 @@
 #ifndef STACK_DEF
 #define STACK_DEF
 
-#include <stack>
+#include <list>
 #include <Value.h>
 #include <ModuleInst.h>
 
 class Label {
 public:
-    uint64_t instrAddr;
+    uint32_t funcIdx;
+    uint64_t instrOffset;
+    ValType *resultType = nullptr;
     Label();
     Label(const Label&);
     Label &operator=(Label);
@@ -16,7 +18,7 @@ public:
 class Frame {
 public:
     std::vector<Value> locals;
-    ModuleInst *moduleinst;
+    ModuleInst *moduleInst;
     Frame();
     Frame(const Frame&);
     Frame &operator=(Frame);
@@ -38,9 +40,11 @@ public:
     StackElem &top();
     StackElem &pop();
     size_t size();
+    std::list<StackElem>::iterator end();
+    std::list<StackElem>::iterator begin();
 
 private:
-    std::stack<StackElem> _stack;
+    std::list<StackElem> _stack;
 };
 
 #endif

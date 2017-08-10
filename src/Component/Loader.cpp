@@ -53,372 +53,376 @@ void Loader::load(const char *fileName){
     // Create Module
     Module *newModule = new Module();
     modules[moduleName] = newModule;
-    /** Section 1: Type **/
-    if(skipToSection(1, cur, endAddr) == 1){
-        std::uint32_t typeNum = Util::get_uleb128_32(cur);
-        while(typeNum-- > 0){
-            FuncType newType;
-            if(*cur != 0x60){
-                throw LoaderException(std::string(fileName) + ": First byte of type is not 0x60.", true, cur - fileBuf);
-            }
-            // Param
-            std::uint32_t paramNum = Util::get_uleb128_32(++cur);
-            while(paramNum-- > 0){            
-                switch(*cur){
-                    case 0x7F:
-                        newType.paramTypes.push_back(i32);
-                    break;
-                    case 0x7E:
-                        newType.paramTypes.push_back(i64);
-                    break;
-                    case 0x7D:
-                        newType.paramTypes.push_back(f32);
-                    break;
-                    case 0x7C:
-                        newType.paramTypes.push_back(f64);
-                    break;
-                    default:
-                        throw LoaderException(std::string(fileName) + ": No such parameter type.", true, cur - fileBuf);
+    try{
+        /** Section 1: Type **/
+        if(skipToSection(1, cur, endAddr) == 1){
+            std::uint32_t typeNum = Util::get_uleb128_32(cur);
+            while(typeNum-- > 0){
+                FuncType newType;
+                if(*cur != 0x60){
+                    throw LoaderException(std::string(fileName) + ": First byte of type is not 0x60.", true, cur - fileBuf);
                 }
-                cur++;
-            }
-            // Result
-            std::uint32_t resultNum = Util::get_uleb128_32(cur);
-            if(resultNum > 1){
-                throw LoaderException("Only one or zero result is allowed currently.",true, cur - fileBuf);
-            }
-            while(resultNum-- > 0){
-                switch(*cur){
-                    case 0x7F:
-                        newType.resultTypes.push_back(i32);
-                    break;
-                    case 0x7E:
-                        newType.resultTypes.push_back(i64);
-                    break;
-                    case 0x7D:
-                        newType.resultTypes.push_back(f32);
-                    break;
-                    case 0x7C:
-                        newType.resultTypes.push_back(f64);
-                    break;
-                    default:
-                        throw LoaderException(std::string(fileName) + ": No such result type.", true, cur - fileBuf);
-                }
-                cur++;
-            }
-            newModule->types.push_back(newType);
-        }
-    }
-    /** Section 2: Import **/
-    if(skipToSection(2, cur, endAddr) == 2){
-        std::uint32_t importNum = Util::get_uleb128_32(cur);
-        while(importNum-- > 0){
-            Import newImport;
-            // Get module name length
-            std::uint32_t depNameLen = Util::get_uleb128_32(cur);
-            // Get module name
-            char depName[depNameLen + 1];
-            depName[depNameLen] = '\0';
-            strncpy(depName, cur, depNameLen);
-            cur += depNameLen;
-            newImport.module = depName;
-            // Get name length
-            std::uint32_t nameLen = Util::get_uleb128_32(cur);
-            // Get name
-            char name[nameLen + 1];
-            name[nameLen] = '\0';
-            strncpy(name, cur, nameLen);
-            cur += nameLen;
-            newImport.name = name;
-            // Load dependency
-            if(modules.find(depName) == modules.end()){
-                load((pathStr + depName).c_str());
-            }
-            // import kind
-            switch(*(cur++)){
-                case 0x00:
-                    newImport.kind = func;
-                    newImport.desc.funcType = new std::uint32_t;
-                    *(newImport.desc.funcType) = Util::get_uleb128_32(cur);
-                    if(*(newImport.desc.funcType) >= newModule->types.size()){
-                        throw LoaderException(std::string(fileName) + ": Type index of imported function must be defined.", true, cur - 1 - fileBuf);
-                    }
-                break;
-                case 0x01:
-                    newImport.kind = table;
-                    newImport.desc.table = new Limits;
-                    if(*cur++ != 0x70){
-                        throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
-                    }
-                    newImport.desc.table->flag = *(cur++);
-                    newImport.desc.table->min = Util::get_uleb128_32(cur);
-                    if(newImport.desc.table->flag){
-                        newImport.desc.table->max = Util::get_uleb128_32(cur);
-                    }
-                break;
-                case 0x02:
-                    newImport.kind = mem;
-                    newImport.desc.mem = new Limits;
-                    newImport.desc.mem->flag = *(cur++);
-                    newImport.desc.mem->min = Util::get_uleb128_32(cur);
-                    if(newImport.desc.mem->flag){
-                        newImport.desc.mem->max = Util::get_uleb128_32(cur);
-                    }
-                break;
-                case 0x03:
-                    newImport.kind = global;
-                    newImport.desc.global = new Global;
-                    switch(*(cur++)){
-                        case 0x7f:
-                            newImport.desc.global->value.type = i32;
+                // Param
+                std::uint32_t paramNum = Util::get_uleb128_32(++cur);
+                while(paramNum-- > 0){            
+                    switch(*cur){
+                        case 0x7F:
+                            newType.paramTypes.push_back(i32);
                         break;
-                        case 0x7e:
-                            newImport.desc.global->value.type = i64;
+                        case 0x7E:
+                            newType.paramTypes.push_back(i64);
                         break;
-                        case 0x7d:
-                            newImport.desc.global->value.type = f32;
+                        case 0x7D:
+                            newType.paramTypes.push_back(f32);
                         break;
-                        case 0x7c:
-                            newImport.desc.global->value.type = f64;
+                        case 0x7C:
+                            newType.paramTypes.push_back(f64);
                         break;
                         default:
-                            throw LoaderException(std::string(fileName) + ": Unknown import global value type.", true, cur - 1 - fileBuf);
+                            throw LoaderException(std::string(fileName) + ": No such parameter type.", true, cur - fileBuf);
                     }
-                    if(*(cur++)){
-                        throw LoaderException(std::string(fileName) + ": Only immutable global can be imported.", true, cur - 1 - fileBuf);
+                    cur++;
+                }
+                // Result
+                std::uint32_t resultNum = Util::get_uleb128_32(cur);
+                if(resultNum > 1){
+                    throw LoaderException("Only one or zero result is allowed currently.",true, cur - fileBuf);
+                }
+                while(resultNum-- > 0){
+                    switch(*cur){
+                        case 0x7F:
+                            newType.resultTypes.push_back(i32);
+                        break;
+                        case 0x7E:
+                            newType.resultTypes.push_back(i64);
+                        break;
+                        case 0x7D:
+                            newType.resultTypes.push_back(f32);
+                        break;
+                        case 0x7C:
+                            newType.resultTypes.push_back(f64);
+                        break;
+                        default:
+                            throw LoaderException(std::string(fileName) + ": No such result type.", true, cur - fileBuf);
                     }
-                    newImport.desc.global->mut = false;
-                break;
-                default:
-                    throw LoaderException(std::string(fileName) + ": Unknown import type.", true, cur - 1 - fileBuf);
-            }
-            newModule->imports.push_back(newImport);
-        }
-    }
-    /** Section 3: Function **/
-    if(skipToSection(3, cur, endAddr) == 3){
-        std::uint32_t funcNum = Util::get_uleb128_32(cur);
-        while(funcNum-- > 0){
-            Func newFunc;
-            newFunc.typeidx = Util::get_uleb128_32(cur);
-            newModule->funcs.push_back(newFunc);
-        }
-    }
-    /** Section 4: Table **/
-    if(skipToSection(4, cur, endAddr) == 4){
-        if(*cur++ > 1){
-            throw LoaderException(std::string(fileName) + ": There's only one table allowed currently.", true, cur - 1 - fileBuf);
-        }
-        if(*cur++ != 0x70){
-            throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
-        }
-        newModule->table.flag = *(cur++);
-        newModule->table.min = Util::get_uleb128_32(cur);
-        if(newModule->table.flag){
-            newModule->table.max = Util::get_uleb128_32(cur);
-        }
-    }
-    /** Section 5: Memory **/
-    if(skipToSection(5, cur, endAddr) == 5){
-        if(*cur++ > 1){
-            throw LoaderException(std::string(fileName) + ": There's only one memory allowed currently.", true, cur - 1 - fileBuf);
-        }
-        newModule->mem.flag = *(cur++);
-        newModule->mem.min = Util::get_uleb128_32(cur);
-        if(newModule->mem.flag){
-            newModule->mem.max = Util::get_uleb128_32(cur);
-        }
-    }
-    /** Section 6: Global **/
-    if(skipToSection(6, cur, endAddr) == 6){
-        std::uint32_t globalNum = Util::get_uleb128_32(cur);
-        while(globalNum-- > 0){
-            Global newGlobal;
-            // Set value type
-            switch(*(cur++)){
-                case 0x7f:
-                    newGlobal.value.type = i32;
-                break;
-                case 0x7e:
-                    newGlobal.value.type = i64;
-                break;
-                case 0x7d:
-                    newGlobal.value.type = f32;
-                break;
-                case 0x7c:
-                    newGlobal.value.type = f64;
-                break;
-                default:
-                    throw LoaderException(std::string(fileName) + ": Unknown global value type.", true, cur - 1 - fileBuf);
-            }
-            // Set mut
-            newGlobal.mut = *(cur++);
-            // Set value
-            switch(*(cur++)){
-                case 0x41:
-                    newGlobal.value.data.i32 = Util::get_leb128_32(cur);
-                break;
-                case 0x42:
-                    newGlobal.value.data.i64 = Util::get_leb128_64(cur);
-                break;
-                case 0x43:
-                    newGlobal.value.data.i32 = Util::toLittle32(*((uint32_t *)cur));
-                    cur += 4;
-                break;
-                case 0x44:
-                    newGlobal.value.data.i64 = Util::toLittle64(*((uint64_t *)cur));
-                    cur += 8;
-                break;
-                default:
-                    throw LoaderException(std::string(fileName) + ": Global must be initialized with a constant expression.", true, cur - 1 - fileBuf);
-            }
-            // Skip end
-            cur++;
-            // Push to module
-            newModule->globals.push_back(newGlobal);
-        }
-    }
-    /** Section 7: Export **/
-    if(skipToSection(7, cur, endAddr) == 7){
-        std::uint32_t exportNum = Util::get_uleb128_32(cur);
-        while(exportNum-- > 0){
-            Export newExport;
-            // Get name length
-            std::uint32_t nameLen = Util::get_uleb128_32(cur);
-            // Get name
-            char name[nameLen + 1];
-            name[nameLen] = '\0';
-            strncpy(name, cur, nameLen);
-            cur += nameLen;
-            newExport.name = name;
-            for(std::vector<Export>::iterator expIt = newModule->exports.begin(); expIt != newModule->exports.end(); ++expIt){
-                if(expIt->name == newExport.name){
-                    throw LoaderException(std::string(fileName) + ": Export name must be unique.", true, cur - nameLen - fileBuf);
+                    cur++;
                 }
+                newModule->types.push_back(newType);
             }
-            // Export kind
-            switch(*(cur++)){
-                case 0x00:
-                    newExport.kind = func;
-                break;
-                case 0x01:
-                    newExport.kind = table;
-                break;
-                case 0x02:
-                    newExport.kind = mem;
-                break;
-                case 0x03:
-                    newExport.kind = global;
-                break;
-                default:
-                    throw LoaderException(std::string(fileName) + ": Unknown export type.", true, cur - 1 - fileBuf);
-            }
-            newExport.desc = Util::get_uleb128_32(cur);
-            newModule->exports.push_back(newExport);
         }
-    }
-    /** Section 8: Start **/
-    if(skipToSection(8, cur, endAddr) == 8){
-        newModule->start = new std::uint32_t;
-        *(newModule->start) = Util::get_uleb128_32(cur);
-        if(*(newModule->start) > newModule->funcs.size()){
-            throw LoaderException(std::string(fileName) + ": Index of start function must be defined.", true, cur - fileBuf);
-        }
-        FuncType &startFuncType = newModule->types.at(newModule->funcs.at(*(newModule->start)).typeidx);
-        if(startFuncType.paramTypes.size() > 0 || startFuncType.resultTypes.size() > 0){
-            throw LoaderException(std::string(fileName) + ": Start function must be a void function without parameters.", true, cur - fileBuf);
-        }
-    }
-    /** Section 9: Element **/
-    if(skipToSection(9, cur, endAddr) == 9){
-        std::uint32_t elemNum = Util::get_uleb128_32(cur);
-        while(elemNum-- > 0){
-            Elem newElem;
-            // Index
-            if(Util::get_uleb128_32(cur)){
-                throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
-            }
-            // Offset
-            if((*(cur++)) == 0x41){
-                newElem.offset = Util::get_leb128_32(cur);
-            }else{
-                throw LoaderException(std::string(fileName) + ": Element offset must be an i32.const expression.", true, cur - 1 - fileBuf);
-            }
-            cur++; // Skip end
-            // Init
-            std::uint32_t initNum = Util::get_uleb128_32(cur);
-            while(initNum-- > 0){
-                std::uint32_t initIndex = Util::get_uleb128_32(cur);
-                if(initIndex > newModule->funcs.size()){
-                    throw LoaderException(std::string(fileName) + ": Index of element function must be defined.", true, cur - fileBuf);
+        /** Section 2: Import **/
+        if(skipToSection(2, cur, endAddr) == 2){
+            std::uint32_t importNum = Util::get_uleb128_32(cur);
+            while(importNum-- > 0){
+                Import newImport;
+                // Get module name length
+                std::uint32_t depNameLen = Util::get_uleb128_32(cur);
+                // Get module name
+                char depName[depNameLen + 1];
+                depName[depNameLen] = '\0';
+                strncpy(depName, cur, depNameLen);
+                cur += depNameLen;
+                newImport.module = depName;
+                // Get name length
+                std::uint32_t nameLen = Util::get_uleb128_32(cur);
+                // Get name
+                char name[nameLen + 1];
+                name[nameLen] = '\0';
+                strncpy(name, cur, nameLen);
+                cur += nameLen;
+                newImport.name = name;
+                // Load dependency
+                if(modules.find(depName) == modules.end()){
+                    load((pathStr + depName).c_str());
                 }
-                newElem.init.push_back(initIndex);
-            }
-            newModule->elem.push_back(newElem);
-        }
-    }
-    /** Section 10: Code **/
-    if(skipToSection(10, cur, endAddr) == 10){
-        std::uint32_t codeNum = Util::get_uleb128_32(cur);
-        if(codeNum != newModule->funcs.size()){
-            throw LoaderException(std::string(fileName) + ": Code count does not match function count.", true, cur - fileBuf);
-        }
-        for(std::uint32_t i = 0; i < codeNum; ++i){
-            std::uint32_t codeSize = Util::get_leb128_32(cur);
-            char *curAddr = cur;
-            // Locals
-            std::uint32_t localCount = Util::get_leb128_32(cur);
-            while(localCount-- > 0){
-                std::uint32_t typeCount = Util::get_leb128_32(cur);
-                ValType newType;
+                // import kind
                 switch(*(cur++)){
-                    case 0x7f:
-                        newType = i32;
+                    case 0x00:
+                        newImport.kind = func;
+                        newImport.desc.funcType = new std::uint32_t;
+                        *(newImport.desc.funcType) = Util::get_uleb128_32(cur);
+                        if(*(newImport.desc.funcType) >= newModule->types.size()){
+                            throw LoaderException(std::string(fileName) + ": Type index of imported function must be defined.", true, cur - 1 - fileBuf);
+                        }
                     break;
-                    case 0x7e:
-                        newType = i64;
+                    case 0x01:
+                        newImport.kind = table;
+                        newImport.desc.table = new Limits;
+                        if(*cur++ != 0x70){
+                            throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
+                        }
+                        newImport.desc.table->flag = *(cur++);
+                        newImport.desc.table->min = Util::get_uleb128_32(cur);
+                        if(newImport.desc.table->flag){
+                            newImport.desc.table->max = Util::get_uleb128_32(cur);
+                        }
                     break;
-                    case 0x7d:
-                        newType = f32;
+                    case 0x02:
+                        newImport.kind = mem;
+                        newImport.desc.mem = new Limits;
+                        newImport.desc.mem->flag = *(cur++);
+                        newImport.desc.mem->min = Util::get_uleb128_32(cur);
+                        if(newImport.desc.mem->flag){
+                            newImport.desc.mem->max = Util::get_uleb128_32(cur);
+                        }
                     break;
-                    case 0x7c:
-                        newType = f64;
+                    case 0x03:
+                        newImport.kind = global;
+                        newImport.desc.global = new Global;
+                        switch(*(cur++)){
+                            case 0x7f:
+                                newImport.desc.global->value.type = i32;
+                            break;
+                            case 0x7e:
+                                newImport.desc.global->value.type = i64;
+                            break;
+                            case 0x7d:
+                                newImport.desc.global->value.type = f32;
+                            break;
+                            case 0x7c:
+                                newImport.desc.global->value.type = f64;
+                            break;
+                            default:
+                                throw LoaderException(std::string(fileName) + ": Unknown import global value type.", true, cur - 1 - fileBuf);
+                        }
+                        if(*(cur++)){
+                            throw LoaderException(std::string(fileName) + ": Only immutable global can be imported.", true, cur - 1 - fileBuf);
+                        }
+                        newImport.desc.global->mut = false;
                     break;
                     default:
-                        throw LoaderException(std::string(fileName) + ": Unknown local type.", true, cur - 1 - fileBuf);
+                        throw LoaderException(std::string(fileName) + ": Unknown import type.", true, cur - 1 - fileBuf);
                 }
-                while(typeCount-- > 0){
-                    newModule->funcs[i].localTypes.push_back(newType);
+                newModule->imports.push_back(newImport);
+            }
+        }
+        /** Section 3: Function **/
+        if(skipToSection(3, cur, endAddr) == 3){
+            std::uint32_t funcNum = Util::get_uleb128_32(cur);
+            while(funcNum-- > 0){
+                Func newFunc;
+                newFunc.typeidx = Util::get_uleb128_32(cur);
+                newModule->funcs.push_back(newFunc);
+            }
+        }
+        /** Section 4: Table **/
+        if(skipToSection(4, cur, endAddr) == 4){
+            if(*cur++ > 1){
+                throw LoaderException(std::string(fileName) + ": There's only one table allowed currently.", true, cur - 1 - fileBuf);
+            }
+            if(*cur++ != 0x70){
+                throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
+            }
+            newModule->table.flag = *(cur++);
+            newModule->table.min = Util::get_uleb128_32(cur);
+            if(newModule->table.flag){
+                newModule->table.max = Util::get_uleb128_32(cur);
+            }
+        }
+        /** Section 5: Memory **/
+        if(skipToSection(5, cur, endAddr) == 5){
+            if(*cur++ > 1){
+                throw LoaderException(std::string(fileName) + ": There's only one memory allowed currently.", true, cur - 1 - fileBuf);
+            }
+            newModule->mem.flag = *(cur++);
+            newModule->mem.min = Util::get_uleb128_32(cur);
+            if(newModule->mem.flag){
+                newModule->mem.max = Util::get_uleb128_32(cur);
+            }
+        }
+        /** Section 6: Global **/
+        if(skipToSection(6, cur, endAddr) == 6){
+            std::uint32_t globalNum = Util::get_uleb128_32(cur);
+            while(globalNum-- > 0){
+                Global newGlobal;
+                // Set value type
+                switch(*(cur++)){
+                    case 0x7f:
+                        newGlobal.value.type = i32;
+                    break;
+                    case 0x7e:
+                        newGlobal.value.type = i64;
+                    break;
+                    case 0x7d:
+                        newGlobal.value.type = f32;
+                    break;
+                    case 0x7c:
+                        newGlobal.value.type = f64;
+                    break;
+                    default:
+                        throw LoaderException(std::string(fileName) + ": Unknown global value type.", true, cur - 1 - fileBuf);
                 }
+                // Set mut
+                newGlobal.mut = *(cur++);
+                // Set value
+                switch(*(cur++)){
+                    case 0x41:
+                        newGlobal.value.data.i32 = Util::get_leb128_32(cur);
+                    break;
+                    case 0x42:
+                        newGlobal.value.data.i64 = Util::get_leb128_64(cur);
+                    break;
+                    case 0x43:
+                        newGlobal.value.data.i32 = Util::toLittle32(*((uint32_t *)cur));
+                        cur += 4;
+                    break;
+                    case 0x44:
+                        newGlobal.value.data.i64 = Util::toLittle64(*((uint64_t *)cur));
+                        cur += 8;
+                    break;
+                    default:
+                        throw LoaderException(std::string(fileName) + ": Global must be initialized with a constant expression.", true, cur - 1 - fileBuf);
+                }
+                // Skip end
+                cur++;
+                // Push to module
+                newModule->globals.push_back(newGlobal);
             }
-            // Code
-            codeSize -= cur - curAddr;
-            newModule->funcs[i].body.assign(cur, cur + codeSize);
-            cur += codeSize;
         }
-    }
-    /** Section 11: Data **/
-    if(skipToSection(11, cur, endAddr) == 11){
-        std::uint32_t dataNum = Util::get_uleb128_32(cur);
-        while(dataNum-- > 0){
-            Data newData;
-            // Index
-            if(Util::get_uleb128_32(cur)){
-                throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
+        /** Section 7: Export **/
+        if(skipToSection(7, cur, endAddr) == 7){
+            std::uint32_t exportNum = Util::get_uleb128_32(cur);
+            while(exportNum-- > 0){
+                Export newExport;
+                // Get name length
+                std::uint32_t nameLen = Util::get_uleb128_32(cur);
+                // Get name
+                char name[nameLen + 1];
+                name[nameLen] = '\0';
+                strncpy(name, cur, nameLen);
+                cur += nameLen;
+                newExport.name = name;
+                for(std::vector<Export>::iterator expIt = newModule->exports.begin(); expIt != newModule->exports.end(); ++expIt){
+                    if(expIt->name == newExport.name){
+                        throw LoaderException(std::string(fileName) + ": Export name must be unique.", true, cur - nameLen - fileBuf);
+                    }
+                }
+                // Export kind
+                switch(*(cur++)){
+                    case 0x00:
+                        newExport.kind = func;
+                    break;
+                    case 0x01:
+                        newExport.kind = table;
+                    break;
+                    case 0x02:
+                        newExport.kind = mem;
+                    break;
+                    case 0x03:
+                        newExport.kind = global;
+                    break;
+                    default:
+                        throw LoaderException(std::string(fileName) + ": Unknown export type.", true, cur - 1 - fileBuf);
+                }
+                newExport.desc = Util::get_uleb128_32(cur);
+                newModule->exports.push_back(newExport);
             }
-            // Offset
-            if((*(cur++)) == 0x41){
-                newData.offset = Util::get_leb128_32(cur);
-            }else{
-                throw LoaderException(std::string(fileName) + ": Data offset must be an i32.const expression.", true, cur - 1 - fileBuf);
-            }
-            cur++; // Skip end
-            // Init data
-            std::uint32_t dataSize = Util::get_uleb128_32(cur);
-            newData.init.assign(cur, cur + dataSize);
-            cur += dataSize;
-            newModule->data.push_back(newData);
         }
+        /** Section 8: Start **/
+        if(skipToSection(8, cur, endAddr) == 8){
+            newModule->start = new std::uint32_t;
+            *(newModule->start) = Util::get_uleb128_32(cur);
+            if(*(newModule->start) > newModule->funcs.size()){
+                throw LoaderException(std::string(fileName) + ": Index of start function must be defined.", true, cur - fileBuf);
+            }
+            FuncType &startFuncType = newModule->types.at(newModule->funcs.at(*(newModule->start)).typeidx);
+            if(startFuncType.paramTypes.size() > 0 || startFuncType.resultTypes.size() > 0){
+                throw LoaderException(std::string(fileName) + ": Start function must be a void function without parameters.", true, cur - fileBuf);
+            }
+        }
+        /** Section 9: Element **/
+        if(skipToSection(9, cur, endAddr) == 9){
+            std::uint32_t elemNum = Util::get_uleb128_32(cur);
+            while(elemNum-- > 0){
+                Elem newElem;
+                // Index
+                if(Util::get_uleb128_32(cur)){
+                    throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
+                }
+                // Offset
+                if((*(cur++)) == 0x41){
+                    newElem.offset = Util::get_leb128_32(cur);
+                }else{
+                    throw LoaderException(std::string(fileName) + ": Element offset must be an i32.const expression.", true, cur - 1 - fileBuf);
+                }
+                cur++; // Skip end
+                // Init
+                std::uint32_t initNum = Util::get_uleb128_32(cur);
+                while(initNum-- > 0){
+                    std::uint32_t initIndex = Util::get_uleb128_32(cur);
+                    if(initIndex > newModule->funcs.size()){
+                        throw LoaderException(std::string(fileName) + ": Index of element function must be defined.", true, cur - fileBuf);
+                    }
+                    newElem.init.push_back(initIndex);
+                }
+                newModule->elem.push_back(newElem);
+            }
+        }
+        /** Section 10: Code **/
+        if(skipToSection(10, cur, endAddr) == 10){
+            std::uint32_t codeNum = Util::get_uleb128_32(cur);
+            if(codeNum != newModule->funcs.size()){
+                throw LoaderException(std::string(fileName) + ": Code count does not match function count.", true, cur - fileBuf);
+            }
+            for(std::uint32_t i = 0; i < codeNum; ++i){
+                std::uint32_t codeSize = Util::get_leb128_32(cur);
+                char *curAddr = cur;
+                // Locals
+                std::uint32_t localCount = Util::get_leb128_32(cur);
+                while(localCount-- > 0){
+                    std::uint32_t typeCount = Util::get_leb128_32(cur);
+                    ValType newType;
+                    switch(*(cur++)){
+                        case 0x7f:
+                            newType = i32;
+                        break;
+                        case 0x7e:
+                            newType = i64;
+                        break;
+                        case 0x7d:
+                            newType = f32;
+                        break;
+                        case 0x7c:
+                            newType = f64;
+                        break;
+                        default:
+                            throw LoaderException(std::string(fileName) + ": Unknown local type.", true, cur - 1 - fileBuf);
+                    }
+                    while(typeCount-- > 0){
+                        newModule->funcs[i].localTypes.push_back(newType);
+                    }
+                }
+                // Code
+                codeSize -= cur - curAddr;
+                newModule->funcs[i].body.assign(cur, cur + codeSize);
+                cur += codeSize;
+            }
+        }
+        /** Section 11: Data **/
+        if(skipToSection(11, cur, endAddr) == 11){
+            std::uint32_t dataNum = Util::get_uleb128_32(cur);
+            while(dataNum-- > 0){
+                Data newData;
+                // Index
+                if(Util::get_uleb128_32(cur)){
+                    throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
+                }
+                // Offset
+                if((*(cur++)) == 0x41){
+                    newData.offset = Util::get_leb128_32(cur);
+                }else{
+                    throw LoaderException(std::string(fileName) + ": Data offset must be an i32.const expression.", true, cur - 1 - fileBuf);
+                }
+                cur++; // Skip end
+                // Init data
+                std::uint32_t dataSize = Util::get_uleb128_32(cur);
+                newData.init.assign(cur, cur + dataSize);
+                cur += dataSize;
+                newModule->data.push_back(newData);
+            }
+        }
+    }catch(const char *lebDesc){
+        throw LoaderException(std::string(fileName) + ": " + lebDesc, true, cur - fileBuf);
     }
     // Get imports
     std::vector<ExternVal> importVals;

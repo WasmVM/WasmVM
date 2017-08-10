@@ -1,6 +1,6 @@
 #include <LoaderException.h>
 
-LoaderException::LoaderException(std::string desc, bool showAddress, std::uint64_t addr): Exception(desc),
+LoaderException::LoaderException(std::string desc, bool showAddress, std::uint64_t addr): desc(desc),
     address(addr), showAddress(showAddress){
 }
 

@@ -4,6 +4,7 @@
 #include <Instance.h>
 #include <Store.h>
 #include <Stack.h>
+#include <Exception.h>
 
 class Core{
 public:
@@ -13,7 +14,6 @@ public:
 private:
 	Store &store;
 	Stack coreStack;
-	ModuleInst *module;
 };
 
 #endif

@@ -8,7 +8,6 @@
   (global (mut f64) f64.const 4.2)
   (elem 0 (i32.const 2) 0 1)
   (data 0 (i32.const 393213) "ggg")
-  (start 1)
   (table 2 6 anyfunc)
   (func (local i32 i32 i64 i32 i64))
   (func
