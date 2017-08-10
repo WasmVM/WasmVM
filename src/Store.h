@@ -6,6 +6,7 @@
 
 class Store{
 public:
+    ~Store();
     std::vector<FuncInst *> funcs;
     std::vector<TableInst *> tables;
     std::vector<MemInst *> mems;

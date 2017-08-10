@@ -1,6 +1,12 @@
 #ifndef UTIL_DEF
 #define UTIL_DEF
 
+#ifdef _WIN32
+#define PATH_SEPARATOR "\"
+#else
+#define PATH_SEPARATOR "/"
+#endif
+
 #include <cstdint>
 #include <Exception.h>
 

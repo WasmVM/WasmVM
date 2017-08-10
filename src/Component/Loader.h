@@ -20,6 +20,8 @@
 class Loader {
 public:
     Loader(Store &store, std::map<std::string, ModuleInst *> &moduleInsts);
+    ~Loader();
+
     void load(const char *fileName);
 private:
     Store &store;

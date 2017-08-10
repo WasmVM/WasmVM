@@ -39,7 +39,7 @@ public:
     std::string name;
     ExternType kind;
     union {
-        std::uint32_t *func;
+        std::uint32_t *funcType;
         Limits *table;
         Limits *mem;
         Global *global;
@@ -55,6 +55,7 @@ public:
 
 class Module {
 public:
+    ~Module();
     std::vector<FuncType> types;
     std::vector<Func> funcs;
     /* 1. ElemType is anyfunc currently, needn't to specify now.

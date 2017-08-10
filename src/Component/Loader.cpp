@@ -3,10 +3,15 @@
 Loader::Loader(Store &store, std::map<std::string, ModuleInst *> &moduleInsts):
     store(store), moduleInsts(moduleInsts){
 }
+Loader::~Loader(){
+    for(std::map<std::string, Module *>::iterator modIt = modules.begin(); modIt != modules.end(); ++modIt){
+        delete modIt->second;
+    }
+}
 void Loader::load(const char *fileName){
     std::string moduleName(fileName);
-    std::string pathStr = moduleName.substr(0, moduleName.rfind("/") + 1);
-    moduleName = moduleName.substr(moduleName.rfind("/") + 1);
+    std::string pathStr = moduleName.substr(0, moduleName.rfind(PATH_SEPARATOR) + 1);
+    moduleName = moduleName.substr(moduleName.rfind(PATH_SEPARATOR) + 1);
     // Never load exist module
     if(modules.find(moduleName) != modules.end()){
         return;
@@ -133,12 +138,11 @@ void Loader::load(const char *fileName){
             switch(*(cur++)){
                 case 0x00:
                     newImport.kind = func;
-                    newImport.desc.func = new std::uint32_t;
-                    *(newImport.desc.func) = Util::get_uleb128_32(cur);
-                    if(*(newImport.desc.func) >= newModule->types.size()){
+                    newImport.desc.funcType = new std::uint32_t;
+                    *(newImport.desc.funcType) = Util::get_uleb128_32(cur);
+                    if(*(newImport.desc.funcType) >= newModule->types.size()){
                         throw LoaderException(std::string(fileName) + ": Type index of imported function must be defined.", true, cur - 1 - fileBuf);
                     }
-
                 break;
                 case 0x01:
                     newImport.kind = table;
@@ -507,9 +511,11 @@ ModuleInst * Loader::allocModule(Module &module, std::vector<ExternVal> &importV
     return moduleInst;
 }
 void Loader::instantiate(ModuleInst &moduleInst, Module &module, std::vector<ExternVal> &importVals){
+    // Import
     if(importVals.size() != module.imports.size()){
         throw LoaderException("Import size does not match provided import count.");
     }
+    // Element
     for(std::vector<Elem>::iterator elemIt = module.elem.begin(); elemIt != module.elem.end(); ++elemIt){
         TableInst *tableRef = store.tables.at(moduleInst.tableaddrs.at(0));
         std::uint32_t totalSize = elemIt->offset + elemIt->init.size();
@@ -528,6 +534,7 @@ void Loader::instantiate(ModuleInst &moduleInst, Module &module, std::vector<Ext
             }
         }
     }
+    // Data
     for(std::vector<Data>::iterator dataIt = module.data.begin(); dataIt != module.data.end(); ++dataIt){
         MemInst *memRef = store.mems.at(moduleInst.memaddrs.at(0));
         std::uint32_t totalSize = dataIt->offset + dataIt->init.size();
@@ -542,26 +549,52 @@ void Loader::instantiate(ModuleInst &moduleInst, Module &module, std::vector<Ext
             store.mems.at(moduleInst.memaddrs.at(0))->data.at(dataIt->offset + i) = dataIt->init.at(i);
         }
     }
+    // Start
+    moduleInst.start = module.start;
+    if(module.start != nullptr){
+        *(moduleInst.start) = moduleInst.funcaddrs.at(*(moduleInst.start));
+    }
 }
 void Loader::getImportVals(Module *module, std::vector<ExternVal> &externVals){
-    for(std::vector<Import>::iterator it = module->imports.begin(); it != module->imports.end(); ++it){
-        std::vector<ExportInst> &modExports = moduleInsts[it->module]->exports;
+    for(std::vector<Import>::iterator impIt = module->imports.begin(); impIt != module->imports.end(); ++impIt){
+        std::vector<ExportInst> &modExports = moduleInsts[impIt->module]->exports;
         bool found = false;
         for(std::vector<ExportInst>::iterator expIt = modExports.begin(); expIt != modExports.end(); ++expIt){
             ExternVal exp = expIt->externval;
-            if(expIt->name == it->name){
+            if(expIt->name == impIt->name){
+                if(impIt->kind != exp.type){
+                    throw LoaderException("External type not match import type.");
+                }
                 switch(exp.type){
                     case func:
-                        exp.addr = moduleInsts[it->module]->funcaddrs[exp.addr];
+                        exp.addr = moduleInsts[impIt->module]->funcaddrs[exp.addr];
+                        if(store.funcs.at(exp.addr)->type != module->types.at(*(impIt->desc.funcType))){
+                            throw LoaderException("External function type not match import function type.");
+                        }
                     break;
                     case table:
-                        exp.addr = moduleInsts[it->module]->tableaddrs[exp.addr];
+                        exp.addr = moduleInsts[impIt->module]->tableaddrs[exp.addr];
+                        if(store.tables.at(exp.addr)->elem.size() < impIt->desc.table->min){
+                            throw LoaderException("External table size must be larger than or equal to import minimum.");
+                        }
+                        if(impIt->desc.table->flag && store.tables.at(exp.addr)->max > impIt->desc.table->max){
+                            throw LoaderException("External table maximum must be smaller than or equal to import maximum.");
+                        }
                     break;
                     case mem:
-                        exp.addr = moduleInsts[it->module]->memaddrs[exp.addr];
+                        exp.addr = moduleInsts[impIt->module]->memaddrs[exp.addr];
+                        if(store.mems.at(exp.addr)->data.size() < impIt->desc.mem->min){
+                            throw LoaderException("External memory size must be larger than or equal to import minimum.");
+                        }
+                        if(impIt->desc.mem->flag && store.mems.at(exp.addr)->max > impIt->desc.mem->max){
+                            throw LoaderException("External memory maximum must be smaller than or equal to import maximum.");
+                        }
                     break;
                     case global:
-                        exp.addr = moduleInsts[it->module]->globaladdrs[exp.addr];
+                        exp.addr = moduleInsts[impIt->module]->globaladdrs[exp.addr];
+                        if(store.globals.at(exp.addr)->val.type != impIt->desc.global->value.type){
+                            throw LoaderException("External memory size must be larger than or equal to import minimum.");
+                        }
                     break;
                     default:
                         throw LoaderException("No such export type");
@@ -572,7 +605,7 @@ void Loader::getImportVals(Module *module, std::vector<ExternVal> &externVals){
             }
         }
         if(!found){
-            throw LoaderException("Can't find export name " + it->name + " in module " + it->module);
+            throw LoaderException("Can't find export name " + impIt->name + " in module " + impIt->module);
         }
     }
 }

@@ -33,3 +33,26 @@ Value& Value::operator=(Value val){
     }
     return *this;
 }
+
+bool FuncType::operator==(const FuncType &ty){
+    if(ty.paramTypes.size() != paramTypes.size()){
+        return false;
+    }
+    for(int i = 0; i < paramTypes.size(); ++i){
+        if(paramTypes.at(i) != ty.paramTypes.at(i)){
+            return false;
+        }
+    }
+    if(ty.resultTypes.size() != resultTypes.size()){
+        return false;
+    }
+    for(int i = 0; i < resultTypes.size(); ++i){
+        if(resultTypes.at(i) != ty.resultTypes.at(i)){
+            return false;
+        }
+    }
+    return true;
+}
+bool FuncType::operator!=(const FuncType &ty){
+    return !(*this == ty);
+}

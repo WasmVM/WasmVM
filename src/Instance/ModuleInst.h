@@ -14,6 +14,7 @@ public:
     std::vector<uint32_t> memaddrs;
     std::vector<uint32_t> globaladdrs;
     std::vector<ExportInst> exports;
+    std::uint32_t *start;
 };
 
 #endif

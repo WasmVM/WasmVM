@@ -34,6 +34,8 @@ public:
 
 class FuncType{
 public:
+    bool operator==(const FuncType&);
+    bool operator!=(const FuncType&);
     std::vector<ValType> paramTypes;
     std::vector<ValType> resultTypes;
 };

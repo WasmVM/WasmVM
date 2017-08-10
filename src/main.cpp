@@ -1,4 +1,5 @@
 #include <vector>
+#include <string>
 #include <iostream>
 #include <exception>
 #include <Store.h>
@@ -35,6 +36,12 @@ int main(int argc, char const *argv[]){
             }
         }
     }
-    // Clean
+    // Get main module name
+    std::string mainModule(argv[1]);
+    mainModule = mainModule.substr(mainModule.rfind(PATH_SEPARATOR) + 1);
+    // Clean module
+    for(std::map<std::string, ModuleInst *>::iterator moduleIt = moduleInsts.begin(); moduleIt != moduleInsts.end(); ++moduleIt){
+        delete moduleIt->second;
+    }
     return 0;
 }
