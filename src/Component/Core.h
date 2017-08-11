@@ -6,6 +6,7 @@
 #include <Stack.h>
 #include <ControlException.h>
 #include <ControlInstr.h>
+#include <Decoder.h>
 
 class Core{
 public:

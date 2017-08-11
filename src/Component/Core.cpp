@@ -11,6 +11,6 @@ void Core::run(ModuleInst *moduleInst){
 	Instruction::invoke(*(moduleInst->start), store, coreStack);
 	// Run
 	while(coreStack.curLabel != nullptr){
-		// TODO: Decode and execute
+		Decoder::decode(store, coreStack);
 	}
 }

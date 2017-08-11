@@ -9,6 +9,7 @@ add_library( WAIntpCore
 	src/Component/Loader.cpp
 	src/Component/Util.cpp
 	src/Component/Core.cpp
+	src/Component/Decoder.cpp
 	src/Exception/Exception.cpp
 	src/Exception/LoaderException.cpp
 	src/Exception/ControlException.cpp
