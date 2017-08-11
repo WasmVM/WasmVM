@@ -556,7 +556,8 @@ void Loader::instantiate(ModuleInst &moduleInst, Module &module, std::vector<Ext
     // Start
     moduleInst.start = module.start;
     if(module.start != nullptr){
-        *(moduleInst.start) = moduleInst.funcaddrs.at(*(moduleInst.start));
+        moduleInst.start = new std::uint32_t;
+        *(moduleInst.start) = moduleInst.funcaddrs.at(*(module.start));
     }
 }
 void Loader::getImportVals(Module *module, std::vector<ExternVal> &externVals){

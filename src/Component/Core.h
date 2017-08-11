@@ -4,7 +4,8 @@
 #include <Instance.h>
 #include <Store.h>
 #include <Stack.h>
-#include <Exception.h>
+#include <ControlException.h>
+#include <ControlInstr.h>
 
 class Core{
 public:
