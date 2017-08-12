@@ -21,21 +21,25 @@ std::uint16_t Util::toLittle16(const std::uint16_t &val, bool force){
 }
 std::uint32_t Util::toLittle32(const std::uint32_t &val, bool force){
     if(force || bigEndian){
-        return (std::uint32_t)toLittle16(val >> 16, force) | ((std::uint32_t)toLittle16(val) << 16, force);
+        return (std::uint32_t)toLittle16(val >> 16, force) | ((std::uint32_t)toLittle16(val, force) << 16);
     }else{
         return val;
     }
 }
 std::uint64_t Util::toLittle64(const std::uint64_t &val, bool force){
     if(force || bigEndian){
-        return (std::uint64_t)toLittle32(val >> 32, force) | ((std::uint64_t)toLittle32(val) << 32, force);
+        return (std::uint64_t)toLittle32(val >> 32, force) | ((std::uint64_t)toLittle32(val, force) << 32);
     }else{
         return val;
     }
 }
-std::uint32_t Util::get_uleb128_32(char* &ptr){
+
+std::uint32_t Util::get_uleb128_32(char* &ptr, const char *max){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
+        if(ptr > max){
+            throw "pointer exceed max while decode uleb128_32.";
+        }
         std::uint32_t byte = *(ptr++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
@@ -49,11 +53,14 @@ std::uint32_t Util::get_uleb128_32(char* &ptr){
             break;
         }
     }
-    return ret;
+    return toLittle32(ret);
 }
-std::int32_t Util::get_leb128_32(char* &ptr){
+std::int32_t Util::get_leb128_32(char* &ptr, const char *max){
     std::int32_t ret = 0;
     for(int i = 0; i < 5; ++i){
+        if(ptr > max){
+            throw "pointer exceed max while decode leb128_32.";
+        }
         std::int32_t byte = *(ptr++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
@@ -85,11 +92,14 @@ std::int32_t Util::get_leb128_32(char* &ptr){
             break;
         }
     }
-    return ret;
+    return toLittle32(ret);
 }
-std::int64_t Util::get_leb128_64(char* &ptr){
+std::int64_t Util::get_leb128_64(char* &ptr, const char *max){
     std::int64_t ret = 0;
     for(int i = 0; i < 10; ++i){
+        if(ptr > max){
+            throw "pointer exceed max while decode leb128_64.";
+        }
         std::int64_t byte = *(ptr++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
@@ -136,5 +146,5 @@ std::int64_t Util::get_leb128_64(char* &ptr){
             break;
         }
     }
-    return ret;
+    return toLittle64(ret);
 }

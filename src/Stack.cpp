@@ -1,6 +1,6 @@
 #include <Stack.h>
 
-Label::Label(): funcIdx(0), instrOffset(0){
+Label::Label(): funcIdx(0), instrOffset(0), loop(false), loopOffset(0){
 }
 Label::Label(const Label& lab){
     funcIdx = lab.funcIdx;
@@ -26,6 +26,21 @@ Frame& Frame::operator=(Frame frm){
     return *this;
 }
 
+Stack::~Stack(){
+    for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
+        switch(stackIt->type){
+            case value:
+                delete (Value *)stackIt->data;
+            break;
+            case label:
+                delete (Label *)stackIt->data;
+            break;
+            case frame:
+                delete (Frame *)stackIt->data;
+            break;
+        }
+    }
+}
 void Stack::push(Value val){
     StackElem elem;
     Value *inst = new Value(val);
@@ -39,6 +54,7 @@ void Stack::push(Label lab){
     elem.type = label;
     elem.data = inst;
     _stack.push_front(elem);
+    refreshLabel();
 }
 void Stack::push(Frame frm){
     StackElem elem;
@@ -53,6 +69,9 @@ StackElem &Stack::top(){
 StackElem Stack::pop(){
     StackElem elem = *(_stack.begin());
     _stack.pop_front();
+    if(elem.type == label){
+        refreshLabel();
+    }
     return elem;
 }
 size_t Stack::size(){
@@ -76,7 +95,6 @@ size_t Stack::valueCount(){
     }
     return ret;
 }
-
 void Stack::refreshLabel(){
     for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
         if(stackIt->type == label){

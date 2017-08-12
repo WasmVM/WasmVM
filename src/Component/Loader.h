@@ -13,9 +13,7 @@
 #include <LoaderException.h>
 #include <Store.h>
 #include <Util.h>
-
-#define WASM_MAGIC 0x6D736100 // Little endian
-#define WASM_VERSION 0x01
+#include <Bincode.h>
 
 class Loader {
 public:

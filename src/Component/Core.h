@@ -4,7 +4,7 @@
 #include <Instance.h>
 #include <Store.h>
 #include <Stack.h>
-#include <ControlException.h>
+#include <Exception.h>
 #include <ControlInstr.h>
 #include <Decoder.h>
 

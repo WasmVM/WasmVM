@@ -6,26 +6,30 @@ void Exception::setModuleInsts(std::map<std::string, ModuleInst *> *moduleInsts)
 }
 
 Exception::Exception(std::string desc, Stack &coreStack, ModuleInst *moduleInst):
-	desc(desc), coreStack(coreStack), moduleInst(moduleInst), moduleName(""), funcIdx(0), instrOffset(0)	
+	desc(desc), coreStack(coreStack), moduleInst(moduleInst)	
 {
 	bool labeled = false;
 	for(std::list<StackElem>::iterator stackIt = coreStack.begin(); stackIt != coreStack.end(); ++stackIt){
 		if(!labeled && stackIt->type == StackElemType::label){
-			funcIdx = ((Label *)stackIt->data)->funcIdx;
-			instrOffset = ((Label *)stackIt->data)->instrOffset;
 			labeled = true;
+			if(moduleInst == nullptr){
+				std::stringstream sstream;
+				sstream << "(func: " << ((Label *)stackIt->data)->funcIdx << " , instr: " << ((Label *)stackIt->data)->instrOffset << " ) " << desc;
+				this->desc = sstream.str();
+			}
 		}
 		if(moduleInst == nullptr && stackIt->type == StackElemType::frame){
-			moduleInst = ((Frame *)stackIt->data)->moduleInst;
+			this->moduleInst = ((Frame *)stackIt->data)->moduleInst;
 			break;
 		}
 	}
 	for(std::map<std::string, ModuleInst *>::iterator moduleIt = moduleInsts->begin(); moduleIt != moduleInsts->end(); ++moduleIt){
-		if(moduleIt->second == moduleInst){
-			moduleName = moduleIt->first;
+		if(moduleIt->second == this->moduleInst){
+			this->desc = moduleIt->first + " " + this->desc;
+			break;
 		}
 	}
 }
 std::string Exception::stackTrace(){
-	
+	return "";
 }

@@ -9,9 +9,9 @@
 
 class LoaderException{
 public:
+    std::string desc;
     std::uint64_t address;
     bool showAddress;
-    std::string desc;
     LoaderException(std::string desc, bool showAddress = false, std::uint64_t addr = 0);
 };
 

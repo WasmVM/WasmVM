@@ -5,7 +5,8 @@
 #include <Store.h>
 #include <Stack.h>
 #include <Instruction.h>
-#include <Exceptions.h>
+#include <Exception.h>
+#include <Bincode.h>
 
 namespace Decoder {
     void decode(Store &store, Stack &coreStack);

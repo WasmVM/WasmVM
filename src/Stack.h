@@ -10,6 +10,8 @@ class Label {
 public:
     uint32_t funcIdx;
     uint64_t instrOffset;
+    bool loop;
+    uint64_t loopOffset;
     std::vector<ValType> resultTypes;
     Label();
     Label(const Label&);
@@ -35,6 +37,9 @@ public:
 
 class Stack {
 public:
+
+    ~Stack();
+
     Label *curLabel = nullptr;
     
     void push(Value val);
@@ -46,9 +51,9 @@ public:
     std::list<StackElem>::iterator end();
     std::list<StackElem>::iterator begin();
     size_t valueCount();
-    void refreshLabel();
 private:
     std::list<StackElem> _stack;
+    inline void refreshLabel();
 };
 
 #endif

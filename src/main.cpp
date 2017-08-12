@@ -25,7 +25,7 @@ int main(int argc, char const *argv[]){
     // Load modules
     {
         Loader loader(mainStore, moduleInsts);
-        for (size_t i = 1; i < argc; i++){
+        for (int i = 1; i < argc; i++){
             try {
                 loader.load(argv[i]);
             } catch (LoaderException &e){
@@ -44,14 +44,12 @@ int main(int argc, char const *argv[]){
     try{
         core.run(moduleInsts[mainModule]);
     } catch (Exception &e){
-        if(e.moduleName != ""){
-            std::cerr << e.moduleName << " (Function " << e.funcIdx << ", Offset " << e.instrOffset << "): ";
-        }
         std::cerr << e.desc << std::endl;
         return -1;
     }
     // Clean module
     for(std::map<std::string, ModuleInst *>::iterator moduleIt = moduleInsts.begin(); moduleIt != moduleInsts.end(); ++moduleIt){
+        delete moduleIt->second->start;
         delete moduleIt->second;
     }
     return 0;

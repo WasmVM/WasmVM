@@ -8,7 +8,7 @@ void Core::run(ModuleInst *moduleInst){
 	if(moduleInst->start == nullptr){
 		throw Exception("No start function in this module.", coreStack, moduleInst);
 	}
-	Instruction::invoke(*(moduleInst->start), store, coreStack);
+	Instruction::invoke(*(moduleInst->start), store, coreStack, moduleInst);
 	// Run
 	while(coreStack.curLabel != nullptr){
 		Decoder::decode(store, coreStack);

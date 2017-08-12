@@ -2,6 +2,8 @@
 #define EXCEPTION_DEF
 
 #include <map>
+#include <vector>
+#include <sstream>
 #include <cstdint>
 #include <string>
 #include <ModuleInst.h>
@@ -18,9 +20,6 @@ public:
     std::string desc;
     Stack &coreStack;
     ModuleInst *moduleInst;
-    std::string moduleName;
-    std::uint32_t funcIdx;
-    std::uint64_t instrOffset;
 };
 
 #endif
