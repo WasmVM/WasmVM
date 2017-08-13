@@ -16,7 +16,19 @@
 #define IMPORT_Mem 0x02
 #define IMPORT_Global 0x03
 
+#define OP_CTRL_UNREACHABLE 0x00
+#define OP_CTRL_NOP 0x01
+#define OP_CTRL_BLOCK 0x02
+#define OP_CTRL_LOOP 0x03
+#define OP_CTRL_IF 0x04
+#define OP_CTRL_ELSE 0x05
 #define OP_CTRL_END 0x0B
+#define OP_CTRL_BR 0x0C
+#define OP_CTRL_BR_IF 0x0D
+#define OP_CTRL_BR_TABLE 0x0E
+#define OP_CTRL_RETURN 0x0F
+#define OP_CTRL_CALL 0x10
+#define OP_CTRL_CALL_INDIRECT 0x11
 #define OP_i32_const 0x41
 #define OP_i64_const 0x42
 #define OP_f32_const 0x43

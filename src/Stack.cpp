@@ -1,16 +1,18 @@
 #include <Stack.h>
 
-Label::Label(): funcIdx(0), instrOffset(0), loop(false), loopOffset(0){
+Label::Label(bool cont): funcIdx(0), instrOffset(0), cont(cont){
 }
 Label::Label(const Label& lab){
     funcIdx = lab.funcIdx;
     instrOffset = lab.instrOffset;
     resultTypes = lab.resultTypes;
+    cont = lab.cont;
 }
 Label& Label::operator=(Label lab){
     funcIdx = lab.funcIdx;
     instrOffset = lab.instrOffset;
     resultTypes = lab.resultTypes;
+    cont = lab.cont;
     return *this;
 }
 
@@ -54,7 +56,7 @@ void Stack::push(Label lab){
     elem.type = label;
     elem.data = inst;
     _stack.push_front(elem);
-    refreshLabel();
+    curLabel = inst;
 }
 void Stack::push(Frame frm){
     StackElem elem;
@@ -62,6 +64,7 @@ void Stack::push(Frame frm){
     elem.type = frame;
     elem.data = inst;
     _stack.push_front(elem);
+    curFrame = inst;
 }
 StackElem &Stack::top(){
     return *(_stack.begin());
@@ -70,7 +73,21 @@ StackElem Stack::pop(){
     StackElem elem = *(_stack.begin());
     _stack.pop_front();
     if(elem.type == label){
-        refreshLabel();
+        for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
+            if(stackIt->type == label){
+                curLabel = (Label *)stackIt->data;
+                return elem;
+            }
+        }
+        curLabel = nullptr;
+    }else if(elem.type == frame){
+        for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
+            if(stackIt->type == frame){
+                curFrame = (Frame *)stackIt->data;
+                return elem;
+            }
+        }
+        curFrame = nullptr;
     }
     return elem;
 }
@@ -94,13 +111,4 @@ size_t Stack::valueCount(){
         }
     }
     return ret;
-}
-void Stack::refreshLabel(){
-    for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
-        if(stackIt->type == label){
-            curLabel = (Label *)stackIt->data;
-            return;
-        }
-    }
-    curLabel = nullptr;
 }

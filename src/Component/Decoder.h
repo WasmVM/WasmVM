@@ -1,6 +1,8 @@
 #ifndef DECODER_DEF
 #define DECODER_DEF
 
+#include <iostream>
+#include <cstdio>
 #include <Instance.h>
 #include <Store.h>
 #include <Stack.h>

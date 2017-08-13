@@ -1,12 +1,15 @@
 (module
   (func $start
-    block (result i32)
-    i32.const 2
-    i32.const 3
+  	i32.const 255
+  	drop
+    block
+    i32.const 254
+    i32.const 253
     i32.add
+    drop
     end
+    i32.const 252
     drop
   )
-  (export "start" (func $start))
   (start $start)
 )
