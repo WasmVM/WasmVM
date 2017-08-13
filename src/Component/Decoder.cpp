@@ -7,14 +7,17 @@ void Decoder::decode(Store &store, Stack &coreStack){
     switch(bincode){
         case OP_CTRL_NOP:
         break;
-        case OP_CTRL_END:
-            Instruction::ctrl_end(coreStack);
-        break;
         case OP_CTRL_BLOCK:
             Instruction::ctrl_block(coreStack, funcBody.at((coreStack.curLabel->instrOffset)));
         break;
         case OP_CTRL_LOOP:
             Instruction::ctrl_loop(coreStack, funcBody.at((coreStack.curLabel->instrOffset)));
+        break;
+        case OP_CTRL_END:
+            Instruction::ctrl_end(coreStack);
+        break;
+        case OP_CTRL_CALL:
+            Instruction::ctrl_call(Util::get_uleb128_32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
         break;
         default:
         {

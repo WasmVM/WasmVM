@@ -20,6 +20,9 @@ public:
     static std::uint32_t get_uleb128_32(char* &ptr, const char *max);
     static std::int32_t get_leb128_32(char* &ptr, const char *max);
     static std::int64_t get_leb128_64(char* &ptr, const char *max);
+    static std::uint32_t get_uleb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
+    static std::int32_t get_leb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
+    static std::int64_t get_leb128_64(std::vector<char> &funcBody, std::uint64_t &instrOffset);
 };
 
 #endif

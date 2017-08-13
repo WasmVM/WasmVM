@@ -9,6 +9,7 @@
 #include <Instruction.h>
 #include <Exception.h>
 #include <Bincode.h>
+#include <Util.h>
 
 namespace Decoder {
     void decode(Store &store, Stack &coreStack);

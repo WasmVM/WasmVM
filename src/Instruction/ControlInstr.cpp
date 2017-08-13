@@ -131,12 +131,13 @@ void Instruction::ctrl_return(Stack &coreStack){
 		resultValues.push_back(*((Value *)coreStack.pop().data));
 	}
 	// Check frame
-	if(coreStack->curFrame == nullptr){
+	if(coreStack.curFrame == nullptr){
 		throw Exception("[return] There is no frame to return.", coreStack);
 	}
-	// Pop unnecessary values and labels
-	while(coreStack.top().type != frame){
-		StackElem popElem = coreStack.pop();
+	// Pop unnecessary values, labels and a frame
+	StackElem popElem;
+	do{
+		popElem = coreStack.pop();
 		switch(popElem.type){
 			case value:
 				delete (Value *)popElem.data;
@@ -144,13 +145,22 @@ void Instruction::ctrl_return(Stack &coreStack){
 			case label:
 				delete (Label *)popElem.data;				
 			break;
+			case frame:
+				delete (Frame *)popElem.data;
+			break;
 		}
-	}
-	// Pop frame
-	delete (Frame *)coreStack.pop().data;
+	}while(popElem.type != frame);
 	// Push values
 	for(size_t i = 0; i < resCount; ++i){
 		coreStack.push(resultValues.back());
 		resultValues.pop_back();
 	}
+}
+void Instruction::ctrl_call(std::uint32_t funcAddr, Store &store, Stack &coreStack){
+	// Check function index exist
+	if(funcAddr > coreStack.curFrame->moduleInst->funcaddrs.size()){
+		throw Exception("[call] Function index not exist.", coreStack);
+	}
+	// Invoke
+	invoke(coreStack.curFrame->moduleInst->funcaddrs.at(funcAddr), store, coreStack);
 }
