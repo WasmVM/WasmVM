@@ -17,7 +17,7 @@ namespace Instruction{
 	//TODO: void ctrl_br(Stack &coreStack);
 	//TODO: void ctrl_br_if(Stack &coreStack);
 	//TODO: void ctrl_br_table(Stack &coreStack);
-	void ctrl_return(Stack &coreStack); //[Later]FIXME: Test
+	void ctrl_return(Stack &coreStack);
 	void ctrl_call(std::uint32_t funcAddr, Store &store, Stack &coreStack);
 	//TODO: void ctrl_call_indirect(Stack &coreStack);
 	void ctrl_end(Stack &coreStack);
