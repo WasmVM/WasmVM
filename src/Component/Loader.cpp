@@ -322,7 +322,7 @@ void Loader::load(const char *fileName){
         if(skipToSection(8, cur, endAddr) == 8){
             newModule->start = new std::uint32_t;
             *(newModule->start) = Util::get_uleb128_32(cur, endAddr);
-            if(*(newModule->start) > newModule->funcs.size()){
+            if(*(newModule->start) >= newModule->funcs.size()){
                 throw LoaderException(std::string(fileName) + ": Index of start function must be defined.", true, cur - fileBuf);
             }
             FuncType &startFuncType = newModule->types.at(newModule->funcs.at(*(newModule->start)).typeidx);
@@ -350,7 +350,7 @@ void Loader::load(const char *fileName){
                 std::uint32_t initNum = Util::get_uleb128_32(cur, endAddr);
                 while(initNum-- > 0){
                     std::uint32_t initIndex = Util::get_uleb128_32(cur, endAddr);
-                    if(initIndex > newModule->funcs.size()){
+                    if(initIndex >= newModule->funcs.size()){
                         throw LoaderException(std::string(fileName) + ": Index of element function must be defined.", true, cur - fileBuf);
                     }
                     newElem.init.push_back(initIndex);

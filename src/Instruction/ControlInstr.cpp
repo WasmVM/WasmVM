@@ -1,7 +1,7 @@
 #include <ControlInstr.h>
 
 void Instruction::invoke(std::uint32_t funcAddr, Store &store, Stack &coreStack, ModuleInst *moduleInst){
-	if(funcAddr > store.funcs.size()){
+	if(funcAddr >= store.funcs.size()){
 		throw Exception("[invoke] Function address not exist.", coreStack, moduleInst);
 	}
 	FuncInst *funcInst = store.funcs.at(funcAddr);
@@ -158,9 +158,54 @@ void Instruction::ctrl_return(Stack &coreStack){
 }
 void Instruction::ctrl_call(std::uint32_t funcAddr, Store &store, Stack &coreStack){
 	// Check function index exist
-	if(funcAddr > coreStack.curFrame->moduleInst->funcaddrs.size()){
+	if(funcAddr >= coreStack.curFrame->moduleInst->funcaddrs.size()){
 		throw Exception("[call] Function index not exist.", coreStack);
 	}
 	// Invoke
 	invoke(coreStack.curFrame->moduleInst->funcaddrs.at(funcAddr), store, coreStack);
+}
+void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack &coreStack){
+	// Check table exist
+	if(coreStack.curFrame->moduleInst->tableaddrs.size() <= 0){
+		throw Exception("[call_indirect] No table in this module.", coreStack);
+	}
+	std::uint32_t tableAddr = coreStack.curFrame->moduleInst->tableaddrs.at(0);
+	if(tableAddr >= store.tables.size()){
+		throw Exception("[call_indirect] Table address not exist in the store.", coreStack);
+	}
+	// Check function type
+	if(typeidx >= coreStack->curFrame->moduleInst->types.size()){
+		throw Exception("[call_indirect] Function type not exist in this module.", coreStack);
+	}
+	// TODO: Check operand
+
+}
+void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
+	// Check label
+	unsigned int labelCount = 0;
+	Label *targetLabel = nullptr;
+	for(std::list<StackElem>::iterator stackIt = coreStack.begin(); stackIt != coreStack.end(); ++stackIt){
+		if(stackIt->type == label){
+			labelCount += 1;
+			if(labelCount >= depth + 1){
+				break;
+			}
+		}else if(stackIt->type == frame){
+			throw Exception("[br] No enough lables to jump.", coreStack);
+		}
+	}
+	if(labelCount < depth + 1){
+		throw Exception("[br] No enough lables to jump.", coreStack);
+	}
+	// Check result count
+	size_t resCount = coreStack.curLabel->resultTypes.size();
+	if(coreStack.valueCount() < resCount){
+		throw Exception("[br] Too few values left in the stack for the block result.", coreStack);
+	}
+	// Pop values
+	std::vector<Value> resultValues;
+	for(size_t i = 0; i < resCount; ++i){
+		resultValues.push_back(*((Value *)coreStack.pop().data));
+	}
+	// TODO: 
 }

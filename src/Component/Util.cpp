@@ -151,7 +151,7 @@ std::int64_t Util::get_leb128_64(char* &ptr, const char *max){
 std::uint32_t Util::get_uleb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
-        if(instrOffset > funcBody.size()){
+        if(instrOffset >= funcBody.size()){
             throw "offset exceed function size while decode uleb128_32.";
         }
         std::uint32_t byte = funcBody.at(instrOffset++);
@@ -172,7 +172,7 @@ std::uint32_t Util::get_uleb128_32(std::vector<char> &funcBody, std::uint64_t &i
 std::int32_t Util::get_leb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::int32_t ret = 0;
     for(int i = 0; i < 5; ++i){
-        if(instrOffset > funcBody.size()){
+        if(instrOffset >= funcBody.size()){
             throw "offset exceed function size while decode leb128_32.";
         }
         std::int32_t byte = funcBody.at(instrOffset++);
@@ -211,7 +211,7 @@ std::int32_t Util::get_leb128_32(std::vector<char> &funcBody, std::uint64_t &ins
 std::int64_t Util::get_leb128_64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::int64_t ret = 0;
     for(int i = 0; i < 10; ++i){
-        if(instrOffset > funcBody.size()){
+        if(instrOffset >= funcBody.size()){
             throw "offset exceed function size while decode leb128_64.";
         }
         std::int64_t byte = funcBody.at(instrOffset++);
