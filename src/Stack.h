@@ -11,7 +11,7 @@ class Label {
 public:
     std::uint32_t funcIdx;
     std::uint64_t instrOffset;
-    bool cont;
+    std::uint64_t contOffset;
     std::vector<ValType> resultTypes;
     Label(bool cont = true);
     Label(const Label&);

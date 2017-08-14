@@ -174,7 +174,7 @@ void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack 
 		throw Exception("[call_indirect] Table address not exist in the store.", coreStack);
 	}
 	// Check function type
-	if(typeidx >= coreStack->curFrame->moduleInst->types.size()){
+	if(typeidx >= coreStack.curFrame->moduleInst->types.size()){
 		throw Exception("[call_indirect] Function type not exist in this module.", coreStack);
 	}
 	// TODO: Check operand
@@ -186,8 +186,8 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 	Label *targetLabel = nullptr;
 	for(std::list<StackElem>::iterator stackIt = coreStack.begin(); stackIt != coreStack.end(); ++stackIt){
 		if(stackIt->type == label){
-			labelCount += 1;
-			if(labelCount >= depth + 1){
+			if(++labelCount >= depth + 1){
+				targetLabel = (Label *)stackIt->data;
 				break;
 			}
 		}else if(stackIt->type == frame){
@@ -198,14 +198,29 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		throw Exception("[br] No enough lables to jump.", coreStack);
 	}
 	// Check result count
-	size_t resCount = coreStack.curLabel->resultTypes.size();
+	size_t resCount = targetLabel->resultTypes.size();
 	if(coreStack.valueCount() < resCount){
-		throw Exception("[br] Too few values left in the stack for the block result.", coreStack);
+		throw Exception("[br] Too few values left in the stack for target block result.", coreStack);
 	}
 	// Pop values
 	std::vector<Value> resultValues;
 	for(size_t i = 0; i < resCount; ++i){
 		resultValues.push_back(*((Value *)coreStack.pop().data));
 	}
-	// TODO: 
+	// Pop Labels
+	for(size_t i = 0; i < depth + 1; ++i){
+		while(coreStack.top().type == value){
+			delete (Value *)coreStack.pop().data;
+		}
+		if(coreStack.top().type != label){
+			throw Exception("[br] Stack top must be label after popping values.", coreStack);
+		}else{
+			delete (Label *)coreStack.pop().data;
+		}
+	}
+	// Push values
+	for(size_t i = 0; i < resCount; ++i){
+		coreStack.push(resultValues.back());
+		resultValues.pop_back();
+	}
 }

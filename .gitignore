@@ -4,3 +4,6 @@ build/
 
 # ignore .vscode
 .vscode/
+
+# ignore config
+WasmVm.cfg 
