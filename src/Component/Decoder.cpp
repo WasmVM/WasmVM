@@ -5,25 +5,25 @@ void Decoder::decode(Store &store, Stack &coreStack){
     char bincode = funcBody.at((coreStack.curLabel->instrOffset));
     coreStack.curLabel->instrOffset += 1;
     switch(bincode){
-        case OP_CTRL_NOP:
+        case OP_Ctrl_nop:
         break;
-        case OP_CTRL_BLOCK:
-            Instruction::ctrl_block(coreStack, funcBody.at((coreStack.curLabel->instrOffset)));
+        case OP_Ctrl_block:
+            Instruction::ctrl_block(funcBody, coreStack, funcBody.at(coreStack.curLabel->instrOffset++));
         break;
-        case OP_CTRL_LOOP:
-            Instruction::ctrl_loop(coreStack, funcBody.at((coreStack.curLabel->instrOffset)));
+        case OP_Ctrl_loop:
+            Instruction::ctrl_loop(coreStack, funcBody.at(coreStack.curLabel->instrOffset++));
         break;
-        case OP_CTRL_END:
+        case OP_Ctrl_end:
             Instruction::ctrl_end(coreStack);
         break;
-        case OP_CTRL_BR:
-            Instruction::ctrl_br(Util::get_uleb128_32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+        case OP_Ctrl_br:
+            Instruction::ctrl_br(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
             break;
-        case OP_CTRL_RETURN:
+        case OP_Ctrl_return:
             Instruction::ctrl_return(coreStack);
         break;
-        case OP_CTRL_CALL:
-            Instruction::ctrl_call(Util::get_uleb128_32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+        case OP_Ctrl_call:
+            Instruction::ctrl_call(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
         break;
         default:
         {

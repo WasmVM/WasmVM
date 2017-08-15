@@ -41,12 +41,12 @@ void Loader::load(const char *fileName){
         throw LoaderException(std::string("Close file ") + fileName + " error");
     }
     // Check magic
-    if(*(uint32_t *)cur != Util::toLittle32(WASM_MAGIC)){
+    if(*(uint32_t *)cur != Util::toLittle32(WASM_Magic)){
         throw LoaderException(std::string(fileName) + " isn't a WebAssembly file.", true, cur - fileBuf);
     }
     cur += 4;
     // Check version
-    if(*(uint32_t *)cur != Util::toLittle32(WASM_VERSION)){
+    if(*(uint32_t *)cur != Util::toLittle32(WASM_Version)){
         throw LoaderException(std::string("Wrong version of ") + fileName, true, cur - fileBuf);
     }
     cur += 4;
@@ -56,14 +56,14 @@ void Loader::load(const char *fileName){
     try{
         /** Section 1: Type **/
         if(skipToSection(1, cur, endAddr) == 1){
-            std::uint32_t typeNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t typeNum = Util::getLeb128_u32(cur, endAddr);
             while(typeNum-- > 0){
                 FuncType newType;
                 if(*cur != TYPE_Func){
                     throw LoaderException(std::string(fileName) + ": Function type must start with function type code.", true, cur - fileBuf);
                 }
                 // Param
-                std::uint32_t paramNum = Util::get_uleb128_32(++cur, endAddr);
+                std::uint32_t paramNum = Util::getLeb128_u32(++cur, endAddr);
                 while(paramNum-- > 0){            
                     switch(*cur){
                         case TYPE_i32:
@@ -84,7 +84,7 @@ void Loader::load(const char *fileName){
                     cur++;
                 }
                 // Result
-                std::uint32_t resultNum = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t resultNum = Util::getLeb128_u32(cur, endAddr);
                 if(resultNum > 1){
                     throw LoaderException("Only one or zero result is allowed currently.",true, cur - fileBuf);
                 }
@@ -112,11 +112,11 @@ void Loader::load(const char *fileName){
         }
         /** Section 2: Import **/
         if(skipToSection(2, cur, endAddr) == 2){
-            std::uint32_t importNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t importNum = Util::getLeb128_u32(cur, endAddr);
             while(importNum-- > 0){
                 Import newImport;
                 // Get module name length
-                std::uint32_t depNameLen = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t depNameLen = Util::getLeb128_u32(cur, endAddr);
                 // Get module name
                 char depName[depNameLen + 1];
                 depName[depNameLen] = '\0';
@@ -124,7 +124,7 @@ void Loader::load(const char *fileName){
                 cur += depNameLen;
                 newImport.module = depName;
                 // Get name length
-                std::uint32_t nameLen = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t nameLen = Util::getLeb128_u32(cur, endAddr);
                 // Get name
                 char name[nameLen + 1];
                 name[nameLen] = '\0';
@@ -140,7 +140,7 @@ void Loader::load(const char *fileName){
                     case IMPORT_Func:
                         newImport.kind = func;
                         newImport.desc.funcType = new std::uint32_t;
-                        *(newImport.desc.funcType) = Util::get_uleb128_32(cur, endAddr);
+                        *(newImport.desc.funcType) = Util::getLeb128_u32(cur, endAddr);
                         if(*(newImport.desc.funcType) >= newModule->types.size()){
                             throw LoaderException(std::string(fileName) + ": Type index of imported function must be defined.", true, cur - 1 - fileBuf);
                         }
@@ -152,18 +152,18 @@ void Loader::load(const char *fileName){
                             throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
                         }
                         newImport.desc.table->flag = *(cur++);
-                        newImport.desc.table->min = Util::get_uleb128_32(cur, endAddr);
+                        newImport.desc.table->min = Util::getLeb128_u32(cur, endAddr);
                         if(newImport.desc.table->flag){
-                            newImport.desc.table->max = Util::get_uleb128_32(cur, endAddr);
+                            newImport.desc.table->max = Util::getLeb128_u32(cur, endAddr);
                         }
                     break;
                     case IMPORT_Mem:
                         newImport.kind = mem;
                         newImport.desc.mem = new Limits;
                         newImport.desc.mem->flag = *(cur++);
-                        newImport.desc.mem->min = Util::get_uleb128_32(cur, endAddr);
+                        newImport.desc.mem->min = Util::getLeb128_u32(cur, endAddr);
                         if(newImport.desc.mem->flag){
-                            newImport.desc.mem->max = Util::get_uleb128_32(cur, endAddr);
+                            newImport.desc.mem->max = Util::getLeb128_u32(cur, endAddr);
                         }
                     break;
                     case IMPORT_Global:
@@ -198,10 +198,10 @@ void Loader::load(const char *fileName){
         }
         /** Section 3: Function **/
         if(skipToSection(3, cur, endAddr) == 3){
-            std::uint32_t funcNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t funcNum = Util::getLeb128_u32(cur, endAddr);
             while(funcNum-- > 0){
                 Func newFunc;
-                newFunc.typeidx = Util::get_uleb128_32(cur, endAddr);
+                newFunc.typeidx = Util::getLeb128_u32(cur, endAddr);
                 newModule->funcs.push_back(newFunc);
             }
         }
@@ -214,9 +214,9 @@ void Loader::load(const char *fileName){
                 throw LoaderException(std::string(fileName) + ": Only anyfunc is allowed in table currently.", true, cur - 1 - fileBuf);
             }
             newModule->table.flag = *(cur++);
-            newModule->table.min = Util::get_uleb128_32(cur, endAddr);
+            newModule->table.min = Util::getLeb128_u32(cur, endAddr);
             if(newModule->table.flag){
-                newModule->table.max = Util::get_uleb128_32(cur, endAddr);
+                newModule->table.max = Util::getLeb128_u32(cur, endAddr);
             }
         }
         /** Section 5: Memory **/
@@ -225,14 +225,14 @@ void Loader::load(const char *fileName){
                 throw LoaderException(std::string(fileName) + ": There's only one memory allowed currently.", true, cur - 1 - fileBuf);
             }
             newModule->mem.flag = *(cur++);
-            newModule->mem.min = Util::get_uleb128_32(cur, endAddr);
+            newModule->mem.min = Util::getLeb128_u32(cur, endAddr);
             if(newModule->mem.flag){
-                newModule->mem.max = Util::get_uleb128_32(cur, endAddr);
+                newModule->mem.max = Util::getLeb128_u32(cur, endAddr);
             }
         }
         /** Section 6: Global **/
         if(skipToSection(6, cur, endAddr) == 6){
-            std::uint32_t globalNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t globalNum = Util::getLeb128_u32(cur, endAddr);
             while(globalNum-- > 0){
                 Global newGlobal;
                 // Set value type
@@ -257,10 +257,10 @@ void Loader::load(const char *fileName){
                 // Set value
                 switch(*(cur++)){
                     case OP_i32_const:
-                        newGlobal.value.data.i32 = Util::get_leb128_32(cur, endAddr);
+                        newGlobal.value.data.i32 = Util::getLeb128_i32(cur, endAddr);
                     break;
                     case OP_i64_const:
-                        newGlobal.value.data.i64 = Util::get_leb128_64(cur, endAddr);
+                        newGlobal.value.data.i64 = Util::getLeb128_i64(cur, endAddr);
                     break;
                     case OP_f32_const:
                         newGlobal.value.data.i32 = Util::toLittle32(*((uint32_t *)cur));
@@ -281,11 +281,11 @@ void Loader::load(const char *fileName){
         }
         /** Section 7: Export **/
         if(skipToSection(7, cur, endAddr) == 7){
-            std::uint32_t exportNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t exportNum = Util::getLeb128_u32(cur, endAddr);
             while(exportNum-- > 0){
                 Export newExport;
                 // Get name length
-                std::uint32_t nameLen = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t nameLen = Util::getLeb128_u32(cur, endAddr);
                 // Get name
                 char name[nameLen + 1];
                 name[nameLen] = '\0';
@@ -314,14 +314,14 @@ void Loader::load(const char *fileName){
                     default:
                         throw LoaderException(std::string(fileName) + ": Unknown export type.", true, cur - 1 - fileBuf);
                 }
-                newExport.desc = Util::get_uleb128_32(cur, endAddr);
+                newExport.desc = Util::getLeb128_u32(cur, endAddr);
                 newModule->exports.push_back(newExport);
             }
         }
         /** Section 8: Start **/
         if(skipToSection(8, cur, endAddr) == 8){
             newModule->start = new std::uint32_t;
-            *(newModule->start) = Util::get_uleb128_32(cur, endAddr);
+            *(newModule->start) = Util::getLeb128_u32(cur, endAddr);
             if(*(newModule->start) >= newModule->funcs.size()){
                 throw LoaderException(std::string(fileName) + ": Index of start function must be defined.", true, cur - fileBuf);
             }
@@ -332,24 +332,24 @@ void Loader::load(const char *fileName){
         }
         /** Section 9: Element **/
         if(skipToSection(9, cur, endAddr) == 9){
-            std::uint32_t elemNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t elemNum = Util::getLeb128_u32(cur, endAddr);
             while(elemNum-- > 0){
                 Elem newElem;
                 // Index
-                if(Util::get_uleb128_32(cur, endAddr)){
+                if(Util::getLeb128_u32(cur, endAddr)){
                     throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
                 }
                 // Offset
                 if((*(cur++)) == OP_i32_const){
-                    newElem.offset = Util::get_leb128_32(cur, endAddr);
+                    newElem.offset = Util::getLeb128_i32(cur, endAddr);
                 }else{
                     throw LoaderException(std::string(fileName) + ": Element offset must be an i32.const expression.", true, cur - 1 - fileBuf);
                 }
                 cur++; // Skip end
                 // Init
-                std::uint32_t initNum = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t initNum = Util::getLeb128_u32(cur, endAddr);
                 while(initNum-- > 0){
-                    std::uint32_t initIndex = Util::get_uleb128_32(cur, endAddr);
+                    std::uint32_t initIndex = Util::getLeb128_u32(cur, endAddr);
                     if(initIndex >= newModule->funcs.size()){
                         throw LoaderException(std::string(fileName) + ": Index of element function must be defined.", true, cur - fileBuf);
                     }
@@ -360,17 +360,17 @@ void Loader::load(const char *fileName){
         }
         /** Section 10: Code **/
         if(skipToSection(10, cur, endAddr) == 10){
-            std::uint32_t codeNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t codeNum = Util::getLeb128_u32(cur, endAddr);
             if(codeNum != newModule->funcs.size()){
                 throw LoaderException(std::string(fileName) + ": Code count does not match function count.", true, cur - fileBuf);
             }
             for(std::uint32_t i = 0; i < codeNum; ++i){
-                std::uint32_t codeSize = Util::get_leb128_32(cur, endAddr);
+                std::uint32_t codeSize = Util::getLeb128_i32(cur, endAddr);
                 char *curAddr = cur;
                 // Locals
-                std::uint32_t localCount = Util::get_leb128_32(cur, endAddr);
+                std::uint32_t localCount = Util::getLeb128_i32(cur, endAddr);
                 while(localCount-- > 0){
-                    std::uint32_t typeCount = Util::get_leb128_32(cur, endAddr);
+                    std::uint32_t typeCount = Util::getLeb128_i32(cur, endAddr);
                     ValType newType;
                     switch(*(cur++)){
                         case TYPE_i32:
@@ -400,22 +400,22 @@ void Loader::load(const char *fileName){
         }
         /** Section 11: Data **/
         if(skipToSection(11, cur, endAddr) == 11){
-            std::uint32_t dataNum = Util::get_uleb128_32(cur, endAddr);
+            std::uint32_t dataNum = Util::getLeb128_u32(cur, endAddr);
             while(dataNum-- > 0){
                 Data newData;
                 // Index
-                if(Util::get_uleb128_32(cur, endAddr)){
+                if(Util::getLeb128_u32(cur, endAddr)){
                     throw LoaderException(std::string(fileName) + ": Only table 0 is allowed currently.", true, cur - fileBuf);
                 }
                 // Offset
                 if((*(cur++)) == OP_i32_const){
-                    newData.offset = Util::get_leb128_32(cur, endAddr);
+                    newData.offset = Util::getLeb128_i32(cur, endAddr);
                 }else{
                     throw LoaderException(std::string(fileName) + ": Data offset must be an i32.const expression.", true, cur - 1 - fileBuf);
                 }
                 cur++; // Skip end
                 // Init data
-                std::uint32_t dataSize = Util::get_uleb128_32(cur, endAddr);
+                std::uint32_t dataSize = Util::getLeb128_u32(cur, endAddr);
                 newData.init.assign(cur, cur + dataSize);
                 cur += dataSize;
                 newModule->data.push_back(newData);
@@ -622,12 +622,12 @@ char Loader::skipToSection(char sectionNum, char* &cur, const char *endAddr){
     while(*cur < sectionNum){
         cur++;
         // Get section size
-        std::uint32_t size = Util::get_uleb128_32(cur, endAddr);
+        std::uint32_t size = Util::getLeb128_u32(cur, endAddr);
         cur += size;
     }
     char ret = *cur;
     if(ret == sectionNum){
-        Util::get_uleb128_32(++cur, endAddr);
+        Util::getLeb128_u32(++cur, endAddr);
     }
     return ret;
 }

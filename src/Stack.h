@@ -13,7 +13,7 @@ public:
     std::uint64_t instrOffset;
     std::uint64_t contOffset;
     std::vector<ValType> resultTypes;
-    Label(bool cont = true);
+    Label();
     Label(const Label&);
     Label &operator=(Label);
 };

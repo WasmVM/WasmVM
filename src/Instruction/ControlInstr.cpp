@@ -25,8 +25,9 @@ void Instruction::invoke(std::uint32_t funcAddr, Store &store, Stack &coreStack,
 	// Push frame to stack
 	coreStack.push(newFrame);
 	// Set label
-	Label newLabel(false);
+	Label newLabel;
 	newLabel.funcIdx = funcAddr;
+	newLabel.contOffset = funcInst->code.body.size() - 1;
 	newLabel.resultTypes = funcInst->type.resultTypes;
 	// Push label to stack
 	coreStack.push(newLabel);
@@ -52,19 +53,11 @@ void Instruction::ctrl_end(Stack &coreStack){
 	if(popElem.type != StackElemType::label){
 		throw Exception("[end] There must be a label on the top of stack after popping values.", coreStack);
 	}
-	if(((Label *)popElem.data)->cont){
-		coreStack.curLabel->instrOffset = ((Label *)popElem.data)->instrOffset;
-	}
 	// Return from function
 	if(coreStack.top().type == StackElemType::frame){
 		delete (Frame *)coreStack.pop().data;
 	}else{
-		if(!((Label *)popElem.data)->cont){
-			// loop
-			coreStack.curLabel->instrOffset -= 1;
-			delete (Label *)popElem.data;
-			return;
-		}
+		coreStack.curLabel->instrOffset = ((Label *)popElem.data)->contOffset;
 	}
 	delete (Label *)popElem.data;
 	// Push values
@@ -74,7 +67,7 @@ void Instruction::ctrl_end(Stack &coreStack){
 	}
 }
 
-void Instruction::ctrl_block(Stack &coreStack, char blocktype){
+void Instruction::ctrl_block(std::vector<char> &funcBody, Stack &coreStack, char blocktype){
 	Label newLabel;
 	switch(blocktype){
 		case TYPE_i32:
@@ -93,12 +86,13 @@ void Instruction::ctrl_block(Stack &coreStack, char blocktype){
 		break;
 	}
 	newLabel.funcIdx = coreStack.curLabel->funcIdx;
-	newLabel.instrOffset = coreStack.curLabel->instrOffset + 1;
+	newLabel.instrOffset = coreStack.curLabel->instrOffset;
+	newLabel.contOffset = Util::getContinueOffset(funcBody, coreStack, newLabel.instrOffset);
 	coreStack.push(newLabel);
 }
 
 void Instruction::ctrl_loop(Stack &coreStack, char blocktype){
-	Label newLabel(false);
+	Label newLabel;
 	switch(blocktype){
 		case TYPE_i32:
 			newLabel.resultTypes.push_back(i32);
@@ -116,7 +110,8 @@ void Instruction::ctrl_loop(Stack &coreStack, char blocktype){
 		break;
 	}
 	newLabel.funcIdx = coreStack.curLabel->funcIdx;
-	newLabel.instrOffset = coreStack.curLabel->instrOffset + 1;
+	newLabel.instrOffset = coreStack.curLabel->instrOffset;
+	newLabel.contOffset = newLabel.instrOffset - 2;
 	coreStack.push(newLabel);
 }
 void Instruction::ctrl_return(Stack &coreStack){
@@ -183,11 +178,14 @@ void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack 
 void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 	// Check label
 	unsigned int labelCount = 0;
-	Label *targetLabel = nullptr;
+	size_t resCount = 0;
+	std::uint64_t continueOffset = 0;
 	for(std::list<StackElem>::iterator stackIt = coreStack.begin(); stackIt != coreStack.end(); ++stackIt){
 		if(stackIt->type == label){
 			if(++labelCount >= depth + 1){
-				targetLabel = (Label *)stackIt->data;
+				Label *target = (Label *)stackIt->data;
+				resCount = target->resultTypes.size();
+				continueOffset = target->contOffset;
 				break;
 			}
 		}else if(stackIt->type == frame){
@@ -198,7 +196,6 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		throw Exception("[br] No enough lables to jump.", coreStack);
 	}
 	// Check result count
-	size_t resCount = targetLabel->resultTypes.size();
 	if(coreStack.valueCount() < resCount){
 		throw Exception("[br] Too few values left in the stack for target block result.", coreStack);
 	}
@@ -217,6 +214,13 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		}else{
 			delete (Label *)coreStack.pop().data;
 		}
+	}
+	// Set continue
+	if(coreStack.curLabel == nullptr){
+		// Pop frame
+		delete (Frame *)coreStack.pop().data;
+	}else{
+		coreStack.curLabel->instrOffset = continueOffset;
 	}
 	// Push values
 	for(size_t i = 0; i < resCount; ++i){

@@ -1,18 +1,18 @@
 #include <Stack.h>
 
-Label::Label(bool cont): funcIdx(0), instrOffset(0), cont(cont){
+Label::Label(): funcIdx(0), instrOffset(0), contOffset(0){
 }
 Label::Label(const Label& lab){
     funcIdx = lab.funcIdx;
     instrOffset = lab.instrOffset;
     resultTypes = lab.resultTypes;
-    cont = lab.cont;
+    contOffset = lab.contOffset;
 }
 Label& Label::operator=(Label lab){
     funcIdx = lab.funcIdx;
     instrOffset = lab.instrOffset;
     resultTypes = lab.resultTypes;
-    cont = lab.cont;
+    contOffset = lab.contOffset;
     return *this;
 }
 
@@ -77,12 +77,17 @@ StackElem Stack::pop(){
             if(stackIt->type == label){
                 curLabel = (Label *)stackIt->data;
                 return elem;
+            }else if(stackIt->type == frame){
+                curLabel = nullptr;
+                return elem;
             }
         }
         curLabel = nullptr;
     }else if(elem.type == frame){
         for(std::list<StackElem>::iterator stackIt = _stack.begin(); stackIt != _stack.end(); ++stackIt){
-            if(stackIt->type == frame){
+            if(stackIt->type == label && curLabel == nullptr){
+                curLabel = (Label *)stackIt->data;
+            }else if(stackIt->type == frame){
                 curFrame = (Frame *)stackIt->data;
                 return elem;
             }

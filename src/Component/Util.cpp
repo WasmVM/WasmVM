@@ -34,7 +34,7 @@ std::uint64_t Util::toLittle64(const std::uint64_t &val, bool force){
     }
 }
 
-std::uint32_t Util::get_uleb128_32(char* &ptr, const char *max){
+std::uint32_t Util::getLeb128_u32(char* &ptr, const char *max){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
         if(ptr > max){
@@ -55,7 +55,7 @@ std::uint32_t Util::get_uleb128_32(char* &ptr, const char *max){
     }
     return toLittle32(ret);
 }
-std::int32_t Util::get_leb128_32(char* &ptr, const char *max){
+std::int32_t Util::getLeb128_i32(char* &ptr, const char *max){
     std::int32_t ret = 0;
     for(int i = 0; i < 5; ++i){
         if(ptr > max){
@@ -94,7 +94,7 @@ std::int32_t Util::get_leb128_32(char* &ptr, const char *max){
     }
     return toLittle32(ret);
 }
-std::int64_t Util::get_leb128_64(char* &ptr, const char *max){
+std::int64_t Util::getLeb128_i64(char* &ptr, const char *max){
     std::int64_t ret = 0;
     for(int i = 0; i < 10; ++i){
         if(ptr > max){
@@ -148,7 +148,7 @@ std::int64_t Util::get_leb128_64(char* &ptr, const char *max){
     }
     return toLittle64(ret);
 }
-std::uint32_t Util::get_uleb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::uint32_t Util::getLeb128_u32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
         if(instrOffset >= funcBody.size()){
@@ -169,7 +169,7 @@ std::uint32_t Util::get_uleb128_32(std::vector<char> &funcBody, std::uint64_t &i
     }
     return toLittle32(ret);
 }
-std::int32_t Util::get_leb128_32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::int32_t Util::getLeb128_i32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::int32_t ret = 0;
     for(int i = 0; i < 5; ++i){
         if(instrOffset >= funcBody.size()){
@@ -208,7 +208,7 @@ std::int32_t Util::get_leb128_32(std::vector<char> &funcBody, std::uint64_t &ins
     }
     return toLittle32(ret);
 }
-std::int64_t Util::get_leb128_64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::int64_t Util::getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
     std::int64_t ret = 0;
     for(int i = 0; i < 10; ++i){
         if(instrOffset >= funcBody.size()){
@@ -261,4 +261,97 @@ std::int64_t Util::get_leb128_64(std::vector<char> &funcBody, std::uint64_t &ins
         }
     }
     return toLittle64(ret);
+}
+std::uint64_t Util::getContinueOffset(std::vector<char> &funcBody, Stack &coreStack, std::uint64_t instrOffset, bool stopElse){
+    unsigned int layer = 0;
+    while(instrOffset < funcBody.size() - 1){
+        switch(funcBody.at(instrOffset++)){
+            // u32 immediate
+            case OP_Ctrl_br:
+            case OP_Ctrl_br_if:
+            case OP_Ctrl_call:
+            case OP_Ctrl_call_indirect:
+            case OP_Get_local:
+            case OP_Set_local:
+            case OP_Tee_local:
+            case OP_Get_global:
+            case OP_Set_global:
+                getLeb128_u32(funcBody, instrOffset);
+            break;
+            // memarg
+            case OP_i32_load:
+            case OP_i64_load:
+            case OP_f32_load:
+            case OP_f64_load:
+            case OP_i32_load8_s:
+            case OP_i32_load8_u:
+            case OP_i32_load16_s:
+            case OP_i32_load16_u:
+            case OP_i64_load8_s:
+            case OP_i64_load8_u:
+            case OP_i64_load16_s:
+            case OP_i64_load16_u:
+            case OP_i64_load32_s:
+            case OP_i64_load32_u:
+            case OP_i32_store:
+            case OP_i64_store:
+            case OP_f32_store:
+            case OP_f64_store:
+            case OP_i32_store8:
+            case OP_i32_store16:
+            case OP_i64_store8:
+            case OP_i64_store16:
+            case OP_i64_store32:
+                getLeb128_u32(funcBody, instrOffset); // align
+                getLeb128_u32(funcBody, instrOffset); // offset
+            break;
+            // i32 immediate
+            case OP_i32_const:
+                getLeb128_i32(funcBody, instrOffset);
+            break;
+            // i64 immediate
+            case OP_i64_const:
+                getLeb128_i64(funcBody, instrOffset);
+            break;
+            // f32 immediate
+            case OP_f32_const:
+                instrOffset += 4;
+            break;
+            // f64 immediate
+            case OP_f64_const:
+                instrOffset += 8;
+            break;
+            // br_table
+            case OP_Ctrl_br_table:
+                for(std::uint32_t i = getLeb128_u32(funcBody, instrOffset); i >= 0; --i){
+                    getLeb128_u32(funcBody, instrOffset);
+                }
+            break;
+            // block
+            case OP_Ctrl_block:
+            case OP_Ctrl_loop:
+            case OP_Ctrl_if:
+                ++instrOffset; //blockType
+                ++layer;
+            break;
+            // end
+            case OP_Ctrl_end:
+                if(layer != 0){
+                    --layer;
+                }else{
+                    return --instrOffset;
+                }
+            break;
+            // else
+            case OP_Ctrl_else:
+                if(layer == 0 && stopElse){
+                    return instrOffset;
+                }
+            break;
+            // others
+            default:
+            break;
+        }
+    }
+    throw Exception("Can't found match end or else in this function.", coreStack);
 }
