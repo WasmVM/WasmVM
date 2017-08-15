@@ -19,7 +19,9 @@ int main(int argc, char const *argv[]){
     Store mainStore;
     // Modules
     std::map<std::string, ModuleInst *> moduleInsts;
+    // Exception
     Exception::setModuleInsts(&moduleInsts);
+
     // Check endianess
     Util::checkEndian();
     // Load modules
@@ -45,6 +47,11 @@ int main(int argc, char const *argv[]){
         core.run(moduleInsts[mainModule]);
     } catch (Exception &e){
         std::cerr << e.desc << std::endl;
+        // Clean module
+        for(std::map<std::string, ModuleInst *>::iterator moduleIt = moduleInsts.begin(); moduleIt != moduleInsts.end(); ++moduleIt){
+            delete moduleIt->second->start;
+            delete moduleIt->second;
+        }
         return 3;
     }
     // Clean module

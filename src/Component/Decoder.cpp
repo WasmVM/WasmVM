@@ -5,6 +5,9 @@ void Decoder::decode(Store &store, Stack &coreStack){
     char bincode = funcBody.at((coreStack.curLabel->instrOffset));
     coreStack.curLabel->instrOffset += 1;
     switch(bincode){
+        case OP_Ctrl_unreachable:
+            Instruction::ctrl_unreachable(store, coreStack);
+        break;
         case OP_Ctrl_nop:
         break;
         case OP_Ctrl_block:
@@ -17,25 +20,62 @@ void Decoder::decode(Store &store, Stack &coreStack){
             Instruction::ctrl_end(coreStack);
         break;
         case OP_Ctrl_br:
-            Instruction::ctrl_br(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
-            break;
+            try{
+                Instruction::ctrl_br(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[br] ") + e, coreStack);
+            }
+        break;
+        case OP_Ctrl_br_table:
+            try{
+                std::uint32_t targetSize = Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset);
+                std::vector<std::uint32_t> depths;
+                while(targetSize-- > 0){
+                    depths.push_back(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset));
+                }
+                depths.push_back(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset));
+                Instruction::ctrl_br_table(depths, coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[br_table] ") + e, coreStack);
+            }
+        break;
         case OP_Ctrl_return:
             Instruction::ctrl_return(coreStack);
         break;
         case OP_Ctrl_call:
-            Instruction::ctrl_call(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+            try{
+                Instruction::ctrl_call(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[call] ") + e, coreStack);
+            }
         break;
         case OP_i32_const:
-            Instruction::i32_const(coreStack, Util::getLeb128_i32(funcBody, coreStack.curLabel->instrOffset));
+            try{
+                Instruction::i32_const(coreStack, Util::getLeb128_i32(funcBody, coreStack.curLabel->instrOffset));
+            }catch(const char *e){
+                throw Exception(std::string("[i32.const] ") + e, coreStack);
+            }
         break;
         case OP_i64_const:
-            Instruction::i32_const(coreStack, Util::getLeb128_i64(funcBody, coreStack.curLabel->instrOffset));
+            try{
+                Instruction::i32_const(coreStack, Util::getLeb128_i64(funcBody, coreStack.curLabel->instrOffset));
+            }catch(const char *e){
+                throw Exception(std::string("[i64.const] ") + e, coreStack);
+            }
         break;
         case OP_f32_const:
-            Instruction::f32_const(coreStack, Util::getIEEE754_f32(funcBody, coreStack.curLabel->instrOffset));
+            try{
+                Instruction::f32_const(coreStack, Util::getIEEE754_f32(funcBody, coreStack.curLabel->instrOffset));
+            }catch(const char *e){
+                throw Exception(std::string("[f32.const] ") + e, coreStack);
+            }
         break;
         case OP_f64_const:
-            Instruction::f64_const(coreStack, Util::getIEEE754_f64(funcBody, coreStack.curLabel->instrOffset));
+            try{
+                Instruction::f64_const(coreStack, Util::getIEEE754_f64(funcBody, coreStack.curLabel->instrOffset));
+            }catch(const char *e){
+                throw Exception(std::string("[f64.const] ") + e, coreStack);
+            }
         break;
         default:
         {

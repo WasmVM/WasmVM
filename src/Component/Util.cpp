@@ -275,7 +275,7 @@ double Util::getIEEE754_f64(std::vector<char> &funcBody, std::uint64_t &instrOff
     std::uint64_t bytes = 0;
     for(int i = 0; i < 8; ++i){
         if(instrOffset >= funcBody.size()){
-            throw "offset exceed function size while decode IEEE754 float.";
+            throw "offset exceed function size while decode IEEE754 double.";
         }
         bytes |= (((std::uint64_t)funcBody.at(instrOffset++)) & 0xff) << (i * 8);
     }
@@ -343,9 +343,10 @@ std::uint64_t Util::getContinueOffset(std::vector<char> &funcBody, Stack &coreSt
             break;
             // br_table
             case OP_Ctrl_br_table:
-                for(std::uint32_t i = getLeb128_u32(funcBody, instrOffset); i >= 0; --i){
+                for(std::uint32_t i = getLeb128_u32(funcBody, instrOffset); i > 0; --i){
                     getLeb128_u32(funcBody, instrOffset);
                 }
+                getLeb128_u32(funcBody, instrOffset);
             break;
             // block
             case OP_Ctrl_block:

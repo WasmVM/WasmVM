@@ -8,10 +8,6 @@
 #include <ControlInstr.h>
 #include <Decoder.h>
 
-#ifdef __linux__
-#include <dlfcn.h>
-#endif
-
 class Core{
 public:
 	Core(Store &store);

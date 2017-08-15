@@ -87,7 +87,11 @@ void Instruction::ctrl_block(std::vector<char> &funcBody, Stack &coreStack, char
 	}
 	newLabel.funcIdx = coreStack.curLabel->funcIdx;
 	newLabel.instrOffset = coreStack.curLabel->instrOffset;
-	newLabel.contOffset = Util::getContinueOffset(funcBody, coreStack, newLabel.instrOffset);
+	try{
+		newLabel.contOffset = Util::getContinueOffset(funcBody, coreStack, newLabel.instrOffset) + 1;
+	}catch(const char *e){
+		throw Exception(std::string("[block] ") + e, coreStack);
+	}
 	coreStack.push(newLabel);
 }
 
@@ -226,5 +230,51 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 	for(size_t i = 0; i < resCount; ++i){
 		coreStack.push(resultValues.back());
 		resultValues.pop_back();
+	}
+}
+void Instruction::ctrl_unreachable(Store &store, Stack &coreStack){
+#ifdef USE_SYSCALL
+
+#else
+#ifdef NDEBUG
+	throw Exception("[unreachable] Trap without syscall provided.", coreStack);
+#else
+	std::cout << "Values in the stack:" << std::endl;
+	while(coreStack.valueCount()){
+		Value *valPtr = (Value *)coreStack.pop().data;
+		switch (valPtr->type){
+			case i32:
+				std::cout << "Type: i32, Value: " << valPtr->data.i32 << std::endl;
+			break;
+			case i64:
+				std::cout << "Type: i64, Value: " << valPtr->data.i64 << std::endl;
+			break;
+			case f32:
+				std::cout << "Type: f32, Value: " << valPtr->data.f32 << std::endl;
+			break;
+			case f64:
+				std::cout << "Type: f64, Value: " << valPtr->data.f64 << std::endl;
+			break;
+		}
+		delete valPtr;
+	}
+#endif // NDEBUG
+#endif // USE_SYSCALL
+}
+void Instruction::ctrl_br_table(std::vector<std::uint32_t> &depths, Stack &coreStack){
+	// Check stack
+	if(coreStack.valueCount() < 1){
+		throw Exception("[br_table] No value in the stack.", coreStack);
+	}
+	// Pop value
+	Value *val = (Value *)coreStack.pop().data;
+	if(val->type != i32){
+		throw Exception("[br_table] Value type is not i32.", coreStack);
+	}
+	// br
+	if(val->data.i32 >= 0 && val->data.i32 < (std::int32_t)depths.size() - 1){
+		ctrl_br(depths.at(val->data.i32), coreStack);
+	}else{
+		ctrl_br(depths.back(), coreStack);
 	}
 }

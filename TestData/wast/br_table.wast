@@ -1,21 +1,20 @@
 (module
   (func $start
-    block
-    block
-    block
-    i32.const -1
-    br_table 3 0 2 1 
-    i32.const 3
-    drop
-    end
-    i32.const 2
-    drop
-    end
-    i32.const 1
-    drop
-    end
-    i32.const 0
-    drop
+    (block (result i32)
+			(block (result i32)
+				(block (result i32)
+					i32.const 4
+					i32.const 1
+					br_table 2 1 0
+				)
+				unreachable
+				i32.const 2
+			)
+			unreachable
+			i32.const 1
+	  )
+	  i32.const 0
+    unreachable
   )
   (start $start)
 )

@@ -52,6 +52,7 @@ public:
     std::list<StackElem>::iterator end();
     std::list<StackElem>::iterator begin();
     std::size_t valueCount();
+    
 private:
     std::list<StackElem> _stack;
 };

@@ -10,7 +10,7 @@ Exception::Exception(std::string desc, Stack &coreStack, ModuleInst *moduleInst)
 {
 	if(coreStack.curLabel != nullptr){
 		std::stringstream sstream;
-		sstream << "(func: " << coreStack.curLabel->funcIdx << ", instr: " << coreStack.curLabel->instrOffset << ") " << desc;
+		sstream << "(func: " << coreStack.curLabel->funcIdx << ", offset: " << coreStack.curLabel->instrOffset << ") " << desc;
 		this->desc = sstream.str();
 	}
 	if(moduleInst == nullptr && coreStack.curFrame != nullptr){
