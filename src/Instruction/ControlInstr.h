@@ -2,6 +2,7 @@
 #define CONTROLINSTR_DEF
 
 #include <cstdint>
+#include <vector>
 #include <Store.h>
 #include <Stack.h>
 #include <Instance.h>
@@ -17,7 +18,7 @@ namespace Instruction{
 	//[Later]TODO: void ctrl_else(Stack &coreStack);
 	void ctrl_br(std::uint32_t depth, Stack &coreStack);
 	//[Later]TODO: void ctrl_br_if(Stack &coreStack);
-	void ctrl_br_table(Stack &coreStack); //FIXME: WIP 
+	//[Later]TODO: void ctrl_br_table(std::vector<std::uint32_t> depths, Stack &coreStack); 
 	void ctrl_return(Stack &coreStack);
 	void ctrl_call(std::uint32_t funcAddr, Store &store, Stack &coreStack);
 	void ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack &coreStack); // FIXME: Work in progress [Later]

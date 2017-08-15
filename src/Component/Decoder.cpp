@@ -25,6 +25,18 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_Ctrl_call:
             Instruction::ctrl_call(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
         break;
+        case OP_i32_const:
+            Instruction::i32_const(coreStack, Util::getLeb128_i32(funcBody, coreStack.curLabel->instrOffset));
+        break;
+        case OP_i64_const:
+            Instruction::i32_const(coreStack, Util::getLeb128_i64(funcBody, coreStack.curLabel->instrOffset));
+        break;
+        case OP_f32_const:
+            Instruction::f32_const(coreStack, Util::getIEEE754_f32(funcBody, coreStack.curLabel->instrOffset));
+        break;
+        case OP_f64_const:
+            Instruction::f64_const(coreStack, Util::getIEEE754_f64(funcBody, coreStack.curLabel->instrOffset));
+        break;
         default:
         {
             char codeChr[2];

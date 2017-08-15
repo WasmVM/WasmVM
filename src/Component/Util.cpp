@@ -11,7 +11,6 @@ void Util::checkEndian(){
         bigEndian = false;
     }
 }
-
 std::uint16_t Util::toLittle16(const std::uint16_t &val, bool force){
     if(force || bigEndian){
         return (val >> 8) | (val << 8);
@@ -33,7 +32,6 @@ std::uint64_t Util::toLittle64(const std::uint64_t &val, bool force){
         return val;
     }
 }
-
 std::uint32_t Util::getLeb128_u32(char* &ptr, const char *max){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
@@ -261,6 +259,28 @@ std::int64_t Util::getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &ins
         }
     }
     return toLittle64(ret);
+}
+float Util::getIEEE754_f32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+    std::uint32_t bytes = 0;
+    for(int i = 0; i < 4; ++i){
+        if(instrOffset >= funcBody.size()){
+            throw "offset exceed function size while decode IEEE754 float.";
+        }
+        bytes |= (((std::uint32_t)funcBody.at(instrOffset++)) & 0xff) << (i * 8);
+    }
+    bytes = toLittle32(bytes);
+    return *((float *)&bytes);
+}
+double Util::getIEEE754_f64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+    std::uint64_t bytes = 0;
+    for(int i = 0; i < 8; ++i){
+        if(instrOffset >= funcBody.size()){
+            throw "offset exceed function size while decode IEEE754 float.";
+        }
+        bytes |= (((std::uint64_t)funcBody.at(instrOffset++)) & 0xff) << (i * 8);
+    }
+    bytes = toLittle64(bytes);
+    return *((double *)&bytes);
 }
 std::uint64_t Util::getContinueOffset(std::vector<char> &funcBody, Stack &coreStack, std::uint64_t instrOffset, bool stopElse){
     unsigned int layer = 0;

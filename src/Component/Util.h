@@ -24,6 +24,8 @@ public:
     static std::uint32_t getLeb128_u32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
     static std::int32_t getLeb128_i32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
     static std::int64_t getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &instrOffset);
+    static float getIEEE754_f32(std::vector<char> &funcBody, std::uint64_t &instrOffset); // FIXME: WIP
+    static double getIEEE754_f64(std::vector<char> &funcBody, std::uint64_t &instrOffset); // FIXME: WIP
     static std::uint64_t getContinueOffset(std::vector<char> &funcBody, Stack &coreStack, std::uint64_t instrOffset, bool stopElse = false);
 };
 

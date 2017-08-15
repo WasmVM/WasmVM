@@ -8,10 +8,10 @@
 #include <Exception.h>
 
 namespace Instruction{
-	void i32_const(Stack &coreStack, std::int32_t);
-	void i64_const(Stack &coreStack, std::int64_t);
-	void f32_const(Stack &coreStack, float);
-	void f64_const(Stack &coreStack, double);
+	void i32_const(Stack &coreStack, std::int32_t val);
+	void i64_const(Stack &coreStack, std::int64_t val);
+	void f32_const(Stack &coreStack, float val);
+	void f64_const(Stack &coreStack, double val);
 }
 
 #endif
