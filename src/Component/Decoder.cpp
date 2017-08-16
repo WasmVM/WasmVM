@@ -62,6 +62,13 @@ void Decoder::decode(Store &store, Stack &coreStack){
                 throw Exception(std::string("[call] ") + e, coreStack);
             }
         break;
+        case OP_Ctrl_call_indirect:
+            try{
+                Instruction::ctrl_call_indirect(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[call_indirect] ") + e, coreStack);
+            }
+        break;
         case OP_i32_const:
             try{
                 Instruction::i32_const(coreStack, Util::getLeb128_i32(funcBody, coreStack.curLabel->instrOffset));

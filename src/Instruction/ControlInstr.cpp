@@ -174,6 +174,8 @@ void Instruction::ctrl_call(std::uint32_t funcAddr, Store &store, Stack &coreSta
 	invoke(coreStack.curFrame->moduleInst->funcaddrs.at(funcAddr), store, coreStack);
 }
 void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack &coreStack){
+	// Bypass reserved
+	coreStack.curLabel->instrOffset += 1;
 	// Check table exist
 	if(coreStack.curFrame->moduleInst->tableaddrs.size() <= 0){
 		throw Exception("[call_indirect] No table in this module.", coreStack);
@@ -186,8 +188,29 @@ void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack 
 	if(typeidx >= coreStack.curFrame->moduleInst->types.size()){
 		throw Exception("[call_indirect] Function type not exist in this module.", coreStack);
 	}
-	// TODO: Check operand
-
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[call_indirect] No value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[call_indirect] Operand type is not i32.", coreStack);
+	}
+	if((std::uint32_t)operand->data.i32 >= store.tables.at(0)->elem.size()){
+		throw Exception("[call_indirect] Element not exists.", coreStack);
+	}
+	// Function address
+	std::uint32_t funcAddr = store.tables.at(0)->elem.at(operand->data.i32);
+	if(funcAddr >= store.funcs.size()){
+		throw Exception("[call_indirect] Function not exists.", coreStack);
+	}
+	// Match type
+	if(store.funcs.at(funcAddr)->type != coreStack.curFrame->moduleInst->types.at(typeidx)){
+		throw Exception("[call_indirect] Function type not match.", coreStack);
+	}
+	// Invoke
+	invoke(funcAddr, store, coreStack);
 }
 void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 	// Check label

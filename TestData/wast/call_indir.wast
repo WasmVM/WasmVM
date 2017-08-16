@@ -3,7 +3,7 @@
   (elem 0 (offset (i32.const 0)) 0)
   (func
 		i32.const 30
-		drop
+		unreachable
   )
   (func $start
     i32.const 0
