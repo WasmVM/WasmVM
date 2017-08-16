@@ -24,6 +24,7 @@ add_library( WasmVM_Core
 	src/Instruction/NumericInstr.cpp
 	src/Instruction/MemoryInstr.cpp
 	src/Instruction/ParametricInstr.cpp
+	src/Instruction/VariableInstr.cpp
 )
 add_executable(WasmVM src/main.cpp)
 target_link_libraries(WasmVM WasmVM_Core)

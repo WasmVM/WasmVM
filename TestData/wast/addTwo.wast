@@ -1,14 +1,15 @@
 (module
   (func $addTwo (param i32 i32) (result i32)
+    get_local 0
     get_local 1
-    i32.const 62
-    tee_local 1
-    i32.add)
+    unreachable
+    i32.const 40
+  )
   (func $start
-    i32.const 62
-    i32.const 63
+    i32.const 30
+    i32.const 50
     call $addTwo
-    drop
+    unreachable
   )
   (export "addTwo" (func $addTwo))
   (start $start)

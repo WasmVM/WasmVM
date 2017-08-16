@@ -14,7 +14,7 @@ void Instruction::invoke(std::uint32_t funcAddr, Store &store, Stack &coreStack,
 	// Set params
 	for(size_t i = 0; i < funcInst->type.paramTypes.size(); ++i){
 		Value *val = (Value *)coreStack.pop().data;
-		newFrame.locals.at(i) = *val;
+		newFrame.locals.at(funcInst->type.paramTypes.size() - 1 - i) = *val;
 		delete val;
 	}
 	// Set locals

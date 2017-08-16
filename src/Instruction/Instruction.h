@@ -5,5 +5,6 @@
 #include <NumericInstr.h>
 #include <MemoryInstr.h>
 #include <ParametricInstr.h>
+#include <VariableInstr.h>
 
 #endif

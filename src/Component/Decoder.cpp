@@ -276,6 +276,53 @@ void Decoder::decode(Store &store, Stack &coreStack){
                 throw Exception(std::string("[i64.store32] ") + e, coreStack);
             }
         break;
+        case OP_Current_memory:
+            Instruction::current_memory(store, coreStack);
+        break;
+        case OP_Grow_memory:
+            Instruction::grow_memory(store, coreStack);
+        break;
+        case OP_Drop:
+            Instruction::drop(coreStack);
+        break;
+        case OP_Select:
+            Instruction::select(coreStack);
+        break;
+        case OP_Get_local:
+            try{
+                Instruction::get_local(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[get_local] ") + e, coreStack);
+            }
+        break;
+        case OP_Set_local:
+            try{
+                Instruction::set_local(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[set_local] ") + e, coreStack);
+            }
+        break;
+        case OP_Tee_local:
+            try{
+                Instruction::tee_local(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[tee_local] ") + e, coreStack);
+            }
+        break;
+        case OP_Get_global:
+            try{
+                Instruction::get_global(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[get_global] ") + e, coreStack);
+            }
+        break;
+        case OP_Set_global:
+            try{
+                Instruction::set_global(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), store, coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[set_global] ") + e, coreStack);
+            }
+        break;
         case OP_i32_const:
             try{
                 Instruction::i32_const(coreStack, Util::getLeb128_i32(funcBody, coreStack.curLabel->instrOffset));
@@ -289,18 +336,6 @@ void Decoder::decode(Store &store, Stack &coreStack){
             }catch(const char *e){
                 throw Exception(std::string("[i64.const] ") + e, coreStack);
             }
-        break;
-        case OP_Current_memory:
-            Instruction::current_memory(store, coreStack);
-        break;
-        case OP_Grow_memory:
-            Instruction::grow_memory(store, coreStack);
-        break;
-        case OP_Drop:
-            Instruction::drop(coreStack);
-        break;
-        case OP_Select:
-            Instruction::select(coreStack);
         break;
         case OP_f32_const:
             try{
