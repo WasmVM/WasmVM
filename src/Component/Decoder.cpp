@@ -16,6 +16,12 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_Ctrl_loop:
             Instruction::ctrl_loop(coreStack, funcBody.at(coreStack.curLabel->instrOffset++));
         break;
+        case OP_Ctrl_if:
+            Instruction::ctrl_if(funcBody, coreStack, funcBody.at(coreStack.curLabel->instrOffset++));
+        break;
+        case OP_Ctrl_else:
+            Instruction::ctrl_else(coreStack);
+        break;
         case OP_Ctrl_end:
             Instruction::ctrl_end(coreStack);
         break;
@@ -24,6 +30,13 @@ void Decoder::decode(Store &store, Stack &coreStack){
                 Instruction::ctrl_br(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
             }catch(const char *e){
                 throw Exception(std::string("[br] ") + e, coreStack);
+            }
+        break;
+        case OP_Ctrl_br_if:
+            try{
+                Instruction::ctrl_br_if(Util::getLeb128_u32(funcBody, coreStack.curLabel->instrOffset), coreStack);
+            }catch(const char *e){
+                throw Exception(std::string("[br_if] ") + e, coreStack);
             }
         break;
         case OP_Ctrl_br_table:

@@ -46,7 +46,12 @@ void Instruction::ctrl_end(Stack &coreStack){
 	// Pop values
 	std::vector<Value> resultValues;
 	for(size_t i = 0; i < resCount; ++i){
-		resultValues.push_back(*((Value *)coreStack.pop().data));
+		Value *val = (Value *)coreStack.pop().data;
+		if(val->type != coreStack.curLabel->resultTypes.at(i)){
+			throw Exception("[end] Result types not match.", coreStack);
+		}
+		resultValues.push_back(*val);
+		delete val;
 	}
 	// Pop label
 	StackElem popElem = coreStack.pop();
@@ -127,7 +132,12 @@ void Instruction::ctrl_return(Stack &coreStack){
 	// Pop values
 	std::vector<Value> resultValues;
 	for(size_t i = 0; i < resCount; ++i){
-		resultValues.push_back(*((Value *)coreStack.pop().data));
+		Value *val = (Value *)coreStack.pop().data;
+		if(val->type != coreStack.curLabel->resultTypes.at(i)){
+			throw Exception("[return] Result types not match.", coreStack);
+		}
+		resultValues.push_back(*val);
+		delete val;
 	}
 	// Check frame
 	if(coreStack.curFrame == nullptr){
@@ -182,13 +192,13 @@ void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack 
 void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 	// Check label
 	unsigned int labelCount = 0;
-	size_t resCount = 0;
+	std::vector<ValType> resTypes;
 	std::uint64_t continueOffset = 0;
 	for(std::list<StackElem>::iterator stackIt = coreStack.begin(); stackIt != coreStack.end(); ++stackIt){
 		if(stackIt->type == label){
 			if(++labelCount >= depth + 1){
 				Label *target = (Label *)stackIt->data;
-				resCount = target->resultTypes.size();
+				resTypes = target->resultTypes;
 				continueOffset = target->contOffset;
 				break;
 			}
@@ -200,13 +210,18 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		throw Exception("[br] No enough lables to jump.", coreStack);
 	}
 	// Check result count
-	if(coreStack.valueCount() < resCount){
+	if(coreStack.valueCount() < resTypes.size()){
 		throw Exception("[br] Too few values left in the stack for target block result.", coreStack);
 	}
 	// Pop values
 	std::vector<Value> resultValues;
-	for(size_t i = 0; i < resCount; ++i){
-		resultValues.push_back(*((Value *)coreStack.pop().data));
+	for(size_t i = 0; i < resTypes.size(); ++i){
+		Value *val = (Value *)coreStack.pop().data;
+		if(val->type != resTypes.at(i)){
+			throw Exception("[br] Result types not match.", coreStack);
+		}
+		resultValues.push_back(*val);
+		delete val;
 	}
 	// Pop Labels
 	for(size_t i = 0; i < depth + 1; ++i){
@@ -227,7 +242,7 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		coreStack.curLabel->instrOffset = continueOffset;
 	}
 	// Push values
-	for(size_t i = 0; i < resCount; ++i){
+	for(size_t i = 0; i < resTypes.size(); ++i){
 		coreStack.push(resultValues.back());
 		resultValues.pop_back();
 	}
@@ -276,5 +291,100 @@ void Instruction::ctrl_br_table(std::vector<std::uint32_t> &depths, Stack &coreS
 		ctrl_br(depths.at(val->data.i32), coreStack);
 	}else{
 		ctrl_br(depths.back(), coreStack);
+	}
+	delete val;
+}
+void Instruction::ctrl_br_if(std::uint32_t depth, Stack &coreStack){
+	// Check stack
+	if(coreStack.valueCount() < 1){
+		throw Exception("[br_if] No value in the stack.", coreStack);
+	}
+	// Pop value
+	Value *val = (Value *)coreStack.pop().data;
+	if(val->type != i32){
+		throw Exception("[br_if] Value type is not i32.", coreStack);
+	}
+	// br
+	if(val->data.i32){
+		ctrl_br(depth, coreStack);
+	}
+	delete val;
+}
+void Instruction::ctrl_if(std::vector<char> &funcBody, Stack &coreStack, char blocktype){
+	// Check stack
+	if(coreStack.valueCount() < 1){
+		throw Exception("[if] No value in the stack.", coreStack);
+	}
+	// Pop value
+	Value *val = (Value *)coreStack.pop().data;
+	if(val->type != i32){
+		throw Exception("[if] Value type is not i32.", coreStack);
+	}
+	// Create new label
+	Label newLabel;
+	switch(blocktype){
+		case TYPE_i32:
+			newLabel.resultTypes.push_back(i32);
+		break;
+		case TYPE_i64:
+			newLabel.resultTypes.push_back(i64);
+		break;
+		case TYPE_f32:
+			newLabel.resultTypes.push_back(f32);
+		break;
+		case TYPE_f64:
+			newLabel.resultTypes.push_back(f64);
+		break;
+		default:
+		break;
+	}
+	newLabel.funcIdx = coreStack.curLabel->funcIdx;
+	// if
+	if(val->data.i32){
+		newLabel.instrOffset = coreStack.curLabel->instrOffset;
+		try{
+			newLabel.contOffset = Util::getContinueOffset(funcBody, coreStack, newLabel.instrOffset) + 1;
+		}catch(const char *e){
+			throw Exception(std::string("[if] ") + e, coreStack);
+		}
+	}else{
+		try{
+			newLabel.instrOffset = Util::getContinueOffset(funcBody, coreStack, coreStack.curLabel->instrOffset, true);
+			newLabel.contOffset = Util::getContinueOffset(funcBody, coreStack, newLabel.instrOffset - 1) + 1;
+		}catch(const char *e){
+			throw Exception(std::string("[if] ") + e, coreStack);
+		}
+	}
+	coreStack.push(newLabel);
+	delete val;
+}
+void Instruction::ctrl_else(Stack &coreStack){
+	// Check result count
+	size_t resCount = coreStack.curLabel->resultTypes.size();
+	if(coreStack.valueCount() != resCount){
+		throw Exception("[else] Values left in the stack not the correct number for result.", coreStack);
+	}
+	// Pop values
+	std::vector<Value> resultValues;
+	for(size_t i = 0; i < resCount; ++i){
+		Value *val = (Value *)coreStack.pop().data;
+		if(val->type != coreStack.curLabel->resultTypes.at(i)){
+			throw Exception("[else] Result types not match.", coreStack);
+		}
+		resultValues.push_back(*val);
+		delete val;
+	}
+	// Pop label
+	StackElem popElem = coreStack.pop();
+	if(popElem.type != StackElemType::label){
+		throw Exception("[else] There must be a label on the top of stack after pop result value.", coreStack);
+	}
+	// Return from function
+	coreStack.curLabel->instrOffset = ((Label *)popElem.data)->contOffset;
+	delete (Label *)popElem.data;
+	// Push values
+	for(size_t i = 0; i < resCount; ++i){
+		coreStack.push(resultValues.back());
+		resultValues.pop_back();
 	}
 }

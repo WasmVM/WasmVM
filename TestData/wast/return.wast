@@ -1,17 +1,17 @@
 (module 
-	(func $addTwo1 (local i32)
+	(func $addTwo1
 		i32.const 63
-		drop
+		unreachable
 		return
 		i32.const 62
-		drop
+		unreachable
 	)
 	(func $start
 		i32.const 61
-		drop
+		unreachable
 		call $addTwo1
 		i32.const 63
-		drop
+		unreachable
 	)
 	(start $start)
 )
