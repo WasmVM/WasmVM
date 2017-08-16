@@ -146,13 +146,13 @@ std::int64_t Util::getLeb128_i64(char* &ptr, const char *max){
     }
     return toLittle64(ret);
 }
-std::uint32_t Util::getLeb128_u32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::uint32_t Util::getLeb128_u32(std::vector<char> &body, std::uint64_t &offset){
     std::uint32_t ret = 0;
     for(int i = 0; i < 5; ++i){
-        if(instrOffset >= funcBody.size()){
+        if(offset >= body.size()){
             throw "offset exceed function size while decode uleb128_32.";
         }
-        std::uint32_t byte = funcBody.at(instrOffset++);
+        std::uint32_t byte = body.at(offset++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
         if(i == 4){
@@ -167,13 +167,13 @@ std::uint32_t Util::getLeb128_u32(std::vector<char> &funcBody, std::uint64_t &in
     }
     return toLittle32(ret);
 }
-std::int32_t Util::getLeb128_i32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::int32_t Util::getLeb128_i32(std::vector<char> &body, std::uint64_t &offset){
     std::int32_t ret = 0;
     for(int i = 0; i < 5; ++i){
-        if(instrOffset >= funcBody.size()){
+        if(offset >= body.size()){
             throw "offset exceed function size while decode leb128_32.";
         }
-        std::int32_t byte = funcBody.at(instrOffset++);
+        std::int32_t byte = body.at(offset++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
         if(i == 4){
@@ -206,13 +206,13 @@ std::int32_t Util::getLeb128_i32(std::vector<char> &funcBody, std::uint64_t &ins
     }
     return toLittle32(ret);
 }
-std::int64_t Util::getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+std::int64_t Util::getLeb128_i64(std::vector<char> &body, std::uint64_t &offset){
     std::int64_t ret = 0;
     for(int i = 0; i < 10; ++i){
-        if(instrOffset >= funcBody.size()){
+        if(offset >= body.size()){
             throw "offset exceed function size while decode leb128_64.";
         }
-        std::int64_t byte = funcBody.at(instrOffset++);
+        std::int64_t byte = body.at(offset++);
         ret |= (byte & 0x7F) << (7 * i);
         // Check range
         if(i == 9){
@@ -260,24 +260,24 @@ std::int64_t Util::getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &ins
     }
     return toLittle64(ret);
 }
-float Util::getIEEE754_f32(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+float Util::getIEEE754_f32(std::vector<char> &body, std::uint64_t &offset){
     std::uint32_t bytes = 0;
     for(int i = 0; i < 4; ++i){
-        if(instrOffset >= funcBody.size()){
+        if(offset >= body.size()){
             throw "offset exceed function size while decode IEEE754 float.";
         }
-        bytes |= (((std::uint32_t)funcBody.at(instrOffset++)) & 0xff) << (i * 8);
+        bytes |= (((std::uint32_t)body.at(offset++)) & 0xff) << (i * 8);
     }
     bytes = toLittle32(bytes);
     return *((float *)&bytes);
 }
-double Util::getIEEE754_f64(std::vector<char> &funcBody, std::uint64_t &instrOffset){
+double Util::getIEEE754_f64(std::vector<char> &body, std::uint64_t &offset){
     std::uint64_t bytes = 0;
     for(int i = 0; i < 8; ++i){
-        if(instrOffset >= funcBody.size()){
+        if(offset >= body.size()){
             throw "offset exceed function size while decode IEEE754 double.";
         }
-        bytes |= (((std::uint64_t)funcBody.at(instrOffset++)) & 0xff) << (i * 8);
+        bytes |= (((std::uint64_t)body.at(offset++)) & 0xff) << (i * 8);
     }
     bytes = toLittle64(bytes);
     return *((double *)&bytes);
@@ -375,4 +375,32 @@ std::uint64_t Util::getContinueOffset(std::vector<char> &funcBody, Stack &coreSt
         }
     }
     throw Exception("Can't found match end or else in this function.", coreStack);
+}
+char* Util::getMemoryPtr(Store &store, Stack &coreStack, std::uint32_t align, std::uint32_t offset, int byteWidth, std::string tag){
+    // Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception(tag + "No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception(tag + "Memory not exists in the store.", coreStack);
+	}
+	MemInst *memory = store.mems.at(memAddr);
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception(tag + "No value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception(tag + "Operand type is not i32.", coreStack);
+	}
+	// Check ea
+	std::uint32_t ea = operand->data.i32 + offset;
+	if(ea + byteWidth > memory->data.size()){
+		throw Exception(tag + "Address out of bound.", coreStack);
+    }
+    // Return ptr
+    return memory->data.data() + ea;
 }

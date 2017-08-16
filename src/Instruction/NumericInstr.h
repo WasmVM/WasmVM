@@ -3,9 +3,8 @@
 
 #include <cstdint>
 #include <Stack.h>
-#include <Store.h>
 #include <Instance.h>
-#include <Exception.h>
+#include <Util.h>
 
 namespace Instruction{
 	void i32_const(Stack &coreStack, std::int32_t val);

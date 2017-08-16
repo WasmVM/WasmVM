@@ -8,8 +8,11 @@
 #endif
 
 #include <cstdint>
+#include <string>
 #include <Exception.h>
 #include <Bincode.h>
+#include <Stack.h>
+#include <Store.h>
 
 class Util{
 public:
@@ -21,12 +24,13 @@ public:
     static std::uint32_t getLeb128_u32(char* &ptr, const char *max);
     static std::int32_t getLeb128_i32(char* &ptr, const char *max);
     static std::int64_t getLeb128_i64(char* &ptr, const char *max);
-    static std::uint32_t getLeb128_u32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
-    static std::int32_t getLeb128_i32(std::vector<char> &funcBody, std::uint64_t &instrOffset);
-    static std::int64_t getLeb128_i64(std::vector<char> &funcBody, std::uint64_t &instrOffset);
-    static float getIEEE754_f32(std::vector<char> &funcBody, std::uint64_t &instrOffset); // FIXME: WIP
-    static double getIEEE754_f64(std::vector<char> &funcBody, std::uint64_t &instrOffset); // FIXME: WIP
+    static std::uint32_t getLeb128_u32(std::vector<char> &body, std::uint64_t &offset);
+    static std::int32_t getLeb128_i32(std::vector<char> &body, std::uint64_t &offset);
+    static std::int64_t getLeb128_i64(std::vector<char> &body, std::uint64_t &offset);
+    static float getIEEE754_f32(std::vector<char> &body, std::uint64_t &offset);
+    static double getIEEE754_f64(std::vector<char> &body, std::uint64_t &offset);
     static std::uint64_t getContinueOffset(std::vector<char> &funcBody, Stack &coreStack, std::uint64_t instrOffset, bool stopElse = false);
+    static char *getMemoryPtr(Store &store, Stack &coreStack, std::uint32_t align, std::uint32_t offset, int byteWidth, std::string tag);
 };
 
 #endif
