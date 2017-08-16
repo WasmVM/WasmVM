@@ -1,15 +1,9 @@
 # ignore all object file 
 *.o
-main
+build/
 
 # ignore .vscode
 .vscode/
 
-# ignore tools dump
-Tools/Linear_Memory_map.txt
-Tools/Linear_Memory_section.txt
-Tools/lm
-
-# ignore Tests exec
-
-Test/Test_LocalStack
+# ignore config
+WasmVm.cfg 

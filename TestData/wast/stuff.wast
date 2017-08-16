@@ -1,0 +1,20 @@
+(module
+  (import "addTwo.wasm" "addTwo" (func (param i32 i32) (result i32)))
+  (memory 0 6)
+  (type (func (param i32) (result i32)))
+  (global (mut i32) i32.const 1)
+  (global i64 i64.const 1)
+  (global (mut f32) f32.const 2.5)
+  (global (mut f64) f64.const 4.2)
+  (elem 0 (i32.const 2) 0 1)
+  (data 0 (i32.const 393213) "ggg")
+  (table 2 6 anyfunc)
+  (func (local i32 i32 i64 i32 i64))
+  (func
+    i32.const 420000000
+    drop)
+  (export "e" (func 1))
+  (export "t" (table 0))
+  (export "m" (memory 0))
+  (export "g" (global 1))  
+)
