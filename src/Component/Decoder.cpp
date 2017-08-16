@@ -296,6 +296,12 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_Grow_memory:
             Instruction::grow_memory(store, coreStack);
         break;
+        case OP_Drop:
+            Instruction::drop(coreStack);
+        break;
+        case OP_Select:
+            Instruction::select(coreStack);
+        break;
         case OP_f32_const:
             try{
                 Instruction::f32_const(coreStack, Util::getIEEE754_f32(funcBody, coreStack.curLabel->instrOffset));
