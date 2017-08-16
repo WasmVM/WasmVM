@@ -401,6 +401,8 @@ char* Util::getMemoryPtr(Store &store, Stack &coreStack, std::uint32_t align, st
 	if(ea + byteWidth > memory->data.size()){
 		throw Exception(tag + "Address out of bound.", coreStack);
     }
+    // Clean
+	delete operand;
     // Return ptr
     return memory->data.data() + ea;
 }
