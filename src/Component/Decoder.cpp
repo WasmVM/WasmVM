@@ -453,6 +453,60 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_f64_ge:
             Instruction::f64_ge(coreStack);
         break;
+        case OP_i32_clz:
+            Instruction::i32_clz(coreStack);
+		break;
+        case OP_i32_ctz:
+            Instruction::i32_ctz(coreStack);
+		break;
+        case OP_i32_popcnt:
+            Instruction::i32_popcnt(coreStack);
+		break;
+        case OP_i32_add:
+            Instruction::i32_add(coreStack);
+		break;
+        case OP_i32_sub:
+            Instruction::i32_sub(coreStack);
+		break;
+        case OP_i32_mul:
+            Instruction::i32_mul(coreStack);
+		break;
+        case OP_i32_div_s:
+            Instruction::i32_div_s(coreStack);
+		break;
+        case OP_i32_div_u:
+            Instruction::i32_div_u(coreStack);
+		break;
+        case OP_i32_rem_s:
+            Instruction::i32_rem_s(coreStack);
+		break;
+        case OP_i32_rem_u:
+            Instruction::i32_rem_u(coreStack);
+		break;
+        case OP_i32_and:
+            Instruction::i32_and(coreStack);
+		break;
+        case OP_i32_or:
+            Instruction::i32_or(coreStack);
+		break;
+        case OP_i32_xor:
+            Instruction::i32_xor(coreStack);
+		break;
+        case OP_i32_shl:
+            Instruction::i32_shl(coreStack);
+		break;
+        case OP_i32_shr_s:
+            Instruction::i32_shr_s(coreStack);
+		break;
+        case OP_i32_shr_u:
+            Instruction::i32_shr_u(coreStack);
+		break;
+        case OP_i32_roti:
+            Instruction::i32_roti(coreStack);
+		break;
+        case OP_i32_rotr:
+            Instruction::i32_rotr(coreStack);
+		break;
         default:
         {
             char codeChr[2];
