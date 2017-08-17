@@ -23,6 +23,24 @@ namespace Instruction{
 	void i32_le_u(Stack &coreStack);
 	void i32_ge_s(Stack &coreStack);
 	void i32_ge_u(Stack &coreStack);
+	void i32_clz(Stack &coreStack);
+	void i32_ctz(Stack &coreStack);
+	void i32_popcnt(Stack &coreStack);
+	void i32_add(Stack &coreStack);
+	void i32_sub(Stack &coreStack);
+	void i32_mul(Stack &coreStack);
+	void i32_div_s(Stack &coreStack);
+	void i32_div_u(Stack &coreStack);
+	void i32_rem_s(Stack &coreStack);
+	void i32_rem_u(Stack &coreStack);
+	void i32_and(Stack &coreStack);
+	void i32_or(Stack &coreStack);
+	void i32_xor(Stack &coreStack);
+	void i32_shl(Stack &coreStack);
+	void i32_shr_s(Stack &coreStack);
+	void i32_shr_u(Stack &coreStack);
+	void i32_roti(Stack &coreStack);
+	void i32_rotr(Stack &coreStack);
 	
 	void i64_eqz(Stack &coreStack);
 	void i64_eq(Stack &coreStack);

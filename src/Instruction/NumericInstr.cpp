@@ -848,3 +848,39 @@ void Instruction::f64_ge(Stack &coreStack){
 	delete operand1;
 	delete operand2;
 }
+void Instruction::i32_clz(Stack &coreStack){
+}
+void Instruction::i32_ctz(Stack &coreStack){
+}
+void Instruction::i32_popcnt(Stack &coreStack){
+}
+void Instruction::i32_add(Stack &coreStack){
+}
+void Instruction::i32_sub(Stack &coreStack){
+}
+void Instruction::i32_mul(Stack &coreStack){
+}
+void Instruction::i32_div_s(Stack &coreStack){
+}
+void Instruction::i32_div_u(Stack &coreStack){
+}
+void Instruction::i32_rem_s(Stack &coreStack){
+}
+void Instruction::i32_rem_u(Stack &coreStack){
+}
+void Instruction::i32_and(Stack &coreStack){
+}
+void Instruction::i32_or(Stack &coreStack){
+}
+void Instruction::i32_xor(Stack &coreStack){
+}
+void Instruction::i32_shl(Stack &coreStack){
+}
+void Instruction::i32_shr_s(Stack &coreStack){
+}
+void Instruction::i32_shr_u(Stack &coreStack){
+}
+void Instruction::i32_roti(Stack &coreStack){
+}
+void Instruction::i32_rotr(Stack &coreStack){
+}

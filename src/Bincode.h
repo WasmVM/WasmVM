@@ -99,5 +99,23 @@
 #define OP_f64_gt 0x64
 #define OP_f64_le 0x65
 #define OP_f64_ge 0x66
+#define OP_i32_clz 0x67
+#define OP_i32_ctz 0x68
+#define OP_i32_popcnt 0x69
+#define OP_i32_add 0x6A
+#define OP_i32_sub 0x6B
+#define OP_i32_mul 0x6C
+#define OP_i32_div_s 0x6D
+#define OP_i32_div_u 0x6E
+#define OP_i32_rem_s 0x6F
+#define OP_i32_rem_u 0x70
+#define OP_i32_and 0x71
+#define OP_i32_or 0x72
+#define OP_i32_xor 0x73
+#define OP_i32_shl 0x74
+#define OP_i32_shr_s 0x75
+#define OP_i32_shr_u 0x76
+#define OP_i32_roti 0x77
+#define OP_i32_rotr 0x78
 
 #endif
