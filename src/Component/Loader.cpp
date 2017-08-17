@@ -365,7 +365,7 @@ void Loader::load(const char *fileName){
                 throw LoaderException(std::string(fileName) + ": Code count does not match function count.", true, cur - fileBuf);
             }
             for(std::uint32_t i = 0; i < codeNum; ++i){
-                std::uint32_t codeSize = Util::getLeb128_i32(cur, endAddr);
+                std::uint32_t codeSize = Util::getLeb128_u32(cur, endAddr);
                 char *curAddr = cur;
                 // Locals
                 std::uint32_t localCount = Util::getLeb128_i32(cur, endAddr);

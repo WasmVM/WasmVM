@@ -406,3 +406,35 @@ char* Util::getMemoryPtr(Store &store, Stack &coreStack, std::uint32_t align, st
     // Return ptr
     return memory->data.data() + ea;
 }
+bool Util::eqSign(float a, float b){
+    return ((*(std::uint32_t *)&a) & 0x80000000) == ((*(std::uint32_t *)&b) & 0x80000000);
+}
+bool Util::isZero(float a){
+    return ((*(std::uint32_t *)&a) & 0x7FFFFFFF) == 0;
+}
+bool Util::isPos(float a){
+    return ((*(std::uint32_t *)&a) & 0x80000000) == 0;
+}
+bool Util::isNaN(float a){
+    bool ret = (((*(std::uint32_t *)&a) & 0x7FFFFFFF) != 0x7F800000) && (((*(std::uint32_t *)&a) & 0x7F800000) == 0x7F800000);
+    return ret;
+}
+bool Util::isInf(float a){
+    return ((*(std::uint32_t *)&a) & 0x7FFFFFFF) == 0x7F800000;
+}
+bool Util::eqSign(double a, double b){
+    return ((*(std::uint64_t *)&a) & 0x8000000000000000) == ((*(std::uint64_t *)&b) & 0x8000000000000000);
+}
+bool Util::isZero(double a){
+    return ((*(std::uint64_t *)&a) & 0x7FFFFFFFFFFFFFFF) == 0;
+}
+bool Util::isPos(double a){
+    return ((*(std::uint64_t *)&a) & 0x8000000000000000) == 0;
+}
+bool Util::isNaN(double a){
+    bool ret = (((*(std::uint64_t *)&a) & 0x7FFFFFFFFFFFFFFF) != 0x7FF0000000000000) && (((*(std::uint64_t *)&a) & 0x7FF0000000000000) == 0x7FF0000000000000);
+    return ret;
+}
+bool Util::isInf(double a){
+    return ((*(std::uint64_t *)&a) & 0x7FFFFFFFFFFFFFFF) == 0x7FF0000000000000;
+}

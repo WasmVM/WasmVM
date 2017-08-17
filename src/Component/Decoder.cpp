@@ -351,6 +351,108 @@ void Decoder::decode(Store &store, Stack &coreStack){
                 throw Exception(std::string("[f64.const] ") + e, coreStack);
             }
         break;
+        case OP_i32_eqz:
+            Instruction::i32_eqz(coreStack);
+        break;
+        case OP_i32_eq:
+            Instruction::i32_eq(coreStack);
+        break;
+        case OP_i32_ne:
+            Instruction::i32_ne(coreStack);
+        break;
+        case OP_i32_lt_s:
+            Instruction::i32_lt_s(coreStack);
+        break;
+        case OP_i32_lt_u:
+            Instruction::i32_lt_u(coreStack);
+        break;
+        case OP_i32_gt_s:
+            Instruction::i32_gt_s(coreStack);
+        break;
+        case OP_i32_gt_u:
+            Instruction::i32_gt_u(coreStack);
+        break;
+        case OP_i32_le_s:
+            Instruction::i32_le_s(coreStack);
+        break;
+        case OP_i32_le_u:
+            Instruction::i32_le_u(coreStack);
+        break;
+        case OP_i32_ge_s:
+            Instruction::i32_ge_s(coreStack);
+        break;
+        case OP_i32_ge_u:
+            Instruction::i32_ge_u(coreStack);
+        break;
+        case OP_i64_eqz:
+            Instruction::i64_eqz(coreStack);
+        break;
+        case OP_i64_eq:
+            Instruction::i64_eq(coreStack);
+        break;
+        case OP_i64_ne:
+            Instruction::i64_ne(coreStack);
+        break;
+        case OP_i64_lt_s:
+            Instruction::i64_lt_s(coreStack);
+        break;
+        case OP_i64_lt_u:
+            Instruction::i64_lt_u(coreStack);
+        break;
+        case OP_i64_gt_s:
+            Instruction::i64_gt_s(coreStack);
+        break;
+        case OP_i64_gt_u:
+            Instruction::i64_gt_u(coreStack);
+        break;
+        case OP_i64_le_s:
+            Instruction::i64_le_s(coreStack);
+        break;
+        case OP_i64_le_u:
+            Instruction::i64_le_u(coreStack);
+        break;
+        case OP_i64_ge_s:
+            Instruction::i64_ge_s(coreStack);
+        break;
+        case OP_i64_ge_u:
+            Instruction::i64_ge_u(coreStack);
+        break;
+        case OP_f32_eq:
+            Instruction::f32_eq(coreStack);
+        break;
+        case OP_f32_ne:
+            Instruction::f32_ne(coreStack);
+        break;
+        case OP_f32_lt:
+            Instruction::f32_lt(coreStack);
+        break;
+        case OP_f32_gt:
+            Instruction::f32_gt(coreStack);
+        break;
+        case OP_f32_le:
+            Instruction::f32_le(coreStack);
+        break;
+        case OP_f32_ge:
+            Instruction::f32_ge(coreStack);
+        break;
+        case OP_f64_eq:
+            Instruction::f64_eq(coreStack);
+        break;
+        case OP_f64_ne:
+            Instruction::f64_ne(coreStack);
+        break;
+        case OP_f64_lt:
+            Instruction::f64_lt(coreStack);
+        break;
+        case OP_f64_gt:
+            Instruction::f64_gt(coreStack);
+        break;
+        case OP_f64_le:
+            Instruction::f64_le(coreStack);
+        break;
+        case OP_f64_ge:
+            Instruction::f64_ge(coreStack);
+        break;
         default:
         {
             char codeChr[2];
