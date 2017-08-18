@@ -39,7 +39,7 @@ namespace Instruction{
 	void i32_shl(Stack &coreStack);
 	void i32_shr_s(Stack &coreStack);
 	void i32_shr_u(Stack &coreStack);
-	void i32_roti(Stack &coreStack);
+	void i32_rotl(Stack &coreStack);
 	void i32_rotr(Stack &coreStack);
 	
 	void i64_eqz(Stack &coreStack);
@@ -53,6 +53,24 @@ namespace Instruction{
 	void i64_le_u(Stack &coreStack);
 	void i64_ge_s(Stack &coreStack);
 	void i64_ge_u(Stack &coreStack);
+	void i64_clz(Stack &coreStack);
+	void i64_ctz(Stack &coreStack);
+	void i64_popcnt(Stack &coreStack);
+	void i64_add(Stack &coreStack);
+	void i64_sub(Stack &coreStack);
+	void i64_mul(Stack &coreStack);
+	void i64_div_s(Stack &coreStack);
+	void i64_div_u(Stack &coreStack);
+	void i64_rem_s(Stack &coreStack);
+	void i64_rem_u(Stack &coreStack);
+	void i64_and(Stack &coreStack);
+	void i64_or(Stack &coreStack);
+	void i64_xor(Stack &coreStack);
+	void i64_shl(Stack &coreStack);
+	void i64_shr_s(Stack &coreStack);
+	void i64_shr_u(Stack &coreStack);
+	void i64_rotl(Stack &coreStack);
+	void i64_rotr(Stack &coreStack);
 
 	void f32_eq(Stack &coreStack);
 	void f32_ne(Stack &coreStack);

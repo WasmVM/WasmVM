@@ -115,7 +115,24 @@
 #define OP_i32_shl 0x74
 #define OP_i32_shr_s 0x75
 #define OP_i32_shr_u 0x76
-#define OP_i32_roti 0x77
+#define OP_i32_rotl 0x77
 #define OP_i32_rotr 0x78
-
+#define OP_i64_clz 0x79
+#define OP_i64_ctz 0x7A
+#define OP_i64_popcnt 0x7B
+#define OP_i64_add 0x7C
+#define OP_i64_sub 0x7D
+#define OP_i64_mul 0x7E
+#define OP_i64_div_s 0x7F
+#define OP_i64_div_u 0x80
+#define OP_i64_rem_s 0x81
+#define OP_i64_rem_u 0x82
+#define OP_i64_and 0x83
+#define OP_i64_or 0x84
+#define OP_i64_xor 0x85
+#define OP_i64_shl 0x86
+#define OP_i64_shr_s 0x87
+#define OP_i64_shr_u 0x88
+#define OP_i64_rotl 0x89
+#define OP_i64_rotr 0x8A
 #endif

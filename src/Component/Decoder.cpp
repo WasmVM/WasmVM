@@ -2,7 +2,7 @@
 
 void Decoder::decode(Store &store, Stack &coreStack){
     std::vector<char> &funcBody = store.funcs.at(coreStack.curLabel->funcIdx)->code.body;
-    char bincode = funcBody.at((coreStack.curLabel->instrOffset));
+    unsigned char bincode = funcBody.at((coreStack.curLabel->instrOffset));
     coreStack.curLabel->instrOffset += 1;
     switch(bincode){
         case OP_Ctrl_unreachable:
@@ -501,12 +501,66 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_i32_shr_u:
             Instruction::i32_shr_u(coreStack);
 		break;
-        case OP_i32_roti:
-            Instruction::i32_roti(coreStack);
+        case OP_i32_rotl:
+            Instruction::i32_rotl(coreStack);
 		break;
         case OP_i32_rotr:
             Instruction::i32_rotr(coreStack);
-		break;
+        break;
+        case OP_i64_clz:
+            Instruction::i64_clz(coreStack);
+        break;
+        case OP_i64_ctz:
+            Instruction::i64_ctz(coreStack);
+        break;
+        case OP_i64_popcnt:
+            Instruction::i64_popcnt(coreStack);
+        break;
+        case OP_i64_add:
+            Instruction::i64_add(coreStack);
+        break;
+        case OP_i64_sub:
+            Instruction::i64_sub(coreStack);
+        break;
+        case OP_i64_mul:
+            Instruction::i64_mul(coreStack);
+        break;
+        case OP_i64_div_s:
+            Instruction::i64_div_s(coreStack);
+        break;
+        case OP_i64_div_u:
+            Instruction::i64_div_u(coreStack);
+        break;
+        case OP_i64_rem_s:
+            Instruction::i64_rem_s(coreStack);
+        break;
+        case OP_i64_rem_u:
+            Instruction::i64_rem_u(coreStack);
+        break;
+        case OP_i64_and:
+            Instruction::i64_and(coreStack);
+        break;
+        case OP_i64_or:
+            Instruction::i64_or(coreStack);
+        break;
+        case OP_i64_xor:
+            Instruction::i64_xor(coreStack);
+        break;
+        case OP_i64_shl:
+            Instruction::i64_shl(coreStack);
+        break;
+        case OP_i64_shr_s:
+            Instruction::i64_shr_s(coreStack);
+        break;
+        case OP_i64_shr_u:
+            Instruction::i64_shr_u(coreStack);
+        break;
+        case OP_i64_rotl:
+            Instruction::i64_rotl(coreStack);
+        break;
+        case OP_i64_rotr:
+            Instruction::i64_rotr(coreStack);
+        break;
         default:
         {
             char codeChr[2];
