@@ -1,68 +1,150 @@
 (module
-  (memory (data "\00\00\00\00\F0\F0\F0\FF\00\00\00\00\F0\F0\F0\7F\00\00\00\00\00\00\F0\FF\00\00\00\00\00\00\F0\7F\00\00\00\00\00\00\00\80\00\00\00\00\00\00\00\00"))
-  ;; Offset 0:-nan 8:+nan 16:-inf 24:+inf 32:-0 40:+0
+  (memory (data "\F0\F0\F0\FF\F0\F0\F0\7F\00\00\80\FF\00\00\80\7F\00\00\00\80\00\00\00\00"))
+  ;; Offset 0:-nan 4:+nan 8:-inf 12:+inf 16:-0 20:+0
   (func $start
-	i32.const 0
-	f64.load offset=0 ;;-nan
-	f64.const 2.5
-	f64.eq
-  	i32.const 0
-	f64.load offset=8 ;;+nan
-	f64.const 2.5
-	f64.eq
-	unreachable
-	f64.const 2.5
-	i32.const 0
-	f64.load offset=0 ;;-nan
-	f64.eq
-	f64.const 2.5
-	i32.const 0
-	f64.load offset=8 ;;+nan
-	f64.eq
-	unreachable
-	i32.const 0
-	f64.load offset=24 ;;+inf
-	f64.const 2.5
-	f64.eq
-	unreachable
-	i32.const 0
-	f64.load offset=16 ;;-inf
-	f64.const 2.5
-	f64.eq
-	unreachable
-	f64.const 2.5
-	i32.const 0
-	f64.load offset=24 ;;+inf
-	f64.eq
-	unreachable
-	f64.const 2.5
-	i32.const 0
-	f64.load offset=16 ;;-inf
-	f64.eq
-	unreachable
-	i32.const 0
-	f64.load offset=40 ;;+0
-	i32.const 0
-	f64.load offset=32 ;;-0
-	f64.eq
-	i32.const 0
-	f64.load offset=32 ;;-0
-	i32.const 0
-	f64.load offset=40 ;;+0
-	f64.eq
-	unreachable
-	f64.const 2.5
-	f64.const 5.0
-	f64.eq			;; <
-	unreachable
-	f64.const 3.14
-	f64.const 3.14
-	f64.eq			;; =
-	unreachable
-	f64.const 7.53
-	f64.const 5.0
-	f64.eq			;; >
-	unreachable
+  	;; copysign
+		f32.const 3.14 ;;pos
+		i32.const 0  ;;-nan
+		f32.load
+		f32.copysign
+		f32.const 3.14 ;;pos
+		i32.const 4  ;;nan
+		f32.load
+		f32.copysign
+		i32.const 0  ;;-nan
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		i32.const 4  ;;nan
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		i32.const 16  ;;-0
+		f32.load
+		i32.const 8  ;;-inf
+		f32.load
+		f32.copysign
+		i32.const 20  ;;+0
+		f32.load
+		i32.const 12  ;;+inf
+		f32.load
+		f32.copysign
+		i32.const 20  ;;+0
+		f32.load
+		i32.const 8  ;;-inf
+		f32.load
+		f32.copysign
+		i32.const 16  ;;-0
+		f32.load
+		i32.const 12  ;;+inf
+		f32.load
+		f32.copysign
+		i32.const 8  ;;-inf
+		f32.load
+		i32.const 16  ;;-0
+		f32.load
+		f32.copysign
+		i32.const 12  ;;+inf
+		f32.load
+		i32.const 20  ;;+0
+		f32.load
+		f32.copysign
+		i32.const 8  ;;-inf
+		f32.load
+		i32.const 20  ;;+0
+		f32.load
+		f32.copysign
+		i32.const 12  ;;+inf
+		f32.load
+		i32.const 16  ;;-0
+		f32.load
+		f32.copysign
+		i32.const 8  ;;-inf
+		f32.load
+		i32.const 8  ;;-inf
+		f32.load
+		f32.copysign
+		i32.const 12  ;;+inf
+		f32.load
+		i32.const 12  ;;+inf
+		f32.load
+		f32.copysign
+		i32.const 8  ;;-inf
+		f32.load
+		i32.const 12  ;;+inf
+		f32.load
+		f32.copysign
+		i32.const 12  ;;+inf
+		f32.load
+		i32.const 8  ;;-inf
+		f32.load
+		f32.copysign
+		f32.const 3.14 ;;pos
+		i32.const 8  ;;-inf
+		f32.load
+		f32.copysign
+		f32.const 3.14 ;;pos
+		i32.const 12  ;;+inf
+		f32.load
+		f32.copysign
+		i32.const 8  ;;-inf
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		i32.const 12  ;;+inf
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		i32.const 16  ;;-0
+		f32.load
+		i32.const 16  ;;-0
+		f32.load
+		f32.copysign
+		i32.const 20  ;;+0
+		f32.load
+		i32.const 20  ;;+0
+		f32.load
+		f32.copysign
+		i32.const 16  ;;-0
+		f32.load
+		i32.const 20  ;;+0
+		f32.load
+		f32.copysign
+		i32.const 20  ;;+0
+		f32.load
+		i32.const 16  ;;-0
+		f32.load
+		f32.copysign
+		f32.const 3.14 ;;pos
+		i32.const 16  ;;-0
+		f32.load
+		f32.copysign
+		f32.const 3.14 ;;pos
+		i32.const 20  ;;+0
+		f32.load
+		f32.copysign
+		i32.const 16  ;;-0
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		i32.const 20  ;;+0
+		f32.load
+		f32.const 3.14 ;;pos
+		f32.copysign
+		f32.const 12 ;;pos
+		f32.const 4 ;;pos
+		f32.copysign
+		f32.const -12 ;;neg
+		f32.const -4 ;;neg
+		f32.copysign
+		f32.const 12 ;;pos
+		f32.const -4 ;;neg
+		f32.copysign
+		f32.const -12 ;;neg
+		f32.const 4 ;;pos
+		f32.copysign
+		unreachable
+		
   )
   (start $start)
 )

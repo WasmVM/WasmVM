@@ -561,6 +561,90 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_i64_rotr:
             Instruction::i64_rotr(coreStack);
         break;
+        case OP_f32_abs:
+            Instruction::f32_abs(coreStack);
+		break;
+        case OP_f32_neg:
+            Instruction::f32_neg(coreStack);
+		break;
+        case OP_f32_ceil:
+            Instruction::f32_ceil(coreStack);
+		break;
+        case OP_f32_floor:
+            Instruction::f32_floor(coreStack);
+		break;
+        case OP_f32_trunc:
+            Instruction::f32_trunc(coreStack);
+		break;
+        case OP_f32_nearest:
+            Instruction::f32_nearest(coreStack);
+		break;
+        case OP_f32_sqrt:
+            Instruction::f32_sqrt(coreStack);
+		break;
+        case OP_f32_add:
+            Instruction::f32_add(coreStack);
+		break;
+        case OP_f32_sub:
+            Instruction::f32_sub(coreStack);
+		break;
+        case OP_f32_mul:
+            Instruction::f32_mul(coreStack);
+		break;
+        case OP_f32_div:
+            Instruction::f32_div(coreStack);
+		break;
+        case OP_f32_min:
+            Instruction::f32_min(coreStack);
+		break;
+        case OP_f32_max:
+            Instruction::f32_max(coreStack);
+		break;
+        case OP_f32_copysign:
+            Instruction::f32_copysign(coreStack);
+        break;
+        case OP_f64_abs:
+            Instruction::f64_abs(coreStack);
+        break;
+        case OP_f64_neg:
+            Instruction::f64_neg(coreStack);
+        break;
+        case OP_f64_ceil:
+            Instruction::f64_ceil(coreStack);
+        break;
+        case OP_f64_floor:
+            Instruction::f64_floor(coreStack);
+        break;
+        case OP_f64_trunc:
+            Instruction::f64_trunc(coreStack);
+        break;
+        case OP_f64_nearest:
+            Instruction::f64_nearest(coreStack);
+        break;
+        case OP_f64_sqrt:
+            Instruction::f64_sqrt(coreStack);
+        break;
+        case OP_f64_add:
+            Instruction::f64_add(coreStack);
+        break;
+        case OP_f64_sub:
+            Instruction::f64_sub(coreStack);
+        break;
+        case OP_f64_mul:
+            Instruction::f64_mul(coreStack);
+        break;
+        case OP_f64_div:
+            Instruction::f64_div(coreStack);
+        break;
+        case OP_f64_min:
+            Instruction::f64_min(coreStack);
+        break;
+        case OP_f64_max:
+            Instruction::f64_max(coreStack);
+        break;
+        case OP_f64_copysign:
+            Instruction::f64_copysign(coreStack);
+        break;
         default:
         {
             char codeChr[2];

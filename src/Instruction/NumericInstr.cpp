@@ -1559,3 +1559,891 @@ void Instruction::i64_rotr(Stack &coreStack){
 	delete operand1;
 	delete operand2;
 }
+void Instruction::f32_abs(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.abs] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.abs] Operand type is not f32.", coreStack);
+	}
+	// abs
+	coreStack.push(Util::isPos(operand->data.f32) ? operand->data.f32 : -operand->data.f32);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_neg(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.neg] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.neg] Operand type is not f32.", coreStack);
+	}
+	// neg
+	coreStack.push(-operand->data.f32);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_ceil(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.ceil] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.ceil] Operand type is not f32.", coreStack);
+	}
+	// ceil
+	if(Util::isNaN(operand->data.f32) || Util::isInf(operand->data.f32) || Util::isZero(operand->data.f32)){
+		coreStack.push(operand->data.f32);
+	}else if(operand->data.f32 < 0 && operand->data.f32 > -1){
+		coreStack.push((float) -0.0);
+	}else{
+		std::int32_t intVal = operand->data.f32;
+		if(intVal < operand->data.f32){
+			intVal += 1;
+		}
+		coreStack.push((float)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f32_floor(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.floor] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.floor] Operand type is not f32.", coreStack);
+	}
+	// floor
+	if(Util::isNaN(operand->data.f32) || Util::isInf(operand->data.f32) || Util::isZero(operand->data.f32)){
+		coreStack.push(operand->data.f32);
+	}else if(operand->data.f32 > 0 && operand->data.f32 < 1){
+		coreStack.push((float) 0.0);
+	}else{
+		std::int32_t intVal = operand->data.f32;
+		if(intVal > operand->data.f32){
+			intVal -= 1;
+		}
+		coreStack.push((float)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f32_trunc(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.trunc] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.trunc] Operand type is not f32.", coreStack);
+	}
+	// trunc
+	if(Util::isNaN(operand->data.f32) || Util::isInf(operand->data.f32) || Util::isZero(operand->data.f32)){
+		coreStack.push(operand->data.f32);
+	}else if(operand->data.f32 > 0 && operand->data.f32 < 1){
+		coreStack.push((float) 0.0);
+	}else if(operand->data.f32 < 0 && operand->data.f32 > -1){
+		coreStack.push((float) -0.0);
+	}else{
+		std::int32_t intVal = operand->data.f32;
+		coreStack.push((float)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f32_nearest(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.trunc] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.trunc] Operand type is not f32.", coreStack);
+	}
+	// trunc
+	if(Util::isNaN(operand->data.f32) || Util::isInf(operand->data.f32) || Util::isZero(operand->data.f32)){
+		coreStack.push(operand->data.f32);
+	}else if(operand->data.f32 > 0 && operand->data.f32 < 0.5){
+		coreStack.push((float) 0.0);
+	}else if(operand->data.f32 < 0 && operand->data.f32 > -0.5){
+		coreStack.push((float) -0.0);
+	}else{
+		std::int32_t intVal = operand->data.f32;
+		float decimal = operand->data.f32 - intVal;
+		if(decimal > 0.5 || decimal < -0.5){
+			if(operand->data.f32 > 0){
+				coreStack.push((float)intVal + 1.0);
+			}else{
+				coreStack.push((float)intVal - 1.0);
+			}
+		}else if(decimal == 0.5 || decimal == -0.5){
+			if(intVal & 1){
+				if(operand->data.f32 > 0){
+					coreStack.push((float)intVal + 1.0);
+				}else{
+					coreStack.push((float)intVal - 1.0);
+				}
+			}else{
+				coreStack.push((float)intVal);
+			}
+		}else{
+			coreStack.push((float)intVal);
+		}
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f32_sqrt(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.sqrt] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f32.sqrt] Operand type is not f32.", coreStack);
+	}
+	// sqrt
+	if(!(Util::isPos(operand->data.f32) || Util::isZero(operand->data.f32) || Util::isNaN(operand->data.f32))){
+		std::uint32_t nan = 0x7F800001;
+		coreStack.push(*(float *)&nan);
+	}else if(Util::isNaN(operand->data.f32) || Util::isZero(operand->data.f32) || Util::isInf(operand->data.f32)){
+		coreStack.push(operand->data.f32);
+	}else{
+		coreStack.push((float)sqrt(operand->data.f32));
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f32_add(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.add] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.add] Operand type is not f32.", coreStack);
+	}
+	// add
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isInf(operand1->data.f32) && Util::isInf(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			std::uint32_t nan = 0x7F800001;
+			coreStack.push(*(float *)&nan);
+		}
+	}else if(Util::isInf(operand1->data.f32)){
+		coreStack.push(operand1->data.f32);
+	}else if(Util::isInf(operand2->data.f32)){
+		coreStack.push(operand2->data.f32);
+	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push((float) 0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f32 + operand2->data.f32);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_sub(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.sub] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.sub] Operand type is not f32.", coreStack);
+	}
+	// sub
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isInf(operand1->data.f32) && Util::isInf(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			std::uint32_t nan = 0x7F800001;
+			coreStack.push(*(float *)&nan);
+		}else{
+			coreStack.push(operand1->data.f32);
+		}
+	}else if(Util::isInf(operand1->data.f32)){
+		coreStack.push(operand1->data.f32);
+	}else if(Util::isInf(operand2->data.f32)){
+		coreStack.push(-operand2->data.f32);
+	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			coreStack.push((float) 0.0);
+		}else{
+			coreStack.push(operand1->data.f32);
+		}
+	}else{
+		coreStack.push(operand1->data.f32 - operand2->data.f32);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_mul(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.mul] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.mul] Operand type is not f32.", coreStack);
+	}
+	// mul
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if((Util::isInf(operand1->data.f32) && Util::isZero(operand2->data.f32)) || (Util::isZero(operand1->data.f32) && Util::isInf(operand2->data.f32))){
+		std::uint32_t nan = 0x7F800001;
+		coreStack.push(*(float *)&nan);
+	}else if(Util::isInf(operand1->data.f32) || Util::isInf(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			std::uint32_t posInf = 0x7F800000;
+			coreStack.push(*(float *)&posInf);
+		}else{
+			std::uint32_t negInf = 0xFF800000;
+			coreStack.push(*(float *)&negInf);
+		}
+	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			coreStack.push((float) 0.0);
+		}else{
+			coreStack.push((float) -0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f32 * operand2->data.f32);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_div(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.div] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.div] Operand type is not f32.", coreStack);
+	}
+	// div
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if((Util::isInf(operand1->data.f32) && Util::isInf(operand2->data.f32)) || (Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32))){
+		std::uint32_t nan = 0x7F800001;
+		coreStack.push(*(float *)&nan);
+	}else if(Util::isInf(operand1->data.f32) || Util::isZero(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			std::uint32_t posInf = 0x7F800000;
+			coreStack.push(*(float *)&posInf);
+		}else{
+			std::uint32_t negInf = 0xFF800000;
+			coreStack.push(*(float *)&negInf);
+		}
+	}else if(Util::isZero(operand1->data.f32) || Util::isInf(operand2->data.f32)){
+		if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+			coreStack.push((float) 0.0);
+		}else{
+			coreStack.push((float) -0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f32 / operand2->data.f32);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_min(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.min] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.min] Operand type is not f32.", coreStack);
+	}
+	// min
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isInf(operand1->data.f32)){
+		if(Util::isPos(operand1->data.f32)){
+			coreStack.push(operand2->data.f32);
+		}else{
+			coreStack.push(operand1->data.f32);
+		}
+	}else if(Util::isInf(operand2->data.f32)){
+		if(Util::isPos(operand2->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32) && !Util::eqSign(operand1->data.f32, operand2->data.f32)){
+		coreStack.push((float) -0.0);
+	}else{
+		if(operand1->data.f32 < operand2->data.f32){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_max(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.max] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.max] Operand type is not f32.", coreStack);
+	}
+	// max
+	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
+		if(Util::isNaN(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isInf(operand1->data.f32)){
+		if(Util::isPos(operand1->data.f32)){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}else if(Util::isInf(operand2->data.f32)){
+		if(Util::isPos(operand2->data.f32)){
+			coreStack.push(operand2->data.f32);
+		}else{
+			coreStack.push(operand1->data.f32);
+		}
+	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand2->data.f32) && !Util::eqSign(operand1->data.f32, operand2->data.f32)){
+		coreStack.push((float) 0.0);
+	}else{
+		if(operand1->data.f32 > operand2->data.f32){
+			coreStack.push(operand1->data.f32);
+		}else{
+			coreStack.push(operand2->data.f32);
+		}
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f32_copysign(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f32.copysign] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f32 || operand2->type != f32){
+		throw Exception("[f32.copysign] Operand type is not f32.", coreStack);
+	}
+	// copysign
+	if(Util::eqSign(operand1->data.f32, operand2->data.f32)){
+		coreStack.push(operand1->data.f32);
+	}else{
+		coreStack.push(-operand1->data.f32);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_abs(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.abs] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.abs] Operand type is not f64.", coreStack);
+	}
+	// abs
+	coreStack.push(Util::isPos(operand->data.f64) ? operand->data.f64 : -operand->data.f64);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_neg(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.neg] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.neg] Operand type is not f64.", coreStack);
+	}
+	// neg
+	coreStack.push(-operand->data.f64);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_ceil(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.ceil] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.ceil] Operand type is not f64.", coreStack);
+	}
+	// ceil
+	if(Util::isNaN(operand->data.f64) || Util::isInf(operand->data.f64) || Util::isZero(operand->data.f64)){
+		coreStack.push(operand->data.f64);
+	}else if(operand->data.f64 < 0 && operand->data.f64 > -1){
+		coreStack.push((double) -0.0);
+	}else{
+		std::int64_t intVal = operand->data.f64;
+		if(intVal < operand->data.f64){
+			intVal += 1;
+		}
+		coreStack.push((double)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_floor(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.floor] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.floor] Operand type is not f64.", coreStack);
+	}
+	// floor
+	if(Util::isNaN(operand->data.f64) || Util::isInf(operand->data.f64) || Util::isZero(operand->data.f64)){
+		coreStack.push(operand->data.f64);
+	}else if(operand->data.f64 > 0 && operand->data.f64 < 1){
+		coreStack.push((double) 0.0);
+	}else{
+		std::int64_t intVal = operand->data.f64;
+		if(intVal > operand->data.f64){
+			intVal -= 1;
+		}
+		coreStack.push((double)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_trunc(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.trunc] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.trunc] Operand type is not f64.", coreStack);
+	}
+	// trunc
+	if(Util::isNaN(operand->data.f64) || Util::isInf(operand->data.f64) || Util::isZero(operand->data.f64)){
+		coreStack.push(operand->data.f64);
+	}else if(operand->data.f64 > 0 && operand->data.f64 < 1){
+		coreStack.push((double) 0.0);
+	}else if(operand->data.f64 < 0 && operand->data.f64 > -1){
+		coreStack.push((double) -0.0);
+	}else{
+		std::int64_t intVal = operand->data.f64;
+		coreStack.push((double)intVal);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_nearest(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.trunc] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.trunc] Operand type is not f64.", coreStack);
+	}
+	// trunc
+	if(Util::isNaN(operand->data.f64) || Util::isInf(operand->data.f64) || Util::isZero(operand->data.f64)){
+		coreStack.push(operand->data.f64);
+	}else if(operand->data.f64 > 0 && operand->data.f64 < 0.5){
+		coreStack.push((double) 0.0);
+	}else if(operand->data.f64 < 0 && operand->data.f64 > -0.5){
+		coreStack.push((double) -0.0);
+	}else{
+		std::int64_t intVal = operand->data.f64;
+		double decimal = operand->data.f64 - intVal;
+		if(decimal > 0.5 || decimal < -0.5){
+			if(operand->data.f64 > 0){
+				coreStack.push((double)intVal + 1.0);
+			}else{
+				coreStack.push((double)intVal - 1.0);
+			}
+		}else if(decimal == 0.5 || decimal == -0.5){
+			if(intVal & 1){
+				if(operand->data.f64 > 0){
+					coreStack.push((double)intVal + 1.0);
+				}else{
+					coreStack.push((double)intVal - 1.0);
+				}
+			}else{
+				coreStack.push((double)intVal);
+			}
+		}else{
+			coreStack.push((double)intVal);
+		}
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_sqrt(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.sqrt] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f64.sqrt] Operand type is not f64.", coreStack);
+	}
+	// sqrt
+	if(!(Util::isPos(operand->data.f64) || Util::isZero(operand->data.f64) || Util::isNaN(operand->data.f64))){
+		std::uint64_t nan = 0x7FF0000000000001;
+		coreStack.push(*(double *)&nan);
+	}else if(Util::isNaN(operand->data.f64) || Util::isZero(operand->data.f64) || Util::isInf(operand->data.f64)){
+		coreStack.push(operand->data.f64);
+	}else{
+		coreStack.push((double)sqrt(operand->data.f64));
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_add(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.add] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.add] Operand type is not f64.", coreStack);
+	}
+	// add
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isInf(operand1->data.f64) && Util::isInf(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			std::uint64_t nan = 0x7FF0000000000001;
+			coreStack.push(*(double *)&nan);
+		}
+	}else if(Util::isInf(operand1->data.f64)){
+		coreStack.push(operand1->data.f64);
+	}else if(Util::isInf(operand2->data.f64)){
+		coreStack.push(operand2->data.f64);
+	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push((double) 0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f64 + operand2->data.f64);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_sub(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.sub] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.sub] Operand type is not f64.", coreStack);
+	}
+	// sub
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isInf(operand1->data.f64) && Util::isInf(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			std::uint64_t nan = 0x7FF0000000000001;
+			coreStack.push(*(double *)&nan);
+		}else{
+			coreStack.push(operand1->data.f64);
+		}
+	}else if(Util::isInf(operand1->data.f64)){
+		coreStack.push(operand1->data.f64);
+	}else if(Util::isInf(operand2->data.f64)){
+		coreStack.push(-operand2->data.f64);
+	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			coreStack.push((double) 0.0);
+		}else{
+			coreStack.push(operand1->data.f64);
+		}
+	}else{
+		coreStack.push(operand1->data.f64 - operand2->data.f64);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_mul(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.mul] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.mul] Operand type is not f64.", coreStack);
+	}
+	// mul
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if((Util::isInf(operand1->data.f64) && Util::isZero(operand2->data.f64)) || (Util::isZero(operand1->data.f64) && Util::isInf(operand2->data.f64))){
+		std::uint64_t nan = 0x7FF0000000000001;
+		coreStack.push(*(double *)&nan);
+	}else if(Util::isInf(operand1->data.f64) || Util::isInf(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			std::uint64_t posInf = 0x7FF0000000000000;
+			coreStack.push(*(double *)&posInf);
+		}else{
+			std::uint64_t negInf = 0xFFF0000000000000;
+			coreStack.push(*(double *)&negInf);
+		}
+	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			coreStack.push((double) 0.0);
+		}else{
+			coreStack.push((double) -0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f64 * operand2->data.f64);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_div(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.div] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.div] Operand type is not f64.", coreStack);
+	}
+	// div
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if((Util::isInf(operand1->data.f64) && Util::isInf(operand2->data.f64)) || (Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64))){
+		std::uint64_t nan = 0x7FF0000000000001;
+		coreStack.push(*(double *)&nan);
+	}else if(Util::isInf(operand1->data.f64) || Util::isZero(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			std::uint64_t posInf = 0x7FF0000000000000;
+			coreStack.push(*(double *)&posInf);
+		}else{
+			std::uint64_t negInf = 0xFFF0000000000000;
+			coreStack.push(*(double *)&negInf);
+		}
+	}else if(Util::isZero(operand1->data.f64) || Util::isInf(operand2->data.f64)){
+		if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+			coreStack.push((double) 0.0);
+		}else{
+			coreStack.push((double) -0.0);
+		}
+	}else{
+		coreStack.push(operand1->data.f64 / operand2->data.f64);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_min(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.min] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.min] Operand type is not f64.", coreStack);
+	}
+	// min
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isInf(operand1->data.f64)){
+		if(Util::isPos(operand1->data.f64)){
+			coreStack.push(operand2->data.f64);
+		}else{
+			coreStack.push(operand1->data.f64);
+		}
+	}else if(Util::isInf(operand2->data.f64)){
+		if(Util::isPos(operand2->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64) && !Util::eqSign(operand1->data.f64, operand2->data.f64)){
+		coreStack.push((double) -0.0);
+	}else{
+		if(operand1->data.f64 < operand2->data.f64){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_max(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.max] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.max] Operand type is not f64.", coreStack);
+	}
+	// max
+	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
+		if(Util::isNaN(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isInf(operand1->data.f64)){
+		if(Util::isPos(operand1->data.f64)){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}else if(Util::isInf(operand2->data.f64)){
+		if(Util::isPos(operand2->data.f64)){
+			coreStack.push(operand2->data.f64);
+		}else{
+			coreStack.push(operand1->data.f64);
+		}
+	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand2->data.f64) && !Util::eqSign(operand1->data.f64, operand2->data.f64)){
+		coreStack.push((double) 0.0);
+	}else{
+		if(operand1->data.f64 > operand2->data.f64){
+			coreStack.push(operand1->data.f64);
+		}else{
+			coreStack.push(operand2->data.f64);
+		}
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}
+void Instruction::f64_copysign(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 2){
+		throw Exception("[f64.copysign] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand2 = (Value *)coreStack.pop().data;
+	Value *operand1 = (Value *)coreStack.pop().data;
+	if(operand1->type != f64 || operand2->type != f64){
+		throw Exception("[f64.copysign] Operand type is not f64.", coreStack);
+	}
+	// copysign
+	if(Util::eqSign(operand1->data.f64, operand2->data.f64)){
+		coreStack.push(operand1->data.f64);
+	}else{
+		coreStack.push(-operand1->data.f64);
+	}
+	// Clean
+	delete operand1;
+	delete operand2;
+}

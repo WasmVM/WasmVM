@@ -2,6 +2,7 @@
 #define NUMERICINSTR_DEF
 
 #include <cstdint>
+#include <cmath>
 #include <Stack.h>
 #include <Instance.h>
 #include <Util.h>
@@ -78,6 +79,20 @@ namespace Instruction{
 	void f32_gt(Stack &coreStack);
 	void f32_le(Stack &coreStack);
 	void f32_ge(Stack &coreStack);
+	void f32_abs(Stack &coreStack);
+	void f32_neg(Stack &coreStack);
+	void f32_ceil(Stack &coreStack);
+	void f32_floor(Stack &coreStack);
+	void f32_trunc(Stack &coreStack);
+	void f32_nearest(Stack &coreStack);
+	void f32_sqrt(Stack &coreStack);
+	void f32_add(Stack &coreStack);
+	void f32_sub(Stack &coreStack);
+	void f32_mul(Stack &coreStack);
+	void f32_div(Stack &coreStack);
+	void f32_min(Stack &coreStack);
+	void f32_max(Stack &coreStack);
+	void f32_copysign(Stack &coreStack);
 
 	void f64_eq(Stack &coreStack);
 	void f64_ne(Stack &coreStack);
@@ -85,6 +100,20 @@ namespace Instruction{
 	void f64_gt(Stack &coreStack);
 	void f64_le(Stack &coreStack);
 	void f64_ge(Stack &coreStack);
+	void f64_abs(Stack &coreStack);
+	void f64_neg(Stack &coreStack);
+	void f64_ceil(Stack &coreStack);
+	void f64_floor(Stack &coreStack);
+	void f64_trunc(Stack &coreStack);
+	void f64_nearest(Stack &coreStack);
+	void f64_sqrt(Stack &coreStack);
+	void f64_add(Stack &coreStack);
+	void f64_sub(Stack &coreStack);
+	void f64_mul(Stack &coreStack);
+	void f64_div(Stack &coreStack);
+	void f64_min(Stack &coreStack);
+	void f64_max(Stack &coreStack);
+	void f64_copysign(Stack &coreStack);
 }
 
 #endif
