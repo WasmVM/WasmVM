@@ -33,3 +33,7 @@ The imported module will be searched in the same directory of main module.
 If you want to load more module, just concate as
 
 > ./WasmVM \<your main module\>.wasm \<module1\>.wasm \<module2\>.wasm ...
+
+## Future work
+
+* Add Linux Syscall to `unreachable`
