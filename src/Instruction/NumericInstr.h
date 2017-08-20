@@ -114,6 +114,32 @@ namespace Instruction{
 	void f64_min(Stack &coreStack);
 	void f64_max(Stack &coreStack);
 	void f64_copysign(Stack &coreStack);
+
+	void i32_wrap_i64(Stack &coreStack);
+	void i32_trunc_s_f32(Stack &coreStack);
+	void i32_trunc_u_f32(Stack &coreStack);
+	void i32_trunc_s_f64(Stack &coreStack);
+	void i32_trunc_u_f64(Stack &coreStack);
+	void i64_extend_s_i32(Stack &coreStack);
+	void i64_extend_u_i32(Stack &coreStack);
+	void i64_trunc_s_f32(Stack &coreStack);
+	void i64_trunc_u_f32(Stack &coreStack);
+	void i64_trunc_s_f64(Stack &coreStack);
+	void i64_trunc_u_f64(Stack &coreStack);
+	void f32_convert_s_i32(Stack &coreStack);
+	void f32_convert_u_i32(Stack &coreStack);
+	void f32_convert_s_i64(Stack &coreStack);
+	void f32_convert_u_i64(Stack &coreStack);
+	void f32_demote_f64(Stack &coreStack);
+	void f64_convert_s_i32(Stack &coreStack);
+	void f64_convert_u_i32(Stack &coreStack);
+	void f64_convert_s_i64(Stack &coreStack);
+	void f64_convert_u_i64(Stack &coreStack);
+	void f64_promote_f32(Stack &coreStack);
+	void i32_reinterpret_f32(Stack &coreStack);
+	void i64_reinterpret_f64(Stack &coreStack);
+	void f32_reinterpret_i32(Stack &coreStack);
+	void f64_reinterpret_i64(Stack &coreStack);
 }
 
 #endif

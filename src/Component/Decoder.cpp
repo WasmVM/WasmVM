@@ -645,6 +645,81 @@ void Decoder::decode(Store &store, Stack &coreStack){
         case OP_f64_copysign:
             Instruction::f64_copysign(coreStack);
         break;
+        case OP_i32_wrap_i64:
+            Instruction::i32_wrap_i64(coreStack);
+		break;
+        case OP_i32_trunc_s_f32:
+            Instruction::i32_trunc_s_f32(coreStack);
+		break;
+        case OP_i32_trunc_u_f32:
+            Instruction::i32_trunc_u_f32(coreStack);
+		break;
+        case OP_i32_trunc_s_f64:
+            Instruction::i32_trunc_s_f64(coreStack);
+		break;
+        case OP_i32_trunc_u_f64:
+            Instruction::i32_trunc_u_f64(coreStack);
+		break;
+        case OP_i64_extend_s_i32:
+            Instruction::i64_extend_s_i32(coreStack);
+		break;
+        case OP_i64_extend_u_i32:
+            Instruction::i64_extend_u_i32(coreStack);
+		break;
+        case OP_i64_trunc_s_f32:
+            Instruction::i64_trunc_s_f32(coreStack);
+		break;
+        case OP_i64_trunc_u_f32:
+            Instruction::i64_trunc_u_f32(coreStack);
+		break;
+        case OP_i64_trunc_s_f64:
+            Instruction::i64_trunc_s_f64(coreStack);
+		break;
+        case OP_i64_trunc_u_f64:
+            Instruction::i64_trunc_u_f64(coreStack);
+		break;
+        case OP_f32_convert_s_i32:
+            Instruction::f32_convert_s_i32(coreStack);
+		break;
+        case OP_f32_convert_u_i32:
+            Instruction::f32_convert_u_i32(coreStack);
+		break;
+        case OP_f32_convert_s_i64:
+            Instruction::f32_convert_s_i64(coreStack);
+		break;
+        case OP_f32_convert_u_i64:
+            Instruction::f32_convert_u_i64(coreStack);
+		break;
+        case OP_f32_demote_f64:
+            Instruction::f32_demote_f64(coreStack);
+		break;
+        case OP_f64_convert_s_i32:
+            Instruction::f64_convert_s_i32(coreStack);
+		break;
+        case OP_f64_convert_u_i32:
+            Instruction::f64_convert_u_i32(coreStack);
+		break;
+        case OP_f64_convert_s_i64:
+            Instruction::f64_convert_s_i64(coreStack);
+		break;
+        case OP_f64_convert_u_i64:
+            Instruction::f64_convert_u_i64(coreStack);
+		break;
+        case OP_f64_promote_f32:
+            Instruction::f64_promote_f32(coreStack);
+		break;
+        case OP_i32_reinterpret_f32:
+            Instruction::i32_reinterpret_f32(coreStack);
+		break;
+        case OP_i64_reinterpret_f64:
+            Instruction::i64_reinterpret_f64(coreStack);
+		break;
+        case OP_f32_reinterpret_i32:
+            Instruction::f32_reinterpret_i32(coreStack);
+		break;
+        case OP_f64_reinterpret_i64:
+            Instruction::f64_reinterpret_i64(coreStack);
+		break;
         default:
         {
             char codeChr[2];

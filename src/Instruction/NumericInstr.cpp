@@ -2447,3 +2447,426 @@ void Instruction::f64_copysign(Stack &coreStack){
 	delete operand1;
 	delete operand2;
 }
+void Instruction::i32_wrap_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.wrap/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[i32.wrap/i64] Operand type is not i64.", coreStack);
+	}
+	// wrap
+	coreStack.push((std::int32_t)operand->data.i64);
+	// Clean
+	delete operand;
+}
+void Instruction::i32_trunc_s_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.trunc_s/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[i32.trunc_s/f32] Operand type is not f32.", coreStack);
+	}
+	// trunc_s
+	coreStack.push((std::int32_t)operand->data.f32);
+	// Clean
+	delete operand;
+}
+void Instruction::i32_trunc_u_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.trunc_u/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[i32.trunc_u/f32] Operand type is not f32.", coreStack);
+	}
+	// trunc_u
+	std::int32_t val = operand->data.f32;
+	val *= (-2) * (val < 0) + 1;
+	coreStack.push(val);
+	// Clean
+	delete operand;
+}
+void Instruction::i32_trunc_s_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.trunc_s/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[i32.trunc_s/f64] Operand type is not f64.", coreStack);
+	}
+	// trunc_s
+	coreStack.push((std::int32_t)operand->data.f64);
+	// Clean
+	delete operand;
+}
+void Instruction::i32_trunc_u_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.trunc_u/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[i32.trunc_u/f64] Operand type is not f64.", coreStack);
+	}
+	// trunc_u
+	std::int32_t val = operand->data.f64;
+	val *= (-2) * (val < 0) + 1;
+	coreStack.push(val);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_extend_s_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.extend_s/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[i64.extend_s/i32] Operand type is not i32.", coreStack);
+	}
+	// extend_s
+	coreStack.push((std::int64_t)operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_extend_u_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.extend_u/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[i64.extend_u/i32] Operand type is not i32.", coreStack);
+	}
+	// extend_u
+	std::int64_t val = operand->data.i32;
+	val *= (-2) * (val < 0) + 1;
+	coreStack.push(val);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_trunc_s_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.trunc_s/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[i64.trunc_s/f32] Operand type is not f32.", coreStack);
+	}
+	// trunc_s
+	coreStack.push((std::int64_t)operand->data.f32);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_trunc_u_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.trunc_u/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[i64.trunc_u/f32] Operand type is not f32.", coreStack);
+	}
+	// trunc_u
+	std::int64_t val = operand->data.f32;
+	val *= (-2) * (val < 0) + 1;
+	coreStack.push(val);;
+	// Clean
+	delete operand;
+}
+void Instruction::i64_trunc_s_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.trunc_s/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[i64.trunc_s/f64] Operand type is not f64.", coreStack);
+	}
+	// trunc_s
+	coreStack.push((std::int64_t)operand->data.f64);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_trunc_u_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.trunc_u/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[i64.trunc_u/f64] Operand type is not f64.", coreStack);
+	}
+	// trunc_u
+	std::int64_t val = operand->data.f64;
+	val *= (-2) * (val < 0) + 1;
+	coreStack.push(val);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_convert_s_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.convert_s/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[f32.convert_s/i32] Operand type is not i32.", coreStack);
+	}
+	// convert_s
+	coreStack.push((float)operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_convert_u_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.convert_u/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[f32.convert_u/i32] Operand type is not i32.", coreStack);
+	}
+	// convert_u
+	operand->data.i32 *= (-2) * (operand->data.i32 < 0) + 1;
+	coreStack.push((float)operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_convert_s_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.convert_s/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[f32.convert_s/i64] Operand type is not i64.", coreStack);
+	}
+	// convert_s
+	coreStack.push((float)operand->data.i64);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_convert_u_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.convert_u/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[f32.convert_u/i64] Operand type is not i64.", coreStack);
+	}
+	// convert_u
+	operand->data.i64 *= (-2) * (operand->data.i64 < 0) + 1;
+	coreStack.push((float)operand->data.i64);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_demote_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.demote/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[f32.demote/f64] Operand type is not f64.", coreStack);
+	}
+	// demote
+	if(Util::isNaN(operand->data.f64)){
+		if(Util::isPos(operand->data.f64)){
+			std::uint32_t posNaN = 0x7F800001;
+			coreStack.push(*(float *)&posNaN);
+		}else{
+			std::uint32_t negNaN = 0xFF800001;
+			coreStack.push(*(float *)&negNaN);
+		}
+	}else if(Util::isInf(operand->data.f64)){
+		if(Util::isPos(operand->data.f64)){
+			std::uint32_t posInf = 0x7F800000;
+			coreStack.push(*(float *)&posInf);
+		}else{
+			std::uint32_t negInf = 0xFF800000;
+			coreStack.push(*(float *)&negInf);
+		}
+	}else if(Util::isZero(operand->data.f64)){
+		if(Util::isPos(operand->data.f64)){
+			coreStack.push((float) 0.0);
+		}else{
+			coreStack.push((float) -0.0);
+		}
+	}else{
+		coreStack.push((float) operand->data.f64);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::f64_convert_s_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.convert_s/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[f64.convert_s/i32] Operand type is not i32.", coreStack);
+	}
+	// convert_s
+	coreStack.push((double)operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_convert_u_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.convert_u/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[f64.convert_u/i32] Operand type is not i32.", coreStack);
+	}
+	// convert_u
+	operand->data.i32 *= (-2) * (operand->data.i32 < 0) + 1;
+	coreStack.push((double)operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_convert_s_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.convert_s/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[f64.convert_s/i64] Operand type is not i64.", coreStack);
+	}
+	// convert_s
+	coreStack.push((double)operand->data.i64);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_convert_u_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.convert_u/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[f64.convert_u/i64] Operand type is not i64.", coreStack);
+	}
+	// convert_u
+	operand->data.i64 *= (-2) * (operand->data.i64 < 0) + 1;
+	coreStack.push((double)operand->data.i64);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_promote_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.promote/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[f64.promote/f32] Operand type is not f32.", coreStack);
+	}
+	// promote
+	if(Util::isNaN(operand->data.f32)){
+		if(Util::isPos(operand->data.f32)){
+			std::uint64_t posNaN = 0x7FF0000000000001;
+			coreStack.push(*(double *)&posNaN);
+		}else{
+			std::uint64_t negNaN = 0xFFF0000000000001;
+			coreStack.push(*(double *)&negNaN);
+		}
+	}else{
+		coreStack.push((double) operand->data.f32);
+	}
+	// Clean
+	delete operand;
+}
+void Instruction::i32_reinterpret_f32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i32.reinterpret/f32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f32){
+		throw Exception("[i32.reinterpret/f32] Operand type is not f32.", coreStack);
+	}
+	// reinterpret
+	coreStack.push(*(std::int32_t *)&operand->data.f32);
+	// Clean
+	delete operand;
+}
+void Instruction::i64_reinterpret_f64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[i64.reinterpret/f64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != f64){
+		throw Exception("[i64.reinterpret/f64] Operand type is not f64.", coreStack);
+	}
+	// reinterpret
+	coreStack.push(*(std::int64_t *)&operand->data.f64);
+	// Clean
+	delete operand;
+}
+void Instruction::f32_reinterpret_i32(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f32.reinterpret/i32] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[f32.reinterpret/i32] Operand type is not i32.", coreStack);
+	}
+	// reinterpret
+	coreStack.push(*(float *)&operand->data.i32);
+	// Clean
+	delete operand;
+}
+void Instruction::f64_reinterpret_i64(Stack &coreStack){
+	// Check operand
+	if(coreStack.valueCount() < 1){
+		throw Exception("[f64.reinterpret/i64] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i64){
+		throw Exception("[f64.reinterpret/i64] Operand type is not i64.", coreStack);
+	}
+	// reinterpret
+	coreStack.push(*(double *)&operand->data.i64);
+	// Clean
+	delete operand;
+}
