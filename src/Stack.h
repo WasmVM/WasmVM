@@ -42,6 +42,7 @@ public:
 
     Label *curLabel = nullptr;
     Frame *curFrame = nullptr;
+    size_t valueNum = 0;
     
     void push(Value val);
     void push(Label lab);
@@ -51,9 +52,9 @@ public:
     std::size_t size();
     std::list<StackElem>::iterator end();
     std::list<StackElem>::iterator begin();
-    std::size_t valueCount();
     
 private:
+    
     std::list<StackElem> _stack;
 };
 

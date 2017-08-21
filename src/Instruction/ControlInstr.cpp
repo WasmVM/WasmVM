@@ -5,7 +5,7 @@ void Instruction::invoke(std::uint32_t funcAddr, Store &store, Stack &coreStack,
 		throw Exception("[invoke] Function address not exist.", coreStack, moduleInst);
 	}
 	FuncInst *funcInst = store.funcs.at(funcAddr);
-	if(coreStack.valueCount() < funcInst->type.paramTypes.size()){
+	if(coreStack.valueNum < funcInst->type.paramTypes.size()){
 		throw Exception("[invoke] No enough values for function parameters", coreStack, moduleInst);
 	}
 	Frame newFrame;
@@ -36,8 +36,8 @@ void Instruction::invoke(std::uint32_t funcAddr, Store &store, Stack &coreStack,
 void Instruction::ctrl_end(Stack &coreStack){
 	// Check result count
 	size_t resCount = coreStack.curLabel->resultTypes.size();
-	if(coreStack.valueCount() != resCount){
-		if(coreStack.valueCount() > resCount){
+	if(coreStack.valueNum != resCount){
+		if(coreStack.valueNum > resCount){
 			throw Exception("[end] Too many values left in the stack while block ending.", coreStack);
 		}else{
 			throw Exception("[end] Too few values left in the stack for the block result.", coreStack);
@@ -126,7 +126,7 @@ void Instruction::ctrl_loop(Stack &coreStack, char blocktype){
 void Instruction::ctrl_return(Stack &coreStack){
 	// Check result count
 	size_t resCount = coreStack.curLabel->resultTypes.size();
-	if(coreStack.valueCount() < resCount){
+	if(coreStack.valueNum < resCount){
 		throw Exception("[return] Too few values left in the stack for the block result.", coreStack);
 	}
 	// Pop values
@@ -189,7 +189,7 @@ void Instruction::ctrl_call_indirect(std::uint32_t typeidx, Store &store, Stack 
 		throw Exception("[call_indirect] Function type not exist in this module.", coreStack);
 	}
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[call_indirect] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -233,7 +233,7 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 		throw Exception("[br] No enough lables to jump.", coreStack);
 	}
 	// Check result count
-	if(coreStack.valueCount() < resTypes.size()){
+	if(coreStack.valueNum < resTypes.size()){
 		throw Exception("[br] Too few values left in the stack for target block result.", coreStack);
 	}
 	// Pop values
@@ -278,7 +278,7 @@ void Instruction::ctrl_unreachable(Store &store, Stack &coreStack){
 	throw Exception("[unreachable] Trap without syscall provided.", coreStack);
 #else
 	std::cout << "Values in the stack:" << std::endl;
-	while(coreStack.valueCount()){
+	while(coreStack.valueNum){
 		Value *valPtr = (Value *)coreStack.pop().data;
 		switch (valPtr->type){
 			case i32:
@@ -301,7 +301,7 @@ void Instruction::ctrl_unreachable(Store &store, Stack &coreStack){
 }
 void Instruction::ctrl_br_table(std::vector<std::uint32_t> &depths, Stack &coreStack){
 	// Check stack
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[br_table] No value in the stack.", coreStack);
 	}
 	// Pop value
@@ -319,7 +319,7 @@ void Instruction::ctrl_br_table(std::vector<std::uint32_t> &depths, Stack &coreS
 }
 void Instruction::ctrl_br_if(std::uint32_t depth, Stack &coreStack){
 	// Check stack
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[br_if] No value in the stack.", coreStack);
 	}
 	// Pop value
@@ -335,7 +335,7 @@ void Instruction::ctrl_br_if(std::uint32_t depth, Stack &coreStack){
 }
 void Instruction::ctrl_if(std::vector<char> &funcBody, Stack &coreStack, char blocktype){
 	// Check stack
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[if] No value in the stack.", coreStack);
 	}
 	// Pop value
@@ -384,7 +384,7 @@ void Instruction::ctrl_if(std::vector<char> &funcBody, Stack &coreStack, char bl
 void Instruction::ctrl_else(Stack &coreStack){
 	// Check result count
 	size_t resCount = coreStack.curLabel->resultTypes.size();
-	if(coreStack.valueCount() != resCount){
+	if(coreStack.valueNum != resCount){
 		throw Exception("[else] Values left in the stack not the correct number for result.", coreStack);
 	}
 	// Pop values

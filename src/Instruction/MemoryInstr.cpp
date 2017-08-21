@@ -109,7 +109,7 @@ void Instruction::i64_load32_u(std::uint32_t align, std::uint32_t offset, Store 
 }
 void Instruction::i32_store(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.store] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -126,7 +126,7 @@ void Instruction::i32_store(std::uint32_t align, std::uint32_t offset, Store &st
 }
 void Instruction::i64_store(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.store] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -143,7 +143,7 @@ void Instruction::i64_store(std::uint32_t align, std::uint32_t offset, Store &st
 }
 void Instruction::f32_store(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.store] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -160,7 +160,7 @@ void Instruction::f32_store(std::uint32_t align, std::uint32_t offset, Store &st
 }
 void Instruction::f64_store(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.store] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -177,7 +177,7 @@ void Instruction::f64_store(std::uint32_t align, std::uint32_t offset, Store &st
 }
 void Instruction::i32_store8(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.store8] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -194,7 +194,7 @@ void Instruction::i32_store8(std::uint32_t align, std::uint32_t offset, Store &s
 }
 void Instruction::i32_store16(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.store16] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -211,7 +211,7 @@ void Instruction::i32_store16(std::uint32_t align, std::uint32_t offset, Store &
 }
 void Instruction::i64_store8(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.store8] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -228,7 +228,7 @@ void Instruction::i64_store8(std::uint32_t align, std::uint32_t offset, Store &s
 }
 void Instruction::i64_store16(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.store16] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -245,7 +245,7 @@ void Instruction::i64_store16(std::uint32_t align, std::uint32_t offset, Store &
 }
 void Instruction::i64_store32(std::uint32_t align, std::uint32_t offset, Store &store, Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.store32] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -292,7 +292,7 @@ void Instruction::grow_memory(Store &store, Stack &coreStack){
 	// Get memory size
 	std::int32_t memSize = memory->data.size() / 65536;
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[grow_memory] No value in the stack.", coreStack);
 	}
 	// Pop operand

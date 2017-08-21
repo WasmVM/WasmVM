@@ -11,8 +11,11 @@
 #include <Bincode.h>
 #include <Util.h>
 
-namespace Decoder {
-    void decode(Store &store, Stack &coreStack);
-}
+class Decoder {
+public:
+    static std::vector<char> *funcBody;
+    static std::uint32_t *curFuncIdx;
+    static void decode(Store &store, Stack &coreStack);
+};
 
 #endif

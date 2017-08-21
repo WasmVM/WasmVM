@@ -14,7 +14,7 @@ void Instruction::set_local(std::uint32_t index, Stack &coreStack){
 		throw Exception("[set_local] No such local variable in this frame.", coreStack);
 	}
 	// Check value
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[set_local] No value in the stack.", coreStack);
 	}
 	// Pop value
@@ -30,7 +30,7 @@ void Instruction::tee_local(std::uint32_t index, Stack &coreStack){
 		throw Exception("[tee_local] No such local variable in this frame.", coreStack);
 	}
 	// Check value
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[tee_local] No value in the stack.", coreStack);
 	}
 	// Get value

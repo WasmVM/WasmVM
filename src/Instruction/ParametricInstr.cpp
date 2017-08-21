@@ -1,7 +1,7 @@
 #include <ParametricInstr.h>
 void Instruction::drop(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[drop] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -9,7 +9,7 @@ void Instruction::drop(Stack &coreStack){
 }
 void Instruction::select(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[select] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -18,7 +18,7 @@ void Instruction::select(Stack &coreStack){
 		throw Exception("[select] Operand type is not i32.", coreStack);
 	}
 	// Check value operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[select] No enough selectable values in the stack.", coreStack);
 	}
 	// Pop value operands

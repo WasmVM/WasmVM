@@ -54,7 +54,8 @@ int main(int argc, char const *argv[]){
         }
         return 3;
     }
-    // Clean module
+    // Clean
+    delete Decoder::curFuncIdx;
     for(std::map<std::string, ModuleInst *>::iterator moduleIt = moduleInsts.begin(); moduleIt != moduleInsts.end(); ++moduleIt){
         delete moduleIt->second->start;
         delete moduleIt->second;

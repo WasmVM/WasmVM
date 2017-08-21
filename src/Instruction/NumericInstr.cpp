@@ -14,7 +14,7 @@ void Instruction::f64_const(Stack &coreStack, double val){
 }
 void Instruction::i32_eqz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.eqz] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -32,7 +32,7 @@ void Instruction::i32_eqz(Stack &coreStack){
 }
 void Instruction::i32_eq(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.eq] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -52,7 +52,7 @@ void Instruction::i32_eq(Stack &coreStack){
 }
 void Instruction::i32_ne(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.ne] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -72,7 +72,7 @@ void Instruction::i32_ne(Stack &coreStack){
 }
 void Instruction::i32_lt_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.lt_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -92,7 +92,7 @@ void Instruction::i32_lt_s(Stack &coreStack){
 }
 void Instruction::i32_lt_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.lt_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -114,7 +114,7 @@ void Instruction::i32_lt_u(Stack &coreStack){
 }
 void Instruction::i32_gt_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.gt_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -134,7 +134,7 @@ void Instruction::i32_gt_s(Stack &coreStack){
 }
 void Instruction::i32_gt_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.gt_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -156,7 +156,7 @@ void Instruction::i32_gt_u(Stack &coreStack){
 }
 void Instruction::i32_le_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.le_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -176,7 +176,7 @@ void Instruction::i32_le_s(Stack &coreStack){
 }
 void Instruction::i32_le_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.le_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -198,7 +198,7 @@ void Instruction::i32_le_u(Stack &coreStack){
 }
 void Instruction::i32_ge_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.ge_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -218,7 +218,7 @@ void Instruction::i32_ge_s(Stack &coreStack){
 }
 void Instruction::i32_ge_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.ge_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -240,7 +240,7 @@ void Instruction::i32_ge_u(Stack &coreStack){
 }
 void Instruction::i64_eqz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.eqz] No value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -258,7 +258,7 @@ void Instruction::i64_eqz(Stack &coreStack){
 }
 void Instruction::i64_eq(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.eq] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -278,7 +278,7 @@ void Instruction::i64_eq(Stack &coreStack){
 }
 void Instruction::i64_ne(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.ne] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -298,7 +298,7 @@ void Instruction::i64_ne(Stack &coreStack){
 }
 void Instruction::i64_lt_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.lt_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -318,7 +318,7 @@ void Instruction::i64_lt_s(Stack &coreStack){
 }
 void Instruction::i64_lt_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.lt_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -340,7 +340,7 @@ void Instruction::i64_lt_u(Stack &coreStack){
 }
 void Instruction::i64_gt_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.gt_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -360,7 +360,7 @@ void Instruction::i64_gt_s(Stack &coreStack){
 }
 void Instruction::i64_gt_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.gt_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -382,7 +382,7 @@ void Instruction::i64_gt_u(Stack &coreStack){
 }
 void Instruction::i64_le_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.le_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -402,7 +402,7 @@ void Instruction::i64_le_s(Stack &coreStack){
 }
 void Instruction::i64_le_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.le_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -424,7 +424,7 @@ void Instruction::i64_le_u(Stack &coreStack){
 }
 void Instruction::i64_ge_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.ge_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -444,7 +444,7 @@ void Instruction::i64_ge_s(Stack &coreStack){
 }
 void Instruction::i64_ge_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.ge_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -466,7 +466,7 @@ void Instruction::i64_ge_u(Stack &coreStack){
 }
 void Instruction::f32_eq(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.eq] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -477,20 +477,20 @@ void Instruction::f32_eq(Stack &coreStack){
 	}
 	// eq
 	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f32 == operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f32_ne(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.ne] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -501,20 +501,20 @@ void Instruction::f32_ne(Stack &coreStack){
 	}
 	// ne
 	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f32 != operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f32_lt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.lt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -528,29 +528,29 @@ void Instruction::f32_lt(Stack &coreStack){
 		coreStack.push(Value((float) 0.0));
 	}else if(Util::isInf(operand1->data.f32)){
 		if(Util::isPos(operand1->data.f32)){
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isInf(operand2->data.f32)){
 		if(Util::isPos(operand2->data.f32)){
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f32 < operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f32_gt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.gt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -561,32 +561,32 @@ void Instruction::f32_gt(Stack &coreStack){
 	}
 	// gt
 	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f32)){
 		if(Util::isPos(operand1->data.f32)){
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isInf(operand2->data.f32)){
 		if(Util::isPos(operand2->data.f32)){
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f32 > operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f32_le(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.le] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -597,32 +597,32 @@ void Instruction::f32_le(Stack &coreStack){
 	}
 	// le
 	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f32)){
 		if(Util::isPos(operand1->data.f32)){
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isInf(operand2->data.f32)){
 		if(Util::isPos(operand2->data.f32)){
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f32 <= operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f32_ge(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.ge] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -633,32 +633,32 @@ void Instruction::f32_ge(Stack &coreStack){
 	}
 	// ge
 	if(Util::isNaN(operand1->data.f32) || Util::isNaN(operand2->data.f32)){
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f32)){
 		if(Util::isPos(operand1->data.f32)){
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isInf(operand2->data.f32)){
 		if(Util::isPos(operand2->data.f32)){
-			coreStack.push(Value((float) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((float) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isZero(operand1->data.f32) && Util::isZero(operand1->data.f32)){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f32 >= operand2->data.f32){
-		coreStack.push(Value((float) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((float) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_eq(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.eq] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -669,20 +669,20 @@ void Instruction::f64_eq(Stack &coreStack){
 	}
 	// eq
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f64 == operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_ne(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.ne] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -693,20 +693,20 @@ void Instruction::f64_ne(Stack &coreStack){
 	}
 	// ne
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f64 != operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_lt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.lt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -717,32 +717,32 @@ void Instruction::f64_lt(Stack &coreStack){
 	}
 	// lt
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f64)){
 		if(Util::isPos(operand1->data.f64)){
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isInf(operand2->data.f64)){
 		if(Util::isPos(operand2->data.f64)){
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f64 < operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_gt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.gt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -753,32 +753,32 @@ void Instruction::f64_gt(Stack &coreStack){
 	}
 	// gt
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f64)){
 		if(Util::isPos(operand1->data.f64)){
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isInf(operand2->data.f64)){
 		if(Util::isPos(operand2->data.f64)){
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(operand1->data.f64 > operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_le(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.le] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -789,32 +789,32 @@ void Instruction::f64_le(Stack &coreStack){
 	}
 	// le
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f64)){
 		if(Util::isPos(operand1->data.f64)){
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isInf(operand2->data.f64)){
 		if(Util::isPos(operand2->data.f64)){
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f64 <= operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::f64_ge(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.ge] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -825,32 +825,32 @@ void Instruction::f64_ge(Stack &coreStack){
 	}
 	// ge
 	if(Util::isNaN(operand1->data.f64) || Util::isNaN(operand2->data.f64)){
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}else if(Util::isInf(operand1->data.f64)){
 		if(Util::isPos(operand1->data.f64)){
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}else{
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}
 	}else if(Util::isInf(operand2->data.f64)){
 		if(Util::isPos(operand2->data.f64)){
-			coreStack.push(Value((double) 0.0));
+			coreStack.push(Value((std::int32_t) 0));
 		}else{
-			coreStack.push(Value((double) 1.0));
+			coreStack.push(Value((std::int32_t) 1));
 		}
 	}else if(Util::isZero(operand1->data.f64) && Util::isZero(operand1->data.f64)){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else if(operand1->data.f64 >= operand2->data.f64){
-		coreStack.push(Value((double) 1.0));
+		coreStack.push(Value((std::int32_t) 1));
 	}else{
-		coreStack.push(Value((double) 0.0));
+		coreStack.push(Value((std::int32_t) 0));
 	}
 	delete operand1;
 	delete operand2;
 }
 void Instruction::i32_clz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.clz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -875,7 +875,7 @@ void Instruction::i32_clz(Stack &coreStack){
 }
 void Instruction::i32_ctz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.ctz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -900,7 +900,7 @@ void Instruction::i32_ctz(Stack &coreStack){
 }
 void Instruction::i32_popcnt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.ctz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -920,7 +920,7 @@ void Instruction::i32_popcnt(Stack &coreStack){
 }
 void Instruction::i32_add(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.add] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -937,7 +937,7 @@ void Instruction::i32_add(Stack &coreStack){
 }
 void Instruction::i32_sub(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.sub] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -954,7 +954,7 @@ void Instruction::i32_sub(Stack &coreStack){
 }
 void Instruction::i32_mul(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.mul] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -971,7 +971,7 @@ void Instruction::i32_mul(Stack &coreStack){
 }
 void Instruction::i32_div_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.div_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -992,7 +992,7 @@ void Instruction::i32_div_s(Stack &coreStack){
 }
 void Instruction::i32_div_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.div_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1015,7 +1015,7 @@ void Instruction::i32_div_u(Stack &coreStack){
 }
 void Instruction::i32_rem_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.rem_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1036,7 +1036,7 @@ void Instruction::i32_rem_s(Stack &coreStack){
 }
 void Instruction::i32_rem_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.rem_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1059,7 +1059,7 @@ void Instruction::i32_rem_u(Stack &coreStack){
 }
 void Instruction::i32_and(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.and] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1076,7 +1076,7 @@ void Instruction::i32_and(Stack &coreStack){
 }
 void Instruction::i32_or(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.or] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1093,7 +1093,7 @@ void Instruction::i32_or(Stack &coreStack){
 }
 void Instruction::i32_xor(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.xor] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1110,7 +1110,7 @@ void Instruction::i32_xor(Stack &coreStack){
 }
 void Instruction::i32_shl(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.shl] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1128,7 +1128,7 @@ void Instruction::i32_shl(Stack &coreStack){
 }
 void Instruction::i32_shr_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.shr_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1146,7 +1146,7 @@ void Instruction::i32_shr_s(Stack &coreStack){
 }
 void Instruction::i32_shr_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.shr_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1166,7 +1166,7 @@ void Instruction::i32_shr_u(Stack &coreStack){
 }
 void Instruction::i32_rotl(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.rotl] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1185,7 +1185,7 @@ void Instruction::i32_rotl(Stack &coreStack){
 }
 void Instruction::i32_rotr(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i32.rotr] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1204,7 +1204,7 @@ void Instruction::i32_rotr(Stack &coreStack){
 }
 void Instruction::i64_clz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.clz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1230,7 +1230,7 @@ void Instruction::i64_clz(Stack &coreStack){
 }
 void Instruction::i64_ctz(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.ctz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1256,7 +1256,7 @@ void Instruction::i64_ctz(Stack &coreStack){
 }
 void Instruction::i64_popcnt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.ctz] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1277,7 +1277,7 @@ void Instruction::i64_popcnt(Stack &coreStack){
 }
 void Instruction::i64_add(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.add] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1294,7 +1294,7 @@ void Instruction::i64_add(Stack &coreStack){
 }
 void Instruction::i64_sub(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.sub] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1311,7 +1311,7 @@ void Instruction::i64_sub(Stack &coreStack){
 }
 void Instruction::i64_mul(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.mul] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1328,7 +1328,7 @@ void Instruction::i64_mul(Stack &coreStack){
 }
 void Instruction::i64_div_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.div_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1349,7 +1349,7 @@ void Instruction::i64_div_s(Stack &coreStack){
 }
 void Instruction::i64_div_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.div_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1372,7 +1372,7 @@ void Instruction::i64_div_u(Stack &coreStack){
 }
 void Instruction::i64_rem_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.rem_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1393,7 +1393,7 @@ void Instruction::i64_rem_s(Stack &coreStack){
 }
 void Instruction::i64_rem_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.rem_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1416,7 +1416,7 @@ void Instruction::i64_rem_u(Stack &coreStack){
 }
 void Instruction::i64_and(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.and] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1433,7 +1433,7 @@ void Instruction::i64_and(Stack &coreStack){
 }
 void Instruction::i64_or(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.or] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1450,7 +1450,7 @@ void Instruction::i64_or(Stack &coreStack){
 }
 void Instruction::i64_xor(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.xor] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1467,7 +1467,7 @@ void Instruction::i64_xor(Stack &coreStack){
 }
 void Instruction::i64_shl(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.shl] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1485,7 +1485,7 @@ void Instruction::i64_shl(Stack &coreStack){
 }
 void Instruction::i64_shr_s(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.shr_s] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1503,7 +1503,7 @@ void Instruction::i64_shr_s(Stack &coreStack){
 }
 void Instruction::i64_shr_u(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.shr_u] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1523,7 +1523,7 @@ void Instruction::i64_shr_u(Stack &coreStack){
 }
 void Instruction::i64_rotl(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.rotl] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1542,7 +1542,7 @@ void Instruction::i64_rotl(Stack &coreStack){
 }
 void Instruction::i64_rotr(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[i64.rotr] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1561,7 +1561,7 @@ void Instruction::i64_rotr(Stack &coreStack){
 }
 void Instruction::f32_abs(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.abs] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1576,7 +1576,7 @@ void Instruction::f32_abs(Stack &coreStack){
 }
 void Instruction::f32_neg(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.neg] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1591,7 +1591,7 @@ void Instruction::f32_neg(Stack &coreStack){
 }
 void Instruction::f32_ceil(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.ceil] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1616,7 +1616,7 @@ void Instruction::f32_ceil(Stack &coreStack){
 }
 void Instruction::f32_floor(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.floor] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1641,7 +1641,7 @@ void Instruction::f32_floor(Stack &coreStack){
 }
 void Instruction::f32_trunc(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.trunc] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1665,7 +1665,7 @@ void Instruction::f32_trunc(Stack &coreStack){
 }
 void Instruction::f32_nearest(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.trunc] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1708,7 +1708,7 @@ void Instruction::f32_nearest(Stack &coreStack){
 }
 void Instruction::f32_sqrt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.sqrt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1730,7 +1730,7 @@ void Instruction::f32_sqrt(Stack &coreStack){
 }
 void Instruction::f32_add(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.add] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1772,7 +1772,7 @@ void Instruction::f32_add(Stack &coreStack){
 }
 void Instruction::f32_sub(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.sub] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1814,7 +1814,7 @@ void Instruction::f32_sub(Stack &coreStack){
 }
 void Instruction::f32_mul(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.mul] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1856,7 +1856,7 @@ void Instruction::f32_mul(Stack &coreStack){
 }
 void Instruction::f32_div(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.div] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1898,7 +1898,7 @@ void Instruction::f32_div(Stack &coreStack){
 }
 void Instruction::f32_min(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.min] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1941,7 +1941,7 @@ void Instruction::f32_min(Stack &coreStack){
 }
 void Instruction::f32_max(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.max] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -1984,7 +1984,7 @@ void Instruction::f32_max(Stack &coreStack){
 }
 void Instruction::f32_copysign(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f32.copysign] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2005,7 +2005,7 @@ void Instruction::f32_copysign(Stack &coreStack){
 }
 void Instruction::f64_abs(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.abs] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2020,7 +2020,7 @@ void Instruction::f64_abs(Stack &coreStack){
 }
 void Instruction::f64_neg(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.neg] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2035,7 +2035,7 @@ void Instruction::f64_neg(Stack &coreStack){
 }
 void Instruction::f64_ceil(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.ceil] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2060,7 +2060,7 @@ void Instruction::f64_ceil(Stack &coreStack){
 }
 void Instruction::f64_floor(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.floor] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2085,7 +2085,7 @@ void Instruction::f64_floor(Stack &coreStack){
 }
 void Instruction::f64_trunc(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.trunc] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2109,7 +2109,7 @@ void Instruction::f64_trunc(Stack &coreStack){
 }
 void Instruction::f64_nearest(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.trunc] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2152,7 +2152,7 @@ void Instruction::f64_nearest(Stack &coreStack){
 }
 void Instruction::f64_sqrt(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.sqrt] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2174,7 +2174,7 @@ void Instruction::f64_sqrt(Stack &coreStack){
 }
 void Instruction::f64_add(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.add] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2216,7 +2216,7 @@ void Instruction::f64_add(Stack &coreStack){
 }
 void Instruction::f64_sub(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.sub] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2258,7 +2258,7 @@ void Instruction::f64_sub(Stack &coreStack){
 }
 void Instruction::f64_mul(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.mul] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2300,7 +2300,7 @@ void Instruction::f64_mul(Stack &coreStack){
 }
 void Instruction::f64_div(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.div] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2342,7 +2342,7 @@ void Instruction::f64_div(Stack &coreStack){
 }
 void Instruction::f64_min(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.min] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2385,7 +2385,7 @@ void Instruction::f64_min(Stack &coreStack){
 }
 void Instruction::f64_max(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.max] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2428,7 +2428,7 @@ void Instruction::f64_max(Stack &coreStack){
 }
 void Instruction::f64_copysign(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 2){
+	if(coreStack.valueNum < 2){
 		throw Exception("[f64.copysign] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2449,7 +2449,7 @@ void Instruction::f64_copysign(Stack &coreStack){
 }
 void Instruction::i32_wrap_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.wrap/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2464,7 +2464,7 @@ void Instruction::i32_wrap_i64(Stack &coreStack){
 }
 void Instruction::i32_trunc_s_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.trunc_s/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2479,7 +2479,7 @@ void Instruction::i32_trunc_s_f32(Stack &coreStack){
 }
 void Instruction::i32_trunc_u_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.trunc_u/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2496,7 +2496,7 @@ void Instruction::i32_trunc_u_f32(Stack &coreStack){
 }
 void Instruction::i32_trunc_s_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.trunc_s/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2511,7 +2511,7 @@ void Instruction::i32_trunc_s_f64(Stack &coreStack){
 }
 void Instruction::i32_trunc_u_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.trunc_u/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2528,7 +2528,7 @@ void Instruction::i32_trunc_u_f64(Stack &coreStack){
 }
 void Instruction::i64_extend_s_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.extend_s/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2543,7 +2543,7 @@ void Instruction::i64_extend_s_i32(Stack &coreStack){
 }
 void Instruction::i64_extend_u_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.extend_u/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2560,7 +2560,7 @@ void Instruction::i64_extend_u_i32(Stack &coreStack){
 }
 void Instruction::i64_trunc_s_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.trunc_s/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2575,7 +2575,7 @@ void Instruction::i64_trunc_s_f32(Stack &coreStack){
 }
 void Instruction::i64_trunc_u_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.trunc_u/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2592,7 +2592,7 @@ void Instruction::i64_trunc_u_f32(Stack &coreStack){
 }
 void Instruction::i64_trunc_s_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.trunc_s/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2607,7 +2607,7 @@ void Instruction::i64_trunc_s_f64(Stack &coreStack){
 }
 void Instruction::i64_trunc_u_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.trunc_u/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2624,7 +2624,7 @@ void Instruction::i64_trunc_u_f64(Stack &coreStack){
 }
 void Instruction::f32_convert_s_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.convert_s/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2639,7 +2639,7 @@ void Instruction::f32_convert_s_i32(Stack &coreStack){
 }
 void Instruction::f32_convert_u_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.convert_u/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2655,7 +2655,7 @@ void Instruction::f32_convert_u_i32(Stack &coreStack){
 }
 void Instruction::f32_convert_s_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.convert_s/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2670,7 +2670,7 @@ void Instruction::f32_convert_s_i64(Stack &coreStack){
 }
 void Instruction::f32_convert_u_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.convert_u/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2686,7 +2686,7 @@ void Instruction::f32_convert_u_i64(Stack &coreStack){
 }
 void Instruction::f32_demote_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.demote/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2725,7 +2725,7 @@ void Instruction::f32_demote_f64(Stack &coreStack){
 }
 void Instruction::f64_convert_s_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.convert_s/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2740,7 +2740,7 @@ void Instruction::f64_convert_s_i32(Stack &coreStack){
 }
 void Instruction::f64_convert_u_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.convert_u/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2756,7 +2756,7 @@ void Instruction::f64_convert_u_i32(Stack &coreStack){
 }
 void Instruction::f64_convert_s_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.convert_s/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2771,7 +2771,7 @@ void Instruction::f64_convert_s_i64(Stack &coreStack){
 }
 void Instruction::f64_convert_u_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.convert_u/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2787,7 +2787,7 @@ void Instruction::f64_convert_u_i64(Stack &coreStack){
 }
 void Instruction::f64_promote_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.promote/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2812,7 +2812,7 @@ void Instruction::f64_promote_f32(Stack &coreStack){
 }
 void Instruction::i32_reinterpret_f32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i32.reinterpret/f32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2827,7 +2827,7 @@ void Instruction::i32_reinterpret_f32(Stack &coreStack){
 }
 void Instruction::i64_reinterpret_f64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[i64.reinterpret/f64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2842,7 +2842,7 @@ void Instruction::i64_reinterpret_f64(Stack &coreStack){
 }
 void Instruction::f32_reinterpret_i32(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f32.reinterpret/i32] No enough value in the stack.", coreStack);
 	}
 	// Pop operand
@@ -2857,7 +2857,7 @@ void Instruction::f32_reinterpret_i32(Stack &coreStack){
 }
 void Instruction::f64_reinterpret_i64(Stack &coreStack){
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception("[f64.reinterpret/i64] No enough value in the stack.", coreStack);
 	}
 	// Pop operand

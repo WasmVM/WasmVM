@@ -388,7 +388,7 @@ char* Util::getMemoryPtr(Store &store, Stack &coreStack, std::uint32_t align, st
 	}
 	MemInst *memory = store.mems.at(memAddr);
 	// Check operand
-	if(coreStack.valueCount() < 1){
+	if(coreStack.valueNum < 1){
 		throw Exception(tag + "No value in the stack.", coreStack);
 	}
 	// Pop operand
