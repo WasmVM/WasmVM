@@ -1,20 +1,39 @@
-# Wasm_interpret
+# WasmVM
 
-###### Run a wasm program on local environment.
----
+#### A standalone WebAssembly virtual machine implemented with C++
 
-## How to play 
-- Step 1: [install guideline : wabt](https://github.com/WebAssembly/wabt)
-  - You can go here and download the source code of wabt
-  - And then compile the exec file for your environment.
+## Prerequisite
 
-- Step 2: After you finish compiling work, using wast2wasm (mostly in wabt/out/...) to translate your wast code into wasm.
+* CMake >= 2.6
 
-- Step 3: clone our repository and go into the repo root and run `make`, and generate exec file - `main`
+* A c++ compiler supported c++11 standard with STL
 
-- Step 4: usage of our program:
-  - `./main <your wasm program file>`: you can see what's going on.
+## Build
+
+1. Run CMake
+
+> mkdir build && cd build && cmake ..
+
+2. Make
+
+> make -j4
   
-## Current support
-- `NumericInst.h`: the instruction we have implemented.
-- `Decode.cpp`: the instruction we support.
+## Run
+
+1. Prepare your WebAssembly file postfixed with `.wasm`
+  
+  * If you don't have one, go get with [wabt](https://github.com/WebAssembly/wabt), [wast2wasm online](https://cdn.rawgit.com/WebAssembly/wabt/013802ca01035365e2459c70f0508481393ac075/demo/wast2wasm/), [binaryen](https://github.com/WebAssembly/binaryen), or [Emscripten](http://webassembly.org/getting-started/developers-guide/)
+  
+2. Run
+
+> ./WasmVM \<your main module\>.wasm
+
+The imported module will be searched in the same directory of main module.
+
+If you want to load more module, just concate as
+
+> ./WasmVM \<your main module\>.wasm \<module1\>.wasm \<module2\>.wasm ...
+
+## Future work
+
+* Add Linux Syscall to `unreachable`
