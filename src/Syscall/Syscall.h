@@ -7,9 +7,10 @@
 #include <Stack.h>
 
 class Syscall{
+public:
 	static std::map<std::string, ModuleInst *> *moduleInsts;
-	static void setModuleInsts(std::map<std::string, ModuleInst *> *moduleInsts);
-	static void handle(Stack &coreStack, Store &store);
+	static void initSyscall(std::map<std::string, ModuleInst *> *moduleInsts);
+	static void handle(Store &store, Stack &coreStack);
 };
 
 #endif

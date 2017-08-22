@@ -22,6 +22,10 @@ See the License for the specific language governing permissions and limitations 
 #include <LoaderException.h>
 #include <Util.h>
 
+#ifdef USE_SYSCALL
+#include <Syscall.h>
+#endif
+
 int main(int argc, char const *argv[]){
     // Check args
     if(argc < 2){
@@ -34,7 +38,6 @@ int main(int argc, char const *argv[]){
     std::map<std::string, ModuleInst *> moduleInsts;
     // Exception
     Exception::setModuleInsts(&moduleInsts);
-
     // Check endianess
     Util::checkEndian();
     // Load modules
@@ -54,8 +57,13 @@ int main(int argc, char const *argv[]){
     // Get main module name
     std::string mainModule(argv[1]);
     mainModule = mainModule.substr(mainModule.rfind(PATH_SEPARATOR) + 1);
-    // Run
+    // Prepare core
     Core core(mainStore);
+    // Syscall
+    #ifdef USE_SYSCALL
+    Syscall::initSyscall(&moduleInsts);
+    #endif
+    // Run
     try{
         core.run(moduleInsts[mainModule]);
     } catch (Exception &e){

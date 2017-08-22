@@ -285,7 +285,7 @@ void Instruction::ctrl_br(std::uint32_t depth, Stack &coreStack){
 }
 void Instruction::ctrl_unreachable(Store &store, Stack &coreStack){
 #ifdef USE_SYSCALL
-
+	Syscall::handle(store, coreStack);
 #else
 #ifdef NDEBUG
 	throw Exception("[unreachable] Trap without syscall provided.", coreStack);

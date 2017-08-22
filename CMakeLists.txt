@@ -4,10 +4,14 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++0x -lm")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -Wall -g")
 set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -Werror")
 set(CMAKE_DEBUG_POSTFIX "_d")
-option(USE_SYSCALL "Whether use WasmVM syscall or not" OFF)
+option(USE_SYSCALL "Whether use WasmVM syscall or not" ON)
+
 if(USE_SYSCALL)
 add_definitions(-DUSE_SYSCALL)
+include_directories(src/Syscall)
+add_subdirectory(src/Syscall)
 endif(USE_SYSCALL)
+
 include_directories(src src/Instance src/Component src/Exception src/Instruction)
 add_library( WasmVM_Core
 	src/Value.cpp
@@ -28,3 +32,6 @@ add_library( WasmVM_Core
 )
 add_executable(WasmVM src/main.cpp)
 target_link_libraries(WasmVM WasmVM_Core)
+if(USE_SYSCALL)
+target_link_libraries(WasmVM WasmVM_Syscall)
+endif(USE_SYSCALL)

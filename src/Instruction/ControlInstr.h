@@ -11,6 +11,10 @@
 #include <Bincode.h>
 #include <Util.h>
 
+#ifdef USE_SYSCALL
+#include <Syscall.h>
+#endif
+
 namespace Instruction{
 	void ctrl_unreachable(Store &store, Stack &coreStack);
 	void ctrl_block(std::vector<char> &funcBody, Stack &coreStack, char blocktype);

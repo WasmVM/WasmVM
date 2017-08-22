@@ -17,3 +17,21 @@ std::map<std::string, ModuleInst *>* Syscall::moduleInsts = nullptr;
 void Syscall::setModuleInsts(std::map<std::string, ModuleInst *> *moduleInsts){
 	Syscall::moduleInsts = moduleInsts;
 }
+
+void Syscall::handle(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 1){
+		throw Exception("[unreachable] No value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *operand = (Value *)coreStack.pop().data;
+	if(operand->type != i32){
+		throw Exception("[unreachable] Operand type is not i32.", coreStack);
+	}
+	// Call
+	switch(operand->data.i32){
+
+	}
+	// Clean
+	delete operand;
+}
