@@ -58,3 +58,45 @@ void Call::sysGetpid(Stack &coreStack){
 	std::int32_t ret = getpid();
 	coreStack.push(ret);
 }
+void Call::sysExecve(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 3){
+		throw Exception("[sys_execve] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *envAddr = (Value *)coreStack.pop().data;
+	Value *argvAddr = (Value *)coreStack.pop().data;
+	Value *fileNameAddr = (Value *)coreStack.pop().data;
+	if(envAddr->type != i32 || argvAddr->type != i32 || fileNameAddr->type != i32){
+		throw Exception("[sys_execve] value types are not i32.", coreStack);
+	}
+	// Get memory address
+	char *memoryData = store.mems.at(0)->data.data();
+	char *fileNamePtr = memoryData += fileNameAddr->data.i32;
+	char *argvPtr = memoryData += argvAddr->data.i32;
+	char *envPtr = memoryData += envAddr->data.i32;
+	// Get argv
+	std::vector<char *> argv;
+	do{
+		argv.push_back(argvPtr);
+		argvPtr += strlen(argvPtr) + 1;
+	}while(*(std::int32_t *)argvPtr);
+	argv.push_back(NULL);
+	// Get env
+	std::vector<char *> env;
+	do{
+		env.push_back(envPtr);
+		envPtr += strlen(envPtr) + 1;
+	}while(*(std::int32_t *)envPtr);
+	env.push_back(NULL);
+	// Sys_execve
+	std::int32_t ret = execve(fileNamePtr, (char**)argv.data(), (char**)env.data());
+	if(errno){
+		perror("Error:");
+	}
+	coreStack.push(ret);
+	// Clean
+	delete envAddr;
+	delete argvAddr;
+	delete fileNameAddr;
+}

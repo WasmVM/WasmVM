@@ -45,6 +45,9 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Getpid:
 			Call::sysGetpid(coreStack);
 		break;
+		case SYS_Execve:
+			Call::sysExecve(store, coreStack);
+		break;
 		default:
 			throw Exception("[unreachable] Not implemented.", coreStack);
 		break;
