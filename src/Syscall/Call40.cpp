@@ -43,6 +43,9 @@ void Call::sysKill(Stack &coreStack){
 	}
 	// Sys_kill
 	std::int32_t ret = kill(pid->data.i32, sig->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_kill] ") + strerror(errno), coreStack);
+	}
 	coreStack.push(ret);
 	// Clean
 	delete sig;
@@ -51,6 +54,9 @@ void Call::sysKill(Stack &coreStack){
 void Call::sysPause(Stack &coreStack){
 	// Sys_pause
 	std::int32_t ret = pause();
+	if(errno){
+		throw Exception(std::string("[sys_pause] ") + strerror(errno), coreStack);
+	}
 	coreStack.push(ret);
 }
 void Call::sysGetpid(Stack &coreStack){
@@ -92,7 +98,7 @@ void Call::sysExecve(Store &store, Stack &coreStack){
 	// Sys_execve
 	std::int32_t ret = execve(fileNamePtr, (char**)argv.data(), (char**)env.data());
 	if(errno){
-		perror("Error:");
+		throw Exception(std::string("[sys_execve] ") + strerror(errno), coreStack);
 	}
 	coreStack.push(ret);
 	// Clean
