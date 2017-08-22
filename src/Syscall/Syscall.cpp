@@ -30,7 +30,9 @@ void Syscall::handle(Store &store, Stack &coreStack){
 	}
 	// Call
 	switch(operand->data.i32){
-
+		case SYS_Mkdir:
+			
+		break;
 	}
 	// Clean
 	delete operand;

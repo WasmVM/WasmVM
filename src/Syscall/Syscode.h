@@ -33,37 +33,31 @@
 #define SYS_PAUSE 0x1d
 #define SYS_UTIME 0x1e
 // 0x1f, 0x20 -> not implemented
-#define SYS_ACCESS 0x21
-#define SYS_NICE 0x22
-// 0x23 -> not implemented 
-#define SYS_SYNC 0x24
-#define SYS_KILL 0x25
-#define SYS_RENAME 0x26
-#define SYS_MKDIR 0x27
-#define SYS_RMDIR 0x28
-#define SYS_DUP 0x29
-#define SYS_PIPE 0x2a
-#define SYS_TIMES 0x2b
-// 0x2c -> not implemented
-#define SYS_BRK 0x2d
-#define SYS_SETGID16 0x2e
-#define SYS_GETGID16 0x2f
-#define SYS_SIGNAL 0x30
-#define SYS_GETEUID16 0x31
-#define SYS_GETEGID16 0x32
-#define SYS_ACCT 0x33
-#define SYS_UMOUNT 0x34
-// 0x35 -> not implemented
-#define SYS_IOCTL 0x36
-#define SYS_FCNTL 0x37 
-// 0x38 -> not implemented
-#define SYS_SETPGID 0x39
-// 0x3a -> not implemented 
-#define SYS_OLDUNAME 0x3b
-#define SYS_UMASK 0x3c
-#define SYS_CHROOT 0x3d
-#define SYS_USTAT 0x3e
-#define SYS_DUP2 0x3f
-#define SYS_GETPPID 0x40
-#define SYS_GETPGRP 0x41
-#define SYS_SETSID 0x42
+#define SYS_Dup2	0x21
+#define SYS_Pause	0x22
+#define SYS_Nanosleep	0x23
+#define SYS_Getitimer	0x24
+#define SYS_Alarm	0x25
+#define SYS_Setitimer	0x26
+#define SYS_Getpid	0x27
+#define SYS_Sendfile64	0x28
+#define SYS_Socket	0x29
+#define SYS_Connect	0x2a
+#define SYS_Accept	0x2b
+#define SYS_Sendto	0x2c
+#define SYS_Recvfrom	0x2d
+#define SYS_Sendmsg	0x2e
+#define SYS_Recvmsg	0x2f
+#define SYS_Shutdown	0x30
+#define SYS_Bind	0x31
+#define SYS_Listen	0x32
+#define SYS_Getsockname	0x33
+#define SYS_Getpeername	0x34
+#define SYS_Socketpair	0x35
+#define SYS_Setsockopt	0x36
+#define SYS_Getsockopt	0x37
+#define SYS_Exit	0x3c
+#define SYS_Wait4	0x3d
+#define SYS_Kill	0x3e
+#define SYS_Newuname	0x3f
+#define SYS_Semget	0x40

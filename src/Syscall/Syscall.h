@@ -5,6 +5,7 @@
 #include <Instance.h>
 #include <Store.h>
 #include <Stack.h>
+#include <Syscode.h>
 
 class Syscall{
 public:
