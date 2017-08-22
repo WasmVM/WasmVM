@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and limitations 
 #include <Syscall.h>
 
 std::map<std::string, ModuleInst *>* Syscall::moduleInsts = nullptr;
-void Syscall::setModuleInsts(std::map<std::string, ModuleInst *> *moduleInsts){
+void Syscall::initSyscall(std::map<std::string, ModuleInst *> *moduleInsts){
 	Syscall::moduleInsts = moduleInsts;
 }
 
@@ -30,9 +30,11 @@ void Syscall::handle(Store &store, Stack &coreStack){
 	}
 	// Call
 	switch(operand->data.i32){
-		case SYS_Mkdir:
-			
-		break;
+		case SYS_Read:
+			// sys_read
+			break;
+		default:
+			break;
 	}
 	// Clean
 	delete operand;

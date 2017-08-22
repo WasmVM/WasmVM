@@ -3,6 +3,7 @@
 
 #include <map>
 #include <Instance.h>
+#include <Exception.h>
 #include <Store.h>
 #include <Stack.h>
 #include <Syscode.h>
