@@ -1,38 +1,43 @@
 #ifndef SYSCODE_DEF
 #define SYSCODE_DEF
 
-#define SYS_RESTART_SYSCALL 0x00
-#define SYS_EXIT 0x01
-#define SYS_FORK 0x02
-#define SYS_READ 0x03 
-#define SYS_WRITE 0x04
-#define SYS_OPEN 0x05
-#define SYS_CLOSE 0x06
-#define SYS_WAITPID 0x07
-#define SYS_CREAT 0x08
-#define SYS_LINK 0x09
-#define SYS_UNLINK 0x0a
-#define SYS_EXECVE 0x0b
-#define SYS_CHDIR 0x0c
-#define SYS_TIME 0x0d
-#define SYS_MKNOD 0x0e
-#define SYS_CHMOD 0x0f
-#define SYS_LCHOWN16 0x10
-// 0x11 -> not implemented!
-#define SYS_STAT 0x12
-#define SYS_LSEEK 0x13
-#define SYS_GETPID 0x14
-#define SYS_MOUNT 0x15
-#define SYS_OLDUMOUNT 0x16
-#define SYS_SETUID16 0x17
-#define SYS_GETUID16 0x18
-#define SYS_STIME 0x19
-#define SYS_PTRACE 0x1a
-#define SYS_ALARM 0x1b
-#define SYS_FSTAT 0x1c
-#define SYS_PAUSE 0x1d
-#define SYS_UTIME 0x1e
-// 0x1f, 0x20 -> not implemented
+/* Linux Syscall Reference (64 bits)
+- source : https://syscalls64.paolostivanin.com/
+*/
+
+#define SYS_Read 0x00
+#define SYS_Write 0x01
+#define SYS_Open 0x02
+#define SYS_Close 0x03 
+#define SYS_Newstat 0x04
+#define SYS_Newfstat 0x05
+#define SYS_Newlstat 0x06
+#define SYS_Poll 0x07
+#define SYS_Lseek 0x08
+#define SYS_Mmap 0x09
+#define SYS_Mprotect 0x0a
+#define SYS_Munmap 0x0b
+#define SYS_Brk 0x0c
+#define SYS_RT_Sigaction 0x0d
+#define SYS_RT_Sigprocmask 0x0e
+#define SYS_Ioctl 0x10
+#define SYS_Pread64 0x11
+#define SYS_Pwrite64 0x12
+#define SYS_Readv 0x13
+#define SYS_Writev 0x14
+#define SYS_Access 0x15
+#define SYS_Pipe 0x16
+#define SYS_Select 0x17
+#define SYS_Sched_yield 0x18
+#define SYS_Mremap 0x19
+#define SYS_Msync 0x1a
+#define SYS_Mincore 0x1b
+#define SYS_Madvise 0x1c
+#define SYS_Shmget 0x1d
+#define SYS_Shmat 0x1e
+#define SYS_Shmctl 0x1f
+#define SYS_Dup 0x20
+
 #define SYS_Dup2	0x21
 #define SYS_Pause	0x22
 #define SYS_Nanosleep	0x23
@@ -61,3 +66,5 @@
 #define SYS_Kill	0x3e
 #define SYS_Newuname	0x3f
 #define SYS_Semget	0x40
+
+#endif
