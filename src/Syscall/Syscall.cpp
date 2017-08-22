@@ -33,8 +33,21 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Read:
 			// sys_read
 			break;
+		case SYS_Exit:
+			Call::sysExit(coreStack);
+		break;
+		case SYS_Kill:
+			Call::sysKill(coreStack);
+		break;
+		case SYS_Pause:
+			Call::sysPause(coreStack);
+		break;
+		case SYS_Getpid:
+			Call::sysGetpid(coreStack);
+		break;
 		default:
-			break;
+			throw Exception("[unreachable] Not implemented.", coreStack);
+		break;
 	}
 	// Clean
 	delete operand;

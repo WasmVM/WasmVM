@@ -7,6 +7,7 @@
 #include <Store.h>
 #include <Stack.h>
 #include <Syscode.h>
+#include <Call40.h>
 
 class Syscall{
 public:
