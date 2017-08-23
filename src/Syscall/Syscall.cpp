@@ -48,6 +48,12 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Execve:
 			Call::sysExecve(store, coreStack);
 		break;
+		case SYS_Fork:
+			Call::sysFork(coreStack);
+		break;
+		case SYS_Vfork:
+			Call::sysFork(coreStack);
+		break;
 		default:
 			throw Exception("[unreachable] Not implemented.", coreStack);
 		break;

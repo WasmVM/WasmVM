@@ -20,6 +20,8 @@ namespace Call{
 	void sysPause(Stack &coreStack);
 	void sysGetpid(Stack &coreStack);
 	void sysExecve(Store &store, Stack &coreStack);
+	void sysFork(Stack &coreStack);
+	void sysVfork(Stack &coreStack);
 }
 
 #endif

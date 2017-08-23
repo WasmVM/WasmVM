@@ -76,8 +76,16 @@ void Call::sysExecve(Store &store, Stack &coreStack){
 	if(envAddr->type != i32 || argvAddr->type != i32 || fileNameAddr->type != i32){
 		throw Exception("[sys_execve] value types are not i32.", coreStack);
 	}
-	// Get memory address
-	char *memoryData = store.mems.at(0)->data.data();
+	// Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception("[sys_execve] No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception("[sys_execve] Memory not exists in the store.", coreStack);
+	}
+	char *memoryData = store.mems.at(memAddr)->data.data();
 	char *fileNamePtr = memoryData += fileNameAddr->data.i32;
 	char *argvPtr = memoryData += argvAddr->data.i32;
 	char *envPtr = memoryData += envAddr->data.i32;
@@ -105,4 +113,20 @@ void Call::sysExecve(Store &store, Stack &coreStack){
 	delete envAddr;
 	delete argvAddr;
 	delete fileNameAddr;
+}
+void Call::sysFork(Stack &coreStack){
+	// Sys_fork
+	std::int32_t ret = fork();
+	if(errno){
+		throw Exception(std::string("[sys_fork] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+}
+void Call::sysVfork(Stack &coreStack){
+	// Sys_fork
+	std::int32_t ret = vfork();
+	if(errno){
+		throw Exception(std::string("[sys_vfork] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
 }
