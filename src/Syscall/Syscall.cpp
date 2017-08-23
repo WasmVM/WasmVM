@@ -67,6 +67,18 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Vfork:
 			Call::sysFork(coreStack);
 		break;
+		case SYS_Socket:
+			Call::sysSocket(coreStack);
+		break;
+		case SYS_Shutdown:
+			Call::sysShutdown(coreStack);
+		break;
+		case SYS_Connect:
+			Call::sysConnect(store, coreStack);
+		break;
+		case SYS_Bind:
+			Call::sysBind(store, coreStack);
+		break;
 		default:
 			throw Exception("[unreachable] Non-available operand.", coreStack);
 		break;

@@ -130,3 +130,117 @@ void Call::sysVfork(Stack &coreStack){
 	}
 	coreStack.push(ret);
 }
+void Call::sysSocket(Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 2){
+		throw Exception("[sys_socket] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *sockProto = (Value *)coreStack.pop().data;
+	Value *sockType = (Value *)coreStack.pop().data;
+	Value *sockDomain = (Value *)coreStack.pop().data;
+	if(sockProto->type != i32 || sockType->type != i32 || sockDomain->type != i32){
+		throw Exception("[sys_socket] value types are not i32.", coreStack);
+	}
+	// Sys_socket
+	std::int32_t ret = socket(sockDomain->data.i32, sockType->data.i32, sockProto->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_socket] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete sockProto;
+	delete sockType;
+	delete sockDomain;
+}
+void Call::sysShutdown(Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 2){
+		throw Exception("[sys_shutdown] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *how = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(sockfd->type != i32 || how->type != i32){
+		throw Exception("[sys_shutdown] value types are not i32.", coreStack);
+	}
+	// Sys_shutdown
+	std::int32_t ret = shutdown(sockfd->data.i32, how->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_shutdown] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete sockfd;
+	delete how;
+}
+void Call::sysConnect(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 3){
+		throw Exception("[sys_connect] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *addrLen = (Value *)coreStack.pop().data;
+	Value *sockAddr = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(sockfd->type != i32 || sockAddr->type != i32 || addrLen->type != i32){
+		throw Exception("[sys_connect] value types are not i32.", coreStack);
+	}
+	// Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception("[sys_connect] No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception("[sys_connect] Memory not exists in the store.", coreStack);
+	}
+	char *memoryData = store.mems.at(memAddr)->data.data();
+	char *addrPtr = memoryData += sockAddr->data.i32;
+	struct sockaddr *addr = (struct sockaddr *)addrPtr;
+	// Sys_connect
+	std::int32_t ret = connect(sockfd->data.i32, addr, addrLen->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_connect] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete addrLen;
+	delete sockAddr;
+	delete sockfd;
+}
+void Call::sysBind(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 3){
+		throw Exception("[sys_bind] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *addrLen = (Value *)coreStack.pop().data;
+	Value *sockAddr = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(sockfd->type != i32 || sockAddr->type != i32 || addrLen->type != i32){
+		throw Exception("[sys_bind] value types are not i32.", coreStack);
+	}
+	// Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception("[sys_bind] No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception("[sys_bind] Memory not exists in the store.", coreStack);
+	}
+	char *memoryData = store.mems.at(memAddr)->data.data();
+	char *addrPtr = memoryData += sockAddr->data.i32;
+	struct sockaddr *addr = (struct sockaddr *)addrPtr;
+	// Sys_bind
+	std::int32_t ret = bind(sockfd->data.i32, addr, addrLen->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_bind] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete addrLen;
+	delete sockAddr;
+	delete sockfd;
+}

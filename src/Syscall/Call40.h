@@ -7,6 +7,8 @@ extern "C"{
 #include <signal.h>
 #include <unistd.h>
 #include <errno.h>
+#include <sys/types.h>
+#include <sys/socket.h>
 }
 
 #include <Instance.h>
@@ -22,6 +24,10 @@ namespace Call{
 	void sysExecve(Store &store, Stack &coreStack);
 	void sysFork(Stack &coreStack);
 	void sysVfork(Stack &coreStack);
+	void sysSocket(Stack &coreStack);
+	void sysShutdown(Stack &coreStack);
+	void sysConnect(Store &store, Stack &coreStack);
+	void sysBind(Store &store, Stack &coreStack);
 }
 
 #endif
