@@ -14,3 +14,15 @@ See the License for the specific language governing permissions and limitations 
 void Call::sysRead(Store &store, Stack &callStack){
 	
 }
+
+void Call::sysWrite(Store &store, Stack &callStack){
+	
+}
+
+void Call::sysOpen(Store &store, Stack &callStack){
+	
+}
+
+void Call::sysClose(Store &store, Stack &callStack){
+	
+}

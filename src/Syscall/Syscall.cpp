@@ -32,6 +32,19 @@ void Syscall::handle(Store &store, Stack &coreStack){
 	switch(operand->data.i32){
 		case SYS_Read:
 			// sys_read
+			Call::sysRead(store,coreStack);
+			break;
+		case SYS_Write:
+			// sys_write
+			Call::sysWrite(store,coreStack);
+			break;
+		case SYS_Open:
+			// sys_open
+			Call::sysOpen(store,coreStack);
+			break;
+		case SYS_Close:
+			// sys_close
+			Call::sysClose(store,coreStack);
 			break;
 		case SYS_Exit:
 			Call::sysExit(coreStack);
@@ -55,7 +68,7 @@ void Syscall::handle(Store &store, Stack &coreStack){
 			Call::sysFork(coreStack);
 		break;
 		default:
-			throw Exception("[unreachable] Not implemented.", coreStack);
+			throw Exception("[unreachable] Non-available operand.", coreStack);
 		break;
 	}
 	// Clean

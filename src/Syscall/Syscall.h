@@ -9,6 +9,10 @@
 #include <Syscode.h>
 #include <Call40.h>
 
+// Include Implementation of Syscall
+#include <Call20.h>
+#include <Call40.h>
+
 class Syscall{
 public:
 	static std::map<std::string, ModuleInst *> *moduleInsts;
