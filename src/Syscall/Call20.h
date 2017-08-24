@@ -24,13 +24,9 @@ namespace Call{
 	void sysWrite(Store &store, Stack &coreStack);
 	void sysOpen(Store &store, Stack &coreStack);
 	void sysClose(Stack &coreStack);
-<<<<<<< HEAD
-=======
 	void sysPoll(Store &store, Stack &coreStack);
-
 	void sysPipe(Stack &corestack);
 	void sysDup(Stack &coreStack);
->>>>>>> 3f05019366acf241ca0a846e5c99fa934f67308c
 }
 
 #endif

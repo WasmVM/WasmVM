@@ -12,11 +12,6 @@ See the License for the specific language governing permissions and limitations 
 */
 #include <Call20.h>
 
-<<<<<<< HEAD
-#include <Call20.h>
-
-=======
->>>>>>> 3f05019366acf241ca0a846e5c99fa934f67308c
 void Call::sysRead(Store &store, Stack &coreStack){
     // Check value count 
     if(coreStack.valueNum < 3){
