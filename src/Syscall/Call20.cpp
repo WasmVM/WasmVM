@@ -12,7 +12,7 @@ See the License for the specific language governing permissions and limitations 
 */
 #include <Call20.h>
 
-void Call::sysRead(Store &store, Stack &callStack){
+void Call::sysRead(Store &store, Stack &coreStack){
     // Check value count 
     if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_read] No enough value in the stack.", coreStack);
@@ -22,12 +22,12 @@ void Call::sysRead(Store &store, Stack &callStack){
     // Pop out count
     Value *count = (Value *)coreStack.pop().data;
     if(count->type != i32){
-        throw Exception("[syscall][sys_read] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_read] count type is not i32.", coreStack);
     }
     // Pop out buf addr
     Value *bufAddr = (Value *)coreStack.pop().data;
     if(bufAddr->type != i32){
-        throw Exception("[syscall][sys_read] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_read] bufAddr type is not i32.", coreStack);
     }
     // Step1: Check memory address first 
     if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
@@ -44,7 +44,7 @@ void Call::sysRead(Store &store, Stack &callStack){
     // Pop out file descriptor
     Value *fd = (Value *)coreStack.pop().data;
     if(fd->type != i32){
-        throw Exception("[syscall][sys_read] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_read] fd type is not i32.", coreStack);
     }
     // Sys_Read 
     read((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
@@ -54,7 +54,7 @@ void Call::sysRead(Store &store, Stack &callStack){
     delete count;
 }
 
-void Call::sysWrite(Store &store, Stack &callStack){
+void Call::sysWrite(Store &store, Stack &coreStack){
 	// Check value count 
     if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_write] No enough value in the stack.", coreStack);
@@ -64,12 +64,12 @@ void Call::sysWrite(Store &store, Stack &callStack){
     // Pop out count
     Value *count = (Value *)coreStack.pop().data;
     if(count->type != i32){
-        throw Exception("[syscall][sys_write] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_write] count type is not i32.", coreStack);
     }
     // Pop out buf addr
     Value *bufAddr = (Value *)coreStack.pop().data;
     if(bufAddr->type != i32){
-        throw Exception("[syscall][sys_write] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_write] bufAddr type is not i32.", coreStack);
     }
     // Step1: Check memory address first 
     if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
@@ -86,7 +86,7 @@ void Call::sysWrite(Store &store, Stack &callStack){
     // Pop out file descriptor
     Value *fd = (Value *)coreStack.pop().data;
     if(fd->type != i32){
-        throw Exception("[syscall][sys_write] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_write] fd type is not i32.", coreStack);
     }
     // Sys_Read 
     write((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
@@ -96,7 +96,7 @@ void Call::sysWrite(Store &store, Stack &callStack){
     delete count;
 }
 
-void Call::sysOpen(Store &store, Stack &callStack){
+void Call::sysOpen(Store &store, Stack &coreStack){
 	// Check value count 
 	if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_open] No enough value in the stack.", coreStack);   
@@ -107,12 +107,12 @@ void Call::sysOpen(Store &store, Stack &callStack){
     // Pop out flags 
     Value *flags = (Value *)coreStack.pop().data;
     if(flags->type != i32){
-        throw Exception("[syscall][sys_open] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_open] Flags type is not i32.", coreStack);
     }
     // Pop out address of Pathname
     Value *pathnameAddr = (Value *)coreStack.pop().data;
     if(pathnameAddr->type != i32){
-        throw Exception("[syscall][sys_open] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_open] PathnameAddr type is not i32.", coreStack);
     }
     // Find out the body of pathname by addr
     // Step1: Check memory address first 
@@ -136,7 +136,7 @@ void Call::sysOpen(Store &store, Stack &callStack){
     delete flags; 
 }
 
-void Call::sysClose(Stack &callStack){
+void Call::sysClose(Stack &coreStack){
     // Check value count 
 	if(coreStack.valueNum < 1){
         throw Exception("[syscall][sys_close] No enough value in the stack.", coreStack);   
@@ -144,11 +144,103 @@ void Call::sysClose(Stack &callStack){
     // Pop out file descriptor
     Value *fd = (Value *)coreStack.pop().data;
     if(fd->type != i32){
-        throw Exception("[syscall][sys_close] Operand type is not i32.", coreStack);
+        throw Exception("[syscall][sys_close] fd type is not i32.", coreStack);
     }
     // Sys_Close
     if(close((int)fd->data.i32) == -1){
         throw Exception("[syscall][sys_close] System call failed.", coreStack);
     }
     delete fd;
+}
+
+void Call::sysPipe(Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_pipe] No enough value in the stack.", coreStack);
+    }
+    /* Pipe using 2 elements array as start and end
+        - [0]: end
+        - [1]: start
+    */
+    // Pop out the start point of pipe (First)
+    Value *start = (Value *)coreStack.pop().data;
+    if(start->type != i32){
+        throw Exception("[syscall][sys_pipe] Start point type is not i32.", coreStack);
+    }
+    // Pop out the end point of pipe (Second)
+    Value *end = (Value *)coreStack.pop().data;
+    if(end->type != i32){
+        throw Exception("[syscall][sys_pipe] End point type is not i32.", coreStack);
+    }
+    // Get into the int array
+    int pipefd[2];
+    pipefd[0] = (std::int32_t)end->data.i32;
+    pipefd[1] = (std::int32_t)start->data.i32;
+    // Implement pipe
+    pipe(pipefd);
+    // Clean
+    delete start;
+    delete end;
+}
+
+void Call::sysDup(Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_dup] No enough value in the stack.", coreStack);
+    }
+    // Pop out the oldfd
+    Value *oldfd = (Value *)coreStack.pop().data;
+    if(oldfd->type != i32){
+        throw Exception("[syscall][sys_pipe] Start point type is not i32.", coreStack);
+    }
+    // Getting the new file descriptor
+    std::int32_t newfd = dup((std::int32_t)oldfd->data.i32); 
+    if(errno == EBADF){
+        throw Exception("[syscall][sys_pipe] Old file descriptor isn't an open file descriptor", coreStack);
+    }
+    // Push new fd into coreStack
+    coreStack.push(newfd);
+    // Clean
+    delete oldfd;
+}
+
+void Call::sysPoll(Store &store,Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 3){
+        throw Exception("[syscall][sys_poll] No enough value in the stack.", coreStack);
+    }
+    /*  Poll()
+        args - (struct pollfd *) fds, (nfds_t) nfds, (int) timeout
+    */
+    Value *timeout = (Value *)coreStack.pop().data;
+    if(timeout->type != i32){
+        throw Exception("[syscall][sys_poll] timeout type is not i32.", coreStack);
+    }
+    Value *nfds = (Value *)coreStack.pop().data;
+    if(nfds->type != i32){
+        throw Exception("[syscall][sys_poll] nfds type is not i32.", coreStack);
+    }
+    Value *fdsAddr = (Value *)coreStack.pop().data;
+    if(fdsAddr->type != i32){
+        throw Exception("[syscall][sys_poll] fds type is not i32.", coreStack);
+    }
+    // Fetch data from mem
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_poll] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_poll] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    struct pollfd *fdsPtr = memoryData += fdsAddr->data.i32;
+    // Implementation
+    poll(fdsPtr,(nfds_t)nfds->data.i32,(int)timeout->data.i32);
+    // Clean
+    delete timeout;
+    delete nfds;
+    delete fdsAddr;
 }

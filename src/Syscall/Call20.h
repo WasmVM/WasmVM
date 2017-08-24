@@ -5,10 +5,13 @@
 #include <cstring>
 
 extern "C"{
-#include <unistd.h>
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <poll.h>
 }
 
 #include <Instance.h>
@@ -17,10 +20,14 @@ extern "C"{
 #include <Exception.h>
 
 namespace Call{
-	void sysRead(Store &store, Stack &callStack);
-	void sysWrite(Store &store, Stack &callStack);
-	void sysOpen(Store &store, Stack &callStack);
-	void sysClose(Stack &callStack);
+	void sysRead(Store &store, Stack &coreStack);
+	void sysWrite(Store &store, Stack &coreStack);
+	void sysOpen(Store &store, Stack &coreStack);
+	void sysClose(Stack &coreStack);
+	void sysPoll(Store &store, Stack &coreStack);
+
+	void sysPipe(Stack &corestack);
+	void sysDup(Stack &coreStack);
 }
 
 #endif
