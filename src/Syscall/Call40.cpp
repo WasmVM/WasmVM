@@ -384,3 +384,24 @@ void Call::sysRecvfrom(Store &store, Stack &coreStack){
 	delete bufAddr;
 	delete sockfd;
 }
+void Call::sysDup2(Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 2){
+		throw Exception("[syscall][sys_dup2] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *newfd = (Value *)coreStack.pop().data;
+	Value *oldfd = (Value *)coreStack.pop().data;
+	if(oldfd->type != i32 || newfd->type != i32){
+		throw Exception("[syscall][sys_dup2] value types are not i32.", coreStack);
+	}
+	// Sys_dup2
+	std::int32_t ret = dup2(oldfd->data.i32, newfd->data.i32);
+	if(errno){
+		throw Exception(std::string("[syscall][sys_dup2] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete oldfd;
+	delete newfd;
+}

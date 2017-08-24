@@ -32,6 +32,7 @@ namespace Call{
 	void sysAccept(Store &store, Stack &coreStack);
 	void sysSendto(Store &store, Stack &coreStack);
 	void sysRecvfrom(Store &store, Stack &coreStack);
+	void sysDup2(Stack &coreStack);
 }
 
 #endif

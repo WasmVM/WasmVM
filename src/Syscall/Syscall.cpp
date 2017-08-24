@@ -97,6 +97,9 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Recvfrom:
 			Call::sysRecvfrom(store, coreStack);
 		break;
+		case SYS_Dup2:
+			Call::sysDup2(coreStack);
+		break;
 		default:
 			throw Exception("[unreachable] Non-available operand.", coreStack);
 		break;
