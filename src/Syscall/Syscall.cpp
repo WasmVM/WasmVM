@@ -46,6 +46,12 @@ void Syscall::handle(Store &store, Stack &coreStack){
 			// sys_close
 			Call::sysClose(coreStack);
 			break;
+		case SYS_Pipe:
+			Call::sysPipe(coreStack);
+			break;
+		case SYS_Dup:
+			Call::sysDup(coreStack);
+			break;
 		case SYS_Exit:
 			Call::sysExit(coreStack);
 		break;

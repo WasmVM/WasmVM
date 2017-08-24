@@ -5,10 +5,13 @@
 #include <cstring>
 
 extern "C"{
-#include <unistd.h>
+#define _GNU_SOURCE
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #include <fcntl.h>
+#include <signal.h>
+#include <poll.h>
 }
 
 #include <Instance.h>
@@ -21,6 +24,13 @@ namespace Call{
 	void sysWrite(Store &store, Stack &coreStack);
 	void sysOpen(Store &store, Stack &coreStack);
 	void sysClose(Stack &coreStack);
+<<<<<<< HEAD
+=======
+	void sysPoll(Store &store, Stack &coreStack);
+
+	void sysPipe(Stack &corestack);
+	void sysDup(Stack &coreStack);
+>>>>>>> 3f05019366acf241ca0a846e5c99fa934f67308c
 }
 
 #endif
