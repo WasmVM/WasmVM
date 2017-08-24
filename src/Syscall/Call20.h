@@ -25,6 +25,9 @@ namespace Call{
 	void sysOpen(Store &store, Stack &coreStack);
 	void sysClose(Stack &coreStack);
 	void sysPoll(Store &store, Stack &coreStack);
+	void sysLseek(Stack &coreStack);
+	void sysAccess(Store &store, Stack &coreStack);
+	void sysBrk(Store &store,Stack &coreStack);
 	void sysPipe(Stack &corestack);
 	void sysDup(Stack &coreStack);
 }

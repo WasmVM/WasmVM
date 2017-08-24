@@ -33,9 +33,9 @@ void Call::sysRead(Store &store, Stack &coreStack){
     if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
         throw Exception("[syscall][sys_read] No memory exists in this module.", coreStack);
     }
-    // Step2: Check memory
+    // Step2: Check memory (with type casting offset)
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr >= store.mems.size()){
+    if(memAddr + (sizeof(std::int32_t)/sizeof(char)-1) >= store.mems.size()){
         throw Exception("[syscall][sys_read] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
@@ -77,7 +77,7 @@ void Call::sysWrite(Store &store, Stack &coreStack){
     }
     // Step2: Check memory
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr >= store.mems.size()){
+    if(memAddr + (sizeof(std::int32_t)/sizeof(char)-1) >= store.mems.size()){
         throw Exception("[syscall][sys_write] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
@@ -231,16 +231,107 @@ void Call::sysPoll(Store &store,Stack &coreStack){
     }
     // Step2: Check memory
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr >= store.mems.size()){
+    if(memAddr + (sizeof(struct pollfd)/sizeof(char)-1) >= store.mems.size()){
         throw Exception("[syscall][sys_poll] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
     char *memoryData = store.mems.at(memAddr)->data.data();
-    struct pollfd *fdsPtr = memoryData += fdsAddr->data.i32;
+    char *fdsPtr = memoryData += fdsAddr->data.i32;
     // Implementation
-    poll(fdsPtr,(nfds_t)nfds->data.i32,(int)timeout->data.i32);
+    poll((struct pollfd *)fdsPtr,(nfds_t)nfds->data.i32,(int)timeout->data.i32);
     // Clean
     delete timeout;
     delete nfds;
     delete fdsAddr;
 }
+
+void Call::sysLseek(Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 1){
+        throw Exception("[syscall][sys_lseek] No enough value in the stack.", coreStack);
+    }
+    // Pop out file descriptor
+    Value *fd = (Value *)coreStack.pop().data;
+    if(fd->type != i32){
+        throw Exception("[syscall][sys_lseek] fd type is not i32.", coreStack);
+    }
+    // Pop out offset 
+    Value *offset = (Value *)coreStack.pop().data;
+    if(offset->type != i32){
+        throw Exception("[syscall][sys_lseek] offset type is not i32.", coreStack);
+    }
+    // Pop out Whence
+    Value *whence = (Value *)coreStack.pop().data;
+    if(whence->type != i32){
+        throw Exception("[syscall][sys_lseek] whence type is not i32.", coreStack);
+    }
+    // lseek
+    lseek((std::int32_t)fd->data.i32,(off_t)offset->data.i32,(std::int32_t)whence->data.i32);
+    // Clean 
+    delete fd;
+    delete offset;
+    delete whence;
+}
+
+void Call::sysAccess(Store &store, Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_access] No enough value in the stack.", coreStack);
+    }
+    // Pop out mode
+    Value *mode = (Value *)coreStack.pop().data;
+    if(mode->type != i32){
+        throw Exception("[syscall][sys_access] mode type is not i32.", coreStack);
+    }
+    // Pop out pathname addr
+    Value *pathnameAddr = (Value *)coreStack.pop().data;
+    if(pathnameAddr->type != i32){
+        throw Exception("[syscall][sys_access] pathnameAddr type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_brk] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_brk] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *pathnamePtr = memoryData += pathnameAddr->data.i32;
+    // Access
+    access((const char *)pathnamePtr,(std::int32_t)mode->data.i32);
+    // Clean 
+    delete mode;
+    delete pathnameAddr;
+}
+
+void Call::sysBrk(Store &store,Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 1){
+        throw Exception("[syscall][sys_brk] No enough value in the stack.", coreStack);
+    }
+    // Get the `program break` addr
+    Value *programbreakAddr = (Value *)coreStack.pop().data;
+    if(programbreakAddr->type != i32){
+        throw Exception("[syscall][sys_brk] fds type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_brk] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_brk] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *programbreakPtr = memoryData += programbreakAddr->data.i32;
+    // Brk
+    brk((void *)programbreakPtr);
+    // Clean 
+    delete programbreakAddr;
+}
+
