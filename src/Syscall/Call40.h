@@ -28,6 +28,8 @@ namespace Call{
 	void sysShutdown(Stack &coreStack);
 	void sysConnect(Store &store, Stack &coreStack);
 	void sysBind(Store &store, Stack &coreStack);
+	void sysListen(Stack &coreStack);
+	void sysAccept(Store &store, Stack &coreStack);
 }
 
 #endif

@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and limitations 
 
 #include <Call20.h>
 
-void Call::sysRead(Store &store, Stack &callStack){
+void Call::sysRead(Store &store, Stack &coreStack){
     // Check value count 
     if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_read] No enough value in the stack.", coreStack);
@@ -56,7 +56,7 @@ void Call::sysRead(Store &store, Stack &callStack){
     delete count;
 }
 
-void Call::sysWrite(Store &store, Stack &callStack){
+void Call::sysWrite(Store &store, Stack &coreStack){
 	// Check value count 
     if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_write] No enough value in the stack.", coreStack);
@@ -98,7 +98,7 @@ void Call::sysWrite(Store &store, Stack &callStack){
     delete count;
 }
 
-void Call::sysOpen(Store &store, Stack &callStack){
+void Call::sysOpen(Store &store, Stack &coreStack){
 	// Check value count 
 	if(coreStack.valueNum < 3){
         throw Exception("[syscall][sys_open] No enough value in the stack.", coreStack);   
@@ -130,15 +130,15 @@ void Call::sysOpen(Store &store, Stack &callStack){
         throw Exception("[syscall][sys_open] Operand type is not i32.", coreStack);
     }
     // Sys_open , keep the returning file descriptor
-    std::int32_t ret_fd = open((const) pathnamePtr,(std::int32_t)flags->data.i32);
+    std::int32_t ret_fd = open(pathnamePtr, flags->data.i32);
     // Push back
     coreStack.push(ret_fd);
     // Clean 
-    delete pathname;
+    delete pathnameAddr;
     delete flags; 
 }
 
-void Call::sysClose(Stack &callStack){
+void Call::sysClose(Stack &coreStack){
     // Check value count 
 	if(coreStack.valueNum < 1){
         throw Exception("[syscall][sys_close] No enough value in the stack.", coreStack);   

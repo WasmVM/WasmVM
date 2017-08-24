@@ -44,7 +44,7 @@ void Syscall::handle(Store &store, Stack &coreStack){
 			break;
 		case SYS_Close:
 			// sys_close
-			Call::sysClose(store,coreStack);
+			Call::sysClose(coreStack);
 			break;
 		case SYS_Exit:
 			Call::sysExit(coreStack);
@@ -78,6 +78,12 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		break;
 		case SYS_Bind:
 			Call::sysBind(store, coreStack);
+		break;
+		case SYS_Listen:
+			Call::sysListen(coreStack);
+		break;
+		case SYS_Accept:
+			Call::sysAccept(store, coreStack);
 		break;
 		default:
 			throw Exception("[unreachable] Non-available operand.", coreStack);

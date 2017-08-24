@@ -197,9 +197,8 @@ void Call::sysConnect(Store &store, Stack &coreStack){
 	}
 	char *memoryData = store.mems.at(memAddr)->data.data();
 	char *addrPtr = memoryData += sockAddr->data.i32;
-	struct sockaddr *addr = (struct sockaddr *)addrPtr;
 	// Sys_connect
-	std::int32_t ret = connect(sockfd->data.i32, addr, addrLen->data.i32);
+	std::int32_t ret = connect(sockfd->data.i32, (struct sockaddr *)addrPtr, addrLen->data.i32);
 	if(errno){
 		throw Exception(std::string("[sys_connect] ") + strerror(errno), coreStack);
 	}
@@ -232,11 +231,66 @@ void Call::sysBind(Store &store, Stack &coreStack){
 	}
 	char *memoryData = store.mems.at(memAddr)->data.data();
 	char *addrPtr = memoryData += sockAddr->data.i32;
-	struct sockaddr *addr = (struct sockaddr *)addrPtr;
 	// Sys_bind
-	std::int32_t ret = bind(sockfd->data.i32, addr, addrLen->data.i32);
+	std::int32_t ret = bind(sockfd->data.i32, (struct sockaddr *)addrPtr, addrLen->data.i32);
 	if(errno){
 		throw Exception(std::string("[sys_bind] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete addrLen;
+	delete sockAddr;
+	delete sockfd;
+}
+void Call::sysListen(Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 2){
+		throw Exception("[sys_listen] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *backlog = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(sockfd->type != i32 || backlog->type != i32){
+		throw Exception("[sys_listen] value types are not i32.", coreStack);
+	}
+	// Sys_listen
+	std::int32_t ret = listen(sockfd->data.i32, backlog->data.i32);
+	if(errno){
+		throw Exception(std::string("[sys_listen] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete backlog;
+	delete sockfd;
+}
+void Call::sysAccept(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 3){
+		throw Exception("[sys_accept] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *addrLen = (Value *)coreStack.pop().data;
+	Value *sockAddr = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(sockfd->type != i32 || sockAddr->type != i32 || addrLen->type != i32){
+		throw Exception("[sys_accept] value types are not i32.", coreStack);
+	}
+	// Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception("[sys_accept] No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception("[sys_accept] Memory not exists in the store.", coreStack);
+	}
+	char *memoryData = store.mems.at(memAddr)->data.data();
+	char *addrPtr = memoryData += sockAddr->data.i32;
+	char *addrLenPtr = memoryData += addrLen->data.i32;
+	// Sys_accept
+	std::int32_t ret = accept(sockfd->data.i32, (struct sockaddr *)addrPtr, (socklen_t *)addrLenPtr);
+	if(errno){
+		throw Exception(std::string("[sys_accept] ") + strerror(errno), coreStack);
 	}
 	coreStack.push(ret);
 	// Clean
