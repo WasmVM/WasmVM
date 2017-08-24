@@ -35,7 +35,7 @@ void Call::sysRead(Store &store, Stack &coreStack){
     }
     // Step2: Check memory (with type casting offset)
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr + (sizeof(std::int32_t)/sizeof(char)-1) >= store.mems.size()){
+    if(memAddr >= store.mems.size()){
         throw Exception("[syscall][sys_read] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
@@ -81,7 +81,7 @@ void Call::sysWrite(Store &store, Stack &coreStack){
     }
     // Step2: Check memory
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr + (sizeof(std::int32_t)/sizeof(char)-1) >= store.mems.size()){
+    if(memAddr >= store.mems.size()){
         throw Exception("[syscall][sys_write] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
@@ -243,7 +243,7 @@ void Call::sysPoll(Store &store,Stack &coreStack){
     }
     // Step2: Check memory
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-    if(memAddr + (sizeof(struct pollfd)/sizeof(char)-1) >= store.mems.size()){
+    if(memAddr >= store.mems.size()){
         throw Exception("[syscall][sys_poll] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer

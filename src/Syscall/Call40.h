@@ -31,6 +31,7 @@ namespace Call{
 	void sysListen(Stack &coreStack);
 	void sysAccept(Store &store, Stack &coreStack);
 	void sysSendto(Store &store, Stack &coreStack);
+	void sysRecvfrom(Store &store, Stack &coreStack);
 }
 
 #endif

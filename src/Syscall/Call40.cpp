@@ -340,3 +340,47 @@ void Call::sysSendto(Store &store, Stack &coreStack){
 	delete bufAddr;
 	delete sockfd;
 }
+
+void Call::sysRecvfrom(Store &store, Stack &coreStack){
+	// Check value count
+	if(coreStack.valueNum < 6){
+		throw Exception("[syscall][sys_recvfrom] No enough value in the stack.", coreStack);
+	}
+	// Pop operand
+	Value *addrLenAddr = (Value *)coreStack.pop().data;
+	Value *srcAddr = (Value *)coreStack.pop().data;
+	Value *flags = (Value *)coreStack.pop().data;
+	Value *len = (Value *)coreStack.pop().data;
+	Value *bufAddr = (Value *)coreStack.pop().data;
+	Value *sockfd = (Value *)coreStack.pop().data;
+	if(bufAddr->type != i32 || len->type != i32 || flags->type != i32 || srcAddr->type != i32 || addrLenAddr->type != i32 || sockfd->type != i32){
+		throw Exception("[syscall][sys_recvfrom] value types are not i32.", coreStack);
+	}
+	// Check memory address
+	if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+		throw Exception("[syscall][sys_recvfrom] No memory exists in this module.", coreStack);
+	}
+	// Check memory
+	std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+	if(memAddr >= store.mems.size()){
+		throw Exception("[syscall][sys_recvfrom] Memory not exists in the store.", coreStack);
+	}
+	// Get pointer
+	char *memoryData = store.mems.at(memAddr)->data.data();
+	char *srcPtr = memoryData += srcAddr->data.i32;
+	char *bufPtr = memoryData += bufAddr->data.i32;
+	char *addrLenPtr = memoryData += addrLenAddr->data.i32;
+	// Sys_recvfrom
+	std::int32_t ret = recvfrom(sockfd->data.i32, bufPtr, len->data.i32, flags->data.i32, (struct sockaddr *)srcPtr, (unsigned int *)addrLenPtr);
+	if(errno){
+		throw Exception(std::string("[syscall][sys_recvfrom] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
+	// Clean
+	delete addrLenAddr;
+	delete srcAddr;
+	delete flags;
+	delete len;
+	delete bufAddr;
+	delete sockfd;
+}
