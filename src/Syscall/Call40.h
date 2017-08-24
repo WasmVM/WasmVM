@@ -30,6 +30,7 @@ namespace Call{
 	void sysBind(Store &store, Stack &coreStack);
 	void sysListen(Stack &coreStack);
 	void sysAccept(Store &store, Stack &coreStack);
+	void sysSendto(Store &store, Stack &coreStack);
 }
 
 #endif

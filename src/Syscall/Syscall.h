@@ -7,7 +7,6 @@
 #include <Store.h>
 #include <Stack.h>
 #include <Syscode.h>
-#include <Call40.h>
 
 // Include Implementation of Syscall
 #include <Call20.h>

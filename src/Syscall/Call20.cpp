@@ -47,7 +47,11 @@ void Call::sysRead(Store &store, Stack &coreStack){
         throw Exception("[syscall][sys_read] fd type is not i32.", coreStack);
     }
     // Sys_Read 
-    read((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
+    std::int32_t ret = read((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_read] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean
     delete fd;
     delete bufAddr;
@@ -88,8 +92,12 @@ void Call::sysWrite(Store &store, Stack &coreStack){
     if(fd->type != i32){
         throw Exception("[syscall][sys_write] fd type is not i32.", coreStack);
     }
-    // Sys_Read 
-    write((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
+    // Sys_write 
+    std::int32_t ret = write((std::int32_t)fd->data.i32,(void *)bufPtr,(size_t)count->data.i32);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_write] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean
     delete fd;
     delete bufAddr;
@@ -177,7 +185,11 @@ void Call::sysPipe(Stack &coreStack){
     pipefd[0] = (std::int32_t)end->data.i32;
     pipefd[1] = (std::int32_t)start->data.i32;
     // Implement pipe
-    pipe(pipefd);
+    std::int32_t ret = pipe(pipefd);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_pipe] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean
     delete start;
     delete end;
@@ -238,7 +250,11 @@ void Call::sysPoll(Store &store,Stack &coreStack){
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *fdsPtr = memoryData += fdsAddr->data.i32;
     // Implementation
-    poll((struct pollfd *)fdsPtr,(nfds_t)nfds->data.i32,(int)timeout->data.i32);
+    std::int32_t ret = poll((struct pollfd *)fdsPtr,(nfds_t)nfds->data.i32,(int)timeout->data.i32);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_poll] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean
     delete timeout;
     delete nfds;
@@ -266,7 +282,11 @@ void Call::sysLseek(Stack &coreStack){
         throw Exception("[syscall][sys_lseek] whence type is not i32.", coreStack);
     }
     // lseek
-    lseek((std::int32_t)fd->data.i32,(off_t)offset->data.i32,(std::int32_t)whence->data.i32);
+    std::int32_t ret = lseek((std::int32_t)fd->data.i32,(off_t)offset->data.i32,(std::int32_t)whence->data.i32);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_lseek] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean 
     delete fd;
     delete offset;
@@ -290,18 +310,22 @@ void Call::sysAccess(Store &store, Stack &coreStack){
     }
     // Step1: Check memory address first 
     if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
-        throw Exception("[syscall][sys_brk] No memory exists in this module.", coreStack);
+        throw Exception("[syscall][sys_access] No memory exists in this module.", coreStack);
     }
     // Step2: Check memory
     std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
     if(memAddr >= store.mems.size()){
-        throw Exception("[syscall][sys_brk] Memory not exists in the store.", coreStack);
+        throw Exception("[syscall][sys_access] Memory not exists in the store.", coreStack);
     }
     // Step3: Get the pointer
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *pathnamePtr = memoryData += pathnameAddr->data.i32;
     // Access
-    access((const char *)pathnamePtr,(std::int32_t)mode->data.i32);
+    std::int32_t ret = access((const char *)pathnamePtr,(std::int32_t)mode->data.i32);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_access] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean 
     delete mode;
     delete pathnameAddr;
@@ -330,7 +354,11 @@ void Call::sysBrk(Store &store,Stack &coreStack){
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *programbreakPtr = memoryData += programbreakAddr->data.i32;
     // Brk
-    brk((void *)programbreakPtr);
+    std::int32_t ret =  brk((void *)programbreakPtr);
+    if(errno){
+		throw Exception(std::string("[syscall][sys_brk] ") + strerror(errno), coreStack);
+	}
+	coreStack.push(ret);
     // Clean 
     delete programbreakAddr;
 }

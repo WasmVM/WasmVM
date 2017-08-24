@@ -91,6 +91,9 @@ void Syscall::handle(Store &store, Stack &coreStack){
 		case SYS_Accept:
 			Call::sysAccept(store, coreStack);
 		break;
+		case SYS_Sendto:
+			Call::sysSendto(store, coreStack);
+		break;
 		default:
 			throw Exception("[unreachable] Non-available operand.", coreStack);
 		break;
