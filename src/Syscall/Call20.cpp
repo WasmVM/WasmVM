@@ -12,8 +12,6 @@ See the License for the specific language governing permissions and limitations 
 */
 #include <Call20.h>
 
-#include <Call20.h>
-
 void Call::sysRead(Store &store, Stack &callStack){
     // Check value count 
     if(coreStack.valueNum < 3){
@@ -21,9 +19,9 @@ void Call::sysRead(Store &store, Stack &callStack){
     }
     /* Pop operand - (int) fd, (void *)buf,(size_t) count
     */
-    // Pop out file descriptor
-    Value *fd = (Value *)coreStack.pop().data;
-    if(fd->type != i32){
+    // Pop out count
+    Value *count = (Value *)coreStack.pop().data;
+    if(count->type != i32){
         throw Exception("[syscall][sys_read] Operand type is not i32.", coreStack);
     }
     // Pop out buf addr
@@ -43,9 +41,9 @@ void Call::sysRead(Store &store, Stack &callStack){
     // Step3: Get the pointer
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *bufPtr = memoryData += bufAddr->data.i32;
-    // Pop out count
-    Value *count = (Value *)coreStack.pop().data;
-    if(count->type != i32){
+    // Pop out file descriptor
+    Value *fd = (Value *)coreStack.pop().data;
+    if(fd->type != i32){
         throw Exception("[syscall][sys_read] Operand type is not i32.", coreStack);
     }
     // Sys_Read 
@@ -63,9 +61,9 @@ void Call::sysWrite(Store &store, Stack &callStack){
     }
     /* Pop operand - (int) fd, (void *)buf,(size_t) count
     */
-    // Pop out file descriptor
-    Value *fd = (Value *)coreStack.pop().data;
-    if(fd->type != i32){
+    // Pop out count
+    Value *count = (Value *)coreStack.pop().data;
+    if(count->type != i32){
         throw Exception("[syscall][sys_write] Operand type is not i32.", coreStack);
     }
     // Pop out buf addr
@@ -85,9 +83,9 @@ void Call::sysWrite(Store &store, Stack &callStack){
     // Step3: Get the pointer
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *bufPtr = memoryData += bufAddr->data.i32;
-    // Pop out count
-    Value *count = (Value *)coreStack.pop().data;
-    if(count->type != i32){
+    // Pop out file descriptor
+    Value *fd = (Value *)coreStack.pop().data;
+    if(fd->type != i32){
         throw Exception("[syscall][sys_write] Operand type is not i32.", coreStack);
     }
     // Sys_Read 
@@ -106,6 +104,11 @@ void Call::sysOpen(Store &store, Stack &callStack){
     /* Pop operand - (char*)pathname , (int)flags
     Using `int open(const char *pathname,int flags);` as implementation
     */
+    // Pop out flags 
+    Value *flags = (Value *)coreStack.pop().data;
+    if(flags->type != i32){
+        throw Exception("[syscall][sys_open] Operand type is not i32.", coreStack);
+    }
     // Pop out address of Pathname
     Value *pathnameAddr = (Value *)coreStack.pop().data;
     if(pathnameAddr->type != i32){
@@ -124,11 +127,6 @@ void Call::sysOpen(Store &store, Stack &callStack){
     // Step3: Get the pointer
     char *memoryData = store.mems.at(memAddr)->data.data();
     char *pathnamePtr = memoryData += pathnameAddr->data.i32;
-    // Pop out flags 
-    Value *flags = (Value *)coreStack.pop().data;
-    if(flags->type != i32){
-        throw Exception("[syscall][sys_open] Operand type is not i32.", coreStack);
-    }
     // Sys_open , keep the returning file descriptor
     std::int32_t ret_fd = open((const) pathnamePtr,(std::int32_t)flags->data.i32);
     // Push back
