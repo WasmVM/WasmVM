@@ -6,7 +6,9 @@
 
 extern "C"{
 	#include <sys/types.h>
+	#include <sys/time.h>
 	#include <sys/stat.h>
+	#include <sys/select.h>
 	#include <unistd.h>
 	#include <fcntl.h>
 	#include <signal.h>
@@ -27,7 +29,8 @@ namespace Call{
 	void sysLseek(Stack &coreStack);
 	void sysAccess(Store &store, Stack &coreStack);
 	void sysBrk(Store &store,Stack &coreStack);
-	void sysPipe(Stack &corestack);
+	void sysPipe(Stack &coreStack);
+	void sysSelect(Store &store, Stack &coreStack);
 	void sysDup(Stack &coreStack);
 }
 

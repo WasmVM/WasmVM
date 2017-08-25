@@ -266,20 +266,20 @@ void Call::sysLseek(Stack &coreStack){
     if(coreStack.valueNum < 1){
         throw Exception("[syscall][sys_lseek] No enough value in the stack.", coreStack);
     }
-    // Pop out file descriptor
-    Value *fd = (Value *)coreStack.pop().data;
-    if(fd->type != i32){
-        throw Exception("[syscall][sys_lseek] fd type is not i32.", coreStack);
+    // Pop out Whence
+    Value *whence = (Value *)coreStack.pop().data;
+    if(whence->type != i32){
+        throw Exception("[syscall][sys_lseek] whence type is not i32.", coreStack);
     }
     // Pop out offset 
     Value *offset = (Value *)coreStack.pop().data;
     if(offset->type != i32){
         throw Exception("[syscall][sys_lseek] offset type is not i32.", coreStack);
     }
-    // Pop out Whence
-    Value *whence = (Value *)coreStack.pop().data;
-    if(whence->type != i32){
-        throw Exception("[syscall][sys_lseek] whence type is not i32.", coreStack);
+    // Pop out file descriptor
+    Value *fd = (Value *)coreStack.pop().data;
+    if(fd->type != i32){
+        throw Exception("[syscall][sys_lseek] fd type is not i32.", coreStack);
     }
     // lseek
     std::int32_t ret = lseek((std::int32_t)fd->data.i32,(off_t)offset->data.i32,(std::int32_t)whence->data.i32);
@@ -363,3 +363,46 @@ void Call::sysBrk(Store &store,Stack &coreStack){
     delete programbreakAddr;
 }
 
+void Call::sysSelect(Store &store,Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 5){
+        throw Exception("[syscall][sys_select] No enough value in the stack.", coreStack);
+    }
+    // Pop out timeout
+    Value *timeoutAddr = (Value *)coreStack.pop().data;
+    // Pop out exceptfds 
+    Value *exceptfdsAddr = (Value *)coreStack.pop().data;
+    // Pop out writefds
+    Value *writefdsAddr = (Value *)coreStack.pop().data;
+    // Pop out readfds
+    Value *readfdsAddr = (Value *)coreStack.pop().data;
+    // Pop out nfds
+    Value * nfds = (Value *)coreStack.pop().data;
+    if(timeoutAddr->type != i32 || exceptfdsAddr->type != i32 || writefdsAddr->type != i32 || readfdsAddr->type != i32 || nfds-> type != i32){
+        throw Exception("[syscall][sys_select] Args type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_select] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_select] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *readfdsPtr = memoryData += readfdsAddr>data.i32;
+    char *writefdsPtr = memoryData += writefdsAddr->data.i32;
+    char *exceptfdsPtr = memoryData += exceptfdsAddr->data.i32;
+    char *timeoutPtr = memoryData += timeoutAddr->data.i32;
+    // Select 
+    std::int32_t ret = select((std::int32_t)nfds->data.i32,(fd_set *)readfdsPtr->data.i32,(fd_set *)writefdsPtr->data.i32,(fd_set *)exceptfdsPtr->data.i32,(struct timeval *)timeout);
+    // push back
+    coreStack.push(ret);
+    // Clean
+    delete timeoutAddr;
+    delete exceptfdsAddr;
+    delete writefdsAddr;
+    delete readfdsAddr;
+}
