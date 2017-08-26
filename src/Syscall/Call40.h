@@ -3,6 +3,7 @@
 
 #include <cstdlib>
 #include <cstring>
+#include <ctime>
 extern "C"{
 #include <signal.h>
 #include <unistd.h>
@@ -33,6 +34,7 @@ namespace Call{
 	void sysSendto(Store &store, Stack &coreStack);
 	void sysRecvfrom(Store &store, Stack &coreStack);
 	void sysDup2(Stack &coreStack);
+	void sysNanosleep(Store &store, Stack &coreStack);
 }
 
 #endif
