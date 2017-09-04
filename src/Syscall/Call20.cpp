@@ -161,6 +161,103 @@ void Call::sysClose(Stack &coreStack){
     delete fd;
 }
 
+void Call::sysStat(Store &store, Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_stat] No enough value in the stack.", coreStack);
+    }
+    // Pop out args
+    Value *bufAddr = (Value *)coreStack.pop().data;
+    Value *pathnameAddr = (Value *)coreStack.pop().data;
+    if(pathnameAddr->type != i32 || bufAddr->type != i32){
+        throw Exception("[syscall][sys_stat] Args type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_stat] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_stat] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *pathnamePtr = memoryData += pathnameAddr->data.i32;
+    char *bufPtr = memoryData += bufAddr->data.i32;
+    // stat 
+    std::int32_t ret = stat((const char *)pathnamePtr,(struct stat *)bufPtr);
+    // push back
+    coreStack.push(ret);
+    // Clean 
+    delete bufAddr;
+    delete pathnameAddr;
+}
+
+void Call::sysFstat(Store &store, Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_fstat] No enough value in the stack.", coreStack);
+    }
+    // Pop out args
+    Value *bufAddr = (Value *)coreStack.pop().data;
+    Value *fd = (Value *)coreStack().data;
+    if(fd->type != i32 || bufAddr->type != i32){
+        throw Exception("[syscall][sys_fstat] Args type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_fstat] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_fstat] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *bufPtr = memoryData += pathnameAddr->data.i32;
+    // fstat 
+    std::int32_t ret = fstat((std::int32_t)fd->data.i32,(struct stat *)bufPtr);
+    // push back
+    coreStack.push(ret);
+    // Clean 
+    delete bufAddr;
+}
+
+void Call::sysLstat(Store &store, Stack &coreStack){
+    // Check value count 
+    if(coreStack.valueNum < 2){
+        throw Exception("[syscall][sys_lstat] No enough value in the stack.", coreStack);
+    }
+    // Pop out args
+    Value *bufAddr = (Value *)coreStack.pop().data;
+    Value *pathnameAddr = (Value *)coreStack.pop().data;
+    if(pathnameAddr->type != i32 || bufAddr->type != i32){
+        throw Exception("[syscall][sys_lstat] Args type is not i32.", coreStack);
+    }
+    // Step1: Check memory address first 
+    if(coreStack.curFrame->moduleInst->memaddrs.size() < 1){
+        throw Exception("[syscall][sys_lstat] No memory exists in this module.", coreStack);
+    }
+    // Step2: Check memory
+    std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+    if(memAddr >= store.mems.size()){
+        throw Exception("[syscall][sys_lstat] Memory not exists in the store.", coreStack);
+    }
+    // Step3: Get the pointer
+    char *memoryData = store.mems.at(memAddr)->data.data();
+    char *pathnamePtr = memoryData += pathnameAddr->data.i32;
+    char *bufPtr = memoryData += bufAddr->data.i32;
+    // stat 
+    std::int32_t ret = lstat((const char *)pathnamePtr,(struct stat *)bufPtr);
+    // push back
+    coreStack.push(ret);
+    // Clean 
+    delete bufAddr;
+    delete pathnameAddr;
+}
+
 void Call::sysPipe(Stack &coreStack){
     // Check value count 
     if(coreStack.valueNum < 2){
