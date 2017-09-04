@@ -54,7 +54,6 @@ public:
     std::list<StackElem>::iterator begin();
     
 private:
-    
     std::list<StackElem> _stack;
 };
 
