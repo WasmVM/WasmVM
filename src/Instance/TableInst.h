@@ -4,10 +4,10 @@
 #include <cstdint>
 #include <Value.h>
 
-class TableInst{
-public:
-    std::vector<uint32_t> elem;
-    uint32_t max;
+class TableInst {
+ public:
+  std::vector<uint32_t> elem;
+  uint32_t max;
 };
 
 #endif

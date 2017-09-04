@@ -8,14 +8,14 @@
 #include <ControlInstr.h>
 #include <Decoder.h>
 
-class Core{
-public:
-	Core(Store &store);
-	void run(ModuleInst *module);
+class Core {
+ public:
+  Core(Store& store);
+  void run(ModuleInst* module);
 
-private:
-	Store &store;
-	Stack coreStack;
+ private:
+  Store& store;
+  Stack coreStack;
 };
 
 #endif

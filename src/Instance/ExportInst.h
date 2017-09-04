@@ -4,10 +4,10 @@
 #include <string>
 #include <Value.h>
 
-class ExportInst{
-public:
-    std::string name;
-    ExternVal externval;
+class ExportInst {
+ public:
+  std::string name;
+  ExternVal externval;
 };
 
 #endif

@@ -16,25 +16,31 @@
 #include <Bincode.h>
 
 class Loader {
-public:
-    Loader(Store &store, std::map<std::string, ModuleInst *> &moduleInsts);
-    ~Loader();
+ public:
+  Loader(Store& store, std::map<std::string, ModuleInst*>& moduleInsts);
+  ~Loader();
 
-    void load(const char *fileName);
-private:
-    Store &store;
-    std::map<std::string, ModuleInst *> &moduleInsts;
-    std::map<std::string, Module *> modules;
+  void load(const char* fileName);
 
-    std::uint32_t allocFunc(Func &func, ModuleInst *moduleInst);
-    std::uint32_t allocTable(Module &module);
-    std::uint32_t allocMem(Module &module);
-    std::uint32_t allocGlobal(Global &global);
-    ModuleInst *allocModule(Module &module, std::vector<ExternVal> &importVals);
+ private:
+  Store& store;
+  std::map<std::string, ModuleInst*>& moduleInsts;
+  std::map<std::string, Module*> modules;
 
-    void getImportVals(Module *module, std::vector<ExternVal> &externVals);
-    void instantiate(ModuleInst &moduleInst, Module &module, std::vector<ExternVal> &importVals);
-    char skipToSection(char sectionNum, char* &cur, const char *endAddr); // return section size and go to content
+  std::uint32_t allocFunc(Func& func, ModuleInst* moduleInst);
+  std::uint32_t allocTable(Module& module);
+  std::uint32_t allocMem(Module& module);
+  std::uint32_t allocGlobal(Global& global);
+  ModuleInst* allocModule(Module& module, std::vector<ExternVal>& importVals);
+
+  void getImportVals(Module* module, std::vector<ExternVal>& externVals);
+  void instantiate(ModuleInst& moduleInst,
+                   Module& module,
+                   std::vector<ExternVal>& importVals);
+  char skipToSection(
+      char sectionNum,
+      char*& cur,
+      const char* endAddr);  // return section size and go to content
 };
 
 #endif

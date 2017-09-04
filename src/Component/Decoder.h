@@ -12,10 +12,10 @@
 #include <Util.h>
 
 class Decoder {
-public:
-    static std::vector<char> *funcBody;
-    static std::uint32_t *curFuncIdx;
-    static void decode(Store &store, Stack &coreStack);
+ public:
+  static std::vector<char>* funcBody;
+  static std::uint32_t* curFuncIdx;
+  static void decode(Store& store, Stack& coreStack);
 };
 
 #endif

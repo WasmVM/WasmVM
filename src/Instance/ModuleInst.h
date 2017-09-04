@@ -6,15 +6,15 @@
 #include <Value.h>
 #include <ExportInst.h>
 
-class ModuleInst{
-public:
-    std::vector<FuncType> types;
-    std::vector<uint32_t> funcaddrs;
-    std::vector<uint32_t> tableaddrs;
-    std::vector<uint32_t> memaddrs;
-    std::vector<uint32_t> globaladdrs;
-    std::vector<ExportInst> exports;
-    std::uint32_t *start;
+class ModuleInst {
+ public:
+  std::vector<FuncType> types;
+  std::vector<uint32_t> funcaddrs;
+  std::vector<uint32_t> tableaddrs;
+  std::vector<uint32_t> memaddrs;
+  std::vector<uint32_t> globaladdrs;
+  std::vector<ExportInst> exports;
+  std::uint32_t* start;
 };
 
 #endif

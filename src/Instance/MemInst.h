@@ -5,9 +5,9 @@
 #include <vector>
 
 class MemInst {
-public:
-    std::vector<char> data;
-    uint32_t max;
+ public:
+  std::vector<char> data;
+  uint32_t max;
 };
 
 #endif

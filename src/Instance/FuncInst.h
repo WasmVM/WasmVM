@@ -5,11 +5,11 @@
 #include <Value.h>
 #include <ModuleInst.h>
 
-class FuncInst{
-public:
-    FuncType type;
-    ModuleInst *module;
-    Func code;
+class FuncInst {
+ public:
+  FuncType type;
+  ModuleInst* module;
+  Func code;
 };
 
 #endif

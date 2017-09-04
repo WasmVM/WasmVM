@@ -3,10 +3,10 @@
 
 #include <Value.h>
 
-class GlobalInst{
-public:
-    bool mut;
-    Value val;
+class GlobalInst {
+ public:
+  bool mut;
+  Value val;
 };
 
 #endif

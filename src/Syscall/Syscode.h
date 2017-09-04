@@ -1,14 +1,10 @@
 #ifndef SYSCODE_DEF
 #define SYSCODE_DEF
 
-/* Linux Syscall Reference (64 bits)
-- source : https://syscalls64.paolostivanin.com/
-*/
-
 #define SYS_Read 0x00
 #define SYS_Write 0x01
 #define SYS_Open 0x02
-#define SYS_Close 0x03 
+#define SYS_Close 0x03
 #define SYS_Newstat 0x04
 #define SYS_Newfstat 0x05
 #define SYS_Newlstat 0x06

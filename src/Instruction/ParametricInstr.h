@@ -5,9 +5,9 @@
 #include <Stack.h>
 #include <Exception.h>
 
-namespace Instruction{
-	void drop(Stack &coreStack);
-	void select(Stack &coreStack);
+namespace Instruction {
+void drop(Stack& coreStack);
+void select(Stack& coreStack);
 }
 
 #endif

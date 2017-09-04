@@ -7,14 +7,16 @@
 #include <ostream>
 #include <Exception.h>
 
-class LoaderException{
-public:
-    std::string desc;
-    std::uint64_t address;
-    bool showAddress;
-    LoaderException(std::string desc, bool showAddress = false, std::uint64_t addr = 0);
+class LoaderException {
+ public:
+  std::string desc;
+  std::uint64_t address;
+  bool showAddress;
+  LoaderException(std::string desc,
+                  bool showAddress = false,
+                  std::uint64_t addr = 0);
 };
 
-std::ostream &operator<<(std::ostream &os, LoaderException &e);
+std::ostream& operator<<(std::ostream& os, LoaderException& e);
 
 #endif
