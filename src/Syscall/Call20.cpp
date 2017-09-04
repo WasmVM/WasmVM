@@ -223,7 +223,7 @@ void Call::sysFstat(Store& store, Stack& coreStack) {
   }
   // Pop out args
   Value* bufAddr = (Value*)coreStack.pop().data;
-  Value* fd = (Value*)coreStack().data;
+  Value* fd = (Value*)coreStack.pop().data;
   if (fd->type != i32 || bufAddr->type != i32) {
     throw Exception("[syscall][sys_fstat] Args type is not i32.", coreStack);
   }
@@ -240,7 +240,7 @@ void Call::sysFstat(Store& store, Stack& coreStack) {
   }
   // Step3: Get the pointer
   char* memoryData = store.mems.at(memAddr)->data.data();
-  char* bufPtr = memoryData += pathnameAddr->data.i32;
+  char* bufPtr = memoryData += bufAddr->data.i32;
   // fstat
   std::int32_t ret = fstat((std::int32_t)fd->data.i32, (struct stat*)bufPtr);
   // push back
@@ -547,15 +547,15 @@ void Call::sysSelect(Store& store, Stack& coreStack) {
   }
   // Step3: Get the pointer
   char* memoryData = store.mems.at(memAddr)->data.data();
-  char* readfdsPtr = memoryData += readfdsAddr > data.i32;
+  char* readfdsPtr = memoryData += readfdsAddr->data.i32;
   char* writefdsPtr = memoryData += writefdsAddr->data.i32;
   char* exceptfdsPtr = memoryData += exceptfdsAddr->data.i32;
   char* timeoutPtr = memoryData += timeoutAddr->data.i32;
   // Select
   std::int32_t ret =
-      select((std::int32_t)nfds->data.i32, (fd_set*)readfdsPtr->data.i32,
-             (fd_set*)writefdsPtr->data.i32, (fd_set*)exceptfdsPtr->data.i32,
-             (struct timeval*)timeout);
+      select((std::int32_t)nfds->data.i32, (fd_set*)readfdsPtr,
+             (fd_set*)writefdsPtr, (fd_set*)exceptfdsPtr,
+             (struct timeval*)timeoutPtr);
   // push back
   coreStack.push(ret);
   // Clean
