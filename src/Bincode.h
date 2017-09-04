@@ -1,7 +1,7 @@
 #ifndef BINCODE_DEF
 #define BINCODE_DEF
 
-#define WASM_Magic 0x6D736100 // Little endian
+#define WASM_Magic 0x6D736100  // Little endian
 #define WASM_Version 0x01
 
 #define TYPE_i32 0x7F
