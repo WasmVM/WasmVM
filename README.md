@@ -8,6 +8,14 @@
 
 * A c++ compiler supported c++11 standard with STL
 
+## Bugs Report
+- Error build on OSX with environment: 
+```
+OS: osx 10.12.6
+Compiler: c++ [Apple LLVM version 8.1.0 (clang-802.0.42)]
+Cmake Version: version 3.9.1
+```
+
 ## Build
 
 1. Run CMake
