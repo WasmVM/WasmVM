@@ -16,6 +16,10 @@ Compiler: c++ [Apple LLVM version 8.1.0 (clang-802.0.42)]
 Cmake Version: version 3.9.1
 ```
 
+Our System call module is for Linux system call, so Windows and Mac aren't support currently.
+
+You can disable it in `USE_SYSCALL` cmake configuration if you're running pure Wasm.
+
 ## Build
 
 1. Run CMake
