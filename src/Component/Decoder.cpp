@@ -825,7 +825,7 @@ void Decoder::decode(Store& store, Stack& coreStack) {
       Instruction::f64_reinterpret_i64(coreStack);
       break;
     default: {
-      char codeChr[2];
+      char codeChr[3];
       sprintf(codeChr, "%02x", ((std::uint32_t)bincode) & 0xff);
 #ifdef NDEBUG
       throw Exception(std::string("Unknown code: 0x") + codeChr, coreStack);
