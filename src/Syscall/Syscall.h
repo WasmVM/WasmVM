@@ -9,6 +9,7 @@ extern "C"{
 #include <map>
 #include <cstring>
 
+#include <Loader.h>
 #include <Instance.h>
 #include <Exception.h>
 #include <Store.h>
