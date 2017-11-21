@@ -33,90 +33,20 @@ void Syscall::handle(Store& store, Stack& coreStack) {
   }
   // Call
   switch (operand->data.i32) {
-    case SYS_Read:
-      // sys_read
-      Call::sysRead(store, coreStack);
+    case SYS_stdin:
+      sys_stdin(store, coreStack);
       break;
-    case SYS_Write:
-      // sys_write
-      Call::sysWrite(store, coreStack);
+    case SYS_stdout:
+      sys_stdout(store, coreStack);
       break;
-    case SYS_Open:
-      // sys_open
-      Call::sysOpen(store, coreStack);
+    case SYS_stderr:
+      sys_stderr(store, coreStack);
       break;
-    case SYS_Close:
-      // sys_close
-      Call::sysClose(coreStack);
+    case SYS_load:
+      sys_load(store, coreStack);
       break;
-    case SYS_Poll:
-      Call::sysPoll(store, coreStack);
-      break;
-    case SYS_Lseek:
-      Call::sysLseek(coreStack);
-      break;
-    case SYS_Access:
-      Call::sysAccess(store, coreStack);
-      break;
-    case SYS_Brk:
-      Call::sysBrk(store, coreStack);
-      break;
-    case SYS_Pipe:
-      Call::sysPipe(coreStack);
-      break;
-    case SYS_Select:
-      Call::sysSelect(store, coreStack);
-      break;
-    case SYS_Dup:
-      Call::sysDup(coreStack);
-      break;
-    case SYS_Exit:
-      Call::sysExit(coreStack);
-      break;
-    case SYS_Kill:
-      Call::sysKill(coreStack);
-      break;
-    case SYS_Pause:
-      Call::sysPause(coreStack);
-      break;
-    case SYS_Getpid:
-      Call::sysGetpid(coreStack);
-      break;
-    case SYS_Execve:
-      Call::sysExecve(store, coreStack);
-      break;
-    case SYS_Fork:
-      Call::sysFork(coreStack);
-      break;
-    case SYS_Vfork:
-      Call::sysFork(coreStack);
-      break;
-    case SYS_Socket:
-      Call::sysSocket(coreStack);
-      break;
-    case SYS_Shutdown:
-      Call::sysShutdown(coreStack);
-      break;
-    case SYS_Connect:
-      Call::sysConnect(store, coreStack);
-      break;
-    case SYS_Bind:
-      Call::sysBind(store, coreStack);
-      break;
-    case SYS_Listen:
-      Call::sysListen(coreStack);
-      break;
-    case SYS_Accept:
-      Call::sysAccept(store, coreStack);
-      break;
-    case SYS_Sendto:
-      Call::sysSendto(store, coreStack);
-      break;
-    case SYS_Recvfrom:
-      Call::sysRecvfrom(store, coreStack);
-      break;
-    case SYS_Dup2:
-      Call::sysDup2(coreStack);
+    case SYS_unload:
+      sys_unload(store, coreStack);
       break;
     default:
       throw Exception("[unreachable] Non-available operand.", coreStack);
@@ -124,4 +54,125 @@ void Syscall::handle(Store& store, Stack& coreStack) {
   }
   // Clean
   delete operand;
+}
+
+void Syscall::sys_stdin(Store& store, Stack& coreStack){
+  // Check value count
+  if (coreStack.valueNum < 2) {
+    throw Exception("[syscall][sys_stdin] No enough value in the stack.",
+                    coreStack);
+  }
+  // Pop operand
+  Value* len = (Value*)coreStack.pop().data;
+  Value* bufAddr = (Value*)coreStack.pop().data;
+  if (len->type != i32 || bufAddr->type != i32) {
+    throw Exception("[syscall][sys_stdin] value types are not i32.",
+                    coreStack);
+  }
+  // Check memory address
+  if (coreStack.curFrame->moduleInst->memaddrs.size() < 1) {
+    throw Exception("[syscall][sys_stdin] No memory exists in this module.",
+                    coreStack);
+  }
+  // Check memory
+  std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+  if (memAddr >= store.mems.size()) {
+    throw Exception("[syscall][sys_stdin] Memory not exists in the store.",
+                    coreStack);
+  }
+  char* memoryData = store.mems.at(memAddr)->data.data();
+  char* bufPtr = memoryData += bufAddr->data.i32;
+  // Sys_read
+  std::int32_t ret =
+      read(STDIN_FILENO, bufPtr, len->data.i32);
+  if (errno) {
+    throw Exception(std::string("[syscall][sys_stdin] ") + strerror(errno),
+                    coreStack);
+  }
+  coreStack.push(ret);
+  // Clean
+  delete len;
+  delete bufAddr;
+}
+void Syscall::sys_stdout(Store& store, Stack& coreStack){
+  // Check value count
+  if (coreStack.valueNum < 2) {
+    throw Exception("[syscall][sys_stdout] No enough value in the stack.",
+                    coreStack);
+  }
+  // Pop operand
+  Value* len = (Value*)coreStack.pop().data;
+  Value* bufAddr = (Value*)coreStack.pop().data;
+  if (len->type != i32 || bufAddr->type != i32) {
+    throw Exception("[syscall][sys_stdout] value types are not i32.",
+                    coreStack);
+  }
+  // Check memory address
+  if (coreStack.curFrame->moduleInst->memaddrs.size() < 1) {
+    throw Exception("[syscall][sys_stdout] No memory exists in this module.",
+                    coreStack);
+  }
+  // Check memory
+  std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+  if (memAddr >= store.mems.size()) {
+    throw Exception("[syscall][sys_stdout] Memory not exists in the store.",
+                    coreStack);
+  }
+  char* memoryData = store.mems.at(memAddr)->data.data();
+  char* bufPtr = memoryData += bufAddr->data.i32;
+  // Sys_write
+  std::int32_t ret =
+      write(STDOUT_FILENO, bufPtr, len->data.i32);
+  if (errno) {
+    throw Exception(std::string("[syscall][sys_stdout] ") + strerror(errno),
+                    coreStack);
+  }
+  coreStack.push(ret);
+  // Clean
+  delete len;
+  delete bufAddr;
+}
+void Syscall::sys_stderr(Store& store, Stack& coreStack){
+  // Check value count
+  if (coreStack.valueNum < 2) {
+    throw Exception("[syscall][sys_stderr] No enough value in the stack.",
+                    coreStack);
+  }
+  // Pop operand
+  Value* len = (Value*)coreStack.pop().data;
+  Value* bufAddr = (Value*)coreStack.pop().data;
+  if (len->type != i32 || bufAddr->type != i32) {
+    throw Exception("[syscall][sys_stderr] value types are not i32.",
+                    coreStack);
+  }
+  // Check memory address
+  if (coreStack.curFrame->moduleInst->memaddrs.size() < 1) {
+    throw Exception("[syscall][sys_stderr] No memory exists in this module.",
+                    coreStack);
+  }
+  // Check memory
+  std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
+  if (memAddr >= store.mems.size()) {
+    throw Exception("[syscall][sys_stderr] Memory not exists in the store.",
+                    coreStack);
+  }
+  char* memoryData = store.mems.at(memAddr)->data.data();
+  char* bufPtr = memoryData += bufAddr->data.i32;
+  // Sys_write
+  std::int32_t ret =
+      write(STDERR_FILENO, bufPtr, len->data.i32);
+  if (errno) {
+    throw Exception(std::string("[syscall][sys_stderr] ") + strerror(errno),
+                    coreStack);
+  }
+  coreStack.push(ret);
+  // Clean
+  delete len;
+  delete bufAddr;
+}
+void Syscall::sys_load(Store& store, Stack& coreStack){
+
+}
+void Syscall::sys_unload(Store& store, Stack& coreStack){
+  
 }
