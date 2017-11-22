@@ -24,8 +24,6 @@ class Syscall {
   static void sys_stdin(Store& store, Stack& coreStack);
   static void sys_stdout(Store& store, Stack& coreStack);
   static void sys_stderr(Store& store, Stack& coreStack);
-  static void sys_load(Store& store, Stack& coreStack);
-  static void sys_unload(Store& store, Stack& coreStack);
 };
 
 #endif

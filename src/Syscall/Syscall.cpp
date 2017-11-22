@@ -42,12 +42,6 @@ void Syscall::handle(Store& store, Stack& coreStack) {
     case SYS_stderr:
       sys_stderr(store, coreStack);
       break;
-    case SYS_load:
-      sys_load(store, coreStack);
-      break;
-    case SYS_unload:
-      sys_unload(store, coreStack);
-      break;
     default:
       throw Exception("[unreachable] Non-available operand.", coreStack);
       break;
@@ -169,68 +163,4 @@ void Syscall::sys_stderr(Store& store, Stack& coreStack){
   // Clean
   delete len;
   delete bufAddr;
-}
-void Syscall::sys_load(Store& store, Stack& coreStack){
-  // Check value count
-  if (coreStack.valueNum < 1) {
-    throw Exception("[syscall][sys_load] No enough value in the stack.",
-                    coreStack);
-  }
-  // Pop operand
-  Value* pathAddr = (Value*)coreStack.pop().data;
-  if (pathAddr->type != i32) {
-    throw Exception("[syscall][sys_load] value types are not i32.",
-                    coreStack);
-  }
-  // Check memory address
-  if (coreStack.curFrame->moduleInst->memaddrs.size() < 1) {
-    throw Exception("[syscall][sys_load] No memory exists in this module.",
-                    coreStack);
-  }
-  // Check memory
-  std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-  if (memAddr >= store.mems.size()) {
-    throw Exception("[syscall][sys_load] Memory not exists in the store.",
-                    coreStack);
-  }
-  char* memoryData = store.mems.at(memAddr)->data.data();
-  char* pathPtr = memoryData += pathAddr->data.i32;
-  // Load
-  Loader loader(store, *moduleInsts);
-  loader.load(pathPtr);
-  // Clean
-  delete pathAddr;
-}
-void Syscall::sys_unload(Store& store, Stack& coreStack){
-  // Check value count
-  if (coreStack.valueNum < 1) {
-    throw Exception("[syscall][sys_unload] No enough value in the stack.",
-                    coreStack);
-  }
-  // Pop operand
-  Value* nameAddr = (Value*)coreStack.pop().data;
-  if (nameAddr->type != i32) {
-    throw Exception("[syscall][sys_unload] value types are not i32.",
-                    coreStack);
-  }
-  // Check memory address
-  if (coreStack.curFrame->moduleInst->memaddrs.size() < 1) {
-    throw Exception("[syscall][sys_unload] No memory exists in this module.",
-                    coreStack);
-  }
-  // Check memory
-  std::uint32_t memAddr = coreStack.curFrame->moduleInst->memaddrs.at(0);
-  if (memAddr >= store.mems.size()) {
-    throw Exception("[syscall][sys_unload] Memory not exists in the store.",
-                    coreStack);
-  }
-  char* memoryData = store.mems.at(memAddr)->data.data();
-  char* namePtr = memoryData += nameAddr->data.i32;
-  std::string nameStr(namePtr);
-  // unload
-  if(moduleInsts->find(nameStr) != moduleInsts->end()){
-    moduleInsts->erase(nameStr);
-  }
-  // Clean
-  delete nameAddr;
 }

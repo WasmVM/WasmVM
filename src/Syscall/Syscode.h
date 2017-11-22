@@ -28,22 +28,4 @@
  */
 #define SYS_stderr 0x02
 
-/* SYS_load - Load new module at runtime
- * PARAMETER 
- * 	path : Memory address of path string
- * 	len : Length of path
- * ERROR
- *  Throw error if error occur
- */
-#define SYS_load 0x03
-
-/* SYS_unload - Unload new module at runtime
- * PARAMETER 
- * 	name : Memory address of module name string
- * 	len : Length of name
- * ERROR
- *  Throw error if error occur
- */
-#define SYS_unload 0x04
-
 #endif
