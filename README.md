@@ -3,6 +3,8 @@
 #### 可以獨立執行 WebAssembly 的程序性虛擬機器
  A standalone WebAssembly process virtual machine
 
+**[教學文件](https://www.gitbook.com/book/luishsu/wasmvm-webassembly/details)**
+
 ## 先備條件 Prerequisite
 
 * CMake >= 2.6
