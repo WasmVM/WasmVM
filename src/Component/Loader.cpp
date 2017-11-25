@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");you may not use
 this file except in compliance with the License.
 You may obtain a copy of the License at
 
-http://www.apache.org/licenses/LICENSE-2.0
+http://www.apache.org/licenses/LICENSE-2.0'
 
 Unless required by applicable law or agreed to in writing, software distributed
 under the License is distributed on an "AS IS" BASIS,
@@ -638,9 +638,9 @@ void Loader::instantiate(ModuleInst& moduleInst,
        dataIt != module.data.end(); ++dataIt) {
     MemInst* memRef = store.mems.at(moduleInst.memaddrs.at(0));
     std::uint32_t totalSize = dataIt->offset + dataIt->init.size();
-    if (totalSize <= memRef->max) {
+    if ((memRef->max == 0) || (totalSize <= memRef->max)) {
       if (totalSize > memRef->data.size()) {
-        memRef->data.resize(totalSize);
+        memRef->data.resize(totalSize + (65536 - totalSize % 65536));
       }
     } else {
       throw LoaderException("Data init exceed memory max size.");
