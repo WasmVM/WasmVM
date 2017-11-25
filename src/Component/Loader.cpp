@@ -75,6 +75,7 @@ void Loader::load(const char* fileName) {
   Module* newModule = new Module();
   modules[moduleName] = newModule;
   try {
+    std::uint32_t importedFuncCount = 0;
     /** Section 1: Type **/
     if (skipToSection(1, cur, endAddr) == 1) {
       std::uint32_t typeNum = Util::getLeb128_u32(cur, endAddr);
@@ -176,6 +177,7 @@ void Loader::load(const char* fileName) {
                       ": Type index of imported function must be defined.",
                   true, cur - 1 - fileBuf);
             }
+            importedFuncCount++;
             break;
           case IMPORT_Table:
             newImport.kind = table;
@@ -382,13 +384,14 @@ void Loader::load(const char* fileName) {
     if (skipToSection(8, cur, endAddr) == 8) {
       newModule->start = new std::uint32_t;
       *(newModule->start) = Util::getLeb128_u32(cur, endAddr);
-      if (*(newModule->start) >= newModule->funcs.size()) {
+      std::uint32_t indexInFuncs = *(newModule->start) - importedFuncCount;
+      if (indexInFuncs >= newModule->funcs.size()) {
         throw LoaderException(std::string(fileName) +
                                   ": Index of start function must be defined.",
                               true, cur - fileBuf);
       }
       FuncType& startFuncType =
-          newModule->types.at(newModule->funcs.at(*(newModule->start)).typeidx);
+          newModule->types.at(newModule->funcs.at(indexInFuncs).typeidx);
       if (startFuncType.paramTypes.size() > 0 ||
           startFuncType.resultTypes.size() > 0) {
         throw LoaderException(
