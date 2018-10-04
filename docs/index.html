@@ -1,0 +1,73 @@
+<!-- "doc" type, with tabs usage as template--><!-- Author: Kevin Cyu--><!-- Include mixin--><!-- mixin - list--><!-- Main--><!DOCTYPE html><html><!-- Include head--><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>WasmVM</title><!-- Select the theme--><link rel="stylesheet" href="./asset/paper.min.css"><link rel="stylesheet" href="./asset/monokai.css"><link rel="stylesheet" href="./asset/main.css"><link rel="stylesheet" href="./asset/cn-font.css"><link rel="stylesheet" href="./asset/highlight.min.css"><script type="text/x-mathjax-config">MathJax.Hub.Config({ jax: ["input/TeX", "output/HTML-CSS"], extensions: ["tex2jax.js"], "HTML-CSS": { preferredFont: "TeX", availableFonts: ["STIX","TeX"] }, tex2jax: { inlineMath: [ ["$", "$"], ["\\(","\\)"] ], displayMath: [ ["$$","$$"], ["\\[", "\\]"] ], processEscapes: true, ignoreClass: "tex2jax_ignore|dno" }, TeX: { noUndefined: { attributes: { mathcolor: "red", mathbackground: "#FFEEEE", mathsize: "90%" } } }, messageStyle: "none"});</script><script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.2/MathJax.js?config=TeX-MML-AM_CHTML"></script><script src="./asset/highlight.min.js"></script><script>hljs.initHighlightingOnLoad();</script></head><body><div class="container"><div class="paper"><div class="demo-title" id="top"><div class="row flex-center"><div class="text-center"> <h1 class=".cn" id="WasmVM">WasmVM</h1></div></div></div><div class="section"><div class="flex-spaces tabs">
+<input id="tab1" type="radio" name="tabs" checked="">
+<label id="label_tab1" for="tab1">Structure</label>
+
+<div class="content" id="content1"><p></p><h1 id="系統架構" class=" cn">系統架構</h1>
+<p><img src="./res/Structure.svg" alt=""></p>
+<p>WasmVM 主要分成三個元件，載入器(Loader)、執行器(Executor)和及時編譯器(JIT)，每個元件中有不同的模組執行各種工作。圖中包住許多零件的大長方形表示各個元件，白色的小長方形表示各個模組。</p>
+<p>元件和模組之間會進行各種資料轉換，各種資料結構用藍色平行四邊形表示。</p>
+<p>在執行器(Executor)元件中，執行的函式分成原生函式(Native)、直譯函式(Interpreted)和系統呼叫(Syscall)三種，以淺綠色圓角矩形表示。</p>
+<p>以下將會介紹各個元件，資料格式的部分請參考 <a href="https://webassembly.github.io/spec/core/index.html">WebAssembly 規格</a></p>
+<h1 id="載入元件%20(Loader)" class=" cn">載入元件 (Loader)</h1>
+<p>在程式中直接操作 Wasm 位元碼很不方便，而且目前我們也沒辦法直接在機器上執行 Wasm 位元碼。載入元件的工作就是將 Wasm 解析成方便程式操作的格式，驗證要執行的 Wasm 模組，並且載入到執行器中。</p>
+<p>載入元件包含以下模組：</p>
+<h2 id="解碼器%20(Decoder)" class=" cn">解碼器 (Decoder)</h2>
+<p>解碼器的作用是讀取 Wasm 位元檔，解析每個 byte 所代表的意義，並轉成方便操作的 Wasm 模組，交給驗證器做驗證。</p>
+<p>如果 Wasm 位元檔的格式不符合 Wasm 規格，解碼器會停止當下的解碼，並回報錯誤。</p>
+<h2 id="驗證器%20(Validator)" class=" cn">驗證器 (Validator)</h2>
+<p>在解碼器產生 Wasm 模組後，驗證器會依據規格書上的驗證定義，驗證 Wasm 模組的行為。</p>
+<p>如果 Wasm 模組的行為不符合 Wasm 規格，驗證器會回報錯誤。</p>
+<p>在驗證完成之後，驗證器會將 Wasm 模組傳給實例產生器和及時編譯元件的分析器。</p>
+<h2 id="實例產生器%20(Instantiator)" class=" cn">實例產生器 (Instantiator)</h2>
+<p>解碼器產生的 Wasm 模組包含很多資訊，方便分析和驗證，但是不方便執行。</p>
+<p>實例產生器會把 Wasm 模組轉換成 Wasm 實例，並存進執行元件的儲存空間(Store)，準備執行。</p>
+<h1 id="及時編譯元件%20(JIT)" class=" cn">及時編譯元件 (JIT)</h1>
+<p>及時編譯 (Just-In-Time compile) 是在程式正在執行或快要執行的時候，把程式編譯成可以直接執行的機器碼，加快之後執行時的效能。</p>
+<p>及時編譯元件會對 Wasm 模組做分析，把必要的函式編譯成機器碼加速執行。</p>
+<p>及時編譯元件包含以下模組：</p>
+<h2 id="分析器%20(Analyzer)" class=" cn">分析器 (Analyzer)</h2>
+<p>分析器會分析 Wasm 模組內每個函式的使用頻率和特性，決定哪些函式會被及時編譯成原生函式(Native Function)，並安排及時編譯的優先順序。</p>
+<h2 id="及時編譯器%20(JIT Compiler)" class=" cn">及時編譯器 (JIT Compiler)</h2>
+<p>及時編譯器按照分析器分析完的優先順序，將 Wasm 模組的函式編譯成原生函式，再交給執行元件做利用</p>
+<h1 id="執行元件%20(Executor)" class=" cn">執行元件 (Executor)</h1>
+<p>執行元件在實例產生器處理完之後，執行主要模組的起始函式，讓程式開始運作。</p>
+<p>執行元件包含以下模組：</p>
+<h2 id="儲存空間%20(Store)" class=" cn">儲存空間 (Store)</h2>
+<p>儲存空間的架構對應到規格裡的 <a href="https://webassembly.github.io/spec/core/exec/runtime.html#store">Store</a>。接受實例產生器產生的結果，存到對應的欄位中，提供核心使用。</p>
+<p>一個執行中的程式可能會使用多個核心，但是儲存空間是所有核心共用的。</p>
+<h2 id="核心%20(Core)" class=" cn">核心 (Core)</h2>
+<p>核心是最主要的執行單位，擁有自己的堆疊(<a href="https://webassembly.github.io/spec/core/exec/runtime.html#stack">Stack</a>) 和計數器(Program Counter)。</p>
+<p>核心會按照計數器依序提取指令，執行以下動作</p>
+<ol>
+<li>執行對應的執行函式(Runtime Function)</li>
+<li>遇到 <code>unreachable</code> 時觸發系統呼叫(SysCall)</li>
+<li>呼叫已經及時編譯完的原生函式(Native Function)</li>
+</ol>
+<p>一個執行中的程式可能會使用多個核心，不同核心間的堆疊和計數器是獨立的，但是會共用儲存空間。</p>
+<h2 id="系統呼叫%20(SysCall)" class=" cn">系統呼叫 (SysCall)</h2>
+<p>有些和系統有關的操作(例如：輸入輸出)，或是 WebAssembly 沒有定義的操作(例如:例外處理)，無法在 WebAssembly 裡直接執行。</p>
+<p>在規格中可以引入外在的原生函式，直接呼叫外在的原生函式來進行操作，但是 WasmVM 並不允許直接呼叫外在的原生函式。</p>
+<p>WasmVM 必須利用 <code>unreachable</code> 指令觸發系統呼叫，再執行系統呼叫模組中對應的處理函式(SysCall Function)處理系統呼叫，間接的進行系統操作，做到類似軟體中斷(Software Interrupt)的效果。</p>
+<p>要執行系統呼叫，必須在堆疊內先放進需要的值當作引數，再放進對應的 <code>i32</code> 的常數作為系統呼叫編號，最後執行 <code>unreachable</code> 指令觸發系統呼叫。</p>
+<p>範例：</p>
+<p>假設定義 0 號為兩數相加的系統呼叫，以函式的方式表示為 add(i32 a, i32 b)</p>
+<p>如果想把 a 帶入 5，b 帶入 3 做相加，指令可以寫成：</p>
+<pre><code>i32.const 5     ;; i32 a
+i32.const 3     ;; i32 b
+i32.const 0     ;; 編號
+unreachable     ;; 執行系統呼叫
+</code></pre>
+<p>執行完在堆疊裡就會出現結果 8</p>
+<p></p></div></div></div><div class="to-top"><a class="paper-btn margin" href="#top">Top</a><div class="row flex-spaces child-borders"><label class="paper-btn margin" for="modal-1">T.O.C.</label></div></div><input class="modal-state" id="modal-1" type="checkbox"><div class="modal modal-dialog"><label class="modal-bg" for="modal-1"></label><div class="modal-body"><label class="btn-close" for="modal-1">X </label><h4 class="modal-title">Table of Content</h4><h5 class="modal-subtitle">Click and go !</h5><div class="modal-body" id="toc"><h4 class="modal-text">Structure</h4><hr><ol><li><a href="#系統架構">系統架構</a></li><a href="#系統架構">
+</a><li><a href="#系統架構"></a><a href="#載入元件%20(Loader)">載入元件 (Loader)</a></li><a href="#載入元件%20(Loader)">
+</a><ol><a href="#載入元件%20(Loader)"></a><li><a href="#載入元件%20(Loader)"></a><a href="#解碼器%20(Decoder)">解碼器 (Decoder)</a></li><a href="#解碼器%20(Decoder)">
+</a><li><a href="#解碼器%20(Decoder)"></a><a href="#驗證器%20(Validator)">驗證器 (Validator)</a></li><a href="#驗證器%20(Validator)">
+</a><li><a href="#驗證器%20(Validator)"></a><a href="#實例產生器%20(Instantiator)">實例產生器 (Instantiator)</a></li><a href="#實例產生器%20(Instantiator)">
+</a></ol><li><a href="#及時編譯元件%20(JIT)">及時編譯元件 (JIT)</a></li><a href="#及時編譯元件%20(JIT)">
+</a><ol><a href="#及時編譯元件%20(JIT)"></a><li><a href="#及時編譯元件%20(JIT)"></a><a href="#分析器%20(Analyzer)">分析器 (Analyzer)</a></li><a href="#分析器%20(Analyzer)">
+</a><li><a href="#分析器%20(Analyzer)"></a><a href="#及時編譯器%20(JIT" compiler)="">及時編譯器 (JIT Compiler)</a></li><a href="#及時編譯器%20(JIT" compiler)="">
+</a></ol><li><a href="#執行元件%20(Executor)">執行元件 (Executor)</a></li><a href="#執行元件%20(Executor)">
+</a><ol><a href="#執行元件%20(Executor)"></a><li><a href="#執行元件%20(Executor)"></a><a href="#儲存空間%20(Store)">儲存空間 (Store)</a></li><a href="#儲存空間%20(Store)">
+</a><li><a href="#儲存空間%20(Store)"></a><a href="#核心%20(Core)">核心 (Core)</a></li><a href="#核心%20(Core)">
+</a><li><a href="#核心%20(Core)"></a><a href="#系統呼叫%20(SysCall)">系統呼叫 (SysCall)</a></li><a href="#系統呼叫%20(SysCall)">
+</a></ol></ol></div></div></div><div class="row flex-right"><p>Created by <span class="badge secondary">@ToolBuddy/papoGen(papercss)</span></p></div></div></div></body></html>

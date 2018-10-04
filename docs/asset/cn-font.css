@@ -1,0 +1,12 @@
+html {
+    font-family: Neucha, 'setofont', sans-serif;
+}
+
+.cn {
+    font-family: Neucha,'setofont',sans-serif;
+}
+
+@font-face{
+	font-family: 'setofont';
+	src: url('./font/setofont.ttf');
+}
