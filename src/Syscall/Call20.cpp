@@ -503,7 +503,7 @@ void Call::sysBrk(Store& store, Stack& coreStack) {
   char* memoryData = store.mems.at(memAddr)->data.data();
   char* programbreakPtr = memoryData += programbreakAddr->data.i32;
   // Brk
-  std::int32_t ret = brk((void*)programbreakPtr);
+  std::int32_t ret = (std::int32_t)brk((void*)programbreakPtr);
   if (errno) {
     throw Exception(std::string("[syscall][sys_brk] ") + strerror(errno),
                     coreStack);
