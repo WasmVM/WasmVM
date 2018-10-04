@@ -7,3 +7,6 @@ build/
 
 # ignore config
 WasmVm.cfg 
+
+# ignore node module
+node_modules/
