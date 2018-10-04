@@ -1,6 +1,6 @@
 # 系統架構
 
-![](/docs/images/Structure.svg) 
+![](images/Structure.svg) 
 
 WasmVM 主要分成三個元件，載入器(Loader)、執行器(Executor)和及時編譯器(JIT)，每個元件中有不同的模組執行各種工作。圖中包住許多零件的大長方形表示各個元件，白色的小長方形表示各個模組。
 
