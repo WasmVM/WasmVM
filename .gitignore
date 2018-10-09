@@ -10,3 +10,6 @@ WasmVm.cfg
 
 # ignore node module
 node_modules/
+
+# ignore dia temporary
+*.dia~
