@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/PR-SVG-20010719/DTD/svg10.dtd">
+<svg width="58cm" height="36cm" viewBox="-215 16 1150 705" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+  <g>
+    <rect style="fill: #ffffff" x="61" y="108" width="274.75" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="61" y="108" width="274.75" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="198.375" y="130">WasmModule</text>
+    <rect style="fill: #ffffff" x="61" y="140" width="274.75" height="204"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="61" y="140" width="274.75" height="204"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="157">+types: Vector&lt;FuncType&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="177">+funcs: Vector&lt;WasmFunc&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="197">+tables: Vector&lt;WasmTable&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="217">+mems: Vector&lt;WasmMemory&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="237">+globals: Vector&lt;WasmGlobal&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="257">+elems: Vector&lt;WasmElem&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="277">+datas: Vector&lt;WasmData&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="297">+start: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="317">+imports: Vector&lt;WasmImport&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="64" y="337">+exports: Vector&lt;WasmExport&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="79.121" y="17.7112" width="252.65" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="79.121" y="17.7112" width="252.65" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="205.446" y="39.7112">FuncType</text>
+    <rect style="fill: #ffffff" x="79.121" y="49.7112" width="252.65" height="44"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="79.121" y="49.7112" width="252.65" height="44"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="82.121" y="66.7112">+params: Vector&lt;ValueType&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="82.121" y="86.7112">+results: Vector&lt;ValueType&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="411.928" y="67.699" width="238" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="67.699" width="238" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="530.928" y="89.699">WasmFunc</text>
+    <rect style="fill: #ffffff" x="411.928" y="99.699" width="238" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="99.699" width="238" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="116.699">+type: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="136.699">+locals: Vector&lt;ValueType&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="156.699">+body: Vector&lt;WasmInstr&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="411.928" y="176.797" width="209.8" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="176.797" width="209.8" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="516.828" y="198.797">WasmTable</text>
+    <rect style="fill: #ffffff" x="411.928" y="208.797" width="209.8" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="208.797" width="209.8" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="225.797">+min: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="245.797">+max: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="265.797">+elemType: uint32_t = 0</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="411.928" y="285.896" width="162.15" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="285.896" width="162.15" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="493.003" y="307.896">WasmMemory</text>
+    <rect style="fill: #ffffff" x="411.928" y="317.896" width="162.15" height="44"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="317.896" width="162.15" height="44"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="334.896">+min: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="354.896">+max: uint32_t</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="-186.056" y="119.982" width="174.95" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-186.056" y="119.982" width="174.95" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="-98.5814" y="141.982">WasmGlobal</text>
+    <rect style="fill: #ffffff" x="-186.056" y="151.982" width="174.95" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-186.056" y="151.982" width="174.95" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-183.056" y="168.982">+mut: _Bool</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-183.056" y="188.982">+valType: ValueType</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-183.056" y="208.982">+init: Value</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="-213.756" y="236.622" width="202.65" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-213.756" y="236.622" width="202.65" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="-112.431" y="258.622">WasmElem</text>
+    <rect style="fill: #ffffff" x="-213.756" y="268.622" width="202.65" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-213.756" y="268.622" width="202.65" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-210.756" y="285.622">+table: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-210.756" y="305.622">+offset: Value</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-210.756" y="325.622">+init: Vector&lt;uint32_t&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="-183.456" y="353.264" width="172.35" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-183.456" y="353.264" width="172.35" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="-97.2814" y="375.264">WasmData</text>
+    <rect style="fill: #ffffff" x="-183.456" y="385.264" width="172.35" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="-183.456" y="385.264" width="172.35" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-180.456" y="402.264">+data: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-180.456" y="422.264">+offset: Value</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="-180.456" y="442.264">+init: Vector&lt;char&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="106.5" y="357.944" width="183.75" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="106.5" y="357.944" width="183.75" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="198.375" y="379.944">WasmExport</text>
+    <rect style="fill: #ffffff" x="106.5" y="389.944" width="183.75" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="106.5" y="389.944" width="183.75" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="109.5" y="406.944">+name: char*</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="109.5" y="426.944">+descType: DescType</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="109.5" y="446.944">+descIdx: uint32_t</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="259.356" y="507.616" width="177.95" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="259.356" y="507.616" width="177.95" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:italic;font-weight:700" x="348.331" y="529.616">enum DescType</text>
+    <rect style="fill: #ffffff" x="259.356" y="539.616" width="177.95" height="104"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="259.356" y="539.616" width="177.95" height="104"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="262.356" y="556.616"> unspecified = 0</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="262.356" y="576.616"> func = 1</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="262.356" y="596.616"> table = 2</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="262.356" y="616.616"> mem = 3</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="262.356" y="636.616"> global = 4</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="411.928" y="374.994" width="183.75" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="374.994" width="183.75" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="503.803" y="396.994">WasmImport</text>
+    <rect style="fill: #ffffff" x="411.928" y="406.994" width="183.75" height="84"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="411.928" y="406.994" width="183.75" height="84"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="423.994">+module: char*</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="443.994">+name: char*</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="463.994">+descType: DescType</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="414.928" y="483.994">+descIdx: uint32_t</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="360.922,172 380.839,172 380.839,83.699 411.928,83.699 "/>
+    <polygon style="fill: #ffffff" points="335.75,172 349.75,167.2 363.75,172 349.75,176.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="335.75,172 349.75,167.2 363.75,172 349.75,176.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="382.839" y="124.85"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="367.75" y="169"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="407.928" y="80.699"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="360.922,152 370.75,152 370.75,33.7112 331.771,33.7112 "/>
+    <polygon style="fill: #ffffff" points="335.75,152 349.75,147.2 363.75,152 349.75,156.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="335.75,152 349.75,147.2 363.75,152 349.75,156.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="372.75" y="89.8556"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="367.75" y="149"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="335.771" y="30.7112"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="360.922,192 380.839,192 380.839,192.797 411.928,192.797 "/>
+    <polygon style="fill: #ffffff" points="335.75,192 349.75,187.2 363.75,192 349.75,196.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="335.75,192 349.75,187.2 363.75,192 349.75,196.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="382.839" y="189.399"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="367.75" y="189"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="407.928" y="189.797"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="360.922,212 380.839,212 380.839,301.896 411.928,301.896 "/>
+    <polygon style="fill: #ffffff" points="335.75,212 349.75,207.2 363.75,212 349.75,216.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="335.75,212 349.75,207.2 363.75,212 349.75,216.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="382.839" y="253.948"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="367.75" y="209"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="407.928" y="298.896"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="35.8284,232 17.9468,232 17.9468,135.982 -11.1064,135.982 "/>
+    <polygon style="fill: #ffffff" points="61,232 47,236.8 33,232 47,227.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="61,232 47,236.8 33,232 47,227.2 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.9468" y="180.991"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="29" y="229"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="-7.1064" y="132.982"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="35.8284,252 17.947,252 17.947,252.622 -11.106,252.622 "/>
+    <polygon style="fill: #ffffff" points="61,252 47,256.8 33,252 47,247.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="61,252 47,256.8 33,252 47,247.2 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.947" y="249.311"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="29" y="249"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="-7.106" y="249.622"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="35.8284,272 17.9468,272 17.9468,369.264 -11.1064,369.264 "/>
+    <polygon style="fill: #ffffff" points="61,272 47,276.8 33,272 47,267.2 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="61,272 47,276.8 33,272 47,267.2 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="19.9468" y="317.632"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="29" y="269"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="-7.1064" y="366.264"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="81.3284,373.944 40,373.944 40,332 61,332 "/>
+    <polygon style="fill: #ffffff" points="106.5,373.944 92.5,378.744 78.5,373.944 92.5,369.144 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="106.5,373.944 92.5,378.744 78.5,373.944 92.5,369.144 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="42" y="349.972"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="74.5" y="370.944"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="57" y="329"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="360.922,312 380.839,312 380.839,390.994 411.928,390.994 "/>
+    <polygon style="fill: #ffffff" points="335.75,312 349.75,307.2 363.75,312 349.75,316.8 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="335.75,312 349.75,307.2 363.75,312 349.75,316.8 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="382.839" y="348.497"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="367.75" y="309"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="407.928" y="387.994"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="315.422,421.944 348.331,421.944 348.331,507.616 "/>
+    <polygon style="fill: #ffffff" points="290.25,421.944 304.25,417.144 318.25,421.944 304.25,426.744 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="290.25,421.944 304.25,417.144 318.25,421.944 304.25,426.744 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="319.291" y="418.944"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="322.25" y="418.944"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="352.331" y="503.616"></text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="386.756,458.994 348.331,458.994 348.331,507.616 "/>
+    <polygon style="fill: #ffffff" points="411.928,458.994 397.928,463.794 383.928,458.994 397.928,454.194 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="411.928,458.994 397.928,463.794 383.928,458.994 397.928,454.194 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="380.13" y="455.994"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:end;font-family:monospace;font-style:normal;font-weight:normal" x="379.928" y="455.994"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="352.331" y="503.616"></text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="176.797" width="147.9" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="176.797" width="147.9" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="763.762" y="198.797">WasmInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="208.797" width="147.9" height="24"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="208.797" width="147.9" height="24"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="225.797">+opcode: uint8_t</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="675.1,151.699 763.762,151.699 763.762,176.797 "/>
+    <polygon style="fill: #ffffff" points="649.928,151.699 663.928,146.899 677.928,151.699 663.928,156.499 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="649.928,151.699 663.928,146.899 677.928,151.699 663.928,156.499 "/>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:middle;font-family:monospace;font-style:normal;font-weight:normal" x="706.845" y="148.699"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="681.928" y="148.699"></text>
+    <text font-size="12.7998" style="fill: #000000;text-anchor:start;font-family:monospace;font-style:normal;font-weight:normal" x="767.762" y="172.797"></text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="246.266" width="215.95" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="246.266" width="215.95" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="797.787" y="268.266">WasmNumericInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="278.266" width="215.95" height="44"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="278.266" width="215.95" height="44"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="295.266">+opcode: uint8_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="315.266">+constant: Value</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="604.14" width="240.45" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="604.14" width="240.45" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="810.037" y="626.14">WasmControlInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="636.14" width="240.45" height="84"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="636.14" width="240.45" height="84"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="653.14">+opcode: uint8_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="673.14">+resulttype: ValueType</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="693.14">+instrs: Vector&lt;WasmInstr&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="713.14">+indices: vector&lt;uint32_t&gt;</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="405.202" width="214.9" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="405.202" width="214.9" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="797.262" y="427.202">WasmVariableInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="437.202" width="214.9" height="44"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="437.202" width="214.9" height="44"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="454.202">+opcode: uint8_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="474.202">+index: uint32_t</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="335.734" width="244.35" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="335.734" width="244.35" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="811.987" y="357.734">WasmParametricInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="367.734" width="244.35" height="24"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="367.734" width="244.35" height="24"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="384.734">+opcode: uint8_t</text>
+  </g>
+  <g>
+    <rect style="fill: #ffffff" x="689.812" y="494.67" width="213.05" height="32"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="494.67" width="213.05" height="32"/>
+    <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:700" x="796.337" y="516.67">WasmMemoryInstr</text>
+    <rect style="fill: #ffffff" x="689.812" y="526.67" width="213.05" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="689.812" y="526.67" width="213.05" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="543.67">+opcode: uint8_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="563.67">+offset: uint32_t</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="692.812" y="583.67">+align: uint32_t</text>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,192.797 652.812,192.797 652.812,262.266 689.812,262.266 "/>
+    <polygon style="fill: #ffffff" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,192.797 652.812,192.797 652.812,351.734 689.812,351.734 "/>
+    <polygon style="fill: #ffffff" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,192.797 652.812,192.797 652.812,421.202 689.812,421.202 "/>
+    <polygon style="fill: #ffffff" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,192.797 652.812,192.797 652.812,510.67 689.812,510.67 "/>
+    <polygon style="fill: #ffffff" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+  </g>
+  <g>
+    <polyline style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,192.797 652.812,192.797 652.812,620.14 689.812,620.14 "/>
+    <polygon style="fill: #ffffff" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+    <polygon style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" points="671.576,200.797 687.576,192.797 671.576,184.797 "/>
+  </g>
+</svg>
