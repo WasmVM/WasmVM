@@ -20,10 +20,15 @@
 
 ## 編譯
 
-1. 執行 CMake
+1. 執行 CMake (正常模式，不會編譯 test 資料夾)
 
 ```shell
 mkdir build && cd build && cmake ..
+```
+
+* 執行 CMake (開發模式)
+```shell
+mkdir build && cd build && cmake -DCMAKE_BUILD_TYPE=Debug ..
 ```
 
 2. 執行 Make
