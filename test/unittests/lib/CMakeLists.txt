@@ -9,3 +9,4 @@ macro(add_lib_unittest unittest)
 endmacro(add_lib_unittest unittest)
 
 add_lib_unittest(runtime/i32_add_unittest)
+add_lib_unittest(runtime/i32_sub_unittest)
