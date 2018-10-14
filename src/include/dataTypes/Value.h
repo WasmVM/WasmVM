@@ -23,4 +23,9 @@ typedef struct {
     }value;
 } Value;
 
+Value* new_i32Value(int32_t value);
+Value* new_i64Value(int64_t value);
+Value* new_f32Value(float value);
+Value* new_f64Value(double value);
+
 #endif

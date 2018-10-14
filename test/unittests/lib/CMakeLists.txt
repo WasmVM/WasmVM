@@ -8,4 +8,4 @@ macro(add_lib_unittest unittest)
     add_unittest(${unittest} lib/)
 endmacro(add_lib_unittest unittest)
 
-add_lib_unittest(runtime/Token_unittest)
+add_lib_unittest(runtime/i32_add_unittest)

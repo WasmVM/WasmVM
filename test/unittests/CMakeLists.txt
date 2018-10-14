@@ -1,5 +1,6 @@
 enable_testing()
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test/unittests)
+
 function(add_unittest filepath prefix)
     get_filename_component(unittest ${filepath} NAME_WE)
     set(unittest_src "${PROJECT_BINARY_DIR}/test/unittests/${prefix}${filepath}.cpp")
@@ -11,7 +12,7 @@ function(add_unittest filepath prefix)
     )
     target_link_libraries(${unittest}
         wasmvm_core
-        skypat
+        ${SKYPAT_LIBRARIES}
     )
     add_test(${unittest} ${PROJECT_BINARY_DIR}/test/unittests/${prefix}${unittest})
 endfunction(add_unittest filepath prefix)
