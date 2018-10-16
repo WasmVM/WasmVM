@@ -2,9 +2,8 @@
 #define WASMVM_INSTANCE_FUNCINST_DEF
 
 #include <dataTypes/vector.h>
-#include <dataTypes/Value.h>
+#include <dataTypes/FuncType.h>
 #include <instance/ModuleInst.h>
-#include <instance/InstrInst.h>
 
 typedef struct {
     FuncType type;

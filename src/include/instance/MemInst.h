@@ -2,7 +2,6 @@
 #define WASMVM_INSTANCE_MEMINST_DEF
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <dataTypes/vector.h>
 
 typedef struct {

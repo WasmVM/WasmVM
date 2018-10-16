@@ -1,5 +1,6 @@
 #include <dataTypes/Value.h>
 
+#include <stdint.h>
 #include <stdlib.h>
 
 Value* new_i32Value(int32_t value){

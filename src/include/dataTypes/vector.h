@@ -2,8 +2,6 @@
 #define WASMVM_VECTOR_DEF
 
 #include <stddef.h>
-#include <stdlib.h>
-#include <string.h>
 
 typedef struct vector_{
     void *data;

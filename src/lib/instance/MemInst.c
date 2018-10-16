@@ -1,5 +1,7 @@
 #include <instance/MemInst.h>
 
+#include <stdlib.h>
+
 MemInst* new_MemInst(){
     MemInst* newMemInst = (MemInst*) malloc(sizeof(MemInst));
     newMemInst->data = new_vector(sizeof(char), NULL);

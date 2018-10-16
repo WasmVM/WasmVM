@@ -1,7 +1,6 @@
 #ifndef WASMVM_CORE_RUNTIME_DEF
 #define WASMVM_CORE_RUNTIME_DEF
 
-#include <stdint.h>
 #include <core/Stack.h>
 #include <core/Store.h>
 
