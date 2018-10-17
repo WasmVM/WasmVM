@@ -3,15 +3,15 @@
 
 #include <stdint.h>
 #include <dataTypes/FuncType.h>
-#include <WasmData.h>
-#include <WasmElem.h>
-#include <WasmExport.h>
-#include <WasmFunc.h>
-#include <WasmGlobal.h>
-#include <WasmImport.h>
-#include <WasmInstr.h>
-#include <WasmMemory.h>
-#include <WasmTable.h>
+#include <structures/WasmData.h>
+#include <structures/WasmElem.h>
+#include <structures/WasmExport.h>
+#include <structures/WasmFunc.h>
+#include <structures/WasmGlobal.h>
+#include <structures/WasmImport.h>
+#include <structures/WasmInstr.h>
+#include <structures/WasmMemory.h>
+#include <structures/WasmTable.h>
 
 typedef struct _wasm_module {
     FuncType*   types;      // types:   Vector<FuncType>

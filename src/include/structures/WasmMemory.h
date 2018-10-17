@@ -1,7 +1,7 @@
 #ifndef WASMVM_STRUCTURE_MEMORY
 #define WASMVM_STRUCTURE_MEMORY
 
-#include <dataTypes/Value.h>
+#include <stdint.h>
 
 typedef struct _wasm_func {
     uint32_t    min;
