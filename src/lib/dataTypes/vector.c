@@ -1,5 +1,8 @@
 #include <dataTypes/vector.h>
 
+#include <stdlib.h>
+#include <string.h>
+
 static void _push_back(vector* thisVector, const void* valuePtr){
     if(thisVector->length >= thisVector->capacity){
         if(thisVector->length == 0){

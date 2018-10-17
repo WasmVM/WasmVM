@@ -1,5 +1,10 @@
 #include <instance/ModuleInst.h>
 
+#include <stdint.h>
+#include <stdlib.h>
+#include <dataTypes/FuncType.h>
+#include <instance/ExportInst.h>
+
 ModuleInst* new_ModuleInst(){
     ModuleInst* newModuleInst = (ModuleInst*) malloc(sizeof(ModuleInst));
     newModuleInst->types = new_vector(sizeof(FuncType), (void(*)(void*))free_FuncType);

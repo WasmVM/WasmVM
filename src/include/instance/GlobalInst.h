@@ -1,7 +1,6 @@
 #ifndef WASMVM_INSTANCE_GLOBAL_DEF
 #define WASMVM_INSTANCE_GLOBAL_DEF
 
-#include <stdlib.h>
 #include <dataTypes/Value.h>
 
 typedef struct {

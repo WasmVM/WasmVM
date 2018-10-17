@@ -1,8 +1,6 @@
 #ifndef WASMVM_STACK_DEF
 #define WASMVM_STACK_DEF
 
-#include <stdlib.h>
-
 typedef struct stackNode_ {
     void* data;
     struct stackNode_* next;
