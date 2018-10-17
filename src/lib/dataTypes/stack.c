@@ -1,5 +1,7 @@
 #include <dataTypes/stack.h>
 
+#include <stdlib.h>
+
 static void stackPush(stack* thisstack, void* data) {
     stackNode* newNode = (stackNode*)malloc(sizeof(stackNode));
     newNode->data = data;

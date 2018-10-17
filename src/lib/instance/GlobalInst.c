@@ -1,5 +1,7 @@
 #include <instance/GlobalInst.h>
 
+#include <stdlib.h>
+
 GlobalInst* new_GlobalInst(){
     return (GlobalInst*) malloc(sizeof(GlobalInst));
 }

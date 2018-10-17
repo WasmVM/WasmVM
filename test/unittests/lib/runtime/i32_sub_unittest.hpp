@@ -2,6 +2,7 @@
 
 #define _Bool bool
 extern "C"{
+    #include <dataTypes/Value.h>
     #include <core/Runtime.h>
 }
 #undef _Bool

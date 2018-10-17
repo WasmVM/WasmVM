@@ -2,7 +2,6 @@
 #define WASMVM_INSTANCE_EXPORTINST_DEF
 
 #include <stdint.h>
-#include <stdlib.h>
 #include <dataTypes/DescType.h>
 
 typedef struct {
