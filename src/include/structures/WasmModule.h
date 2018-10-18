@@ -2,6 +2,7 @@
 #define WASMVM_STRUCTURE_MODULE
 
 #include <stdint.h>
+#include <dataTypes/vector.h>
 #include <dataTypes/FuncType.h>
 #include <structures/WasmData.h>
 #include <structures/WasmElem.h>
@@ -14,16 +15,16 @@
 #include <structures/WasmTable.h>
 
 typedef struct _wasm_module {
-    FuncType*   types;      // types:   Vector<FuncType>
-    WasmFunc*   funcs;      // funcs:   Vector<WasmFunc>
-    WasmTable*  tables;     // tables:  Vector<WasmTable>
-    WasmMemory* mems;       // mems:    Vector<WasmMemory>
-    WasmGlobal* globals;    // globals: Vector<WasmGlobal>
-    WasmElem*   elems;      // globals: Vector<WasmElem>
-    WasmData*   datas;      // globals: Vector<WasmData>
-    uint32_t    start;      // start:   uint32_t
-    WasmImport* imports;    // imports: Vector<WasmImport>
-    WasmExport* exports;    // exports: Vector<WasmExport>
+    vector*   types;      // types:   Vector<FuncType>
+    vector*   funcs;      // funcs:   Vector<WasmFunc>
+    vector*   tables;     // tables:  Vector<WasmTable>
+    vector*   mems;       // mems:    Vector<WasmMemory>
+    vector*   globals;    // globals: Vector<WasmGlobal>
+    vector*   elems;      // globals: Vector<WasmElem>
+    vector*   datas;      // globals: Vector<WasmData>
+    uint32_t  start;      // start:   uint32_t
+    vector*   imports;    // imports: Vector<WasmImport>
+    vector*   exports;    // exports: Vector<WasmExport>
 } WasmModule;
 
 #endif

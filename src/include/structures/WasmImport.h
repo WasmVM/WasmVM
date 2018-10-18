@@ -3,12 +3,11 @@
 
 #include <stdint.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
 #include <dataTypes/DescType.h>
 
 typedef struct _wasm_import {
-    vector*     module;     // char
-    vector*     name;       // char
+    char*       module; 
+    char*       name;
     DescType    descType;    
     uint32_t    descIdex;
 } WasmImport;

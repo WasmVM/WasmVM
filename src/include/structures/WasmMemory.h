@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct _wasm_func {
+typedef struct _wasm_memory {
     uint32_t    min;
     uint32_t    max;
 } WasmMemory;
