@@ -10,6 +10,6 @@ typedef struct {
     InstrInst parent;
     ValueType resultType;
     vector* indices; // uint32_t
-} NumericInstrInst;
-
+} ControlInstrInst;
+void free_ControlInstrInst(ControlInstrInst* instance);
 #endif

@@ -8,6 +8,6 @@ typedef struct {
     InstrInst parent;
     uint32_t offset;
     uint32_t align;
-} NumericInstrInst;
+} MemoryInstrInst;
 
 #endif

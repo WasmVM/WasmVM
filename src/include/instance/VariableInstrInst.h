@@ -7,6 +7,6 @@
 typedef struct {
     InstrInst parent;
     uint32_t index;
-} NumericInstrInst;
+} VariableInstrInst;
 
 #endif
