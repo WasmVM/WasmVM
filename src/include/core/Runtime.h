@@ -1,13 +1,14 @@
 #ifndef WASMVM_CORE_RUNTIME_DEF
 #define WASMVM_CORE_RUNTIME_DEF
 
+#include <stdint.h>
 #include <core/Stack.h>
 #include <core/Store.h>
 
-int runtime_i32_const(Stack* stack);
-int runtime_i64_const(Stack* stack);
-int runtime_f32_const(Stack* stack);
-int runtime_f64_const(Stack* stack);
+int runtime_i32_const(Stack* stack, int32_t value);
+int runtime_i64_const(Stack* stack, int64_t value);
+int runtime_f32_const(Stack* stack, float value);
+int runtime_f64_const(Stack* stack, double value);
 int runtime_i32_add(Stack* stack);
 int runtime_i32_sub(Stack* stack);
 int runtime_i32_mul(Stack* stack);
