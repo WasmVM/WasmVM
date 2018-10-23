@@ -23,6 +23,7 @@ add_library(wasmvm_core
     dataTypes/list.c
     dataTypes/queue.c
     dataTypes/FuncType.c
+    validator/Validator.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 
