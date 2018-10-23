@@ -2,17 +2,22 @@
 
 #include <stdlib.h>
 
-static void setInput(Validator* validator, void* input){
+static void setInput(Validator* validator, void* input)
+{
     validator->input = input;
 }
-static void* getOutput(Validator* validator){
+static void* getOutput(Validator* validator)
+{
     return validator->output;
 }
-static int runValidator(Validator* validator){
+static int runValidator(Validator* validator)
+{
+    //TODO:
     return 0;
 }
 
-Validator* new_Validator(WasmModule* module){
+Validator* new_Validator(WasmModule* module)
+{
     Validator* validator = (Validator*) malloc(sizeof(Validator));
     validator->input = module;
     validator->output = module;
