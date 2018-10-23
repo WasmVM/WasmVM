@@ -1,5 +1,6 @@
 #include "Validates.h"
 
+<<<<<<< HEAD
 #include <stdint.h>
 #include <stddef.h>
 
@@ -76,3 +77,9 @@ int validate_Import(WasmImport* imports, WasmModule* module) //FIXME: test
             return -1;
     }
 }
+=======
+int validate_FunctionType(FuncType* funcType)
+{
+    return funcType->results->length <= 1; // TODO: Unleash later
+}
+>>>>>>> 定義 Validate 函式
