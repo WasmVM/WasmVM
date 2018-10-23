@@ -5,7 +5,7 @@
 #include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_variable_instr {
-    WasmInstr   opcode;
+    WasmInstr   parent;
     uint32_t    index;
 } WasmVariableInstr;
 

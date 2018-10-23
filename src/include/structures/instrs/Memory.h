@@ -5,7 +5,7 @@
 #include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_memory_instr {
-    WasmInstr   opcode;
+    WasmInstr   parent;
     uint32_t    offset;
     uint32_t    align;
 } WasmMemoryInstr;

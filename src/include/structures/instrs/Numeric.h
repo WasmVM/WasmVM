@@ -5,7 +5,7 @@
 #include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_numeric_instr {
-    WasmInstr   opcode;
+    WasmInstr   parent;
     Value       constant;
 } WasmNumericInstr;
 

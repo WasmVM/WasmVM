@@ -4,7 +4,7 @@
 #include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_parametric_instr {
-    WasmInstr opcode;
+    WasmInstr parent;
 } WasmParametricInstr;
 
 #endif
