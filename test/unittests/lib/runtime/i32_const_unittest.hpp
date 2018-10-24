@@ -7,7 +7,7 @@ extern "C"{
 }
 #undef _Bool
 
-SKYPAT_F(Runtime_i32, regular)
+SKYPAT_F(Runtime_i32_const, regular)
 {
     // Prepare
     Stack* stack = new_Stack();
