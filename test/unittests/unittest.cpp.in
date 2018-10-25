@@ -1,4 +1,4 @@
-#include <${filepath}.hpp>
+#include <${unittest_header}>
 
 int main(int argc, char *argv[]){
     skypat::Test::Initialize(argc, argv);

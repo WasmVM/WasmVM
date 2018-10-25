@@ -2,22 +2,23 @@
 
 #define _Bool bool
 extern "C"{
+    #include <dataTypes/Value.h>
     #include <core/Runtime.h>
 }
-#undef _Bool 
+#undef _Bool
 
-SKYPAT_F(Runtime_i32_clz, regular)
+SKYPAT_F(Runtime_i32_ctz, regular)
 {
-    // prepare 
+    // prepare
     Stack* stack = new_Stack();
-    Value *value1 = new_i32Value(5);
+    Value *value1 = new_i32Value(1 << 31);
     stack->entries->push(stack->entries, value1);
 
     // run
-    runtime_i32_clz(stack);
+    runtime_i32_ctz(stack);
 
-    // check 
+    // check
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
-    EXPECT_EQ(check->value.i32, 29); 
+    EXPECT_EQ(check->value.i32, 31); 
 }

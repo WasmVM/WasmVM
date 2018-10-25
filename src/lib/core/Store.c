@@ -20,4 +20,5 @@ void free_Store(Store* thisStore){
     free_vector(thisStore->tables);
     free_vector(thisStore->mems);
     free_vector(thisStore->globals);
+    free(thisStore);
 }
