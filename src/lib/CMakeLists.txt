@@ -10,6 +10,7 @@ add_library(wasmvm_core
     instance/ModuleInst.c
     instance/TableInst.c
     instance/ControlInstrInst.c
+    instance/InstrInst.c
     dataTypes/stack.c
     dataTypes/Value.c
     dataTypes/vector.c

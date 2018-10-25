@@ -11,5 +11,7 @@ typedef struct {
     ValueType resultType;
     vector* indices; // uint32_t
 } ControlInstrInst;
+
+ControlInstrInst* new_ControlInstrInst();
 void free_ControlInstrInst(ControlInstrInst* instance);
 #endif

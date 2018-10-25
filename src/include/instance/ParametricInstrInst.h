@@ -5,4 +5,7 @@
 
 typedef InstrInst ParametricInstrInst;
 
+ParametricInstrInst* new_ParametricInstrInst();
+void free_ParametricInstrInst(ParametricInstrInst* instrInst);
+
 #endif

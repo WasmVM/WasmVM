@@ -9,6 +9,8 @@ typedef struct {
     DescType descType;
     uint32_t valueAddr;
 } ExportInst;
+
+ExportInst* new_ExportInst();
 void free_ExportInst(ExportInst* exportInst);
 
 #endif
