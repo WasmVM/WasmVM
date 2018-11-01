@@ -1,3 +1,5 @@
+add_subdirectory(core/runtime)
+
 add_library(wasmvm_core
     core/Store.c
     core/Stack.c
@@ -12,11 +14,7 @@ add_library(wasmvm_core
     dataTypes/Value.c
     dataTypes/vector.c
     dataTypes/FuncType.c
-)
-
-add_subdirectory(core/runtime)
-target_link_libraries(wasmvm_core
-    wasmvm_runtime
+    $<TARGET_OBJECTS:wasmvm_runtime>
 )
 
 install(TARGETS wasmvm_core

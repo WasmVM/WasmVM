@@ -5,7 +5,7 @@
 #endforeach(INSTR IN LISTS INSTRS)
 
 
-add_library(wasmvm_runtime
+add_library(wasmvm_runtime OBJECT
 	i32_const.c
 	i64_const.c
 	f32_const.c
