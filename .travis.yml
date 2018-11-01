@@ -1,0 +1,26 @@
+language: c
+os:
+  - linux
+
+sudo: required
+dist: trusty
+notifications: 
+  email: false
+
+git:
+  submodules: false
+  depth: 1
+
+services: 
+  - docker
+
+before_install:
+  - sudo docker pull wasmvm/develop:CI &&
+    sudo docker create --privileged=true -t --name wasmvm-ci --volume ${TRAVIS_BUILD_DIR}:/root wasmvm/develop:CI &&
+    sudo docker start wasmvm-ci
+
+script:
+  - sudo docker exec -t wasmvm-ci /bin/bash -c "mkdir ~/build-cmake" &&
+    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-cmake .." &&
+    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && make -j8 install" &&
+    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && ctest"
