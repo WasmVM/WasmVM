@@ -11,9 +11,12 @@ function(add_unittest filepath prefix)
         ${ARGN}
         ${unittest_header}
     )
+    add_dependencies(${unittest}
+        SkyPat
+    )
     target_link_libraries(${unittest}
         wasmvm_core
-        ${SKYPAT_LIBRARIES}
+        skypat
     )
     add_test(${unittest} ${PROJECT_BINARY_DIR}/test/unittests/${prefix}${unittest})
 endfunction(add_unittest filepath prefix)

@@ -13,7 +13,18 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     add_compile_options("-g")
 
-    find_package(SkyPat REQUIRED)
-    include_directories(${SKYPAT_INCLUDE_DIR})
+    include(ExternalProject)
+    set($ENV{SHELL} "/bin/bash")
+    ExternalProject_Add(SkyPat
+        PREFIX SkyPat
+        GIT_REPOSITORY https://github.com/skymizer/SkyPat.git
+        GIT_TAG v3.1.1
+        CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+    )
+    ExternalProject_Add_Step(SkyPat autogen
+        COMMAND "<SOURCE_DIR>/autogen.sh"
+        DEPENDEES download
+        DEPENDERS configure
+    )
     add_subdirectory(test)
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
