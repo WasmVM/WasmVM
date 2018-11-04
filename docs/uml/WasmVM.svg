@@ -60,15 +60,16 @@
     <rect style="fill: #ffffff" x="982" y="76.5" width="306.3" height="32"/>
     <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="982" y="76.5" width="306.3" height="32"/>
     <text font-size="19.2" style="fill: #000000;text-anchor:middle;font-family:sans-serif;font-style:normal;font-weight:normal" x="1135.15" y="98.5">Loader</text>
-    <rect style="fill: #ffffff" x="982" y="108.5" width="306.3" height="44"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="982" y="108.5" width="306.3" height="44"/>
+    <rect style="fill: #ffffff" x="982" y="108.5" width="306.3" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="982" y="108.5" width="306.3" height="64"/>
     <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="125.5">-LoadedList: List&lt;char*&gt;</text>
-    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="145.5"> request: Queue&lt;Request*&gt;</text>
-    <rect style="fill: #ffffff" x="982" y="152.5" width="306.3" height="64"/>
-    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="982" y="152.5" width="306.3" height="64"/>
-    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="169.5"> addRequest(request:Request*): void</text>
-    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="189.5"> activate(): int</text>
-    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="209.5"> terminate(): int</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="145.5">-DecodedStack: Stack&lt;&gt;</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="165.5"> request: Queue&lt;Request*&gt;</text>
+    <rect style="fill: #ffffff" x="982" y="172.5" width="306.3" height="64"/>
+    <rect style="fill: none; fill-opacity:0; stroke-width: 2; stroke: #000000" x="982" y="172.5" width="306.3" height="64"/>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="189.5"> addRequest(request:Request*): void</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="209.5"> activate(): int</text>
+    <text font-size="16" style="fill: #000000;text-anchor:start;font-family:sans-serif;font-style:normal;font-weight:normal" x="985" y="229.5"> terminate(): int</text>
   </g>
   <g>
     <rect style="fill: #ffffff" x="982" y="-87" width="306.3" height="32"/>
