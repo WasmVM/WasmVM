@@ -1,12 +1,13 @@
 Discord: https://discord.gg/yHBRrj4
 
-# 開發 & 提交流程
+# 參與方式
 
-1. 到相關 Issue 找開出來的需求 Or 提出自己想貢獻的想法
-2. 被 Assign Issue 之後開始實作
-3. 實作完發 Pull Request
-4. 檢查(Review)和修改
-5. Merge
+1. 到 Issues 尋找有興趣的 issue
+2. 在下面的討論表明自己有興趣參與這個 issue
+3. 在 Discord 或 Issue 的討論串和 Owner 討論，
+4. 得到 Owner 認可後開始實作
+5. 實作完提交 PR，指定除了自己以外的 >=1 位 Reviewer 或 Owner 做 review
+6. 修改 PR 到 Reviewer merge 你的 PR
 
 # 程式碼相關
 
@@ -20,3 +21,4 @@ Discord: https://discord.gg/yHBRrj4
 * 在原始碼檔(.c)內使用的函式，如果沒有出現在標頭檔，請宣告為 static
 * 請不要隨意增減函式的參數和回傳值
 * 除了標準函式庫之外，非必要不要加入其他函式庫
+
