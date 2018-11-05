@@ -1,6 +1,7 @@
 add_subdirectory(core/runtime)
 
 add_library(wasmvm_core
+    Decoder.c
     core/Store.c
     core/Stack.c
     instance/ExportInst.c
