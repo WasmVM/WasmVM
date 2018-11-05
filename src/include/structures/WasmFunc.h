@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/vector.h>
-#include <structures/WasmInstr.h>
+#include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_func {
     uint32_t    type;
