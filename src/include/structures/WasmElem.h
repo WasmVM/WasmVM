@@ -11,4 +11,7 @@ typedef struct _wasm_elem {
     vector*     init;       // uint32_t
 } WasmElem;
 
+WasmElem* new_WasmElem();
+void free_WasmElem(WasmElem *thisWasmElem);
+
 #endif

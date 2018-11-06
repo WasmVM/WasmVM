@@ -12,4 +12,7 @@ typedef struct _wasm_func {
     vector*     body;       // WasmInstr
 } WasmFunc;
 
+WasmFunc* new_WasmFunc();
+void free_WasmFunc(WasmFunc* thisWasmFunc);
+
 #endif
