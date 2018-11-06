@@ -28,4 +28,7 @@ typedef struct _wasm_module {
     vector*   exports;    // exports: Vector<WasmExport>
 } WasmModule;
 
+WasmModule* new_WasmModule();
+void free_WasmModule(WasmModule* module);
+
 #endif

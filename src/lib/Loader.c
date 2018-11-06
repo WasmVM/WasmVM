@@ -1,7 +1,7 @@
 #include <Loader.h>
 
 #include <stdlib.h>
-#include <thread.h>
+#include <pthread.h>
 #include <stddef.h>
 #include <Stage.h>
 
@@ -15,7 +15,7 @@ static int run_Loader(Loader* loader){
         Request* request = NULL;
         loader->requests->pop(loader->requests, (void**)&request);
         while(request->stages->size > 1){
-            Stages* stage = NULL;
+            Stage* stage = NULL;
             request->stages->pop(request->stages, (void**)&stage);
             int result = stage->run();
             if(result){
@@ -28,7 +28,7 @@ static int run_Loader(Loader* loader){
     while(loader->decodedStack->size > 0 && !loader->parent.isTerminated){
         Request* request = NULL;
         loader->decodedStack->pop(loader->decodedStack, (void**)&request);
-        Stages* stage = NULL;
+        Stage* stage = NULL;
         request->stages->pop(request->stages, (void**)&stage);
         int result = stage->run();
         if(result){
@@ -38,7 +38,7 @@ static int run_Loader(Loader* loader){
 }
 
 static int activate_Loader(Component* component){
-    thrd_create(component->thread, (int(*)(void*))run_Loader, (void*)component);
+    pthread_create(component->thread, NULL, (void*)run_Loader, (void*)component);
 }
 
 static void terminate_Loader(Component* component){
