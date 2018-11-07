@@ -15,3 +15,13 @@ ModuleInst* new_ModuleInst(){
     newModuleInst->exports = new_vector(sizeof(ExportInst), (void(*)(void*))free_ExportInst);
     return newModuleInst;
 }
+
+void free_ModuleInst(ModuleInst* moduleInst){
+    free_vector(moduleInst->types);
+    free_vector(moduleInst->funcaddrs);
+    free_vector(moduleInst->tableaddrs);
+    free_vector(moduleInst->memaddrs);
+    free_vector(moduleInst->globaladdrs);
+    free_vector(moduleInst->exports);
+    free(moduleInst);
+}

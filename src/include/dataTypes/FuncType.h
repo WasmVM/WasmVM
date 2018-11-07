@@ -7,6 +7,8 @@ typedef struct {
     vector* params;     // ValueType
     vector* results;    // ValueType
 } FuncType;
+
+FuncType* new_FuncType();
 void free_FuncType(FuncType* funcType);
 
 #endif

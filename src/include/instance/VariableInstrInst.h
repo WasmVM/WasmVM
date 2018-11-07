@@ -9,4 +9,7 @@ typedef struct {
     uint32_t index;
 } VariableInstrInst;
 
+VariableInstrInst* new_VariableInstrInst();
+void free_VariableInstrInst(VariableInstrInst* instrInst);
+
 #endif

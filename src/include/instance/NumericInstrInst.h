@@ -9,4 +9,7 @@ typedef struct {
     Value constant;
 } NumericInstrInst;
 
+NumericInstrInst* new_NumericInstrInst();
+void free_NumericInstrInst(NumericInstrInst* instrInst);
+
 #endif

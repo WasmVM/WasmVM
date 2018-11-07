@@ -12,6 +12,8 @@ typedef struct {
     vector* code;    // InstrInst
     int (*hostcode)();
 } FuncInst;
+
+FuncInst* new_FuncInst();
 void free_FuncInst(FuncInst* funcInst);
 
 #endif

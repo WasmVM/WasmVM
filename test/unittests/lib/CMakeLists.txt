@@ -5,3 +5,5 @@ include_directories(
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test/unittests/lib)
 
 add_subdirectory(core)
+add_subdirectory(instance)
+add_subdirectory(dataTypes)
