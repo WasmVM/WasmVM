@@ -12,6 +12,16 @@
 
 * 支援 C++11 及標準函式庫的 C++ 編譯器
 
+### 開發工具 SkyPat 先備套件
+#### Ubuntu/Debian 使用者
+`$ sudo apt-get install wget automake autoconf libtool build-essential`
+
+#### Fedora/CentOS 使用者
+```
+$ sudo yum install wget automake autoconf libtool make automake gcc gcc-c++
+$ sudo yum install kernel-devel 
+```
+
 ## 注意事項
 
 1. 系統呼叫目前只支援 Linux 作業系統。 如果沒有使用到系統呼叫，可以在 CMake 的 `USE_SYSCALL` 設定中停用系統呼叫， 讓非 Linux 作業系統也能執行

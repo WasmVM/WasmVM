@@ -10,6 +10,16 @@
 
 * C++ compiler supporting c++11 standard with Standard Library
 
+### Developer Tool - SkyPat Prerequisite 
+#### Ubuntu/Debian Users 
+`$ sudo apt-get install wget automake autoconf libtool build-essential`
+
+#### Fedora/CentOS Users
+```
+$ sudo yum install wget automake autoconf libtool make automake gcc gcc-c++
+$ sudo yum install kernel-devel 
+```
+
 ## Notice
 
 1. Our System call module is for Linux only.
