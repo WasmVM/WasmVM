@@ -8,7 +8,7 @@ extern "C"{
 }
 #undef _Bool
 
-SKYPAT_F(Runtime_i32_div_s, regular)
+SKYPAT_F(Runtime_i32_div_u, regular)
 {
     // prepare
     Stack* stack = new_Stack();
@@ -23,5 +23,5 @@ SKYPAT_F(Runtime_i32_div_s, regular)
     // check
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
-    EXPECT_EQ(check->value.i32, 65530);
+    EXPECT_EQ(check->value.u32, 4294967290);
 }
