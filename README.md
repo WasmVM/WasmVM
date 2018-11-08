@@ -2,7 +2,7 @@
 
 #### 可以獨立執行 WebAssembly 的程序性虛擬機器
 
-**[教學文件](https://luishsu.gitbook.io/wasmvm-webassembly/)**
+**[教學文件](https://luishsu.gitbook.io/wasmvm-tutorial/)**
 
 **[English README](README_en.md)**
 
