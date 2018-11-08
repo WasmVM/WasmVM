@@ -6,7 +6,7 @@ extern "C"{
 }
 #undef _Bool
 
-SKYPAT_F(Store, create_delete)
+SKYPAT_F(FuncType, create_delete)
 {
     // Prepare
     FuncType* funcType = new_FuncType();
