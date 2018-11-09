@@ -1,6 +1,7 @@
 #include <core/Runtime.h>
 #include <dataTypes/Value.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int runtime_i32_div_s(Stack* stack){
     Value *value1 = NULL, *value2 = NULL;
