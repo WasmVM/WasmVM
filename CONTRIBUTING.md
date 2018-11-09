@@ -8,8 +8,10 @@ Discord: https://discord.gg/yHBRrj4
 3. 在 Discord 或 Issue 的討論串和 Owner 討論
 4. 得到 Owner 認可後開始實作
 5. 實作完提交 PR，指定除了自己以外的 >=1 位 Reviewer 或 Owner 做 review
-![](docs/images/assign_review.png =250x250)
 6. 修改 PR 到 Reviewer merge 你的 PR
+
+指定 Reviewer 的方法：
+![](docs/images/assign_review.png)
 
 # 程式碼相關
 
