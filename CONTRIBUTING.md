@@ -2,12 +2,16 @@ Discord: https://discord.gg/yHBRrj4
 
 # 參與方式
 
+1. fork 專案
 1. 到 Issues 尋找有興趣的 issue
 2. 在下面的討論表明自己有興趣參與這個 issue
-3. 在 Discord 或 Issue 的討論串和 Owner 討論，
+3. 在 Discord 或 Issue 的討論串和 Owner 討論
 4. 得到 Owner 認可後開始實作
 5. 實作完提交 PR，指定除了自己以外的 >=1 位 Reviewer 或 Owner 做 review
 6. 修改 PR 到 Reviewer merge 你的 PR
+
+指定 Reviewer 的方法：
+![](docs/images/assign_review.png)
 
 # 程式碼相關
 
@@ -22,3 +26,6 @@ Discord: https://discord.gg/yHBRrj4
 * 請不要隨意增減函式的參數和回傳值
 * 除了標準函式庫之外，非必要不要加入其他函式庫
 
+# GitHub
+
+* 實作新功能請開新的 branch，不要直接在 master 做
