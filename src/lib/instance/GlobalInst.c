@@ -2,7 +2,8 @@
 
 #include <stdlib.h>
 
-GlobalInst* new_GlobalInst(){
+GlobalInst* new_GlobalInst()
+{
     GlobalInst* globalInst = (GlobalInst*) malloc(sizeof(GlobalInst));
     globalInst->mul = 0;
     globalInst->value.type = Value_Unspecified;
@@ -10,6 +11,7 @@ GlobalInst* new_GlobalInst(){
     return globalInst;
 }
 
-void free_GlobalInst(GlobalInst* globalInst){
+void free_GlobalInst(GlobalInst* globalInst)
+{
     free(globalInst);
 }

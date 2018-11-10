@@ -6,9 +6,9 @@
 #include <dataTypes/DescType.h>
 
 typedef struct _wasm_import {
-    char*       module; 
+    char*       module;
     char*       name;
-    DescType    descType;    
+    DescType    descType;
     uint32_t    descIdex;
 } WasmImport;
 

@@ -1,9 +1,9 @@
 #include <skypat/skypat.h>
 
 #define _Bool bool
-extern "C"{
-    #include <dataTypes/stack.h>
-    #include <stdlib.h>
+extern "C" {
+#include <dataTypes/stack.h>
+#include <stdlib.h>
 }
 #undef _Bool
 
@@ -73,7 +73,7 @@ SKYPAT_F(stack, pop)
 
 SKYPAT_F(stack, top)
 {
-   // Prepare
+    // Prepare
     stack* newStack = new_stack();
 
     int *data1 = (int*)malloc(sizeof(int));

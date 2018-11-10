@@ -2,7 +2,8 @@
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 
-int runtime_i32_ge_u(Stack* stack){
+int runtime_i32_ge_u(Stack* stack)
+{
     Value *value1 = NULL, *value2 = NULL;
     stack->entries->pop(stack->entries, (void**)&value2);
     stack->entries->pop(stack->entries, (void**)&value1);

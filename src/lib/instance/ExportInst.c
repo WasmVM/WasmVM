@@ -2,7 +2,8 @@
 
 #include <stdlib.h>
 
-ExportInst* new_ExportInst(){
+ExportInst* new_ExportInst()
+{
     ExportInst* instance = (ExportInst*)malloc(sizeof(ExportInst));
     instance->descType = Desc_Unspecified;
     instance->name = NULL;
@@ -10,7 +11,8 @@ ExportInst* new_ExportInst(){
     return instance;
 }
 
-void free_ExportInst(ExportInst* exportInst){
+void free_ExportInst(ExportInst* exportInst)
+{
     free(exportInst->name);
     free(exportInst);
 }

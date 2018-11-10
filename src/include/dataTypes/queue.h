@@ -6,7 +6,7 @@ typedef struct queueNode_ {
     struct queueNode_* next;
 } queueNode;
 
-typedef struct queue_{
+typedef struct queue_ {
     queueNode* head;
     queueNode* tail;
     unsigned int size;

@@ -3,7 +3,7 @@
 
 #include <pthread.h>
 
-typedef struct Component_{
+typedef struct Component_ {
     pthread_t* thread;
     _Bool isTerminated;
     int (*activate)(struct Component_* thisComponent);
