@@ -1,6 +1,8 @@
 add_subdirectory(core/runtime)
 
 add_library(wasmvm_core
+    Decoder.c
+    Loader.c
     core/Store.c
     core/Stack.c
     instance/ExportInst.c
@@ -18,6 +20,8 @@ add_library(wasmvm_core
     dataTypes/stack.c
     dataTypes/Value.c
     dataTypes/vector.c
+    dataTypes/list.c
+    dataTypes/queue.c
     dataTypes/FuncType.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
