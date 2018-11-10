@@ -12,7 +12,16 @@
 
 ### Developer Tool - SkyPat Prerequisite 
 #### Ubuntu/Debian Users 
-`$ sudo apt-get install wget automake autoconf libtool build-essential`
+```
+$ sudo apt-get update
+$ sudo apt-get install wget automake autoconf libtool build-essential 
+```
+
+#### Ubuntu/Debian Developers
+```
+$ sudo apt-get update
+$ sudo apt-get install wget automake autoconf libtool build-essential cppcheck astyle colordiff
+```
 
 #### Fedora/CentOS Users
 ```
@@ -30,6 +39,8 @@ $ sudo yum install kernel-devel
 2. This project uses **"Taiwan Traditional Chinese"** as primary, English as secondary language in documents.
   
   Other languages (Ex: Simplified Chinese) are only used as references or translations.
+
+3. Developers need to pay attention to the format specification of the original code (according to `K&R style`) through **AStyle**. Run instruction: `astyle --style=kr --indent=spaces=4 --indent-switches --suffix=none --recursive *.c *.h *.hpp` to format the code
 
 ## Build
 

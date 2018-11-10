@@ -14,7 +14,16 @@
 
 ### 開發工具 SkyPat 先備套件
 #### Ubuntu/Debian 使用者
-`$ sudo apt-get install wget automake autoconf libtool build-essential`
+```
+$ sudo apt-get update
+$ sudo apt-get install wget automake autoconf libtool build-essential
+```
+
+#### Ubuntu/Debian 開發者
+```
+$ sudo apt-get update
+$ sudo apt-get install wget automake autoconf libtool build-essential cppcheck astyle colordiff
+```
 
 #### Fedora/CentOS 使用者
 ```
@@ -27,6 +36,8 @@ $ sudo yum install kernel-devel
 1. 系統呼叫目前只支援 Linux 作業系統。 如果沒有使用到系統呼叫，可以在 CMake 的 `USE_SYSCALL` 設定中停用系統呼叫， 讓非 Linux 作業系統也能執行
  
 2. 在文件方面，本專案以 **台灣正體中文** 為主要使用語言，英文為次要使用語言，其他語言 （例如: 簡體中文）僅能做為參考或翻譯使用。
+
+3. 開發上需要注意，透過 **AStyle** 來做原始程式碼的格式規範（依照 `K&R style`）。運行指令： `astyle --style=kr --indent=spaces=4 --indent-switches --suffix=none --recursive *.c *.h *.hpp` 來對程式碼做格式編排
 
 ## 編譯
 
