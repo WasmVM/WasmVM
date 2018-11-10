@@ -4,7 +4,8 @@
 #include <dataTypes/Value.h>
 #include <instance/InstrInst.h>
 
-FuncInst* new_FuncInst(){
+FuncInst* new_FuncInst()
+{
     FuncInst* instance = (FuncInst*) malloc(sizeof(FuncInst));
     instance->type.params = new_vector(sizeof(ValueType), free);
     instance->type.results = new_vector(sizeof(ValueType), free);
@@ -15,7 +16,8 @@ FuncInst* new_FuncInst(){
     return instance;
 }
 
-void free_FuncInst(FuncInst* funcInst){
+void free_FuncInst(FuncInst* funcInst)
+{
     free_vector(funcInst->locals);
     free_vector(funcInst->code);
 }

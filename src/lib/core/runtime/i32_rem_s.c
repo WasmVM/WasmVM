@@ -10,15 +10,15 @@ int runtime_i32_rem_s(Stack* stack)
 
     // Error detection: divided by zero
     if (value2->value.u32 == 0) {
-      fprintf(stderr, "Divided by zero!");
-      free(value1);
-      free(value2);
-      return -1;
+        fprintf(stderr, "Divided by zero!");
+        free(value1);
+        free(value2);
+        return -1;
     } else {
-      stack->entries->push(stack->entries,
-                           new_i32Value(value1->value.i32 % value2->value.i32));
-      free(value1);
-      free(value2);
-      return 0;
+        stack->entries->push(stack->entries,
+                             new_i32Value(value1->value.i32 % value2->value.i32));
+        free(value1);
+        free(value2);
+        return 0;
     }
 }

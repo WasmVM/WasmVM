@@ -8,7 +8,7 @@ typedef struct listNode_ {
     struct listNode_* next;
 } listNode;
 
-typedef struct list_{
+typedef struct list_ {
     listNode* head;
     listNode* tail;
     size_t size;

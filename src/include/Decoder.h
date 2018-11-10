@@ -22,7 +22,7 @@
 #define IMPORT_Global 0x03
 
 typedef struct _decoder {
-    Stage       parent;         // inherit from Stage           
+    Stage       parent;         // inherit from Stage
     uint8_t     magic[4];       // binary: magic number
     uint8_t     version[4];     // binary: version
     uint8_t*    wasm_source;    // source of input wasm file (uint8_t array)
@@ -37,7 +37,7 @@ typedef struct _decoder {
 Decoder* new_Decoder(Loader* loader); // pass Loader pointer to Decoder constructor
 void free_Decoder(Decoder* decoder);
 
-// Private member func 
+// Private member func
 char skip_to_section(uint8_t sectionNum, char* ptr, const char* endAddr);   // skip the current reading pointer to specified section
 
 

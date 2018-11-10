@@ -2,8 +2,8 @@
 
 #define _Bool bool
 extern "C" {
-    #include <core/Runtime.h>
-    #include <dataTypes/Value.h>
+#include <core/Runtime.h>
+#include <dataTypes/Value.h>
 }
 #undef _Bool
 

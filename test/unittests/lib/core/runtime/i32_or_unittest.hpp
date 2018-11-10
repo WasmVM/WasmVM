@@ -1,11 +1,11 @@
 #include <skypat/skypat.h>
 
 #define _Bool bool
-extern "C"{
-    #include <dataTypes/Value.h>
-    #include <core/Runtime.h>
+extern "C" {
+#include <dataTypes/Value.h>
+#include <core/Runtime.h>
 }
-#undef _Bool 
+#undef _Bool
 
 SKYPAT_F(Runtime_i32_or, regular)
 {
@@ -14,7 +14,7 @@ SKYPAT_F(Runtime_i32_or, regular)
     Value *value1 = new_i32Value(12), *value2 = new_i32Value(10);
     stack->entries->push(stack->entries, value1);
     stack->entries->push(stack->entries, value2);
-    
+
     // Run
     runtime_i32_or(stack);
 

@@ -7,7 +7,7 @@
 #include <dataTypes/stack.h>
 #include <dataTypes/queue.h>
 
-typedef struct Loader_{
+typedef struct Loader_ {
     Component parent;
     list* loadedList; // char*
     stack* decodedStack; // Request*
