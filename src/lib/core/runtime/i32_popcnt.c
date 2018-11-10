@@ -8,7 +8,7 @@ int runtime_i32_popcnt(Stack* stack){
 
     int32_t value = value1->value.i32;
     uint8_t count = 0;
-    wihle (value) {
+    while (value) {
         if (value | 0x0) {
             count++;
         }
