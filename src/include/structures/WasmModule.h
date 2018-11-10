@@ -10,11 +10,12 @@
 #include <structures/WasmFunc.h>
 #include <structures/WasmGlobal.h>
 #include <structures/WasmImport.h>
-#include <structures/WasmInstr.h>
+#include <structures/instrs/WasmInstr.h>
 #include <structures/WasmMemory.h>
 #include <structures/WasmTable.h>
 
 typedef struct _wasm_module {
+    char*     module_name;// module_name: string, indicate name of module (aim to support import/export)
     vector*   types;      // types:   Vector<FuncType>
     vector*   funcs;      // funcs:   Vector<WasmFunc>
     vector*   tables;     // tables:  Vector<WasmTable>
@@ -26,5 +27,8 @@ typedef struct _wasm_module {
     vector*   imports;    // imports: Vector<WasmImport>
     vector*   exports;    // exports: Vector<WasmExport>
 } WasmModule;
+
+WasmModule* new_WasmModule();
+void free_WasmModule(WasmModule* module);
 
 #endif
