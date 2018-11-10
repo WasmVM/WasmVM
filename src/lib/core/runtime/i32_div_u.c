@@ -15,7 +15,7 @@ int runtime_i32_div_u(Stack* stack){
       free(value2);
       return (-1);
     } else {
-      stack->entries->push(stack->entries, new_i32Value(value1->value.i32 / value2->value.i32));
+      stack->entries->push(stack->entries, new_i32Value(value1->value.u32 / value2->value.u32));
       free(value1);
       free(value2);
       return 0;
