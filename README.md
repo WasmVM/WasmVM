@@ -15,15 +15,14 @@
 * 支援 C++11 及標準函式庫的 C++ 編譯器
 
 ### 開發者建置
-```
 #### Ubuntu/Debian
-```
+```shell
 $ sudo apt-get update
 $ sudo apt-get install wget automake autoconf libtool build-essential cppcheck astyle colordiff
 ```
 
 #### Fedora/CentOS
-```
+```shell
 $ sudo yum install wget automake autoconf libtool make automake gcc gcc-c++
 $ sudo yum install kernel-devel 
 ```
