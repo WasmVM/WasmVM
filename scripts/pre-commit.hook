@@ -1,6 +1,6 @@
 #!/bin/bash
 
-OPTIONS="--style=kr --indent=spaces=4 --indent-switches"
+OPTIONS="--style=kr --exclude=build*/ --indent=spaces=4 --indent-switches"
 
 RETURN=0
 ASTYLE=$(which astyle)
