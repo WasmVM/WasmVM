@@ -7,35 +7,39 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void setInput(Decoder* decoder, char* input){
-    // store filename 
+static void setInput(Decoder* decoder, char* input)
+{
+    // store filename
     decoder->module_name = input;
 }
 
-static WasmModule* getOutput(Decoder* decoder){
+static WasmModule* getOutput(Decoder* decoder)
+{
     return decoder->parent.output;
 }
 
-char skip_to_section(uint8_t sectionNum, char* ptr, const char* endAddr){
-    if(ptr > endAddr){
+char skip_to_section(uint8_t sectionNum, char* ptr, const char* endAddr)
+{
+    if(ptr > endAddr) {
         return -1;
     }
-    // Check section code, and move ptr to the target 
-    while(*ptr < sectionNum){
+    // Check section code, and move ptr to the target
+    while(*ptr < sectionNum) {
         ptr++;
-        // Get section size 
+        // Get section size
         uint32_t size = getLeb128_u32(ptr, endAddr);
         ptr += size;
     }
     char ret = *ptr;
-    if(ret == sectionNum){
+    if(ret == sectionNum) {
         getLeb128_u32(++ptr, endAddr);
     }
 
     return ret;
 }
 
-static int run(Decoder* decoder){
+static int run(Decoder* decoder)
+{
     // allocate WasmModule
     WasmModule* newModule = (WasmModule *) malloc(sizeof(WasmModule));
     decoder->parent.output = (void*) newModule;
@@ -57,13 +61,14 @@ static int run(Decoder* decoder){
 
     // - magic number & version
     memcpy(decoder->magic, read_p, 4);
-    if(*(uint32_t*) decoder->magic != toLittle32(WASM_MAGIC, 0)){
+    if(*(uint32_t*) decoder->magic != toLittle32(WASM_MAGIC, 0)) {
         printf("%s isn't a legal wasm file.\n", decoder->module_name);
         // return error code
         return -1;
     }
     memcpy(decoder->version, read_p+4, 4);
-    if(*(uint32_t*) decoder->version != toLittle32(WASM_VERSION, 0)){
+
+    if(*(uint32_t*) decoder->version != toLittle32(WASM_VERSION, 0)) {
         printf("Wrong version of %s.\n", decoder->module_name);
         // return error code
         return -1;
@@ -73,21 +78,22 @@ static int run(Decoder* decoder){
     // Module process ...
     uint32_t importedFuncCount = 0;
     // Section 1: Type
-    if(skip_to_section(1, read_p, end_p) == 1){
+    if(skip_to_section(1, read_p, end_p) == 1) {
         uint32_t typeNum = getLeb128_u32(read_p, end_p);
         // Get all types
-        while(typeNum-- > 0){
+        while(typeNum-- > 0) {
             // FuncType init
             FuncType* newType = (FuncType*) malloc(sizeof(FuncType));
             newType->params = new_vector(sizeof(ValueType), (void(*)(void*))free);
             newType->results = new_vector(sizeof(ValueType), (void(*)(void*))free);
-            if(*read_p != TYPE_Func){
+            if(*read_p != TYPE_Func) {
                 printf("%s : Function type must start with function type code. (Wrong wasm)\n", decoder->module_name);
                 return -1;
             }
             // Params
             uint32_t paramNum = getLeb128_u32(++read_p, end_p);
-            while(paramNum-- > 0){
+
+            while(paramNum-- > 0) {
                 switch(*read_p) {
                     case TYPE_i32:
                         newType->params->push_back(newType->params, Value_i32);
@@ -107,7 +113,8 @@ static int run(Decoder* decoder){
                 }
                 read_p++;
             }
-            // Results 
+
+            // Results
             uint32_t resultNum = getLeb128_u32(read_p, end_p);
             while (resultNum-- > 0) {
                 switch (*read_p) {
@@ -138,7 +145,8 @@ static int run(Decoder* decoder){
     return 0;
 }
 
-Decoder* new_Decoder(Loader* loader){
+Decoder* new_Decoder(Loader* loader)
+{
     Decoder* newDecoder = (Decoder*) malloc(sizeof(Decoder));
     /* Attributes */
     newDecoder->loader = loader;
@@ -146,11 +154,12 @@ Decoder* new_Decoder(Loader* loader){
     newDecoder->parent.setInput = (void(*)(Stage*, void*))setInput;
     newDecoder->parent.getOutput = (void*(*)(Stage*))getOutput;
     newDecoder->parent.run = (int(*)(Stage*))run;
-    
+
     return newDecoder;
 }
 
-void free_Decoder(Decoder* thisDecoder){
+void free_Decoder(Decoder* thisDecoder)
+{
     free(thisDecoder->loader);
     free(thisDecoder);
 }

@@ -19,12 +19,14 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
         PREFIX SkyPat
         GIT_REPOSITORY https://github.com/skymizer/SkyPat.git
         GIT_TAG v3.1.1
-        CONFIGURE_COMMAND "<SOURCE_DIR>/configure"
+        CONFIGURE_COMMAND "<SOURCE_DIR>/configure" "--prefix=<INSTALL_DIR>"
     )
     ExternalProject_Add_Step(SkyPat autogen
         COMMAND "<SOURCE_DIR>/autogen.sh"
         DEPENDEES download
         DEPENDERS configure
     )
+    include_directories(${PROJECT_BINARY_DIR}/SkyPat/include)
+    link_directories(${PROJECT_BINARY_DIR}/SkyPat/lib)
     add_subdirectory(test)
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")

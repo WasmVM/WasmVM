@@ -6,7 +6,7 @@ typedef struct stackNode_ {
     struct stackNode_* next;
 } stackNode;
 
-typedef struct stack_{
+typedef struct stack_ {
     stackNode* head;
     unsigned int size;
     void (*push)(struct stack_* thisStack, void* data);

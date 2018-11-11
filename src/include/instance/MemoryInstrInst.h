@@ -10,4 +10,7 @@ typedef struct {
     uint32_t align;
 } MemoryInstrInst;
 
+MemoryInstrInst* new_MemoryInstrInst();
+void free_MemoryInstrInst(MemoryInstrInst* instrInst);
+
 #endif

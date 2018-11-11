@@ -6,7 +6,8 @@
 #include <instance/MemInst.h>
 #include <instance/GlobalInst.h>
 
-Store* new_Store(){
+Store* new_Store()
+{
     Store* newStore = (Store*) malloc(sizeof(Store));
     newStore->funcs = new_vector(sizeof(FuncInst), (void(*)(void*))free_FuncInst);
     newStore->tables = new_vector(sizeof(TableInst), (void(*)(void*))free_TableInst);
@@ -15,7 +16,8 @@ Store* new_Store(){
     return newStore;
 }
 
-void free_Store(Store* thisStore){
+void free_Store(Store* thisStore)
+{
     free_vector(thisStore->funcs);
     free_vector(thisStore->tables);
     free_vector(thisStore->mems);
