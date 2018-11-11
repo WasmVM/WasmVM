@@ -1,5 +1,5 @@
-#ifndef DECODER_SECTION
-#define DECODER_SECTION
+#ifndef WASMVM_DECODER_SECTION_DEF
+#define WASMVM_DECODER_SECTION_DEF
 
 /*Section operations of Decoder.*/
 
