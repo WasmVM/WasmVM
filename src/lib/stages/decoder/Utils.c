@@ -1,4 +1,4 @@
-#include <Utils.h>
+#include "Utils.h"
 
 _Bool checkBigEndian()
 {
@@ -40,17 +40,17 @@ uint64_t toLittle64(const uint64_t val, _Bool force)
     }
 }
 
-uint32_t getLeb128_u32(char* ptr, const char* max)
+uint32_t getLeb128_u32(char **ptr, const char **max)
 {
     // uleb128 reference: https://en.wikipedia.org/wiki/LEB128
     uint32_t ret = 0;
     // Maximum: 5 bytes
     for(int i=0; i<5; ++i) {
-        if(ptr > max) {
+        if(*ptr > *max) {
             // error code
             return -1;
         }
-        uint32_t byte = *(ptr++);
+        uint32_t byte = **(ptr++);
         ret |= (byte & 0x7F) << (7*i);
         // check range
         if(i==4) {

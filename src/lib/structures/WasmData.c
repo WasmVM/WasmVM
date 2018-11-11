@@ -7,7 +7,6 @@ WasmData* new_WasmData()
 
     return newWasmData;
 }
-
 void free_WasmData(WasmData* thisWasmData)
 {
     free(thisWasmData->init);

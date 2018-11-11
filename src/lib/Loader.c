@@ -67,6 +67,7 @@ Loader* new_Loader()
     newLoader->requests = new_queue(freeRequest);
     return newLoader;
 }
+
 void free_Loader(Loader* loader)
 {
     free_list(loader->loadedList);
