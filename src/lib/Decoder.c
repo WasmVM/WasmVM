@@ -2,6 +2,8 @@
 #include <dataTypes/Value.h>
 #include <Decoder.h>
 
+#include "stages/decoder/sections.h"
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
