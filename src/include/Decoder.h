@@ -5,7 +5,7 @@
 #include <Stage.h>
 #include <Loader.h>
 #include <structures/WasmModule.h>
-#include <architectures/decoder/sections.h>
+#include <stages/decoder/sections.h>
 
 typedef struct _decoder {
     Stage       parent;         // inherit from Stage

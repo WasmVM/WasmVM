@@ -1,5 +1,5 @@
-#ifndef UTILS
-#define UTILS
+#ifndef WASMVM_DECODER_UTILS_DEF
+#define WASMVM_DECODER_UTILS_DEF
 
 #include <stdint.h>
 

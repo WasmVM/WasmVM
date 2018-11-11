@@ -1,4 +1,4 @@
-#include <architectures/decoder/sections.h>
+#include <stages/decoder/sections.h>
 
 #include "Utils.h"
 
