@@ -1,5 +1,6 @@
 #include <core/Runtime.h>
 #include <dataTypes/Value.h>
+#include <stdlib.h>
 #include <stdio.h>
 
 int runtime_i32_rem_s(Stack* stack)
