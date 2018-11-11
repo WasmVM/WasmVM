@@ -8,24 +8,21 @@
 
 ## 先備條件
 
+### 一般建置
+
 * CMake >= 2.6
 
 * 支援 C++11 及標準函式庫的 C++ 編譯器
 
-### 開發工具 SkyPat 先備套件
-#### Ubuntu/Debian 使用者
+### 開發者建置
 ```
-$ sudo apt-get update
-$ sudo apt-get install wget automake autoconf libtool build-essential
-```
-
-#### Ubuntu/Debian 開發者
+#### Ubuntu/Debian
 ```
 $ sudo apt-get update
 $ sudo apt-get install wget automake autoconf libtool build-essential cppcheck astyle colordiff
 ```
 
-#### Fedora/CentOS 使用者
+#### Fedora/CentOS
 ```
 $ sudo yum install wget automake autoconf libtool make automake gcc gcc-c++
 $ sudo yum install kernel-devel 
@@ -59,6 +56,8 @@ make -j4
 ```
   
 ## 執行
+
+**目前尚未完成**
 
 1. 準備好以`.wasm`為副檔名的 WebAssembly 位元檔
   
