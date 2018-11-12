@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <dataTypes/vector.h>
 
-typedef struct {
+typedef struct MemInst_ {
     vector* data; // char
     uint32_t max;
 } MemInst;

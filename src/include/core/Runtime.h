@@ -2,9 +2,11 @@
 #define WASMVM_CORE_RUNTIME_DEF
 
 #include <stdint.h>
+#include <dataTypes/vector.h>
 #include <core/Stack.h>
 #include <core/Store.h>
 
+/*** Numeric ***/
 int runtime_i32_const(Stack* stack, int32_t value);
 int runtime_i64_const(Stack* stack, int64_t value);
 int runtime_f32_const(Stack* stack, float value);
@@ -131,5 +133,30 @@ int runtime_f64_convert_s_i64(Stack* stack);
 int runtime_f64_convert_u_i32(Stack* stack);
 int runtime_f64_convert_u_i64(Stack* stack);
 int runtime_f64_reinterpret_i64(Stack* stack);
+
+/*** Memory ***/
+int runtime_i32_load8_s(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_load8_u(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_load16_s(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_load16_u(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_load(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_store8(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_store16(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i32_store(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load8_s(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load8_u(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load16_s(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load16_u(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load32_s(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load32_u(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_load(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_store8(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_store16(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_store32(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_i64_store(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_f32_load(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_f32_store(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_f64_load(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
+int runtime_f64_store(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
 
 #endif
