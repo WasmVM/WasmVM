@@ -159,4 +159,8 @@ int runtime_f32_store(Stack* stack, vector* mems, uint32_t offset, uint32_t alig
 int runtime_f64_load(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
 int runtime_f64_store(Stack* stack, vector* mems, uint32_t offset, uint32_t align);
 
+/*** Parametric ***/
+int runtime_drop(Stack* stack);
+int runtime_select(Stack* stack);
+
 #endif

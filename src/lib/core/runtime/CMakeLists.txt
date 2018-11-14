@@ -157,4 +157,7 @@ add_library(wasmvm_runtime OBJECT
 	i64_store16.c
 	i64_store32.c
 	i64_store8.c
+	# Parametric
+	drop.c
+	select.c
 )
