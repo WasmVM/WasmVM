@@ -153,13 +153,13 @@ SKYPAT_F(Loader, activate_loaded)
     loader->parent.activate((Component*)loader);
     int* resValue = NULL;
     pthread_join(loader->parent.thread, (void**)&resValue);
-    EXPECT_EQ(strcmp(result1, ""), 0);
-    EXPECT_EQ(strcmp(result2, ""), 0);
+    EXPECT_EQ(strcmp(result1, "Requests 1, Decoded: 0\n"), 0);
+    EXPECT_EQ(strcmp(result2, "Requests 0, Decoded: 0\n"), 0);
     EXPECT_EQ(strcmp(result3, ""), 0);
     EXPECT_EQ(strcmp(result4, ""), 0);
     EXPECT_EQ(loader->requests->size, 0);
     EXPECT_EQ(loader->decodedStack->size, 0);
-    EXPECT_EQ(loader->loadedList->size, 2);
+    EXPECT_EQ(loader->loadedList->size, 1);
     EXPECT_FALSE(loader->parent.isTerminated);
     EXPECT_EQ(*resValue, 0);
 

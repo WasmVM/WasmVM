@@ -24,10 +24,15 @@ static void* run_Loader(Loader* loader)
         loader->requests->pop(loader->requests, (void**)&request);
         // Check whether loaded or not
         char* loadName = (char*)((Stage*)request->stages->head->data)->input;
+        _Bool loaded = 0;
         for(listNode* cur = loader->loadedList->head; cur != NULL; cur = cur->next) {
             if(!strcmp(loadName, (char*)cur->data)) {
-                continue;
+                loaded = 1;
+                break;
             }
+        }
+        if(loaded) {
+            continue;
         }
         loader->loadedList->push_back(loader->loadedList, loadName);
         // Run stages
