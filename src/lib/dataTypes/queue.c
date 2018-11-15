@@ -24,7 +24,7 @@ static int queuePop(queue* thisqueue, void** dataPtr)
         *dataPtr = node->data;
         free(node);
         if(thisqueue->head == NULL) {
-            thisqueue->tail == NULL;
+            thisqueue->tail = NULL;
         }
         --thisqueue->size;
         return 0;
@@ -62,6 +62,7 @@ void free_queue(queue* thisqueuePtr)
         queueNode* cur = thisqueuePtr->head;
         while(cur != NULL) {
             thisqueuePtr->freeElem(cur->data);
+            cur = cur->next;
         }
     }
     free(thisqueuePtr);

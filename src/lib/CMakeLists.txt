@@ -26,6 +26,10 @@ add_library(wasmvm_core
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 
+target_link_libraries(wasmvm_core
+    ${CMAKE_THREAD_LIBS_INIT}
+)
+
 install(TARGETS wasmvm_core
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
