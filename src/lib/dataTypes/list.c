@@ -53,7 +53,7 @@ list* new_list(void (*freeElem)(void* elem))
     newQueue->head = NULL;
     newQueue->tail = NULL;
     newQueue->size = 0;
-    newQueue->push_back = listPushBack;
+    newQueue->push_back = (void (*)(list*, const void*))listPushBack;
     newQueue->at = listAt;
     newQueue->removeAt = listRemoveAt;
     newQueue->freeElem = freeElem;
@@ -66,6 +66,7 @@ void free_list(list* thislistPtr)
         listNode* cur = thislistPtr->head;
         while(cur != NULL) {
             thislistPtr->freeElem(cur->data);
+            cur = cur->next;
         }
     }
     free(thislistPtr);
