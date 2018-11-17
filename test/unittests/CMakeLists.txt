@@ -1,6 +1,11 @@
 enable_testing()
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test/unittests)
 
+include_directories(
+    ${CMAKE_CURRENT_LIST_DIR}
+    ${PROJECT_SOURCE_DIR}/include
+)
+
 function(add_unittest filepath prefix)
     get_filename_component(unittest ${filepath} NAME_WE)
     set(unittest_src "${PROJECT_BINARY_DIR}/test/unittests/${prefix}${filepath}.cpp")

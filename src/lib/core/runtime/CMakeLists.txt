@@ -6,6 +6,7 @@
 
 
 add_library(wasmvm_runtime OBJECT
+	# Numeric
 	i32_const.c
 	i64_const.c
 	f32_const.c
@@ -132,4 +133,31 @@ add_library(wasmvm_runtime OBJECT
 	f64_convert_u_i32.c
 	f64_convert_u_i64.c
 	f64_reinterpret_i64.c
+	# Memory
+	f32_load.c
+	f32_store.c
+	f64_load.c
+	f64_store.c
+	i32_load.c
+	i32_load16_s.c
+	i32_load16_u.c
+	i32_load8_s.c
+	i32_load8_u.c
+	i32_store.c
+	i32_store16.c
+	i32_store8.c
+	i64_load.c
+	i64_load16_s.c
+	i64_load16_u.c
+	i64_load32_s.c
+	i64_load32_u.c
+	i64_load8_s.c
+	i64_load8_u.c
+	i64_store.c
+	i64_store16.c
+	i64_store32.c
+	i64_store8.c
+	# Parametric
+	drop.c
+	select.c
 )

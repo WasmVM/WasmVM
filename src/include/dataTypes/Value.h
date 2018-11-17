@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <dataTypes/Entry.h>
 
-typedef enum{
+typedef enum {
     Value_Unspecified = 0,
     Value_i32,
     Value_i64,
@@ -15,14 +15,14 @@ typedef enum{
 typedef struct {
     Entry parent;
     ValueType type;
-    union{
+    union {
         int32_t i32;
         int64_t i64;
         uint32_t u32;
         uint64_t u64;
         float f32;
         double f64;
-    }value;
+    } value;
 } Value;
 
 Value* new_i32Value(int32_t value);

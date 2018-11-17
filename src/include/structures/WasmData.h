@@ -11,4 +11,7 @@ typedef struct _wasm_data {
     vector*     init;       // char
 } WasmData;
 
+WasmData* new_WasmData();
+void free_WasmData(WasmData* thisWasmData);
+
 #endif

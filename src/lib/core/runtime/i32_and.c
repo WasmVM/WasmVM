@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 
-int runtime_i32_and(Stack* stack){
+int runtime_i32_and(Stack* stack)
+{
     Value *value1 = NULL, *value2 = NULL;
     stack->entries->pop(stack->entries, (void**)&value2);
     stack->entries->pop(stack->entries, (void**)&value1);
