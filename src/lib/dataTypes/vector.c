@@ -3,12 +3,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-static void _push_back(vector* thisVector, const void* valuePtr){
-    if(thisVector->length >= thisVector->capacity){
-        if(thisVector->length == 0){
+static void _push_back(vector* thisVector, const void* valuePtr)
+{
+    if(thisVector->length >= thisVector->capacity) {
+        if(thisVector->length == 0) {
             thisVector->data = malloc(thisVector->unitSize);
             thisVector->capacity = 1;
-        }else{
+        } else {
             thisVector->data = realloc(thisVector->data, thisVector->unitSize * thisVector->length * 2);
             thisVector->capacity = thisVector->length * 2;
         }
@@ -16,21 +17,24 @@ static void _push_back(vector* thisVector, const void* valuePtr){
     memcpy(thisVector->data + (thisVector->unitSize * thisVector->length), valuePtr, thisVector->unitSize);
     ++thisVector->length;
 }
-static void* _pop_back(vector* thisVector){
-    if(thisVector->length <= 0){
+static void* _pop_back(vector* thisVector)
+{
+    if(thisVector->length <= 0) {
         return NULL;
     }
     void* valuePtr = thisVector->at(thisVector, thisVector->length - 1);
     --thisVector->length;
     return valuePtr;
 }
-static void _shrink(vector* thisVector){
-    if(thisVector->length < thisVector->capacity){
+static void _shrink(vector* thisVector)
+{
+    if(thisVector->length < thisVector->capacity) {
         thisVector->data = realloc(thisVector->data, thisVector->unitSize * thisVector->length);
         thisVector->capacity = thisVector->length;
     }
 }
-static void* _at(vector* thisVector, size_t index){
+static void* _at(vector* thisVector, size_t index)
+{
     if(thisVector->length <= 0 || index >= thisVector->length) {
         return NULL;
     }
@@ -39,7 +43,8 @@ static void* _at(vector* thisVector, size_t index){
     return result;
 }
 
-vector* new_vector(size_t unitSize, void (*freeElem)(void* elem)){
+vector* new_vector(size_t unitSize, void (*freeElem)(void* elem))
+{
     vector* thisVector = (vector*) malloc(sizeof(vector));
     thisVector->data = NULL;
     thisVector->length = 0;
@@ -52,9 +57,10 @@ vector* new_vector(size_t unitSize, void (*freeElem)(void* elem)){
     thisVector->at = _at;
     return thisVector;
 }
-void free_vector(vector* thisVector){
-    if(thisVector->freeElem){
-        for(size_t i = 0; i < thisVector->length; ++i){
+void free_vector(vector* thisVector)
+{
+    if(thisVector->freeElem) {
+        for(size_t i = 0; i < thisVector->length; ++i) {
             thisVector->freeElem(thisVector->at(thisVector, i));
         }
     }

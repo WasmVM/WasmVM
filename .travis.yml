@@ -15,14 +15,28 @@ git:
 services: 
   - docker
 
-before_install:
-  - sudo docker pull wasmvm/develop:CI &&
-    sudo docker create --privileged=true -t --name wasmvm-ci --volume ${TRAVIS_BUILD_DIR}:/root wasmvm/develop:CI &&
-    sudo docker start wasmvm-ci
-
-script:
-  - sudo docker exec -t wasmvm-ci /bin/bash -c "mkdir -p ~/build-cmake" &&
-    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-cmake .." &&
-    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && make -j8 install" &&
-    sudo docker exec -t wasmvm-ci /bin/bash -c "ldconfig" &&
-    sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && ctest"
+jobs:
+  include:
+    - stage: "Style Check"
+      before_install:
+        - sudo apt-get install -y astyle
+      addons:
+        apt:
+          update: true
+      script:
+        - cp -r ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}-check
+        - cd ${TRAVIS_BUILD_DIR}-check
+        - astyle --style=kr --indent=spaces=4 --indent-switches --suffix=none --recursive *.c *.h *.hpp
+        - diff -qr ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}-check
+        - cd ${TRAVIS_BUILD_DIR} && rm -rf ${TRAVIS_BUILD_DIR}-check
+    - stage: "Test"
+      before_install:
+        - sudo docker pull wasmvm/develop:CI &&
+          sudo docker create --privileged=true -t --name wasmvm-ci --volume ${TRAVIS_BUILD_DIR}:/root wasmvm/develop:CI &&
+          sudo docker start wasmvm-ci
+      script:
+        - sudo docker exec -t wasmvm-ci /bin/bash -c "mkdir -p ~/build-cmake" &&
+          sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-cmake .." &&
+          sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && make -j8 install" &&
+          sudo docker exec -t wasmvm-ci /bin/bash -c "ldconfig" &&
+          sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && ctest"

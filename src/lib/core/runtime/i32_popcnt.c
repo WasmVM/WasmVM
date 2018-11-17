@@ -16,5 +16,6 @@ int runtime_i32_popcnt(Stack* stack){
     }
     stack->entries->push(stack->entries, new_i32Value(count));
     free(value1);
+
     return 0;
 }

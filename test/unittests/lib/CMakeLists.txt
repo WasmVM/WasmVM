@@ -1,8 +1,10 @@
-include_directories(
-    ${CMAKE_CURRENT_LIST_DIR}
-    ${PROJECT_SOURCE_DIR}/include
-)
 file(MAKE_DIRECTORY ${PROJECT_BINARY_DIR}/test/unittests/lib)
+
+macro(add_lib_unittest unittest)
+    add_unittest(${unittest} lib/)
+endmacro(add_lib_unittest unittest)
+
+add_lib_unittest(Loader_unittest)
 
 add_subdirectory(core)
 add_subdirectory(instance)

@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-typedef struct InstrInst_{
+typedef struct InstrInst_ {
     uint8_t opcode;
     void (*free)(struct InstrInst_* instrInst);
 } InstrInst;

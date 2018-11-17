@@ -2,7 +2,8 @@
 
 #include <stdlib.h>
 
-MemoryInstrInst* new_MemoryInstrInst(){
+MemoryInstrInst* new_MemoryInstrInst()
+{
     MemoryInstrInst* instrInst = (MemoryInstrInst*) malloc(sizeof(MemoryInstrInst));
     instrInst->offset = 0;
     instrInst->align = 0;
@@ -10,6 +11,7 @@ MemoryInstrInst* new_MemoryInstrInst(){
     instrInst->parent.free = (void(*)(InstrInst*)) free_MemoryInstrInst;
     return instrInst;
 }
-void free_MemoryInstrInst(MemoryInstrInst* instrInst){
+void free_MemoryInstrInst(MemoryInstrInst* instrInst)
+{
     free(instrInst);
 }

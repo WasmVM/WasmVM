@@ -1,0 +1,39 @@
+#!/bin/bash
+
+OPTIONS="--style=kr --exclude=build*/ --indent=spaces=4 --indent-switches"
+
+RETURN=0
+ASTYLE=$(which astyle)
+if [ $? -ne 0 ]; then
+    echo "[!] astyle not installed. Unable to check source file format policy." >&2
+    exit 1
+fi
+
+DIFF=$(which colordiff)
+if [ $? -ne 0 ]; then
+    DIFF=diff
+fi
+
+FILES=`git diff --cached --name-only --diff-filter=ACMR | grep -E "\.(c|cpp|h|hpp)$"`
+for FILE in $FILES; do
+    nf=`git checkout-index --temp $FILE | cut -f 1`
+    newfile=`mktemp /tmp/${nf}.XXXXXX` || exit 1
+    $ASTYLE $OPTIONS < $nf > $newfile 2>> /dev/null
+    $DIFF -u -p -B  "${nf}" "${newfile}"
+    r=$?
+    rm "${newfile}"
+    rm "${nf}"
+    if [ $r != 0 ] ; then
+        echo "[!] $FILE does not follow the consistent coding style." >&2
+        RETURN=1
+    fi
+done
+
+if [ $RETURN -eq 1 ]; then
+    echo "" >&2
+    echo "Make sure you have run astyle as the following:" >&2
+    echo "    astyle $OPTIONS --suffix=none $FILE" >&2
+    echo
+fi
+
+exit $RETURN

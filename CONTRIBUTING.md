@@ -7,7 +7,7 @@ Discord: https://discord.gg/yHBRrj4
 2. 在下面的討論表明自己有興趣參與這個 issue
 3. 在 Discord 或 Issue 的討論串和 Owner 討論
 4. 得到 Owner 認可後開始實作
-5. 實作完提交 PR，指定除了自己以外的 >=1 位 Reviewer 或 Owner 做 review
+5. 實作完提交 PR
 6. 修改 PR 到 Reviewer merge 你的 PR
 
 指定 Reviewer 的方法：
@@ -29,3 +29,6 @@ Discord: https://discord.gg/yHBRrj4
 # GitHub
 
 * 實作新功能請開新的 branch，不要直接在 master 做
+* 一個 PR 理想的狀況是 1~3 個 commit，最多 5~6 個
+  
+  有重複的自己要 squash，或是分成不同的 PR，不要在一個 PR 實作太多功能

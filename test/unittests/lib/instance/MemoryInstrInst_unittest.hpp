@@ -1,8 +1,8 @@
 #include <skypat/skypat.h>
 
 #define _Bool bool
-extern "C"{
-    #include <instance/MemoryInstrInst.h>
+extern "C" {
+#include <instance/MemoryInstrInst.h>
 }
 #undef _Bool
 

@@ -3,7 +3,7 @@
 
 #include <dataTypes/vector.h>
 
-typedef struct ModuleInst_{
+typedef struct ModuleInst_ {
     vector* types;       // FuncType
     vector* funcaddrs;   // uint32_t
     vector* tableaddrs;  // uint32_t

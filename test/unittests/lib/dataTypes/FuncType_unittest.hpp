@@ -1,8 +1,8 @@
 #include <skypat/skypat.h>
 
 #define _Bool bool
-extern "C"{
-    #include <dataTypes/FuncType.h>
+extern "C" {
+#include <dataTypes/FuncType.h>
 }
 #undef _Bool
 

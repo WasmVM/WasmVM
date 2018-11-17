@@ -2,7 +2,8 @@
 
 #include <stdlib.h>
 
-static void stackPush(stack* thisstack, void* data) {
+static void stackPush(stack* thisstack, void* data)
+{
     stackNode* newNode = (stackNode*)malloc(sizeof(stackNode));
     newNode->data = data;
     newNode->next = thisstack->head;
@@ -10,7 +11,8 @@ static void stackPush(stack* thisstack, void* data) {
     ++thisstack->size;
 }
 
-static int stackPop(stack* thisstack, void** dataPtr) {
+static int stackPop(stack* thisstack, void** dataPtr)
+{
     if (thisstack->size) {
         stackNode* node = thisstack->head;
         thisstack->head = node->next;
@@ -23,7 +25,8 @@ static int stackPop(stack* thisstack, void** dataPtr) {
     }
 }
 
-static int stackTop(stack* thisstack, void** dataPtr) {
+static int stackTop(stack* thisstack, void** dataPtr)
+{
     if (thisstack->size) {
         *dataPtr = thisstack->head->data;
         return 0;
@@ -32,7 +35,8 @@ static int stackTop(stack* thisstack, void** dataPtr) {
     }
 }
 
-stack* new_stack() {
+stack* new_stack()
+{
     stack* newstack = (stack*)malloc(sizeof(stack));
     newstack->head = NULL;
     newstack->size = 0;
@@ -41,6 +45,7 @@ stack* new_stack() {
     newstack->top = stackTop;
     return newstack;
 }
-void free_stack(stack* thisstack) {
+void free_stack(stack* thisstack)
+{
     free(thisstack);
 }
