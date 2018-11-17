@@ -1,9 +1,9 @@
 #include <skypat/skypat.h>
 
 #define _Bool bool
-extern "C"{
-    #include <dataTypes/Value.h>
-    #include <core/Runtime.h>
+extern "C" {
+#include <dataTypes/Value.h>
+#include <core/Runtime.h>
 }
 #undef _Bool
 
@@ -13,7 +13,7 @@ SKYPAT_F(Runtime_i32_popcnt, regular)
     Stack* stack = new_Stack();
     Value *value1 = new_i32Value(123); // 1111011 in binary, which has 6 1's
     stack->entries->push(stack->entries, value1);
-    
+
     // Run
     runtime_i32_popcnt(stack);
 
