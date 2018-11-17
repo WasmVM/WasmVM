@@ -2,6 +2,8 @@ macro(add_runtime_unittest unittest)
     add_unittest(${unittest} lib/core/runtime/)
 endmacro(add_runtime_unittest unittest)
 
+
+# Numeric Unittest
 add_runtime_unittest(i32_popcnt_unittest)
 add_runtime_unittest(i32_add_unittest)
 add_runtime_unittest(i32_and_unittest)
@@ -31,3 +33,6 @@ add_runtime_unittest(i32_shr_s_unittest)
 add_runtime_unittest(i32_shl_unittest)
 add_runtime_unittest(i32_rotr_unittest)
 add_runtime_unittest(i32_rotl_unittest)
+
+# Control Unittest
+add_runtime_unittest(nop_unittest)
