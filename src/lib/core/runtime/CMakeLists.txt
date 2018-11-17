@@ -160,4 +160,6 @@ add_library(wasmvm_runtime OBJECT
 	# Parametric
 	drop.c
 	select.c
+	# Control
+	nop.c
 )
