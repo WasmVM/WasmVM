@@ -19,12 +19,19 @@ SKYPAT_F(runtime_i32_load_32, regular)
     uint32_t offset = sizeof(snull) / sizeof(snull[0]);
     vector *vector1 = new_vector(sizeof(int32_t), free);
 
+    // vector is empty error check
+    stack->entries->push(stack->entries, new_i32Value(0));
+    int ret = runtime_i32_load(stack, vector1, offset, 0);
+    EXPECT_EQ(ret, -1);
+
+    // insert offset data to vector
     for(uint8_t lop = 0; lop < offset; lop++) {
-        vector1->push_back(vector1, (const void *)(str + lop));
+        vector1->push_back(vector1, (const void *)(snull + lop));
     }
 
+    // insert data to vector
     for(uint8_t lop = 0; lop < strlength; lop++) {
-        vector1->push_back(vector1, (const void *)(str + lop));   // insert data to vector
+        vector1->push_back(vector1, (const void *)(str + lop));
     }
 
     for(uint8_t lop = 0; lop < strlength; lop++) {
@@ -42,8 +49,7 @@ SKYPAT_F(runtime_i32_load_32, regular)
 
     // error check
     stack->entries->push(stack->entries, new_i32Value(strlength));
-
-    int ret = runtime_i32_load(stack, vector1, offset, 0);
+    ret = runtime_i32_load(stack, vector1, offset, 0);
     EXPECT_EQ(ret, -1);
 
     // clean datas
