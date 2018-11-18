@@ -38,6 +38,7 @@ int runtime_i32_gt_u(Stack* stack);
 int runtime_i32_ge_u(Stack* stack);
 int runtime_i32_clz(Stack* stack);
 int runtime_i32_ctz(Stack* stack);
+int runtime_i32_eqz(Stack* stack);
 int runtime_i32_popcnt(Stack* stack);
 int runtime_i64_add(Stack* stack);
 int runtime_i64_sub(Stack* stack);
