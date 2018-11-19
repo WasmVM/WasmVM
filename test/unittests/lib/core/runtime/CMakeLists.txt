@@ -34,5 +34,7 @@ add_runtime_unittest(i32_shl_unittest)
 add_runtime_unittest(i32_rotr_unittest)
 add_runtime_unittest(i32_rotl_unittest)
 
+add_runtime_unittest(i64_add_unittest)
+
 # Control Unittest
 add_runtime_unittest(nop_unittest)
