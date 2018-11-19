@@ -17,7 +17,7 @@ SKYPAT_F(runtime_i32_load8_u, regular)
     uint32_t offset = sizeof(snull) / sizeof(snull[0]);
     vector *vector1 = new_vector(sizeof(int32_t), free);
     for(uint8_t lop = 0; lop < offset; lop++) {
-        vector1->push_back(vector1, (const void *)(str + lop));
+        vector1->push_back(vector1, (const void *)(snull + lop));
     }
     for(uint8_t lop = 0; lop < strlength; lop++) {
         vector1->push_back(vector1, (const void *)(str + lop));   // insert data to vector
