@@ -2,7 +2,9 @@ macro(add_runtime_unittest unittest)
     add_unittest(${unittest} lib/core/runtime/)
 endmacro(add_runtime_unittest unittest)
 
+
 # Numeric Unittest
+add_runtime_unittest(i32_popcnt_unittest)
 add_runtime_unittest(i32_add_unittest)
 add_runtime_unittest(i32_and_unittest)
 add_runtime_unittest(i32_sub_unittest)
