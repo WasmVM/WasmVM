@@ -38,6 +38,7 @@ add_runtime_unittest(i64_add_unittest)
 
 # Memory Unittest
 add_runtime_unittest(i32_load_unittest)
+add_runtime_unittest(i32_load8_u_unittest)
 
 # Control Unittest
 add_runtime_unittest(nop_unittest)
