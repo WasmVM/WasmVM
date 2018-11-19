@@ -35,3 +35,7 @@ Value* new_f64Value(double value)
     val->value.f64 = value;
     return val;
 }
+void free_Value(Value *value)
+{
+    free(value);
+}
