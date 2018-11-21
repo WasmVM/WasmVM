@@ -17,7 +17,7 @@ SKYPAT_F(Value, new_i32_value)
     EXPECT_EQ(value->type, Value_i32);
     EXPECT_EQ(value->value.i32, 1024);
 
-    free(value);
+    free_Value(value);
 }
 
 SKYPAT_F(Value, new_i64_value)
@@ -30,7 +30,7 @@ SKYPAT_F(Value, new_i64_value)
     EXPECT_EQ(value->type, Value_i64);
     EXPECT_EQ(value->value.i64, 1234);
 
-    free(value);
+    free_Value(value);
 }
 
 SKYPAT_F(Value, new_f32_value)
@@ -43,7 +43,7 @@ SKYPAT_F(Value, new_f32_value)
     EXPECT_EQ(value->type, Value_f32);
     EXPECT_EQ(value->value.f32, 2.5);
 
-    free(value);
+    free_Value(value);
 }
 
 SKYPAT_F(Value, new_f64_value)
@@ -56,5 +56,5 @@ SKYPAT_F(Value, new_f64_value)
     EXPECT_EQ(value->type, Value_f64);
     EXPECT_EQ(value->value.f64, 1.59);
 
-    free(value);
+    free_Value(value);
 }
