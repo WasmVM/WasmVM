@@ -5,6 +5,10 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_LIST_DIR}/cmake)
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -std=c11")
 set(CMAKE_CXX_FLAGS "${CMAKE_C_FLAGS_DEBUG} -std=c++11")
 
+# pthread
+set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+find_package(Threads REQUIRED)
+
 add_subdirectory(src)
 
 if(CMAKE_BUILD_TYPE STREQUAL "Debug")

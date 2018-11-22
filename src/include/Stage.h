@@ -6,7 +6,7 @@ typedef struct _stage {
     void*   output;
     void    (*setInput)(struct _stage *stage, void* input);
     void*   (*getOutput)(struct _stage *stage);
-    int     (*run)();
+    int     (*run)(struct _stage *stage);
 } Stage;
 
 #endif
