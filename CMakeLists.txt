@@ -19,18 +19,25 @@ if(CMAKE_BUILD_TYPE STREQUAL "Debug")
 
     include(ExternalProject)
     set($ENV{SHELL} "/bin/bash")
-    ExternalProject_Add(SkyPat
-        PREFIX SkyPat
-        GIT_REPOSITORY https://github.com/skymizer/SkyPat.git
-        GIT_TAG v3.1.1
-        CONFIGURE_COMMAND "<SOURCE_DIR>/configure" "--prefix=<INSTALL_DIR>"
-    )
-    ExternalProject_Add_Step(SkyPat autogen
-        COMMAND "<SOURCE_DIR>/autogen.sh"
-        DEPENDEES download
-        DEPENDERS configure
-    )
-    include_directories(${PROJECT_BINARY_DIR}/SkyPat/include)
-    link_directories(${PROJECT_BINARY_DIR}/SkyPat/lib)
+
+    find_package(SkyPat)
+    if(NOT (SKYPAT_INCLUDE_DIR AND SKYPAT_LIBRARY_DIR))
+        ExternalProject_Add(SkyPat
+            PREFIX SkyPat
+            GIT_REPOSITORY https://github.com/skymizer/SkyPat.git
+            GIT_TAG v3.1.1
+            CONFIGURE_COMMAND "<SOURCE_DIR>/configure" "--prefix=<INSTALL_DIR>"
+        )
+        ExternalProject_Add_Step(SkyPat autogen
+            COMMAND "<SOURCE_DIR>/autogen.sh"
+            DEPENDEES download
+            DEPENDERS configure
+        )
+        set(SKYPAT_INCLUDE_DIR ${PROJECT_BINARY_DIR}/SkyPat/include)
+        set(SKYPAT_LIBRARY_DIR ${PROJECT_BINARY_DIR}/SkyPat/lib)
+    endif(NOT (SKYPAT_INCLUDE_DIR AND SKYPAT_LIBRARY_DIR))
+    include_directories(${SKYPAT_INCLUDE_DIR})
+    link_directories(${SKYPAT_LIBRARY_DIR})
+
     add_subdirectory(test)
 endif(CMAKE_BUILD_TYPE STREQUAL "Debug")
