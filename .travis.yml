@@ -30,8 +30,8 @@ jobs:
       script:
         - cp -r ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}-check
         - cd ${TRAVIS_BUILD_DIR}-check
-        - astyle --style=kr --indent=spaces=4 --indent-switches --suffix=none --recursive *.c *.h *.hpp
-        - diff -qr ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}-check
+        - astyle --style=kr --exclude=build-cmake --indent=spaces=4 --indent-switches --suffix=none --recursive *.c *.h *.hpp
+        - diff -qr --exclude=build-cmake ${TRAVIS_BUILD_DIR} ${TRAVIS_BUILD_DIR}-check
         - cd ${TRAVIS_BUILD_DIR} && rm -rf ${TRAVIS_BUILD_DIR}-check
     - stage: "Test"
       before_install:
