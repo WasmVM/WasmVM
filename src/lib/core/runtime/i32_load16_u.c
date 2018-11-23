@@ -18,7 +18,7 @@ int runtime_i32_load16_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_
         free(value1);
         return -1;
     }
-    
+
     data = mems->at(mems, ea);
     *data = *data & (0xffff);
     stack->entries->push(stack->entries, new_i32Value(*data));
