@@ -15,6 +15,10 @@ git:
 services: 
   - docker
 
+cache:
+  directories:
+    - build-cmake/SkyPat
+
 jobs:
   include:
     - stage: "Style Check"
