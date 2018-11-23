@@ -16,9 +16,11 @@ function(add_unittest filepath prefix)
         ${ARGN}
         ${unittest_header}
     )
-    add_dependencies(${unittest}
-        SkyPat
-    )
+    if(TARGET SkyPat)
+        add_dependencies(${unittest}
+            SkyPat
+        )
+    endif(TARGET SkyPat)
     target_link_libraries(${unittest}
         wasmvm_core
         skypat
