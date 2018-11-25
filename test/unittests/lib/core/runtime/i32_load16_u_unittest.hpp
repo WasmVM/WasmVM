@@ -11,32 +11,36 @@ SKYPAT_F(runtime_i32_load16_u, regular)
 {
     // Prepare
     Stack* stack = new_Stack();
-    int32_t str[] = { 60000, 50000, 65537, 65540, 65550 };
-    uint8_t strlength = sizeof(str) / sizeof(str[0]);
-    int32_t snull[] = { 0, 0, 0 };
-    uint32_t offset = sizeof(snull) / sizeof(snull[0]);
-    vector *vector1 = new_vector(sizeof(int32_t), free);
-    for(uint8_t lop = 0; lop < offset; lop++) {
-        vector1->push_back(vector1, (const void *)(snull + lop));
+    MemInst* memory = new_MemInst();
+    memory->max = 1;
+    int32_t data[] = { 60000, 50000, 65537, 65540, 65550 };
+    size_t data_size = sizeof(data)/sizeof(data[0]);
+    uint32_t byteLen = 8 * sizeof(int32_t);
+    uint32_t offset = 4 * sizeof(int32_t);
+    uint8_t* bytePtr = (uint8_t*) data;
+    uint8_t zero = 0;
+
+    for(int32_t lop = 0; lop < offset; lop++) {
+        memory->data->push_back(memory->data, (const void *)&zero);
     }
-    for(uint8_t lop = 0; lop < strlength; lop++) {
-        vector1->push_back(vector1, (const void *)(str + lop));   // insert data to vector
+    for(int32_t lop = 0; lop < byteLen; lop++) {
+        memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
     }
-    for(uint8_t lop = 0; lop < strlength; lop++) {
+    for(uint8_t lop = 0; lop < data_size; lop += sizeof(int32_t)) {
         // Set load location
-        stack->entries->push(stack->entries, new_i32Value(lop));
+        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         // Run
-        runtime_i32_load16_u(stack, vector1, offset, 0);
+        runtime_i32_load16_u(stack, memory, offset, 0);
         // Check
         Value *check = NULL;
         stack->entries->pop(stack->entries, (void**)&check);
-        EXPECT_EQ(check->value.i32, (((int32_t)str[lop]) & (0xffff)));
+        EXPECT_EQ(check->value.i32, (uint16_t)data[lop]);
     }
     // error check
-    stack->entries->push(stack->entries, new_i32Value(strlength));
-    int ret = runtime_i32_load16_u(stack, vector1, offset, 0);
+    stack->entries->push(stack->entries, new_i32Value(65540));
+    int ret = runtime_i32_load16_u(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
     // clean datas
-    free(vector1);
-    free(stack);
+    free_MemInst(memory);
+    free_Stack(stack);
 }
