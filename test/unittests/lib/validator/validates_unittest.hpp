@@ -62,7 +62,7 @@ SKYPAT_F(Validate_Table, min_greater_than_k)
 {
     // Prepare
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    uint32_t k = UINT32_MAX / 65536;
+    uint32_t k = UINT32_MAX;
     table->min = k + 3;
     table->max = 0;
 
@@ -76,7 +76,7 @@ SKYPAT_F(Validate_Table, max_greater_than_k)
 {
     // Prepare
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    uint32_t k = UINT32_MAX / 65536;
+    uint32_t k = UINT32_MAX;
     table->min = 4;
     table->max = k + 10;
 

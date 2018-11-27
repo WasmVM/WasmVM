@@ -9,7 +9,15 @@ typedef struct _wasm_import {
     char*       module;
     char*       name;
     DescType    descType;
-    uint32_t    descIdex;
+    union {
+        uint32_t typeidx;
+        struct {
+            uint32_t min;
+            uint32_t max;
+        } limits;
+        Value value;
+    } desc;
+
 } WasmImport;
 
 #endif
