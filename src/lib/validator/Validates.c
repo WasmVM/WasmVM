@@ -10,11 +10,11 @@ int validate_FunctionType(FuncType* funcType)
 
 int validate_Func(WasmFunc* func)
 {
-
+    return 0; // TODO:
 }
 int validate_Expr(vector* expr)
 {
-
+    return 0; // TODO:
 }
 int validate_Table(WasmTable* table)
 {

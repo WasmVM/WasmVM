@@ -58,34 +58,6 @@ SKYPAT_F(Validate_Table, valid)
     free(table);
 }
 
-SKYPAT_F(Validate_Table, min_greater_than_k)
-{
-    // Prepare
-    WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    uint32_t k = UINT32_MAX;
-    table->min = k + 3;
-    table->max = 0;
-
-    // Check
-    EXPECT_NE(validate_Table(table), 0);
-
-    free(table);
-}
-
-SKYPAT_F(Validate_Table, max_greater_than_k)
-{
-    // Prepare
-    WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    uint32_t k = UINT32_MAX;
-    table->min = 4;
-    table->max = k + 10;
-
-    // Check
-    EXPECT_NE(validate_Table(table), 0);
-
-    free(table);
-}
-
 SKYPAT_F(Validate_Table, max_smaller_than_min)
 {
     // Prepare
