@@ -87,7 +87,7 @@ int validate_Func(WasmFunc* func)
 }
 int validate_Expr(vector* expr)
 {
-
+    return 0; // TODO:
 }
 int validate_Table(WasmTable* table)
 {
