@@ -4,18 +4,24 @@
 #include <stdint.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/vector.h>
-#include <dataTypes/stack.h>
+#include <structures/WasmModule.h>
+#include <structures/WasmFunc.h>
 
 typedef struct {
     vector* label_types; // ValueType
     vector* end_types; // ValueType
-    uint32_t height;
     _Bool unreachable;
 } ctrl_frame;
 
 typedef struct {
-    stack* opd_stack; // ValueType
-    stack* ctrl_stack; // ctrl_frame
+    WasmModule* module;
+    vector* locals; // ValueType
+    vector* returns; // ValueType
 } Context;
+
+ctrl_frame* new_ctrl_frame();
+void free_ctrl_frame(ctrl_frame* frame);
+Context* new_Context(WasmModule* module, WasmFunc* func);
+void free_Context(Context* context);
 
 #endif

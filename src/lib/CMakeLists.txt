@@ -29,6 +29,8 @@ add_library(wasmvm_core
     structures/WasmModule.c
     validator/Validator.c
     validator/Validates.c
+    validator/Context.c
+    validator/ExprValidates.c
     validator/InstrValidates.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )

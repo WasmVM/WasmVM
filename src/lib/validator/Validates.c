@@ -5,16 +5,18 @@
 
 int validate_FunctionType(FuncType* funcType)
 {
-    return !(funcType->results->length <= 1); // TODO: Unleash later
+    return 0; // Unleash result type restrict
 }
 
-int validate_Func(WasmFunc* func)
+int validate_Func(WasmFunc* func, WasmModule* module) // FIXME: Test
 {
-    return 0; // TODO:
-}
-int validate_Expr(vector* expr)
-{
-    return 0; // TODO:
+    if(func->type >= module->types->length) {
+        return -1;
+    }
+    Context* context = new_Context(module, func);
+    int result = validate_Expr(func->body, context);
+    free_Context(context);
+    return result;
 }
 int validate_Table(WasmTable* table)
 {
@@ -46,7 +48,7 @@ int validate_Data(WasmData* data, WasmModule* module)
     result &= (data->offset.type == Value_i32);
     return !result;
 }
-int validate_Export(WasmExport* exports, WasmModule* module) //FIXME: test
+int validate_Export(WasmExport* exports, WasmModule* module)
 {
     switch(exports->descType) {
         case Desc_Func:
@@ -61,7 +63,7 @@ int validate_Export(WasmExport* exports, WasmModule* module) //FIXME: test
             return -1;
     }
 }
-int validate_Import(WasmImport* imports, WasmModule* module) //FIXME: test
+int validate_Import(WasmImport* imports, WasmModule* module)
 {
     switch(imports->descType) {
         case Desc_Func:
@@ -97,22 +99,23 @@ int validate_Memory(WasmMemory* memory) //FIXME: test
 {
     return !(memory->min < UINT16_MAX && ((memory->max > 0) ? memory->max < UINT16_MAX && memory->max >= memory->min : 1));
 }
-int validate_Global(WasmGlobal* global) //FIXME: test
+int validate_Global(WasmGlobal* global)
 {
     // 1. The global type is valid
     // 2. Constant expr has been expand to value
     return 0;
 }
-int validate_Elem(WasmElem* elem, WasmModule* module) //FIXME: test
+int validate_Elem(WasmElem* elem, WasmModule* module)
 {
     int result = elem->table < module->tables->length;
     result &= (elem->offset.type == Value_i32);
     for(size_t i = 0; i < elem->init->length; ++i) {
-        result &= *((uint32_t*)elem->init->at(elem->init, i)) < module->funcs->length;
+        uint32_t* funcIndex = (uint32_t*)elem->init->at(elem->init, i);
+        result &= *funcIndex < module->funcs->length;
     }
     return !result;
 }
-int validate_Data(WasmData* data, WasmModule* module) //FIXME: test
+int validate_Data(WasmData* data, WasmModule* module)
 {
     int result = data->data < module->mems->length;
     result &= (data->offset.type == Value_i32);
