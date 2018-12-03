@@ -39,6 +39,7 @@ add_library(wasmvm_runtime OBJECT
 	i32_clz.c
 	i32_ctz.c
 	i32_popcnt.c
+	i32_eqz.c
 	i64_add.c
 	i64_sub.c
 	i64_mul.c
@@ -160,4 +161,6 @@ add_library(wasmvm_runtime OBJECT
 	# Parametric
 	drop.c
 	select.c
+	# Control
+	nop.c
 )
