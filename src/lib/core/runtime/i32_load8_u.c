@@ -16,7 +16,7 @@ int runtime_i32_load8_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_t
         free(value1);
         return -1;
     }
-    int8_t* data = (int8_t*)(memory->data->data + ea);
+    uint8_t* data = (uint8_t*)(memory->data->data + ea);
     stack->entries->push(stack->entries, new_i32Value(*data));
     free(value1);
     return 0;
