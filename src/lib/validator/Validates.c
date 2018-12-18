@@ -20,26 +20,27 @@ int validate_Table(WasmTable* table)
 {
     return !(table->min < UINT32_MAX && ((table->max > 0) ? table->max < UINT32_MAX && table->max >= table->min : 1));
 }
-int validate_Memory(WasmMemory* memory) //FIXME: test
+int validate_Memory(WasmMemory* memory)
 {
     return !(memory->min < UINT16_MAX && ((memory->max > 0) ? memory->max < UINT16_MAX && memory->max >= memory->min : 1));
 }
-int validate_Global(WasmGlobal* global) //FIXME: test
+int validate_Global(WasmGlobal* global)
 {
     // 1. The global type is valid
     // 2. Constant expr has been expand to value
     return 0;
 }
-int validate_Elem(WasmElem* elem, WasmModule* module) //FIXME: test
+int validate_Elem(WasmElem* elem, WasmModule* module)
 {
     int result = elem->table < module->tables->length;
     result &= (elem->offset.type == Value_i32);
     for(size_t i = 0; i < elem->init->length; ++i) {
-        result &= *((uint32_t*)elem->init->at(elem->init, i)) < module->funcs->length;
+        uint32_t* funcIndex = (uint32_t*)elem->init->at(elem->init, i);
+        result &= *funcIndex < module->funcs->length;
     }
     return !result;
 }
-int validate_Data(WasmData* data, WasmModule* module) //FIXME: test
+int validate_Data(WasmData* data, WasmModule* module)
 {
     int result = data->data < module->mems->length;
     result &= (data->offset.type == Value_i32);
