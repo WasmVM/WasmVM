@@ -30,7 +30,7 @@ add_library(wasmvm_core
     validator/Validator.c
     validator/Validates.c
     validator/Context.c
-    validator/ExprValidates.c
+    validator/ExprValidate.c
     validator/InstrValidates.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
