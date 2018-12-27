@@ -50,3 +50,50 @@ SKYPAT_F(Runtime_i32_store_32, regular)
     free_MemInst(memory);
     free_Stack(stack);
 }
+
+
+SKYPAT_F(Runtime_i32_load_and_store_32, regular)
+{
+    Value   *value  = NULL;
+    MemInst *memory = new_MemInst();
+    Stack   *stack  = new_Stack();
+    memory->max = 1;
+
+    uint32_t memlength = 16 * sizeof(int32_t);
+    uint32_t offset = 3 * sizeof(int32_t);
+    uint8_t  zero   = 0;
+
+    // init memory
+    for(uint32_t lop = 0; lop < memlength + offset; lop++) {
+        memory->data->push_back(memory->data, (void*) &zero);
+    }
+
+    // test store
+    for(uint32_t lop = 0; lop < 5; lop++) {
+        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
+        stack->entries->push(stack->entries, new_i32Value(lop + 1));
+
+        int ret = runtime_i32_store(stack, memory, offset, 0);
+        EXPECT_EQ(ret, 0);
+
+        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
+        ret = runtime_i32_load(stack, memory, offset, 0);
+        EXPECT_EQ(ret, 0);
+        
+        stack->entries->pop(stack->entries, (void **) &value);
+        EXPECT_EQ(value->value.i32, lop + 1);
+        free(value);
+        value = NULL;
+    }
+
+    // error check
+    Value *err      = new_i32Value(65537);
+    Value *err_data = new_i32Value(1);
+    stack->entries->push(stack->entries, err);
+    stack->entries->push(stack->entries, err_data);
+    int ret = runtime_i32_store(stack, memory, offset, 0);  // ea > 65536 check
+    EXPECT_EQ(ret, -1);
+
+    free_MemInst(memory);
+    free_Stack(stack);
+}
