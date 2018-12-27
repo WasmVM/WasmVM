@@ -79,7 +79,7 @@ SKYPAT_F(Runtime_i32_load_and_store_32, regular)
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         ret = runtime_i32_load(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
-        
+
         stack->entries->pop(stack->entries, (void **) &value);
         EXPECT_EQ(value->value.i32, lop + 1);
         free(value);
