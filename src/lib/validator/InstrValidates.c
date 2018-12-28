@@ -1,5 +1,7 @@
 #include "Validates.h"
 
+#include <stdlib.h>
+
 static int pop_opd(stack* opds, stack* ctrls, ValueType** operand)
 {
     ctrl_frame* frame = NULL;
@@ -120,7 +122,7 @@ int validate_Instr_unreachable(WasmControlInstr* instr, Context* context, stack*
     // TODO: unreachable
     return 0;
 }
-int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls) //FIXME: Test
+int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame();
     for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
@@ -132,7 +134,7 @@ int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds,
     ctrls->push(ctrls, frame);
     return 0;
 }
-int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls) //FIXME: Test
+int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame();
     for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
@@ -144,7 +146,7 @@ int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack* opds, 
     ctrls->push(ctrls, frame);
     return 0;
 }
-int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls) //FIXME: Test
+int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
     ValueType* operand = NULL;
     if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
@@ -163,7 +165,7 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, st
 int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls) //FIXME: Test
 {
     ctrl_frame* frame = NULL;
-    if(ctrls->pop(ctrls, &frame)) {
+    if(ctrls->pop(ctrls, (void**)&frame)) {
         return -1;
     }
     for(size_t i = frame->end_types->length - 1; i >= 0; --i) {
