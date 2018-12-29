@@ -194,6 +194,25 @@ int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, s
 }
 int validate_Instr_else(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ctrl_frame* frame = NULL;
+    if(ctrls->top(ctrls, (void**)&frame)) {
+        return -1;
+    }
+    for(size_t i = frame->end_types->length; i > 0; --i) {
+        size_t index = i - 1;
+        ValueType* operand = NULL;
+        ValueType* endType = frame->end_types->at(frame->end_types, index);
+        if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
+            free(operand);
+            ctrls->pop(ctrls, (void**)&frame);
+            free_ctrl_frame(frame);
+            return -2;
+        }
+        free(operand);
+    }
+    if(opds->size != frame->label_types->length) {
+        return -3;
+    }
     return 0;
 }
 int validate_Instr_br(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
