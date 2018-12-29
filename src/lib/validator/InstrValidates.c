@@ -162,30 +162,34 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, st
     ctrls->push(ctrls, frame);
     return 0;
 }
-int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls) //FIXME: Test
+int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
     ctrl_frame* frame = NULL;
-    if(ctrls->pop(ctrls, (void**)&frame)) {
+    if(ctrls->top(ctrls, (void**)&frame)) {
         return -1;
     }
-    for(size_t i = frame->end_types->length - 1; i >= 0; --i) {
+    for(size_t i = frame->end_types->length; i > 0; --i) {
+        size_t index = i - 1;
         ValueType* operand = NULL;
-        ValueType* endType = frame->end_types->at(frame->end_types, i);
+        ValueType* endType = frame->end_types->at(frame->end_types, index);
         if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
             free(operand);
-            free(endType);
+            ctrls->pop(ctrls, (void**)&frame);
             free_ctrl_frame(frame);
             return -2;
         }
         free(operand);
-        free(endType);
     }
     if(opds->size != frame->label_types->length) {
         return -3;
     }
-    for(size_t i = frame->end_types->length - 1; i >=0; ++i) {
-        opds->push(opds, frame->end_types->at(frame->end_types, i));
+    for(size_t i = 0; i < frame->end_types->length; ++i) {
+        ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
+        *operand = *((ValueType*)frame->end_types->at(frame->end_types, i));
+        opds->push(opds, operand);
     }
+    ctrls->pop(ctrls, (void**)&frame);
+    free_ctrl_frame(frame);
     return 0;
 }
 int validate_Instr_else(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
