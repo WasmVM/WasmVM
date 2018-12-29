@@ -33,6 +33,7 @@ SKYPAT_F(Validate_Instr_nop, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
@@ -59,6 +60,7 @@ SKYPAT_F(Validate_Instr_block, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
@@ -100,6 +102,7 @@ SKYPAT_F(Validate_Instr_loop, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
@@ -141,6 +144,7 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
@@ -173,6 +177,7 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
@@ -212,6 +217,7 @@ SKYPAT_F(Validate_Instr_if, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
+    func->type = 0;
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
