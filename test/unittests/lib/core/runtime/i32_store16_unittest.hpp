@@ -12,14 +12,14 @@ extern "C" {
 }
 #undef _Bool
 
-SKYPAT_F(Runtime_i32_store_32, regular)
+SKYPAT_F(Runtime_i32_store_16, regular)
 {
     MemInst *memory = new_MemInst();
     Stack   *stack  = new_Stack();
     memory->max = 1;
 
-    uint32_t memlength = 16 * sizeof(int32_t);
-    uint32_t offset = 3 * sizeof(int32_t);
+    uint32_t memlength = 16 * sizeof(int16_t);
+    uint32_t offset = 3 * sizeof(int16_t);
     uint8_t  zero   = 0;
 
     // init memory
@@ -32,10 +32,10 @@ SKYPAT_F(Runtime_i32_store_32, regular)
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         stack->entries->push(stack->entries, new_i32Value(lop + 1));
 
-        int ret = runtime_i32_store(stack, memory, offset, 0);
+        int ret = runtime_i32_store16(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
 
-        int32_t *d = (int32_t *)((int8_t *)memory->data->data + lop * sizeof(int32_t) + offset);
+        int16_t *d = (int16_t *)((int8_t *)memory->data->data + lop * sizeof(int32_t) + offset);
         EXPECT_EQ(*d, lop + 1);
     }
 
@@ -51,10 +51,9 @@ SKYPAT_F(Runtime_i32_store_32, regular)
     free_Stack(stack);
 }
 
-
-SKYPAT_F(Runtime_i32_load_and_store_32, regular)
+SKYPAT_F(Runtime_i32_load_and_store_16, regular)
 {
-    Value   *value  = NULL;
+    Value   *var = NULL;
     MemInst *memory = new_MemInst();
     Stack   *stack  = new_Stack();
     memory->max = 1;
@@ -69,21 +68,22 @@ SKYPAT_F(Runtime_i32_load_and_store_32, regular)
     }
 
     // test store
-    for(uint32_t lop = 0; lop < 5; lop++) {
+    for(uint32_t lop = 0; lop < 8; lop++) {
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         stack->entries->push(stack->entries, new_i32Value(lop + 1));
 
-        int ret = runtime_i32_store(stack, memory, offset, 0);
+        int ret = runtime_i32_store16(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
+    }
 
+    for(uint32_t lop = 0; lop < 8; lop++) {
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
-        ret = runtime_i32_load(stack, memory, offset, 0);
-        EXPECT_EQ(ret, 0);
+        runtime_i32_load16_u(stack, memory, offset, 0);
+        stack->entries->pop(stack->entries, (void **)&var);
 
-        stack->entries->pop(stack->entries, (void **) &value);
-        EXPECT_EQ(value->value.i32, lop + 1);
-        free(value);
-        value = NULL;
+        EXPECT_EQ(var->value.i32, (lop + 1));
+
+        free(var);
     }
 
     // error check
