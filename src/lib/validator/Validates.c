@@ -5,16 +5,18 @@
 
 int validate_FunctionType(FuncType* funcType)
 {
-    return !(funcType->results->length <= 1); // TODO: Unleash later
+    return 0; // Unleash result type restrict
 }
 
-int validate_Func(WasmFunc* func)
+int validate_Func(WasmFunc* func, WasmModule* module) // FIXME: Test
 {
-    return 0; // TODO:
-}
-int validate_Expr(vector* expr)
-{
-    return 0; // TODO:
+    if(func->type >= module->types->length) {
+        return -1;
+    }
+    Context* context = new_Context(module, func);
+    int result = validate_Expr(func->body, context);
+    free_Context(context);
+    return result;
 }
 int validate_Table(WasmTable* table)
 {
@@ -46,7 +48,7 @@ int validate_Data(WasmData* data, WasmModule* module)
     result &= (data->offset.type == Value_i32);
     return !result;
 }
-int validate_Export(WasmExport* exports, WasmModule* module) //FIXME: test
+int validate_Export(WasmExport* exports, WasmModule* module)
 {
     switch(exports->descType) {
         case Desc_Func:
@@ -61,7 +63,7 @@ int validate_Export(WasmExport* exports, WasmModule* module) //FIXME: test
             return -1;
     }
 }
-int validate_Import(WasmImport* imports, WasmModule* module) //FIXME: test
+int validate_Import(WasmImport* imports, WasmModule* module)
 {
     switch(imports->descType) {
         case Desc_Func:

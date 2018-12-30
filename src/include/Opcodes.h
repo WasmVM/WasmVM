@@ -16,8 +16,8 @@
 #define Op_call                 0x10
 #define Op_call_indirect        0x11
 
-#define Op_call_drop            0x1A
-#define Op_call_select          0x1B
+#define Op_drop                 0x1A
+#define Op_select               0x1B
 
 #define Op_get_local            0x20
 #define Op_set_local            0x21

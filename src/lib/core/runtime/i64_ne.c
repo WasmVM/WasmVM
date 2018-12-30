@@ -1,6 +1,6 @@
 #include <core/Runtime.h>
 #include <dataTypes/Value.h>
-#include <stdlib.h>'
+#include <stdlib.h>
 
 int runtime_i64_ne(Stack* stack)
 {
