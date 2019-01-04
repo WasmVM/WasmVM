@@ -1,10 +1,16 @@
 #include <structures/WasmElem.h>
+#include <dataTypes/Value.h>
+
+#include <stdlib.h>
 
 WasmElem* new_WasmElem()
 {
     WasmElem* newWasmElem = (WasmElem*) malloc(sizeof(WasmElem));
-    newWasmElem->init = new_vector(sizeof(uint32_t), (void(*)(void*)free));
-
+    newWasmElem->table = 0;
+    newWasmElem->init = new_vector(sizeof(uint32_t), (void(*)(void*))free);
+    newWasmElem->offset.parent.entryType = Entry_Value;
+    newWasmElem->offset.type = Value_i32;
+    newWasmElem->offset.value.i32 = 0;
     return newWasmElem;
 }
 

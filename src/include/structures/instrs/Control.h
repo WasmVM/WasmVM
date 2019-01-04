@@ -8,7 +8,7 @@
 
 typedef struct _wasm_control_instr {
     WasmInstr   parent;
-    ValueType   resulttype;
+    vector*     resultTypes;    // ValueType
     vector*     instrs;         // WasmInstr
     vector*     indices;        // uint32_t
 } WasmControlInstr;

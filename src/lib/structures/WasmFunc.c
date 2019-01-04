@@ -1,5 +1,7 @@
 #include <structures/WasmFunc.h>
 
+#include <stdlib.h>
+
 WasmFunc* new_WasmFunc()
 {
     WasmFunc* newWasmFunc = (WasmFunc*) malloc(sizeof(WasmFunc));

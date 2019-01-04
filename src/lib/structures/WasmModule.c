@@ -1,5 +1,7 @@
 #include <structures/WasmModule.h>
 
+#include <stdlib.h>
+
 WasmModule* new_WasmModule(char* module_name)
 {
     WasmModule* newModule = (WasmModule*) malloc(sizeof(WasmModule));
@@ -18,4 +20,17 @@ WasmModule* new_WasmModule(char* module_name)
     return newModule;
 }
 
-void free_WasmModule(WasmModule* module);
+void free_WasmModule(WasmModule* module)
+{
+    free(module->module_name);
+    free_vector(module->types);
+    free_vector(module->funcs);
+    free_vector(module->tables);
+    free_vector(module->mems);
+    free_vector(module->globals);
+    free_vector(module->elems);
+    free_vector(module->datas);
+    free_vector(module->imports);
+    free_vector(module->exports);
+    free(module);
+}

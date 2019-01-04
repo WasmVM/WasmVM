@@ -4,8 +4,10 @@
 extern "C" {
 #include <dataTypes/Value.h>
 #include <core/Runtime.h>
+#include <instance/MemInst.h>
 #include <string.h>
 #include <stdint.h>
+#include <stdio.h>
 }
 #undef _Bool
 
@@ -13,46 +15,44 @@ SKYPAT_F(runtime_i32_load_32, regular)
 {
     // Prepare
     Stack* stack = new_Stack();
-    int32_t str[] = { 1000, 2000, 3000, 4000, 5000 };
-    uint8_t strlength = sizeof(str) / sizeof(str[0]);
-    int32_t snull[] = { 0, 0, 0 };
-    uint32_t offset = sizeof(snull) / sizeof(snull[0]);
-    vector *vector1 = new_vector(sizeof(int32_t), free);
-
-    // vector is empty error check
-    stack->entries->push(stack->entries, new_i32Value(0));
-    int ret = runtime_i32_load(stack, vector1, offset, 0);
-    EXPECT_EQ(ret, -1);
+    MemInst* memory = new_MemInst();
+    memory->max = 1;
+    int32_t data[] = { 1000, 2000, 3000, 4000, 5000 };
+    uint32_t byteLen = 5 * sizeof(int32_t);
+    uint32_t offset = 4 * sizeof(int32_t);
+    uint8_t* bytePtr = (uint8_t*) data;
+    uint8_t zero = 0;
 
     // insert offset data to vector
-    for(uint8_t lop = 0; lop < offset; lop++) {
-        vector1->push_back(vector1, (const void *)(snull + lop));
+    for(uint32_t lop = 0; lop < offset; lop++) {
+        memory->data->push_back(memory->data, (void*) &zero);
     }
 
     // insert data to vector
-    for(uint8_t lop = 0; lop < strlength; lop++) {
-        vector1->push_back(vector1, (const void *)(str + lop));
+    for(uint32_t lop = 0; lop < byteLen; lop++) {
+        memory->data->push_back(memory->data, (void*) (bytePtr + lop));
     }
 
-    for(uint8_t lop = 0; lop < strlength; lop++) {
+    for(uint32_t lop = 0; lop < 5; lop++) {
         // Set load location
-        stack->entries->push(stack->entries, new_i32Value(lop));
+        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
 
         // Run
-        runtime_i32_load(stack, vector1, offset, 0);
+        int ret = runtime_i32_load(stack, memory, offset, 0);
+        EXPECT_EQ(ret, 0);
 
         // Check
         Value *check = NULL;
         stack->entries->pop(stack->entries, (void**)&check);
-        EXPECT_EQ(check->value.i32, (int32_t)str[lop]);
+        EXPECT_EQ(check->value.i32, data[lop]);
     }
 
     // error check
-    stack->entries->push(stack->entries, new_i32Value(strlength));
-    ret = runtime_i32_load(stack, vector1, offset, 0);
+    stack->entries->push(stack->entries, new_i32Value(65537));
+    int ret = runtime_i32_load(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
 
     // clean datas
-    free(vector1);
-    free(stack);
+    free_MemInst(memory);
+    free_Stack(stack);
 }
