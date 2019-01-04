@@ -1,12 +1,13 @@
 #include "Validates.h"
 
+#include <dataTypes/stack.h>
 #include <stdlib.h>
 
 static int pop_opd(stack* opds, stack* ctrls, ValueType** operand)
 {
     ctrl_frame* frame = NULL;
     ctrls->top(ctrls, (void**)&frame);
-    if(opds->size == frame->label_types->length) {
+    if(opds->size == frame->height) {
         if(frame->unreachable) {
             *operand = (ValueType*) malloc(sizeof(ValueType));
             **operand = Value_Unspecified;
@@ -35,6 +36,18 @@ static int pop_opd_expect(stack* opds, stack* ctrls, ValueType** operand, ValueT
     }
     *operand = actual;
     return 0;
+}
+
+static ctrl_frame* ctrl_at(stack* ctrls, size_t index)
+{
+    if(ctrls->size <= index) {
+        return NULL;
+    }
+    stackNode* cursor = ctrls->head;
+    for(size_t i = 0; i < index; ++i) {
+        cursor = cursor->next;
+    }
+    return (ctrl_frame*) cursor->data;
 }
 
 int validate_Instr_const(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
@@ -124,11 +137,9 @@ int validate_Instr_unreachable(WasmControlInstr* instr, Context* context, stack*
 }
 int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
-    ctrl_frame* frame = new_ctrl_frame();
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        frame->label_types->push_back(frame->label_types, cur->data);
-    }
+    ctrl_frame* frame = new_ctrl_frame(opds);
     for(size_t i = 0; i < instr->resultTypes->length; ++i) {
+        frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
     ctrls->push(ctrls, frame);
@@ -136,10 +147,7 @@ int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds,
 }
 int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
-    ctrl_frame* frame = new_ctrl_frame();
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        frame->label_types->push_back(frame->label_types, cur->data);
-    }
+    ctrl_frame* frame = new_ctrl_frame(opds);
     for(size_t i = 0; i < instr->resultTypes->length; ++i) {
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
@@ -152,11 +160,9 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, st
     if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
         return -1;
     }
-    ctrl_frame* frame = new_ctrl_frame();
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        frame->label_types->push_back(frame->label_types, cur->data);
-    }
+    ctrl_frame* frame = new_ctrl_frame(opds);
     for(size_t i = 0; i < instr->resultTypes->length; ++i) {
+        frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
     ctrls->push(ctrls, frame);
@@ -217,14 +223,90 @@ int validate_Instr_else(WasmControlInstr* instr, Context* context, stack* opds, 
 }
 int validate_Instr_br(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    ctrl_frame* frame = ctrl_at(ctrls, index);
+    if(frame == NULL) {
+        return -1;
+    }
+    for(size_t i = frame->label_types->length; i > 0; --i) {
+        ValueType* operand = NULL;
+        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
+            free(operand);
+            return -2;
+        }
+        free(operand);
+    }
+    ctrls->top(ctrls, (void**)&frame);
+    frame->unreachable = 1;
     return 0;
 }
 int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    ctrl_frame* frame = ctrl_at(ctrls, index);
+    if(frame == NULL) {
+        return -1;
+    }
+    ValueType* condition = NULL;
+    if(pop_opd_expect(opds, ctrls, &condition, Value_i32)) {
+        return -2;
+    }
+    free(condition);
+    stack* operandCache = new_stack();
+    for(size_t i = frame->label_types->length; i > 0; --i) {
+        ValueType* operand = NULL;
+        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
+            free(operand);
+            return -3;
+        }
+        operandCache->push(operandCache, operand);
+    }
+    for(ValueType* operand = NULL; operandCache->size > 0; operand = NULL) {
+        operandCache->pop(operandCache, (void**)&operand);
+        opds->push(opds, operand);
+    }
+    ctrls->top(ctrls, (void**)&frame);
     return 0;
 }
 int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, instr->indices->length - 1);
+    ctrl_frame* frame = ctrl_at(ctrls, index);
+    if(frame == NULL) {
+        return -1;
+    }
+    for(size_t i = 0; i < instr->indices->length - 1; ++i) {
+        uint32_t index_n = *(uint32_t*)instr->indices->at(instr->indices, i);
+        if(ctrls->size <= index_n) {
+            return -2;
+        }
+        ctrl_frame* frame_n = ctrl_at(ctrls, index_n);
+        if(frame->label_types->length != frame_n->label_types->length) {
+            return -3;
+        }
+        for(size_t j = frame->label_types->length; j > 0; --j) {
+            if(*(ValueType*)frame->label_types->at(frame->label_types, j - 1) != *(ValueType*)frame_n->label_types->at(frame_n->label_types, j - 1)) {
+                return -4;
+            }
+        }
+    }
+    ValueType* condition = NULL;
+    if(pop_opd_expect(opds, ctrls, &condition, Value_i32)) {
+        return -5;
+    }
+    free(condition);
+    for(size_t i = frame->label_types->length; i > 0; --i) {
+        ValueType* operand = NULL;
+        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
+            free(operand);
+            return -6;
+        }
+    }
+    ctrls->top(ctrls, (void**)&frame);
+    frame->unreachable = 1;
     return 0;
 }
 int validate_Instr_return(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
