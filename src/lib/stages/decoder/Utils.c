@@ -50,7 +50,7 @@ uint32_t getLeb128_u32(char **ptr, const char **max)
             // error code
             return -1;
         }
-        uint32_t byte = **(ptr++);
+        uint32_t byte = *(*ptr++);
         ret |= (byte & 0x7F) << (7*i);
         // check range
         if(i==4) {
@@ -69,4 +69,107 @@ uint32_t getLeb128_u32(char **ptr, const char **max)
     }
 
     return toLittle32(ret, 0);
+}
+
+int32_t getLeb128_i32(char **ptr, const char **max)
+{
+    int32_t ret = 0;
+    for(int i=0; i < 5; ++i) {
+        if(*ptr > *max) {
+            printf("Pointer exceed max while decode leb128_32.\n");
+            // error code
+            return -1;
+        }
+        int32_t byte = *(*ptr++);
+        ret |= (byte & 0x7F) << (7*i);
+        // Check range
+        if( i == 4 ) {
+            if(byte & 0x80) {
+                printf("Too much bytes while decode leb128_32.\n");
+                return -1;
+            }
+        }
+        // Finished
+        if((byte & 0x80) == 0) {
+            if(byte & 0x40) {
+                switch (i) {
+                    case 0:
+                        ret |= 0xFFFFFF80;
+                        break;
+                    case 1:
+                        ret |= 0xFFFFC000;
+                        break;
+                    case 2:
+                        ret |= 0xFFE00000;
+                        break;
+                    case 3:
+                        ret |= 0xF0000000;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            break;
+        }
+    }
+    return toLittle32(ret, 0);
+}
+
+int64_t getLeb128_i64(char **ptr, const char **max)
+{
+    int64_t ret = 0;
+    for(int i=0; i < 10; i++) {
+        if(*ptr > *max) {
+            printf("Pointer exceed max while decode leb128_64.\n");
+            // error code
+            return -1;
+        }
+        int64_t byte = *(*ptr++);
+        ret |= (byte & 0x7F) << (7*i);
+        // Check range
+        if(i==9) {
+            if(byte & 0x80) {
+                printf("Too much bytes while decode leb128_64.\n");
+                return -1;
+            }
+        }
+        // Finished
+        if((byte & 0x80) == 0) {
+            if(byte & 0x40) {
+                switch (i) {
+                    case 0:
+                        ret |= 0xFFFFFFFFFFFFFF80;
+                        break;
+                    case 1:
+                        ret |= 0xFFFFFFFFFFFFC000;
+                        break;
+                    case 2:
+                        ret |= 0xFFFFFFFFFFE00000;
+                        break;
+                    case 3:
+                        ret |= 0xFFFFFFFFF0000000;
+                        break;
+                    case 4:
+                        ret |= 0xFFFFFFF800000000;
+                        break;
+                    case 5:
+                        ret |= 0xFFFFFC0000000000;
+                        break;
+                    case 6:
+                        ret |= 0xFFFE000000000000;
+                        break;
+                    case 7:
+                        ret |= 0xFF00000000000000;
+                        break;
+                    case 8:
+                        ret |= 0x8000000000000000;
+                        break;
+                    default:
+                        break;
+                }
+            }
+            break;
+        }
+    }
+    return toLittle64(ret, 0);
 }
