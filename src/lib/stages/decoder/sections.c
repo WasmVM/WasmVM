@@ -4,6 +4,7 @@
 #include "Utils.h"
 
 #include <stdint.h>
+#include <stdlib.h>
 
 char skip_to_section(uint8_t sectionNum, uint8_t **ptr, uint8_t **endAddr)
 {
