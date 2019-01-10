@@ -52,6 +52,7 @@ static ctrl_frame* ctrl_at(stack* ctrls, size_t index)
 
 int validate_Instr_const(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+
     return 0;
 }
 int validate_Instr_unop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
@@ -166,6 +167,7 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, st
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
     ctrls->push(ctrls, frame);
+    free(operand);
     return 0;
 }
 int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
@@ -294,6 +296,7 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
     }
     ValueType* condition = NULL;
     if(pop_opd_expect(opds, ctrls, &condition, Value_i32)) {
+        free(condition);
         return -5;
     }
     free(condition);
@@ -311,13 +314,33 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
 }
 int validate_Instr_return(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
-    return 0;
+    return 0; // Expression not inside func was evaluated
 }
 int validate_Instr_call(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    vector* funcs = context->module->funcs;
+    if(index >= funcs->length) {
+        return -1;
+    }
     return 0;
 }
 int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    vector* tables = context->module->tables;
+    if(tables->length <= 0) {
+        return -1;
+    }
+    vector* types = context->module->types;
+    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    if(index >= types->length) {
+        return -2;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
+        free(operand);
+        return -3;
+    }
+    free(operand);
     return 0;
 }

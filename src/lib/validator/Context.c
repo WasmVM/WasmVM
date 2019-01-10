@@ -19,7 +19,7 @@ Context* new_Context(WasmModule* module, WasmFunc* func)
     context->returns = new_vector(sizeof(ValueType), free);
     // returns
     for(size_t i = 0; i < funcType->results->length; ++i) {
-        context->locals->push_back(context->locals, funcType->results->at(funcType->results, i));
+        context->returns->push_back(context->returns, funcType->results->at(funcType->results, i));
     }
     return context;
 }
