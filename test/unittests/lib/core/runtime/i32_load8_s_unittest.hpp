@@ -38,7 +38,7 @@ SKYPAT_F(runtime_i32_load8_s, regular)
     }
     // error check
     stack->entries->push(stack->entries, new_i32Value(65540));
-    int ret = runtime_i32_load8_u(stack, memory, offset, 0);
+    int ret = runtime_i32_load8_s(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
     // clean datas
     free_MemInst(memory);
