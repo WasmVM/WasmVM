@@ -26,7 +26,7 @@ SKYPAT_F(runtime_i32_load16_u, regular)
     for(int32_t lop = 0; lop < byteLen; lop++) {
         memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
     }
-    for(uint8_t lop = 0; lop < data_size; lop += sizeof(int32_t)) {
+    for(uint8_t lop = 0; lop < data_size; lop++) {
         // Set load location
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         // Run
