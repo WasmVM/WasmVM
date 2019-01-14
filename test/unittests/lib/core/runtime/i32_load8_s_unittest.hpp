@@ -15,6 +15,7 @@ SKYPAT_F(runtime_i32_load8_s, regular)
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int32_t data[] = { 0, 1, -1, 4, -4, 16, -16, 64, -64, 256, -256, 518, -518, 1040, -1024 };
+    int32_t dataSize = sizeof(data) / sizeof(data[0]);
     uint32_t byteLen = sizeof(data);
     uint32_t offset = 4 * sizeof(int32_t);
     uint8_t* bytePtr = (uint8_t*) data;
@@ -26,7 +27,7 @@ SKYPAT_F(runtime_i32_load8_s, regular)
     for(int32_t lop = 0; lop < byteLen; lop++) {
         memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
     }
-    for(uint8_t lop = 0; lop < 8; lop += sizeof(int32_t)) {
+    for(uint8_t lop = 0; lop < dataSize; lop++) {
         // Set load location
         stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
         // Run
