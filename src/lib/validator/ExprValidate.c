@@ -135,6 +135,7 @@ int validate_Expr(vector* expr, Context* context)
                 result = validate_Instr_const((WasmNumericInstr*)instr, context, opds, ctrls);
                 break;
             case Op_i32_eqz:
+            case Op_i64_eqz:
                 result = validate_Instr_testop((WasmNumericInstr*)instr, context, opds, ctrls);
                 break;
             case Op_i32_eq:
@@ -147,11 +148,6 @@ int validate_Expr(vector* expr, Context* context)
             case Op_i32_le_u:
             case Op_i32_ge_s:
             case Op_i32_ge_u:
-                result = validate_Instr_relop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
-            case Op_i64_eqz:
-                result = validate_Instr_testop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
             case Op_i64_eq:
             case Op_i64_ne:
             case Op_i64_lt_s:
@@ -174,11 +170,28 @@ int validate_Expr(vector* expr, Context* context)
             case Op_f64_gt:
             case Op_f64_le:
             case Op_f64_ge:
-                result = validate_Instr_testop((WasmNumericInstr*)instr, context, opds, ctrls);
+                result = validate_Instr_relop((WasmNumericInstr*)instr, context, opds, ctrls);
                 break;
             case Op_i32_clz:
             case Op_i32_ctz:
             case Op_i32_popcnt:
+            case Op_i64_clz:
+            case Op_i64_ctz:
+            case Op_i64_popcnt:
+            case Op_f32_abs:
+            case Op_f32_neg:
+            case Op_f32_ceil:
+            case Op_f32_floor:
+            case Op_f32_trunc:
+            case Op_f32_nearest:
+            case Op_f32_sqrt:
+            case Op_f64_abs:
+            case Op_f64_neg:
+            case Op_f64_ceil:
+            case Op_f64_floor:
+            case Op_f64_trunc:
+            case Op_f64_nearest:
+            case Op_f64_sqrt:
                 result = validate_Instr_unop((WasmNumericInstr*)instr, context, opds, ctrls);
                 break;
             case Op_i32_add:
@@ -196,13 +209,6 @@ int validate_Expr(vector* expr, Context* context)
             case Op_i32_shr_u:
             case Op_i32_rotl:
             case Op_i32_rotr:
-                result = validate_Instr_binop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
-            case Op_i64_clz:
-            case Op_i64_ctz:
-            case Op_i64_popcnt:
-                result = validate_Instr_unop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
             case Op_i64_add:
             case Op_i64_sub:
             case Op_i64_mul:
@@ -218,17 +224,6 @@ int validate_Expr(vector* expr, Context* context)
             case Op_i64_shr_u:
             case Op_i64_rotl:
             case Op_i64_rotr:
-                result = validate_Instr_binop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
-            case Op_f32_abs:
-            case Op_f32_neg:
-            case Op_f32_ceil:
-            case Op_f32_floor:
-            case Op_f32_trunc:
-            case Op_f32_nearest:
-            case Op_f32_sqrt:
-                result = validate_Instr_unop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
             case Op_f32_add:
             case Op_f32_sub:
             case Op_f32_mul:
@@ -236,17 +231,6 @@ int validate_Expr(vector* expr, Context* context)
             case Op_f32_min:
             case Op_f32_max:
             case Op_f32_copysign:
-                result = validate_Instr_binop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
-            case Op_f64_abs:
-            case Op_f64_neg:
-            case Op_f64_ceil:
-            case Op_f64_floor:
-            case Op_f64_trunc:
-            case Op_f64_nearest:
-            case Op_f64_sqrt:
-                result = validate_Instr_unop((WasmNumericInstr*)instr, context, opds, ctrls);
-                break;
             case Op_f64_add:
             case Op_f64_sub:
             case Op_f64_mul:

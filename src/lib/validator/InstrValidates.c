@@ -173,14 +173,156 @@ int validate_Instr_binop(WasmNumericInstr* instr, Context* context, stack* opds,
 }
 int validate_Instr_testop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ValueType expect;
+    switch(instr->parent.opcode) {
+        case Op_i32_eqz:
+            expect = Value_i32;
+            break;
+        case Op_i64_eqz:
+            expect = Value_i64;
+            break;
+        default:
+            return -1;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, expect)) {
+        return -2;
+    }
+    *operand = Value_i32;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_relop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ValueType expect;
+    switch(instr->parent.opcode) {
+        case Op_i32_eq:
+        case Op_i32_ne:
+        case Op_i32_lt_s:
+        case Op_i32_lt_u:
+        case Op_i32_gt_s:
+        case Op_i32_gt_u:
+        case Op_i32_le_s:
+        case Op_i32_le_u:
+        case Op_i32_ge_s:
+        case Op_i32_ge_u:
+            expect = Value_i32;
+            break;
+        case Op_i64_eq:
+        case Op_i64_ne:
+        case Op_i64_lt_s:
+        case Op_i64_lt_u:
+        case Op_i64_gt_s:
+        case Op_i64_gt_u:
+        case Op_i64_le_s:
+        case Op_i64_le_u:
+        case Op_i64_ge_s:
+        case Op_i64_ge_u:
+            expect = Value_i64;
+            break;
+        case Op_f32_eq:
+        case Op_f32_ne:
+        case Op_f32_lt:
+        case Op_f32_gt:
+        case Op_f32_le:
+        case Op_f32_ge:
+            expect = Value_f32;
+            break;
+        case Op_f64_eq:
+        case Op_f64_ne:
+        case Op_f64_lt:
+        case Op_f64_gt:
+        case Op_f64_le:
+        case Op_f64_ge:
+            expect = Value_f64;
+            break;
+        default:
+            return -1;
+    }
+    ValueType* operand1 = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand1, expect)) {
+        return -2;
+    }
+    ValueType* operand2 = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand2, expect)) {
+        return -3;
+    }
+    *operand1 = Value_i32;
+    opds->push(opds, operand1);
+    free(operand2);
     return 0;
 }
 int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ValueType expect;
+    ValueType result;
+    switch(instr->parent.opcode) {
+        case Op_i32_wrap_i64:
+            expect = Value_i64;
+            result = Value_i32;
+            break;
+        case Op_i32_trunc_s_f32:
+        case Op_i32_trunc_u_f32:
+            expect = Value_f32;
+            result = Value_i32;
+            break;
+        case Op_i32_trunc_s_f64:
+        case Op_i32_trunc_u_f64:
+            expect = Value_f64;
+            result = Value_i32;
+            break;
+        case Op_i64_extend_s_i32:
+        case Op_i64_extend_u_i32:
+            expect = Value_i32;
+            result = Value_i64;
+            break;
+        case Op_i64_trunc_s_f32:
+        case Op_i64_trunc_u_f32:
+            expect = Value_f32;
+            result = Value_i64;
+            break;
+        case Op_i64_trunc_s_f64:
+        case Op_i64_trunc_u_f64:
+            expect = Value_f64;
+            result = Value_i64;
+            break;
+        case Op_f32_convert_s_i32:
+        case Op_f32_convert_u_i32:
+            expect = Value_i32;
+            result = Value_f32;
+            break;
+        case Op_f32_convert_s_i64:
+        case Op_f32_convert_u_i64:
+            expect = Value_i64;
+            result = Value_f32;
+            break;
+        case Op_f32_demote_f64:
+            expect = Value_f64;
+            result = Value_f32;
+            break;
+        case Op_f64_convert_s_i32:
+        case Op_f64_convert_u_i32:
+            expect = Value_i32;
+            result = Value_f64;
+            break;
+        case Op_f64_convert_s_i64:
+        case Op_f64_convert_u_i64:
+            expect = Value_i64;
+            result = Value_f64;
+            break;
+        case Op_f64_promote_f32:
+            expect = Value_f32;
+            result = Value_f64;
+            break;
+        default:
+            return -1;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, expect)) {
+        return -2;
+    }
+    *operand = result;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_drop(WasmParametricInstr* instr, Context* context, stack* opds, stack* ctrls)

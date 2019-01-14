@@ -46,6 +46,37 @@ static void test_binop(stack* opds, Context* context, stack* ctrls, WasmNumericI
     free(result);
 }
 
+static void test_cvtop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType expect, ValueType result)
+{
+    ValueType* value = (ValueType*) malloc(sizeof(ValueType));
+    *value = expect;
+    opds->push(opds, value);
+
+    EXPECT_EQ(validate_Instr_cvtop(instr, context, opds, ctrls), 0);
+    EXPECT_EQ(opds->size, 1);
+    ValueType* resultVal = NULL;
+    opds->pop(opds, (void**) &resultVal);
+    EXPECT_EQ(*resultVal, result);
+    free(resultVal);
+}
+
+static void test_relop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType input)
+{
+    ValueType* value1 = (ValueType*) malloc(sizeof(ValueType));
+    *value1 = input;
+    opds->push(opds, value1);
+    ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
+    *value1 = input;
+    opds->push(opds, value2);
+
+    EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), 0);
+    EXPECT_EQ(opds->size, 1);
+    ValueType* result = NULL;
+    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(*result, Value_i32);
+    free(result);
+}
+
 static void clean(stack* opds, stack* ctrls)
 {
     for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
@@ -348,6 +379,272 @@ SKYPAT_F(validate_Instr_binop, no_enough_operand)
     *value = Value_i32;
     opds->push(opds, value);
     EXPECT_EQ(validate_Instr_binop(instr, context, opds, ctrls), -3);
+
+    // Clean
+    free(instr);
+    clean(opds, ctrls);
+    free_Context(context);
+    free_WasmModule(module);
+}
+
+SKYPAT_F(validate_Instr_testop, valid)
+{
+    // Prepare
+    WasmModule* module = new_WasmModule(NULL);
+    WasmFunc* func = new_WasmFunc();
+    func->type = 0;
+    FuncType* type = new_FuncType();
+    module->types->push_back(module->types, type);
+    Context* context = new_Context(module, func);
+    stack* opds = new_stack();
+    stack* ctrls = new_stack();
+    ctrl_frame* frame = new_ctrl_frame(opds);
+    ctrls->push(ctrls, frame);
+
+    WasmNumericInstr* instr = (WasmNumericInstr*)malloc(sizeof(WasmNumericInstr));
+
+    // Check
+    ValueType* value1 = (ValueType*) malloc(sizeof(ValueType));
+    opds->push(opds, value1);
+    *value1 = Value_i32;
+    instr->parent.opcode = Op_i32_eqz;
+    EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), 0);
+    EXPECT_EQ(opds->size, 1);
+    ValueType* result = NULL;
+    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(*result, Value_i32);
+    free(result);
+
+    ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
+    opds->push(opds, value2);
+    *value2 = Value_i64;
+    instr->parent.opcode = Op_i64_eqz;
+    EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), 0);
+    EXPECT_EQ(opds->size, 1);
+    result = NULL;
+    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(*result, Value_i32);
+    free(result);
+
+    // Clean
+    free(instr);
+    clean(opds, ctrls);
+    free_Context(context);
+    free_WasmModule(module);
+}
+
+SKYPAT_F(validate_Instr_testop, no_enough_operand)
+{
+    // Prepare
+    WasmModule* module = new_WasmModule(NULL);
+    WasmFunc* func = new_WasmFunc();
+    func->type = 0;
+    FuncType* type = new_FuncType();
+    module->types->push_back(module->types, type);
+    Context* context = new_Context(module, func);
+    stack* opds = new_stack();
+    stack* ctrls = new_stack();
+    ctrl_frame* frame = new_ctrl_frame(opds);
+    ctrls->push(ctrls, frame);
+
+    WasmNumericInstr* instr = (WasmNumericInstr*)malloc(sizeof(WasmNumericInstr));
+
+    // Check
+    instr->parent.opcode = Op_i32_eqz;
+    EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), -2);
+
+    instr->parent.opcode = Op_i64_eqz;
+    EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), -2);
+
+    // Clean
+    free(instr);
+    clean(opds, ctrls);
+    free_Context(context);
+    free_WasmModule(module);
+}
+
+SKYPAT_F(validate_Instr_relop, valid)
+{
+    // Prepare
+    WasmModule* module = new_WasmModule(NULL);
+    WasmFunc* func = new_WasmFunc();
+    func->type = 0;
+    FuncType* type = new_FuncType();
+    module->types->push_back(module->types, type);
+    Context* context = new_Context(module, func);
+    stack* opds = new_stack();
+    stack* ctrls = new_stack();
+    ctrl_frame* frame = new_ctrl_frame(opds);
+    ctrls->push(ctrls, frame);
+
+    WasmNumericInstr* instr = (WasmNumericInstr*)malloc(sizeof(WasmNumericInstr));
+
+    // Check
+    instr->parent.opcode = Op_i32_eq;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_ne;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_lt_s;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_lt_u;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_gt_s;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_gt_u;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_le_s;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_le_u;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_ge_s;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+    instr->parent.opcode = Op_i32_ge_u;
+    test_relop(opds, context, ctrls, instr, Value_i32);
+
+    instr->parent.opcode = Op_i64_eq;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_ne;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_lt_s;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_lt_u;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_gt_s;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_gt_u;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_le_s;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_le_u;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_ge_s;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+    instr->parent.opcode = Op_i64_ge_u;
+    test_relop(opds, context, ctrls, instr, Value_i64);
+
+    instr->parent.opcode = Op_f32_eq;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+    instr->parent.opcode = Op_f32_ne;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+    instr->parent.opcode = Op_f32_lt;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+    instr->parent.opcode = Op_f32_gt;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+    instr->parent.opcode = Op_f32_le;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+    instr->parent.opcode = Op_f32_ge;
+    test_relop(opds, context, ctrls, instr, Value_f32);
+
+    instr->parent.opcode = Op_f64_eq;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+    instr->parent.opcode = Op_f64_ne;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+    instr->parent.opcode = Op_f64_lt;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+    instr->parent.opcode = Op_f64_gt;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+    instr->parent.opcode = Op_f64_le;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+    instr->parent.opcode = Op_f64_ge;
+    test_relop(opds, context, ctrls, instr, Value_f64);
+
+    // Clean
+    free(instr);
+    clean(opds, ctrls);
+    free_Context(context);
+    free_WasmModule(module);
+}
+
+SKYPAT_F(validate_Instr_relop, no_enough_operand)
+{
+    // Prepare
+    WasmModule* module = new_WasmModule(NULL);
+    WasmFunc* func = new_WasmFunc();
+    func->type = 0;
+    FuncType* type = new_FuncType();
+    module->types->push_back(module->types, type);
+    Context* context = new_Context(module, func);
+    stack* opds = new_stack();
+    stack* ctrls = new_stack();
+    ctrl_frame* frame = new_ctrl_frame(opds);
+    ctrls->push(ctrls, frame);
+
+    WasmNumericInstr* instr = (WasmNumericInstr*)malloc(sizeof(WasmNumericInstr));
+
+    // Check
+    instr->parent.opcode = Op_i32_eq;
+    EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), -2);
+    ValueType* value = (ValueType*) malloc(sizeof(ValueType));
+    *value = Value_i32;
+    opds->push(opds, value);
+    EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), -3);
+
+    // Clean
+    free(instr);
+    clean(opds, ctrls);
+    free_Context(context);
+    free_WasmModule(module);
+}
+
+SKYPAT_F(validate_Instr_cvtop, valid)
+{
+    // Prepare
+    WasmModule* module = new_WasmModule(NULL);
+    WasmFunc* func = new_WasmFunc();
+    func->type = 0;
+    FuncType* type = new_FuncType();
+    module->types->push_back(module->types, type);
+    Context* context = new_Context(module, func);
+    stack* opds = new_stack();
+    stack* ctrls = new_stack();
+    ctrl_frame* frame = new_ctrl_frame(opds);
+    ctrls->push(ctrls, frame);
+
+    WasmNumericInstr* instr = (WasmNumericInstr*)malloc(sizeof(WasmNumericInstr));
+
+    // Check
+    instr->parent.opcode = Op_i32_wrap_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_i32);
+    instr->parent.opcode = Op_i32_trunc_s_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_i32);
+    instr->parent.opcode = Op_i32_trunc_u_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_i32);
+    instr->parent.opcode = Op_i32_trunc_s_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_i32);
+    instr->parent.opcode = Op_i32_trunc_u_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_i32);
+    instr->parent.opcode = Op_i64_extend_s_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_i64);
+    instr->parent.opcode = Op_i64_extend_u_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_i64);
+    instr->parent.opcode = Op_i64_trunc_s_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_i64);
+    instr->parent.opcode = Op_i64_trunc_u_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_i64);
+    instr->parent.opcode = Op_i64_trunc_s_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_i64);
+    instr->parent.opcode = Op_i64_trunc_u_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_i64);
+    instr->parent.opcode = Op_f32_convert_s_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_f32);
+    instr->parent.opcode = Op_f32_convert_u_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_f32);
+    instr->parent.opcode = Op_f32_convert_s_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f32);
+    instr->parent.opcode = Op_f32_convert_u_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f32);
+    instr->parent.opcode = Op_f32_demote_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_f32);
+    instr->parent.opcode = Op_f64_convert_s_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_f64);
+    instr->parent.opcode = Op_f64_convert_u_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_f64);
+    instr->parent.opcode = Op_f64_convert_s_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f64);
+    instr->parent.opcode = Op_f64_convert_u_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f64);
+    instr->parent.opcode = Op_f64_promote_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_f64);
 
     // Clean
     free(instr);
