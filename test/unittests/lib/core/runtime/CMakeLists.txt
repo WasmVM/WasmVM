@@ -42,6 +42,7 @@ add_runtime_unittest(i64_extend_u_i32_unittest)
 # Memory Unittest
 add_runtime_unittest(i32_load_unittest)
 add_runtime_unittest(i32_load16_u_unittest)
+add_runtime_unittest(i32_load16_s_unittest)
 add_runtime_unittest(i32_load8_u_unittest)
 add_runtime_unittest(i32_load8_s_unittest)
 add_runtime_unittest(i32_store_unittest)
