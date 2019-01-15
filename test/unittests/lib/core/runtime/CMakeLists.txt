@@ -49,6 +49,7 @@ add_runtime_unittest(i32_store_unittest)
 add_runtime_unittest(i32_store16_unittest)
 add_runtime_unittest(i32_store8_unittest)
 add_runtime_unittest(i64_load8_u_unittest)
+add_runtime_unittest(i64_store_unittest)
 
 # Control Unittest
 add_runtime_unittest(nop_unittest)
