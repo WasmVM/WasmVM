@@ -18,19 +18,16 @@ int runtime_i32_store(Stack* stack, MemInst* memory, uint32_t offset, uint32_t a
 
     // check memory range
     ea = (uint32_t)value1->value.i32 + offset;
-    if(ea >= memory->max * 65536) {
+    if(ea + 4 >= memory->max * 65536) {
         fprintf(stderr, "over the memory range! \n");
         free_Value(value1);
         free_Value(value2);
         return -1;
     }
 
-    // shift range convert (8bits -> 32bits)
-    ea >>= 2;
-
     // store data to memory
-    dataPointer = (int32_t *)memory->data->data;
-    *(dataPointer + ea) = value2->value.i32;
+    dataPointer = (int32_t *)((int8_t *)memory->data->data + ea);
+    *dataPointer = value2->value.i32;
 
     // free object
     free(value1);
