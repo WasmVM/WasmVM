@@ -11,7 +11,7 @@ int runtime_i64_load16_s(Stack *stack, MemInst *memory, uint32_t offset,
 
     stack->entries->pop(stack->entries, (void **)&value1);
 
-    uint32_t ea = (uint64_t)value1->value.i32 + offset;
+    uint32_t ea = value1->value.u32 + offset;
 
     if (ea + (16 / 8) >= memory->max * 65536) {
         fprintf(stderr, "over the memory range! \n");

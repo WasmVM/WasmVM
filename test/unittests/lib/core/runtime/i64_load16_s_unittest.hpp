@@ -36,7 +36,7 @@ SKYPAT_F(runtime_i64_load16_s, regular)
     // start testing (set memory location -> run load function -> check)
     for (uint8_t lop = 0; lop < arraySize; ++lop) {
         stack->entries->push(stack->entries,
-                             new_i64Value(lop * sizeof(int64_t)));
+                             new_i32Value(lop * sizeof(int64_t)));
         runtime_i64_load16_s(stack, memory, offset, 0);
 
         Value *check = NULL;
