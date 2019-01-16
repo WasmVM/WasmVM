@@ -10,7 +10,7 @@ int runtime_i64_load8_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_t
 {
     Value *value1 = NULL;
     stack->entries->pop(stack->entries, (void **) &value1);
-    uint64_t ea = (uint64_t) value1->value.i64 + offset;
+    uint32_t ea = (uint32_t) value1->value.u32 + offset;
 
     if (ea + (8 / 8) >= memory->max * 65536) {
         fprintf(stderr, "over the memory range! \n");
