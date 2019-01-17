@@ -30,7 +30,7 @@ SKYPAT_F(runtime_i64_load8_u, regular)
     }
     for(uint8_t lop = 0; lop < dataSize; lop++) {
         // Set load location
-        stack->entries->push(stack->entries, new_i64Value(lop * sizeof(int64_t)));
+        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int64_t)));
         // Run
         runtime_i64_load8_u(stack, memory, offset, 0);
         // Check
