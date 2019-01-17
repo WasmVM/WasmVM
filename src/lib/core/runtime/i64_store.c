@@ -18,19 +18,16 @@ int runtime_i64_store(Stack* stack, MemInst* memory, uint32_t offset, uint32_t a
 
     // check memory range
     ea = (uint32_t)value1->value.i32 + offset;
-    if(ea >= memory->max * 65536) {
+    if(ea + 8 >= memory->max * 65536) {
         fprintf(stderr, "over the memory range! \n");
         free_Value(value1);
         free_Value(value2);
         return -1;
     }
 
-    // shift range convert (8bits -> 64bits)
-    ea >>= 3;
-
     // store data to memory
-    dataPointer = (int64_t *)memory->data->data;
-    *(dataPointer + ea) = value2->value.i64;
+    dataPointer = (int64_t *)((int8_t *)memory->data->data + ea);
+    *dataPointer = value2->value.i64;
 
     // free object
     free(value1);
