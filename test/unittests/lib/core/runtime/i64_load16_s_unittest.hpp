@@ -46,7 +46,7 @@ SKYPAT_F(runtime_i64_load16_s, regular)
     }
 
     // check error (65540 exceeds memory range, since max is 1)
-    stack->entries->push(stack->entries, new_i64Value(65540));
+    stack->entries->push(stack->entries, new_i32Value(65540));
     int ret = runtime_i64_load16_s(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
 
