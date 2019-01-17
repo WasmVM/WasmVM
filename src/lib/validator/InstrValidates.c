@@ -327,10 +327,33 @@ int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack* opds,
 }
 int validate_Instr_drop(WasmParametricInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ValueType* operand = NULL;
+    if(pop_opd(opds, ctrls, &operand)) {
+        return -1;
+    }
+    free(operand);
     return 0;
 }
 int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    ValueType* condition = NULL;
+    if(pop_opd_expect(opds, ctrls, &condition, Value_i32)) {
+        return -1;
+    }
+    ValueType* operand1 = NULL;
+    if(pop_opd(opds, ctrls, &operand1)) {
+        free(condition);
+        return -2;
+    }
+    ValueType* operand2 = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand2, *operand1)) {
+        free(condition);
+        free(operand1);
+        return -3;
+    }
+    opds->push(opds, operand1);
+    free(operand2);
+    free(condition);
     return 0;
 }
 int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
