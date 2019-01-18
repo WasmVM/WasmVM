@@ -358,22 +358,64 @@ int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack* o
 }
 int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(instr->index >= context->locals->length) {
+        return -1;
+    }
+    ValueType* local = (ValueType*)context->locals->at(context->locals, instr->index);
+    ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
+    *operand = *local;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(instr->index >= context->locals->length) {
+        return -1;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd(opds, ctrls, &operand)) {
+        return -2;
+    }
+    free(operand);
     return 0;
 }
 int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(instr->index >= context->locals->length) {
+        return -1;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd(opds, ctrls, &operand)) {
+        return -2;
+    }
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(instr->index >= context->module->globals->length) {
+        return -1;
+    }
+    WasmGlobal* global = (WasmGlobal*)context->module->globals->at(context->module->globals, instr->index);
+    ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
+    *operand = global->valType;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(instr->index >= context->module->globals->length) {
+        return -1;
+    }
+    WasmGlobal* global = (WasmGlobal*)context->module->globals->at(context->module->globals, instr->index);
+    if(!global->mut) {
+        return -2;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd(opds, ctrls, &operand)) {
+        return -3;
+    }
+    free(operand);
     return 0;
 }
 int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
