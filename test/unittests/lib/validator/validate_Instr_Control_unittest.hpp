@@ -47,6 +47,8 @@ SKYPAT_F(Validate_Instr_nop, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -85,9 +87,13 @@ SKYPAT_F(Validate_Instr_block, valid)
     EXPECT_EQ(frame->end_types->length, 2);
 
     // Clean
+    free(resType2);
+    free(resType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -126,9 +132,13 @@ SKYPAT_F(Validate_Instr_loop, valid)
     EXPECT_EQ(frame->end_types->length, 2);
 
     // Clean
+    free(resType2);
+    free(resType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -158,9 +168,13 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
     EXPECT_EQ(validate_Instr_if(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(resType2);
+    free(resType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -197,9 +211,13 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
     EXPECT_EQ(validate_Instr_if(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(resType2);
+    free(resType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -238,9 +256,13 @@ SKYPAT_F(Validate_Instr_if, valid)
     EXPECT_EQ(frame->end_types->length, 2);
 
     // Clean
+    free(resType2);
+    free(resType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -280,9 +302,13 @@ SKYPAT_F(Validate_Instr_end, valid)
     EXPECT_EQ(opds->size, 2);
 
     // Clean
+    free(endType2);
+    free(endType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -315,6 +341,8 @@ SKYPAT_F(Validate_Instr_end, no_frame_to_end)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -349,9 +377,13 @@ SKYPAT_F(Validate_Instr_end, no_enough_operand)
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), -2);
 
     // Clean
+    free(endType2);
+    free(endType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -387,8 +419,11 @@ SKYPAT_F(Validate_Instr_end, too_much_operand)
 
     // Clean
     free_WasmControlInstr(instr);
+    free(endType1);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -428,9 +463,13 @@ SKYPAT_F(Validate_Instr_else, valid)
     EXPECT_EQ(opds->size, 0);
 
     // Clean
+    free(endType2);
+    free(endType1);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -463,6 +502,8 @@ SKYPAT_F(Validate_Instr_else, no_frame_to_end)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -498,8 +539,12 @@ SKYPAT_F(Validate_Instr_else, no_enough_operand)
 
     // Clean
     free_WasmControlInstr(instr);
+    free(endType2);
+    free(endType1);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -535,8 +580,11 @@ SKYPAT_F(Validate_Instr_else, too_much_operand)
 
     // Clean
     free_WasmControlInstr(instr);
+    free(endType1);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -576,9 +624,13 @@ SKYPAT_F(Validate_Instr_br, valid)
     EXPECT_EQ(opds->size, 0);
 
     // Clean
+    free(labelType1);
     free_WasmControlInstr(instr);
+    free(index);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -616,9 +668,13 @@ SKYPAT_F(Validate_Instr_br, index_out_of_range)
     EXPECT_EQ(validate_Instr_br(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(labelType1);
     free_WasmControlInstr(instr);
+    free(index);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -652,9 +708,13 @@ SKYPAT_F(Validate_Instr_br, no_enough_operand)
     EXPECT_EQ(validate_Instr_br(instr, context, opds, ctrls), -2);
 
     // Clean
+    free(labelType1);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -697,9 +757,13 @@ SKYPAT_F(Validate_Instr_br_if, valid)
     EXPECT_EQ(opds->size, 1);
 
     // Clean
+    free(labelType1);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -732,9 +796,12 @@ SKYPAT_F(Validate_Instr_br_if, index_out_of_range)
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -763,9 +830,12 @@ SKYPAT_F(validate_Instr_br_if, no_condition_operand)
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -2);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -803,9 +873,13 @@ SKYPAT_F(Validate_Instr_br_if, no_enough_operand)
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -3);
 
     // Clean
+    free(labelType1);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -829,10 +903,8 @@ SKYPAT_F(validate_Instr_br_table, valid)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -842,13 +914,11 @@ SKYPAT_F(validate_Instr_br_table, valid)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -865,9 +935,13 @@ SKYPAT_F(validate_Instr_br_table, valid)
     EXPECT_TRUE(frame2->unreachable);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -891,10 +965,8 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 5;
     instr->indices->push_back(instr->indices, index);
 
@@ -904,13 +976,11 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -926,9 +996,13 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -952,10 +1026,8 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 5;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -965,13 +1037,11 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -987,9 +1057,13 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -2);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1013,10 +1087,8 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -1026,17 +1098,14 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f64;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -1052,9 +1121,13 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -3);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1078,10 +1151,8 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -1091,13 +1162,11 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f64;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -1113,9 +1182,13 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -4);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1139,10 +1212,8 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -1152,13 +1223,11 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -1171,9 +1240,13 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -5);
 
     // Clean
+    free(labelType);
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1197,10 +1270,8 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
-    index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
 
@@ -1210,13 +1281,11 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     frame->end_types->push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame1);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame1->label_types->push_back(frame1->label_types, labelType);
     frame1->end_types->push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame2);
-    labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
     frame2->label_types->push_back(frame2->label_types, labelType);
     frame2->end_types->push_back(frame2->end_types, labelType);
@@ -1229,9 +1298,13 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -6);
 
     // Clean
+    free(index);
+    free(labelType);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1258,6 +1331,8 @@ SKYPAT_F(validate_Instr_return, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1286,13 +1361,15 @@ SKYPAT_F(validate_Instr_call, valid)
 
     // Check
     EXPECT_EQ(validate_Instr_call(instr, context, opds, ctrls), 0);
-    *index = 1;
-    EXPECT_EQ(validate_Instr_call(instr, context, opds, ctrls), 0);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func1);
+    free_WasmFunc(func2);
     free_WasmModule(module);
 }
 
@@ -1323,9 +1400,13 @@ SKYPAT_F(validate_Instr_call, index_out_of_range)
     EXPECT_EQ(validate_Instr_call(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func1);
+    free_WasmFunc(func2);
     free_WasmModule(module);
 }
 
@@ -1361,9 +1442,13 @@ SKYPAT_F(validate_Instr_call_indirect, valid)
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), 0);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free(table);
+    free_FuncType(type);
+    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1395,9 +1480,12 @@ SKYPAT_F(validate_Instr_call_indirect, no_table)
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -1);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free_FuncType(type);
+    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1433,9 +1521,13 @@ SKYPAT_F(validate_Instr_call_indirect, index_out_of_range)
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -2);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free(table);
+    free_FuncType(type);
+    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1467,8 +1559,12 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -3);
 
     // Clean
+    free(index);
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
+    free(table);
+    free_FuncType(type);
+    free_WasmFunc(func1);
     free_WasmModule(module);
 }

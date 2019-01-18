@@ -20,7 +20,8 @@ SKYPAT_F(Validate_Export, valid_func)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->funcs->push_back(module->funcs, new_WasmFunc());
+    WasmFunc* func = new_WasmFunc();
+    module->funcs->push_back(module->funcs, func);
     wasmExport->descType = Desc_Func;
     wasmExport->descIdx = 0;
 
@@ -29,6 +30,7 @@ SKYPAT_F(Validate_Export, valid_func)
 
     free(wasmExport);
     free_WasmModule(module);
+    free_WasmFunc(func);
 }
 
 SKYPAT_F(Validate_Export, func_not_defined)
@@ -36,7 +38,8 @@ SKYPAT_F(Validate_Export, func_not_defined)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->funcs->push_back(module->funcs, new_WasmFunc());
+    WasmFunc* func = new_WasmFunc();
+    module->funcs->push_back(module->funcs, func);
     wasmExport->descType = Desc_Func;
     wasmExport->descIdx = 1;
 
@@ -45,6 +48,7 @@ SKYPAT_F(Validate_Export, func_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
+    free_WasmFunc(func);
 }
 
 SKYPAT_F(Validate_Export, valid_table)
@@ -52,7 +56,8 @@ SKYPAT_F(Validate_Export, valid_table)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->tables->push_back(module->tables, malloc(sizeof(WasmTable)));
+    WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
+    module->tables->push_back(module->tables, table);
     wasmExport->descType = Desc_Table;
     wasmExport->descIdx = 0;
 
@@ -61,6 +66,7 @@ SKYPAT_F(Validate_Export, valid_table)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(table);
 }
 
 SKYPAT_F(Validate_Export, table_not_defined)
@@ -68,7 +74,8 @@ SKYPAT_F(Validate_Export, table_not_defined)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->tables->push_back(module->tables, malloc(sizeof(WasmTable)));
+    WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
+    module->tables->push_back(module->tables, table);
     wasmExport->descType = Desc_Table;
     wasmExport->descIdx = 1;
 
@@ -77,6 +84,7 @@ SKYPAT_F(Validate_Export, table_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(table);
 }
 
 SKYPAT_F(Validate_Export, valid_memory)
@@ -84,7 +92,8 @@ SKYPAT_F(Validate_Export, valid_memory)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->mems->push_back(module->mems, malloc(sizeof(WasmMemory)));
+    WasmMemory* memory = (WasmMemory*)malloc(sizeof(WasmMemory));
+    module->mems->push_back(module->mems, memory);
     wasmExport->descType = Desc_Mem;
     wasmExport->descIdx = 0;
 
@@ -93,6 +102,7 @@ SKYPAT_F(Validate_Export, valid_memory)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(memory);
 }
 
 SKYPAT_F(Validate_Export, momory_not_defined)
@@ -100,7 +110,8 @@ SKYPAT_F(Validate_Export, momory_not_defined)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->mems->push_back(module->mems, malloc(sizeof(WasmMemory)));
+    WasmMemory* memory = (WasmMemory*)malloc(sizeof(WasmMemory));
+    module->mems->push_back(module->mems, memory);
     wasmExport->descType = Desc_Mem;
     wasmExport->descIdx = 1;
 
@@ -109,6 +120,7 @@ SKYPAT_F(Validate_Export, momory_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(memory);
 }
 
 SKYPAT_F(Validate_Export, valid_global)
@@ -116,7 +128,8 @@ SKYPAT_F(Validate_Export, valid_global)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->globals->push_back(module->globals, malloc(sizeof(WasmGlobal)));
+    WasmGlobal* global = (WasmGlobal*)malloc(sizeof(WasmGlobal));
+    module->globals->push_back(module->globals, global);
     wasmExport->descType = Desc_Global;
     wasmExport->descIdx = 0;
 
@@ -125,6 +138,7 @@ SKYPAT_F(Validate_Export, valid_global)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(global);
 }
 
 SKYPAT_F(Validate_Export, global_not_defined)
@@ -132,7 +146,8 @@ SKYPAT_F(Validate_Export, global_not_defined)
     // Prepare
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
-    module->globals->push_back(module->globals, malloc(sizeof(WasmGlobal)));
+    WasmGlobal* global = (WasmGlobal*)malloc(sizeof(WasmGlobal));
+    module->globals->push_back(module->globals, global);
     wasmExport->descType = Desc_Global;
     wasmExport->descIdx = 1;
 
@@ -141,4 +156,5 @@ SKYPAT_F(Validate_Export, global_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
+    free(global);
 }
