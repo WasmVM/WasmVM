@@ -64,9 +64,12 @@ void free_list(list* thislistPtr)
 {
     if(thislistPtr->freeElem) {
         listNode* cur = thislistPtr->head;
+        listNode* tmp;
         while(cur != NULL) {
             thislistPtr->freeElem(cur->data);
+            tmp = cur;
             cur = cur->next;
+            free(tmp);
         }
     }
     free(thislistPtr);

@@ -309,6 +309,7 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
             free(operand);
             return -6;
         }
+        free(operand);
     }
     ctrls->top(ctrls, (void**)&frame);
     frame->unreachable = 1;
