@@ -33,7 +33,7 @@ SKYPAT_F(runtime_i64_load16_s, regular)
         memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
     }
 
-    // start testing (set memory location -> run load function -> check)
+    // start testing (set memory location -> run load function -> check -> clean)
     for (uint8_t lop = 0; lop < arraySize; ++lop) {
         stack->entries->push(stack->entries,
                              new_i32Value(lop * sizeof(int64_t)));
@@ -43,6 +43,7 @@ SKYPAT_F(runtime_i64_load16_s, regular)
 
         stack->entries->pop(stack->entries, (void **)&check);
         EXPECT_EQ(check->value.i64, dataArray[lop]);
+        free_Value(check);
     }
 
     // check error (65540 exceeds memory range, since max is 1)

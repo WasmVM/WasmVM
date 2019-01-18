@@ -9,9 +9,9 @@ extern "C" {
 
 /*
  * This function applys runtime_i32_rem_s() unittest.
- * Return the result of runtime_i32_rem_s().
+ * Check the result of runtime_i32_rem_s().
  */
-int32_t i32_rem_s_check(Stack* stack, int32_t value_1, int32_t value_2)
+void i32_rem_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1); // dividend
@@ -22,27 +22,26 @@ int32_t i32_rem_s_check(Stack* stack, int32_t value_1, int32_t value_2)
     runtime_i32_rem_s(stack);
 
     stack->entries->pop(stack->entries, (void**)&check);
-    return check->value.u32;
+    EXPECT_EQ(check->value.i32, expected);
+    free_Value(check);
 }
 
 SKYPAT_F(Runtime_i32_rem_s, regular)
 {
     Stack* stack = new_Stack();
-    uint32_t check_value;
 
     // case 1: 20 % 3
-    check_value = i32_rem_s_check(stack, 20, 3);
-    EXPECT_EQ(check_value, 2);
+    i32_rem_s_check(stack, 20, 3, 2);
 
     // case 2: (-20) % 3
-    check_value = i32_rem_s_check(stack, -20, 3);
-    EXPECT_EQ(check_value, -2);
+    i32_rem_s_check(stack, -20, 3, -2);
 
     // case 3: 20 % (-3)
-    check_value = i32_rem_s_check(stack, 20, -3);
-    EXPECT_EQ(check_value, 2);
+    i32_rem_s_check(stack, 20, -3, 2);
 
     // case 4: 15 % 1
-    check_value = i32_rem_s_check(stack, 15, 1);
-    EXPECT_EQ(check_value, 0);
+    i32_rem_s_check(stack, 15, 1, 0);
+
+    // clean
+    free_Stack(stack);
 }

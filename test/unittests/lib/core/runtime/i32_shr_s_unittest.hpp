@@ -22,6 +22,10 @@ SKYPAT_F(Runtime_i32_shr_s_positive, regular)
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.i32, 26);
+
+    // Clean
+    free_Value(check);
+    free_Stack(stack);
 }
 
 SKYPAT_F(Runtime_i32_shr_s_negative, regular)
@@ -39,4 +43,8 @@ SKYPAT_F(Runtime_i32_shr_s_negative, regular)
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.i32, -6);
+
+    // Clean
+    free_Value(check);
+    free_Stack(stack);
 }

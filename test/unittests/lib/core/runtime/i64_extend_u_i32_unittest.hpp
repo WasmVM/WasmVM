@@ -21,4 +21,8 @@ SKYPAT_F(Runtime_i64_extend_u_i32, regular)
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.i64, 4294967295);
+
+    // Clean
+    free_Value(check);
+    free_Stack(stack);
 }

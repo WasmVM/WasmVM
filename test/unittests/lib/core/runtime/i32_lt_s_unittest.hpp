@@ -8,9 +8,9 @@ extern "C" {
 #undef _Bool
 
 /*
- * This function applys runtime_i32_lt_s() unittest and return the result of runtime_i32_lt_s().
+ * This function applys runtime_i32_lt_s() unittest and check the result of runtime_i32_lt_s().
  */
-int32_t i32_lt_s_check(Stack* stack, int32_t value_1, int32_t value_2)
+void i32_lt_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1);
@@ -21,31 +21,29 @@ int32_t i32_lt_s_check(Stack* stack, int32_t value_1, int32_t value_2)
     runtime_i32_lt_s(stack);
 
     stack->entries->pop(stack->entries, (void**)&check);
-    return check->value.i32;
+    EXPECT_EQ(check->value.i32, expected);
+    free_Value(check);
 }
 
 SKYPAT_F(Runtime_i32_lt_s, regular)
 {
     Stack* stack = new_Stack();
-    int32_t check_value;
 
     // case 1: 20 < 3
-    check_value = i32_lt_s_check(stack, 20, 3);
-    EXPECT_EQ(check_value, 0);
+    i32_lt_s_check(stack, 20, 3, 0);
 
     // case 2: (-20) < 3
-    check_value = i32_lt_s_check(stack, -20, 3);
-    EXPECT_EQ(check_value, 1);
+    i32_lt_s_check(stack, -20, 3, 1);
 
     // case 3: 20 < (-3)
-    check_value = i32_lt_s_check(stack, 20, -3);
-    EXPECT_EQ(check_value, 0);
+    i32_lt_s_check(stack, 20, -3, 0);
 
     // case 4: (-20) < (-3)
-    check_value = i32_lt_s_check(stack, -20, -3);
-    EXPECT_EQ(check_value, 1);
+    i32_lt_s_check(stack, -20, -3, 1);
 
     // case 5: (-20) < (-20)
-    check_value = i32_lt_s_check(stack, -20, -20);
-    EXPECT_EQ(check_value, 0);
+    i32_lt_s_check(stack, -20, -20, 0);
+
+    // clean
+    free_Stack(stack);
 }

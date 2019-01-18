@@ -23,4 +23,8 @@ SKYPAT_F(Runtime_i32_ge_u, regular)
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.i32, 1);
+
+    // clean
+    free_Value(check);
+    free_Stack(stack);
 }

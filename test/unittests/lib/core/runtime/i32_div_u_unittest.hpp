@@ -24,4 +24,8 @@ SKYPAT_F(Runtime_i32_div_u, regular)
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.u32, 0);
+
+    // clean
+    free_Value(check);
+    free_Stack(stack);
 }

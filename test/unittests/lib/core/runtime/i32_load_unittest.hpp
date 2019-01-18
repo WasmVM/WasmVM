@@ -45,6 +45,9 @@ SKYPAT_F(runtime_i32_load_32, regular)
         Value *check = NULL;
         stack->entries->pop(stack->entries, (void**)&check);
         EXPECT_EQ(check->value.i32, data[lop]);
+
+        // Clean
+        free_Value(check);
     }
 
     // error check

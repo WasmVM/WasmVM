@@ -30,4 +30,8 @@ SKYPAT_F(Runtime_nop, regular)
     runtime_nop();
     stack->entries->pop(stack->entries, (void**)&check);
     EXPECT_EQ(check->value.i32, -17);
+
+    // clean
+    free_Value(check);
+    free_Stack(stack);
 }
