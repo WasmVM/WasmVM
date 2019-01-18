@@ -4,19 +4,19 @@
 
 WasmControlInstr* new_WasmControlInstr()
 {
-  WasmControlInstr* newInstr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
+    WasmControlInstr* newInstr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
 
-  newInstr->resultTypes = new_vector(sizeof(ValueType));
-  newInstr->instrs = new_vector(sizeof(ValueType));
-  newInstr->indices = new_vector(sizeof(ValueType));
+    newInstr->resultTypes = new_vector(sizeof(ValueType));
+    newInstr->instrs = new_vector(sizeof(ValueType));
+    newInstr->indices = new_vector(sizeof(ValueType));
 
-  return newInstr;
+    return newInstr;
 }
 
 void free_WasmControlInstr(WasmControlInstr* thisInstr)
 {
-  free_vector(thisInstr->resultTypes);
-  free_vector(thisInstr->instrs);
-  free_vector(thisInstr->indices);
-  free(thisInstr);
+    free_vector(thisInstr->resultTypes);
+    free_vector(thisInstr->instrs);
+    free_vector(thisInstr->indices);
+    free(thisInstr);
 }
