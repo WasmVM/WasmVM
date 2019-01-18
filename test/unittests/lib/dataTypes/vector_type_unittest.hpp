@@ -10,14 +10,13 @@ extern "C" {
 SKYPAT_F(vector, create_delete)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), free);
+    vector* newVector = new_vector(sizeof(int));
 
     // Check
     EXPECT_EQ(newVector->data, NULL);
     EXPECT_EQ(newVector->length, 0);
     EXPECT_EQ(newVector->unitSize, sizeof(int));
     EXPECT_EQ(newVector->capacity, 0);
-    EXPECT_EQ(newVector->freeElem, free);
 
     free_vector(newVector);
 }
@@ -25,7 +24,7 @@ SKYPAT_F(vector, create_delete)
 SKYPAT_F(vector, push_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), free);
+    vector* newVector = new_vector(sizeof(int));
 
     // Check
     int data1 = 5;
@@ -47,7 +46,7 @@ SKYPAT_F(vector, push_back)
 SKYPAT_F(vector, pop_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), free);
+    vector* newVector = new_vector(sizeof(int));
 
     // Check
     int data1 = 5;
@@ -83,7 +82,7 @@ SKYPAT_F(vector, pop_back)
 SKYPAT_F(vector, shrink)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), free);
+    vector* newVector = new_vector(sizeof(int));
 
     // Check
     int data1 = 5;
@@ -106,7 +105,7 @@ SKYPAT_F(vector, shrink)
 SKYPAT_F(vector, at)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), free);
+    vector* newVector = new_vector(sizeof(int));
 
     // Check
     int data1 = 5;
@@ -121,10 +120,6 @@ SKYPAT_F(vector, at)
     EXPECT_EQ(*check2, 8);
     int *check3 = (int*) newVector->at(newVector, 2);
     EXPECT_EQ(*check3, 13);
-
-    free(check1);
-    free(check2);
-    free(check3);
 
     free_vector(newVector);
 }

@@ -71,7 +71,7 @@ SKYPAT_F(Validate_Instr_block, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_block;
-    instr->resultTypes = new_vector(sizeof(ValueType), free);
+    instr->resultTypes = new_vector(sizeof(ValueType));
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
     instr->resultTypes->push_back(instr->resultTypes, resType1);
@@ -113,7 +113,7 @@ SKYPAT_F(Validate_Instr_loop, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_loop;
-    instr->resultTypes = new_vector(sizeof(ValueType), free);
+    instr->resultTypes = new_vector(sizeof(ValueType));
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
     instr->resultTypes->push_back(instr->resultTypes, resType1);
@@ -155,7 +155,7 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_if;
-    instr->resultTypes = new_vector(sizeof(ValueType), free);
+    instr->resultTypes = new_vector(sizeof(ValueType));
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
     instr->resultTypes->push_back(instr->resultTypes, resType1);
@@ -188,7 +188,7 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_if;
-    instr->resultTypes = new_vector(sizeof(ValueType), free);
+    instr->resultTypes = new_vector(sizeof(ValueType));
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
     instr->resultTypes->push_back(instr->resultTypes, resType1);
@@ -228,7 +228,7 @@ SKYPAT_F(Validate_Instr_if, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_if;
-    instr->resultTypes = new_vector(sizeof(ValueType), free);
+    instr->resultTypes = new_vector(sizeof(ValueType));
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
     instr->resultTypes->push_back(instr->resultTypes, resType1);
@@ -570,7 +570,7 @@ SKYPAT_F(Validate_Instr_br, valid)
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -614,7 +614,7 @@ SKYPAT_F(Validate_Instr_br, index_out_of_range)
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -656,7 +656,7 @@ SKYPAT_F(Validate_Instr_br, no_enough_operand)
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -694,7 +694,7 @@ SKYPAT_F(Validate_Instr_br_if, valid)
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -741,7 +741,7 @@ SKYPAT_F(Validate_Instr_br_if, index_out_of_range)
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -778,7 +778,7 @@ SKYPAT_F(validate_Instr_br_if, no_condition_operand)
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     // Check
@@ -811,7 +811,7 @@ SKYPAT_F(Validate_Instr_br_if, no_enough_operand)
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     instr->indices->push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
@@ -851,7 +851,7 @@ SKYPAT_F(validate_Instr_br_table, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -915,7 +915,7 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -978,7 +978,7 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1041,7 +1041,7 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1108,7 +1108,7 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1171,7 +1171,7 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1231,7 +1231,7 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_br_table;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1319,7 +1319,7 @@ SKYPAT_F(validate_Instr_call, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
@@ -1356,7 +1356,7 @@ SKYPAT_F(validate_Instr_call, index_out_of_range)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
     instr->indices->push_back(instr->indices, index);
@@ -1392,7 +1392,7 @@ SKYPAT_F(validate_Instr_call_indirect, valid)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call_indirect;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
@@ -1428,7 +1428,7 @@ SKYPAT_F(validate_Instr_call_indirect, no_table)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call_indirect;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);
@@ -1468,7 +1468,7 @@ SKYPAT_F(validate_Instr_call_indirect, index_out_of_range)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call_indirect;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
     instr->indices->push_back(instr->indices, index);
@@ -1508,7 +1508,7 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
 
     WasmControlInstr* instr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     instr->parent.opcode = Op_call_indirect;
-    instr->indices = new_vector(sizeof(uint32_t), free);
+    instr->indices = new_vector(sizeof(uint32_t));
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
     instr->indices->push_back(instr->indices, index);

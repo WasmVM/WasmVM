@@ -7,7 +7,7 @@ WasmElem* new_WasmElem()
 {
     WasmElem* newWasmElem = (WasmElem*) malloc(sizeof(WasmElem));
     newWasmElem->table = 0;
-    newWasmElem->init = new_vector(sizeof(uint32_t), (void(*)(void*))free);
+    newWasmElem->init = new_vector(sizeof(uint32_t));
     newWasmElem->offset.parent.entryType = Entry_Value;
     newWasmElem->offset.type = Value_i32;
     newWasmElem->offset.value.i32 = 0;

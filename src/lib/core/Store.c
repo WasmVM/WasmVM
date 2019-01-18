@@ -9,10 +9,10 @@
 Store* new_Store()
 {
     Store* newStore = (Store*) malloc(sizeof(Store));
-    newStore->funcs = new_vector(sizeof(FuncInst), (void(*)(void*))free_FuncInst);
-    newStore->tables = new_vector(sizeof(TableInst), (void(*)(void*))free_TableInst);
-    newStore->mems = new_vector(sizeof(MemInst), (void(*)(void*))free_MemInst);
-    newStore->globals = new_vector(sizeof(GlobalInst), (void(*)(void*))free_GlobalInst);
+    newStore->funcs = new_vector(sizeof(FuncInst));
+    newStore->tables = new_vector(sizeof(TableInst));
+    newStore->mems = new_vector(sizeof(MemInst));
+    newStore->globals = new_vector(sizeof(GlobalInst));
     return newStore;
 }
 
