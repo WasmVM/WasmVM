@@ -60,9 +60,12 @@ void free_queue(queue* thisqueuePtr)
 {
     if(thisqueuePtr->freeElem) {
         queueNode* cur = thisqueuePtr->head;
+        queueNode* tmp;
         while(cur != NULL) {
             thisqueuePtr->freeElem(cur->data);
+            tmp = cur;
             cur = cur->next;
+            free(tmp);
         }
     }
     free(thisqueuePtr);

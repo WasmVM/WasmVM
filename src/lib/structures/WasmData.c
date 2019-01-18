@@ -11,6 +11,6 @@ WasmData* new_WasmData()
 }
 void free_WasmData(WasmData* thisWasmData)
 {
-    free(thisWasmData->init);
+    free_vector(thisWasmData->init);
     free(thisWasmData);
 }

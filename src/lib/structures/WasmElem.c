@@ -16,6 +16,6 @@ WasmElem* new_WasmElem()
 
 void free_WasmElem(WasmElem *thisWasmElem)
 {
-    free(thisWasmElem->init);
+    free_vector(thisWasmElem->init);
     free(thisWasmElem);
 }

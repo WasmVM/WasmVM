@@ -18,6 +18,9 @@ FuncInst* new_FuncInst()
 
 void free_FuncInst(FuncInst* funcInst)
 {
+    free_vector(funcInst->type.params);
+    free_vector(funcInst->type.results);
     free_vector(funcInst->locals);
     free_vector(funcInst->code);
+    free(funcInst);
 }
