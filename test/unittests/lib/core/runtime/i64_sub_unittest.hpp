@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_sub, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack* stack = new_Stack((void (*)(void*))free_Value);
     Value *value1 = new_i64Value(20000000000000020), *value2 = new_i64Value(20000000000000010);
     stack->entries->push(stack->entries, value1);
     stack->entries->push(stack->entries, value2);

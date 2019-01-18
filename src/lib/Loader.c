@@ -83,7 +83,7 @@ Loader* new_Loader()
     newLoader->parent.isTerminated = 0;
     newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list(free);
-    newLoader->decodedStack = new_stack();
+    newLoader->decodedStack = new_stack((void (*)(void*))freeRequest);
     newLoader->requests = new_queue((void (*)(void*))freeRequest);
     return newLoader;
 }

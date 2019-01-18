@@ -9,13 +9,14 @@ typedef struct stackNode_ {
 typedef struct stack_ {
     stackNode* head;
     unsigned int size;
+    void (*freeElem)(void* elem);
     void (*push)(struct stack_* thisStack, void* data);
     // If success return 0, or return -1
     int (*pop)(struct stack_* thisStack, void** dataPtr);
     int (*top)(struct stack_* thisStack, void** dataPtr);
 } stack;
 
-stack* new_stack();
+stack* new_stack(void (*freeElem)(void* elem));
 void free_stack(stack* thisstackPtr);
 
 #endif

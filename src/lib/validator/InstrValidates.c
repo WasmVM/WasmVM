@@ -255,7 +255,7 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds,
         return -2;
     }
     free(condition);
-    stack* operandCache = new_stack();
+    stack* operandCache = new_stack(free);
     for(size_t i = frame->label_types->length; i > 0; --i) {
         ValueType* operand = NULL;
         ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);

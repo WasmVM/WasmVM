@@ -35,7 +35,7 @@ static int stackTop(stack* thisstack, void** dataPtr)
     }
 }
 
-stack* new_stack()
+stack* new_stack(void (*freeElem)(void* elem))
 {
     stack* newstack = (stack*)malloc(sizeof(stack));
     newstack->head = NULL;
@@ -43,9 +43,18 @@ stack* new_stack()
     newstack->pop = stackPop;
     newstack->push = stackPush;
     newstack->top = stackTop;
+    newstack->freeElem = freeElem;
     return newstack;
 }
 void free_stack(stack* thisstack)
 {
+    if (thisstack->freeElem) {
+        while (thisstack->head != NULL) {
+            stackNode* node = thisstack->head;
+            thisstack->head = node->next;
+            thisstack->freeElem(node->data);
+            free(node);
+        }
+    }
     free(thisstack);
 }

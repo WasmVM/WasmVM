@@ -14,7 +14,7 @@ extern "C" {
 SKYPAT_F(runtime_i32_load_32, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack* stack = new_Stack((void (*)(void*))free_Value);
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int32_t data[] = { 1000, 2000, 3000, 4000, 5000 };

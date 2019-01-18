@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i32_xor, regular)
 {
     // prepare
-    Stack* stack = new_Stack();
+    Stack* stack = new_Stack((void (*)(void*))free_Value);
     Value *val1 = new_i32Value(4), *val2 = new_i32Value(5);
     stack->entries->push(stack->entries, val1);
     stack->entries->push(stack->entries, val2);

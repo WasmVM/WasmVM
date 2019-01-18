@@ -3,10 +3,10 @@
 #include <stdlib.h>
 #include <dataTypes/Entry.h>
 
-Stack* new_Stack()
+Stack* new_Stack(void (*freeElem)(void* elem))
 {
     Stack* newStack = (Stack*) malloc(sizeof(Stack));
-    newStack->entries = new_stack();
+    newStack->entries = new_stack(freeElem);
     return newStack;
 }
 void free_Stack(Stack* thisStack)
