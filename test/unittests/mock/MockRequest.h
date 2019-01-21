@@ -9,6 +9,7 @@
 void mock_request_free(Request* request)
 {
     free_queue(request->stages);
+    free(request);
 }
 
 Request* new_MockRequest()

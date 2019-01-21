@@ -53,8 +53,8 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
         // FuncType init
         FuncType* newType = (FuncType*) malloc(sizeof(FuncType));
         // use default free function
-        newType->params = new_vector(sizeof(ValueType), (void(*)(void*))free);
-        newType->results = new_vector(sizeof(ValueType), (void(*)(void*))free);
+        newType->params = new_vector(sizeof(ValueType));
+        newType->results = new_vector(sizeof(ValueType));
         if(**read_p != TYPE_Func) {
             printf("%s : Function type must start with function type code. (Wrong wasm)\n", newModule->module_name);
             return -1;

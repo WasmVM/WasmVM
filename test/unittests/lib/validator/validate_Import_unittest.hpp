@@ -16,7 +16,8 @@ SKYPAT_F(Validate_Import, valid_func)
     // Prepare
     WasmImport* import = (WasmImport*)malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
-    module->types->push_back(module->types, new_FuncType());
+    FuncType* funcType = new_FuncType();
+    module->types->push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 0;
 
@@ -25,6 +26,7 @@ SKYPAT_F(Validate_Import, valid_func)
 
     free(import);
     free_WasmModule(module);
+    free_FuncType(funcType);
 }
 
 SKYPAT_F(Validate_Import, func_type_not_defined)
@@ -32,7 +34,8 @@ SKYPAT_F(Validate_Import, func_type_not_defined)
     // Prepare
     WasmImport* import = (WasmImport*) malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
-    module->types->push_back(module->types, new_FuncType());
+    FuncType* funcType = new_FuncType();
+    module->types->push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 1;
 
@@ -41,6 +44,7 @@ SKYPAT_F(Validate_Import, func_type_not_defined)
 
     free(import);
     free_WasmModule(module);
+    free_FuncType(funcType);
 }
 
 SKYPAT_F(Validate_Import, limits_valid)

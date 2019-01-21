@@ -15,7 +15,7 @@ typedef struct vector_ {
     void* (*at)(struct vector_* thisVector, size_t index);
 } vector;
 
-vector* new_vector(size_t unitSize, void (*freeElem)(void* elem));
+vector* new_vector(size_t unitSize);
 void free_vector(vector* vectorPtr);
 
 #endif

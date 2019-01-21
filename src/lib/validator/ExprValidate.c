@@ -19,8 +19,8 @@ static void clean(stack* opds, stack* ctrls)
 int validate_Expr(vector* expr, Context* context)
 {
     // Prepare
-    stack* opds = new_stack(); // ValueType
-    stack* ctrls = new_stack(); // ctrl_frame
+    stack* opds = new_stack(free); // ValueType
+    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame); // ctrl_frame
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, (void*)frame);
     for(size_t i = 0; i < context->returns->length; ++i) {

@@ -12,7 +12,7 @@ extern "C" {
 SKYPAT_F(runtime_i64_load8_u, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack* stack = new_Stack((void (*)(void*))free_Value);
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int64_t data[] = { 0, 1, 4, 16, 64, 256, 518, 1040 };
@@ -37,6 +37,8 @@ SKYPAT_F(runtime_i64_load8_u, regular)
         Value *check = NULL;
         stack->entries->pop(stack->entries, (void**) &check);
         EXPECT_EQ(check->value.i64, (uint8_t) data[lop]);
+        // Clean
+        free_Value(check);
     }
     // error check
     stack->entries->push(stack->entries, new_i32Value(65540));

@@ -5,12 +5,12 @@
 WasmData* new_WasmData()
 {
     WasmData* newWasmData = (WasmData*) malloc(sizeof(WasmData));
-    newWasmData->init = new_vector(sizeof(char), (void(*)(void*))free);
+    newWasmData->init = new_vector(sizeof(char));
 
     return newWasmData;
 }
 void free_WasmData(WasmData* thisWasmData)
 {
-    free(thisWasmData->init);
+    free_vector(thisWasmData->init);
     free(thisWasmData);
 }

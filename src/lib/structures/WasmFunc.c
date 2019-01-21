@@ -6,8 +6,8 @@ WasmFunc* new_WasmFunc()
 {
     WasmFunc* newWasmFunc = (WasmFunc*) malloc(sizeof(WasmFunc));
     // vectors
-    newWasmFunc->locals = new_vector(sizeof(ValueType), (void(*)(void*))free);
-    newWasmFunc->body = new_vector(sizeof(WasmInstr), (void(*)(void*))free);
+    newWasmFunc->locals = new_vector(sizeof(ValueType));
+    newWasmFunc->body = new_vector(sizeof(WasmInstr));
 
     return newWasmFunc;
 }

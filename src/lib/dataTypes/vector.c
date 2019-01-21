@@ -1,5 +1,6 @@
 #include <dataTypes/vector.h>
 
+#include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -22,7 +23,9 @@ static void* _pop_back(vector* thisVector)
     if(thisVector->length <= 0) {
         return NULL;
     }
-    void* valuePtr = thisVector->at(thisVector, thisVector->length - 1);
+    void* valuePtr = malloc(thisVector->unitSize);
+    memcpy(valuePtr, thisVector->at(thisVector, thisVector->length - 1),
+           thisVector->unitSize);
     --thisVector->length;
     return valuePtr;
 }
@@ -38,19 +41,16 @@ static void* _at(vector* thisVector, size_t index)
     if(thisVector->length <= 0 || index >= thisVector->length) {
         return NULL;
     }
-    void* result = malloc(thisVector->unitSize);
-    memcpy(result, thisVector->data + (index * thisVector->unitSize), thisVector->unitSize);
-    return result;
+    return (uint8_t*)thisVector->data + (index * thisVector->unitSize);
 }
 
-vector* new_vector(size_t unitSize, void (*freeElem)(void* elem))
+vector* new_vector(size_t unitSize)
 {
     vector* thisVector = (vector*) malloc(sizeof(vector));
     thisVector->data = NULL;
     thisVector->length = 0;
     thisVector->capacity = 0;
     thisVector->unitSize = unitSize;
-    thisVector->freeElem = freeElem;
     thisVector->push_back = _push_back;
     thisVector->pop_back = _pop_back;
     thisVector->shrink = _shrink;
@@ -59,11 +59,6 @@ vector* new_vector(size_t unitSize, void (*freeElem)(void* elem))
 }
 void free_vector(vector* thisVector)
 {
-    if(thisVector->freeElem) {
-        for(size_t i = 0; i < thisVector->length; ++i) {
-            thisVector->freeElem(thisVector->at(thisVector, i));
-        }
-    }
     free(thisVector->data);
     free(thisVector);
 }

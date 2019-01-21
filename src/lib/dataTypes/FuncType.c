@@ -6,8 +6,8 @@
 FuncType* new_FuncType()
 {
     FuncType* newFuncType = (FuncType*)malloc(sizeof(FuncType));
-    newFuncType->params = new_vector(sizeof(ValueType), free);
-    newFuncType->results = new_vector(sizeof(ValueType), free);
+    newFuncType->params = new_vector(sizeof(ValueType));
+    newFuncType->results = new_vector(sizeof(ValueType));
     return newFuncType;
 }
 

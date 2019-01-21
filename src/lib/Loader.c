@@ -32,6 +32,8 @@ static void* run_Loader(Loader* loader)
             }
         }
         if(loaded) {
+            free(loadName);
+            request->free(request);
             continue;
         }
         loader->loadedList->push_back(loader->loadedList, loadName);
@@ -40,7 +42,9 @@ static void* run_Loader(Loader* loader)
             Stage* stage = NULL;
             request->stages->pop(request->stages, (void**)&stage);
             *result = stage->run(stage);
+            free(stage);
             if(*result) {
+                request->free(request);
                 return result;
             }
         }
@@ -53,6 +57,8 @@ static void* run_Loader(Loader* loader)
         Stage* stage = NULL;
         request->stages->pop(request->stages, (void**)&stage);
         *result = stage->run(stage);
+        request->free(request);
+        free(stage);
         if(*result) {
             return result;
         }
@@ -83,7 +89,7 @@ Loader* new_Loader()
     newLoader->parent.isTerminated = 0;
     newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list(free);
-    newLoader->decodedStack = new_stack();
+    newLoader->decodedStack = new_stack((void (*)(void*))freeRequest);
     newLoader->requests = new_queue((void (*)(void*))freeRequest);
     return newLoader;
 }

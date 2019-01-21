@@ -8,9 +8,9 @@ extern "C" {
 #undef _Bool
 
 /*
- * This function applys runtime_i32_gt_u() unittest and return the result of runtime_i32_gt_u().
+ * This function applys runtime_i32_gt_u() unittest and check the result of runtime_i32_gt_u().
  */
-int32_t i32_gt_u_check(Stack* stack, int32_t value_1, int32_t value_2)
+void i32_gt_u_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1);
@@ -21,27 +21,26 @@ int32_t i32_gt_u_check(Stack* stack, int32_t value_1, int32_t value_2)
     runtime_i32_gt_u(stack);
 
     stack->entries->pop(stack->entries, (void**)&check);
-    return check->value.i32;
+    EXPECT_EQ(check->value.i32, expected);
+    free_Value(check);
 }
 
 SKYPAT_F(Runtime_i32_gt_u, regular)
 {
-    Stack* stack = new_Stack();
-    int32_t check_value;
+    Stack* stack = new_Stack((void (*)(void*))free_Value);
 
     // case 1: 20 > 3
-    check_value = i32_gt_u_check(stack, 20, 3);
-    EXPECT_EQ(check_value, 1);
+    i32_gt_u_check(stack, 20, 3, 1);
 
     // case 2: (-20) > 3
-    check_value = i32_gt_u_check(stack, -20, 3);
-    EXPECT_EQ(check_value, 1);
+    i32_gt_u_check(stack, -20, 3, 1);
 
     // case 3: 20 > (-3)
-    check_value = i32_gt_u_check(stack, 20, -3);
-    EXPECT_EQ(check_value, 0);
+    i32_gt_u_check(stack, 20, -3, 0);
 
     // case 4: (-20) > (-3)
-    check_value = i32_gt_u_check(stack, -20, -3);
-    EXPECT_EQ(check_value, 0);
+    i32_gt_u_check(stack, -20, -3, 0);
+
+    // clean
+    free_Stack(stack);
 }

@@ -7,7 +7,7 @@ typedef struct {
     stack* entries; // Entry
 } Stack;
 
-Stack* new_Stack();
+Stack* new_Stack(void (*freeElem)(void* elem));
 void free_Stack(Stack* thisStack);
 
 #endif

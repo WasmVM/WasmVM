@@ -255,12 +255,13 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds,
         return -2;
     }
     free(condition);
-    stack* operandCache = new_stack();
+    stack* operandCache = new_stack(free);
     for(size_t i = frame->label_types->length; i > 0; --i) {
         ValueType* operand = NULL;
         ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
         if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
             free(operand);
+            free_stack(operandCache);
             return -3;
         }
         operandCache->push(operandCache, operand);
@@ -270,6 +271,7 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds,
         opds->push(opds, operand);
     }
     ctrls->top(ctrls, (void**)&frame);
+    free_stack(operandCache);
     return 0;
 }
 int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
@@ -307,6 +309,7 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
             free(operand);
             return -6;
         }
+        free(operand);
     }
     ctrls->top(ctrls, (void**)&frame);
     frame->unreachable = 1;

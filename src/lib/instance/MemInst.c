@@ -5,7 +5,7 @@
 MemInst* new_MemInst()
 {
     MemInst* newMemInst = (MemInst*) malloc(sizeof(MemInst));
-    newMemInst->data = new_vector(sizeof(char), NULL);
+    newMemInst->data = new_vector(sizeof(char));
     newMemInst->max = 0;
     return newMemInst;
 }

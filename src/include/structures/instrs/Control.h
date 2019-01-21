@@ -13,4 +13,6 @@ typedef struct _wasm_control_instr {
     vector*     indices;        // uint32_t
 } WasmControlInstr;
 
+WasmControlInstr* new_WasmControlInstr();
+void free_WasmControlInstr(WasmControlInstr* thisInstr);
 #endif
