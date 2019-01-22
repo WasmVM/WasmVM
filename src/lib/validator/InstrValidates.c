@@ -4,6 +4,8 @@
 #include <Opcodes.h>
 #include <stdlib.h>
 
+#include <stdio.h>
+
 static int pop_opd(stack* opds, stack* ctrls, ValueType** operand)
 {
     ctrl_frame* frame = NULL;
@@ -420,26 +422,197 @@ int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack*
 }
 int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    uint32_t maxAlign = 0;
+    ValueType resultType;
+    switch(instr->parent.opcode) {
+        case Op_i32_load:
+            maxAlign = 2;
+            resultType = Value_i32;
+            break;
+        case Op_i64_load:
+            maxAlign = 3;
+            resultType = Value_i64;
+            break;
+        case Op_f32_load:
+            maxAlign = 2;
+            resultType = Value_f32;
+            break;
+        case Op_f64_load:
+            maxAlign = 3;
+            resultType = Value_f64;
+            break;
+        default:
+            return -2;
+    }
+    if(instr->align > maxAlign) {
+        return -3;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
+        return -4;
+    }
+    *operand = resultType;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    uint32_t maxAlign = 0;
+    ValueType resultType;
+    switch(instr->parent.opcode) {
+        case Op_i32_load8_s:
+        case Op_i32_load8_u:
+            maxAlign = 0;
+            resultType = Value_i32;
+            break;
+        case Op_i32_load16_s:
+        case Op_i32_load16_u:
+            maxAlign = 1;
+            resultType = Value_i32;
+            break;
+        case Op_i64_load8_s:
+        case Op_i64_load8_u:
+            maxAlign = 0;
+            resultType = Value_i64;
+            break;
+        case Op_i64_load16_s:
+        case Op_i64_load16_u:
+            maxAlign = 1;
+            resultType = Value_i64;
+            break;
+        case Op_i64_load32_s:
+        case Op_i64_load32_u:
+            maxAlign = 2;
+            resultType = Value_i64;
+            break;
+        default:
+            return -2;
+    }
+    if(instr->align > maxAlign) {
+        return -3;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
+        return -4;
+    }
+    *operand = resultType;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    uint32_t maxAlign = 0;
+    ValueType resultType;
+    switch(instr->parent.opcode) {
+        case Op_i32_store:
+            maxAlign = 2;
+            resultType = Value_i32;
+            break;
+        case Op_i64_store:
+            maxAlign = 3;
+            resultType = Value_i64;
+            break;
+        case Op_f32_store:
+            maxAlign = 2;
+            resultType = Value_f32;
+            break;
+        case Op_f64_store:
+            maxAlign = 3;
+            resultType = Value_f64;
+            break;
+        default:
+            return -2;
+    }
+    if(instr->align > maxAlign) {
+        return -3;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, resultType)) {
+        return -4;
+    }
+    free(operand);
+    ValueType* address = NULL;
+    if(pop_opd_expect(opds, ctrls, &address, Value_i32)) {
+        return -5;
+    }
+    free(address);
     return 0;
 }
 int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    uint32_t maxAlign = 0;
+    ValueType resultType;
+    switch(instr->parent.opcode) {
+        case Op_i32_store8:
+            maxAlign = 0;
+            resultType = Value_i32;
+            break;
+        case Op_i32_store16:
+            maxAlign = 1;
+            resultType = Value_i32;
+            break;
+        case Op_i64_store8:
+            maxAlign = 0;
+            resultType = Value_i64;
+            break;
+        case Op_i64_store16:
+            maxAlign = 1;
+            resultType = Value_i64;
+            break;
+        case Op_i64_store32:
+            maxAlign = 2;
+            resultType = Value_i64;
+            break;
+        default:
+            return -2;
+    }
+    if(instr->align > maxAlign) {
+        return -3;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, resultType)) {
+        return -4;
+    }
+    free(operand);
+    ValueType* address = NULL;
+    if(pop_opd_expect(opds, ctrls, &address, Value_i32)) {
+        return -5;
+    }
+    free(address);
     return 0;
 }
 int validate_Instr_memory_size(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
+    *operand = Value_i32;
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_memory_grow(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
 {
+    if(context->module->mems->length < 1) {
+        return -1;
+    }
+    ValueType* operand = NULL;
+    if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
+        return -2;
+    }
+    opds->push(opds, operand);
     return 0;
 }
 int validate_Instr_nop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
