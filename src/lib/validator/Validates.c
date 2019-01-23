@@ -8,7 +8,7 @@ int validate_FunctionType(FuncType* funcType)
     return 0; // Unleash result type restrict
 }
 
-int validate_Func(WasmFunc* func, WasmModule* module) // FIXME: Test
+int validate_Func(WasmFunc* func, WasmModule* module)
 {
     if(func->type >= module->types->length) {
         return -1;

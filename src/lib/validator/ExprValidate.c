@@ -10,7 +10,7 @@ static void clean(stack* opds, stack* ctrls)
         free(cur->data);
     }
     free_stack(opds);
-    for(stackNode* cur = ctrls->head; ctrls != NULL; cur = cur->next) {
+    for(stackNode* cur = ctrls->head; cur != NULL; cur = cur->next) {
         free_ctrl_frame((ctrl_frame*)cur->data);
     }
     free_stack(ctrls);
