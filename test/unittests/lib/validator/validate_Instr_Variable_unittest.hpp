@@ -19,13 +19,7 @@ extern "C" {
 
 static void clean(stack* opds, stack* ctrls)
 {
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        free(cur->data);
-    }
     free_stack(opds);
-    for(stackNode* cur = ctrls->head; cur != NULL; cur = cur->next) {
-        free_ctrl_frame((ctrl_frame*)cur->data);
-    }
     free_stack(ctrls);
 }
 
@@ -41,14 +35,13 @@ SKYPAT_F(validate_Instr_get_local, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_get_local;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_get_local(instr, context, opds, ctrls), 0);
@@ -73,14 +66,13 @@ SKYPAT_F(validate_Instr_get_local, local_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_get_local;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_get_local(instr, context, opds, ctrls), -1);
@@ -104,14 +96,13 @@ SKYPAT_F(validate_Instr_set_local, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_local;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -136,14 +127,13 @@ SKYPAT_F(validate_Instr_set_local, local_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_local;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -170,14 +160,13 @@ SKYPAT_F(validate_Instr_set_local, no_enough_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_local;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_set_local(instr, context, opds, ctrls), -2);
@@ -201,14 +190,13 @@ SKYPAT_F(validate_Instr_tee_local, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_tee_local;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -236,14 +224,13 @@ SKYPAT_F(validate_Instr_tee_local, local_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_get_local;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -270,14 +257,13 @@ SKYPAT_F(validate_Instr_tee_local, no_enough_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_tee_local;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_tee_local(instr, context, opds, ctrls), -2);
@@ -304,14 +290,13 @@ SKYPAT_F(validate_Instr_get_global, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_get_global;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_get_global(instr, context, opds, ctrls), 0);
@@ -336,14 +321,13 @@ SKYPAT_F(validate_Instr_get_global, global_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_get_global;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_get_global(instr, context, opds, ctrls), -1);
@@ -371,14 +355,13 @@ SKYPAT_F(validate_Instr_set_global, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_global;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -403,14 +386,13 @@ SKYPAT_F(validate_Instr_set_global, global_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_global;
-    instr->index = 0;
 
     // Check
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -441,14 +423,13 @@ SKYPAT_F(validate_Instr_set_global, mut_is_not_var)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_global;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_set_global(instr, context, opds, ctrls), -2);
@@ -476,14 +457,13 @@ SKYPAT_F(validate_Instr_set_global, no_enough_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmVariableInstr* instr = (WasmVariableInstr*)malloc(sizeof(WasmVariableInstr));
+    WasmVariableInstr* instr = new_WasmVariableInstr(0);
     instr->parent.opcode = Op_set_global;
-    instr->index = 0;
 
     // Check
     EXPECT_EQ(validate_Instr_set_global(instr, context, opds, ctrls), -3);

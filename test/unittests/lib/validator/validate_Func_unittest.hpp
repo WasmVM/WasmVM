@@ -25,22 +25,22 @@ SKYPAT_F(validate_Func, valid)
     func->type = 0;
     module->funcs->push_back(module->funcs, func);
 
-    WasmNumericInstr* instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
     func->body->push_back(func->body, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
     func->body->push_back(func->body, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
     func->body->push_back(func->body, instr);
-    WasmParametricInstr* dropInstr = (WasmParametricInstr*) malloc(sizeof(WasmParametricInstr*));
+    WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
     func->body->push_back(func->body, dropInstr);
 
@@ -58,22 +58,22 @@ SKYPAT_F(validate_Func, type_not_exist)
     func->type = 0;
     module->funcs->push_back(module->funcs, func);
 
-    WasmNumericInstr* instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
     func->body->push_back(func->body, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
     func->body->push_back(func->body, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
     func->body->push_back(func->body, instr);
-    WasmParametricInstr* dropInstr = (WasmParametricInstr*) malloc(sizeof(WasmParametricInstr*));
+    WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
     func->body->push_back(func->body, dropInstr);
 

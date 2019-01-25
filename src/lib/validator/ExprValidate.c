@@ -6,17 +6,11 @@
 
 static void clean(stack* opds, stack* ctrls)
 {
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        free(cur->data);
-    }
     free_stack(opds);
-    for(stackNode* cur = ctrls->head; cur != NULL; cur = cur->next) {
-        free_ctrl_frame((ctrl_frame*)cur->data);
-    }
     free_stack(ctrls);
 }
 
-int validate_Expr(vector* expr, Context* context)
+int validate_Expr(list* expr, Context* context)
 {
     // Prepare
     stack* opds = new_stack(free); // ValueType
@@ -27,7 +21,7 @@ int validate_Expr(vector* expr, Context* context)
         frame->end_types->push_back(frame->end_types, context->returns->at(context->returns, i));
     }
     // Validate
-    for(size_t i = 0; i < expr->length; ++i) {
+    for(size_t i = 0; i < expr->size; ++i) {
         WasmInstr* instr = (WasmInstr*)expr->at(expr, i);
         int result = 0;
         switch (instr->opcode) {

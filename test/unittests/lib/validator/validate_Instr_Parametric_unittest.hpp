@@ -18,13 +18,7 @@ extern "C" {
 
 static void clean(stack* opds, stack* ctrls)
 {
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        free(cur->data);
-    }
     free_stack(opds);
-    for(stackNode* cur = ctrls->head; cur != NULL; cur = cur->next) {
-        free_ctrl_frame((ctrl_frame*)cur->data);
-    }
     free_stack(ctrls);
 }
 
@@ -37,12 +31,12 @@ SKYPAT_F(Validate_Instr_drop, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmParametricInstr* instr = (WasmParametricInstr*)malloc(sizeof(WasmParametricInstr));
+    WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_drop;
 
     // Check
@@ -68,12 +62,12 @@ SKYPAT_F(Validate_Instr_drop, no_enough_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmParametricInstr* instr = (WasmParametricInstr*)malloc(sizeof(WasmParametricInstr));
+    WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_drop;
 
     // Check
@@ -95,12 +89,12 @@ SKYPAT_F(Validate_Instr_select, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmParametricInstr* instr = (WasmParametricInstr*)malloc(sizeof(WasmParametricInstr));
+    WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_select;
 
     // Check
@@ -136,12 +130,12 @@ SKYPAT_F(Validate_Instr_select, no_enough_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmParametricInstr* instr = (WasmParametricInstr*)malloc(sizeof(WasmParametricInstr));
+    WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_select;
 
     // Check

@@ -9,4 +9,7 @@ typedef struct _wasm_numeric_instr {
     Value       constant;
 } WasmNumericInstr;
 
+WasmNumericInstr* new_WasmNumericInstr();
+void free_WasmNumericInstr(WasmNumericInstr* instr);
+
 #endif

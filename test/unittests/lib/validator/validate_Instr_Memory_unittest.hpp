@@ -83,13 +83,7 @@ static void test_loadN_align(stack* opds, Context* context, stack* ctrls, WasmMe
 
 static void clean(stack* opds, stack* ctrls)
 {
-    for(stackNode* cur = opds->head; cur != NULL; cur = cur->next) {
-        free(cur->data);
-    }
     free_stack(opds);
-    for(stackNode* cur = ctrls->head; cur != NULL; cur = cur->next) {
-        free_ctrl_frame((ctrl_frame*)cur->data);
-    }
     free_stack(ctrls);
 }
 
@@ -106,14 +100,12 @@ SKYPAT_F(validate_Instr_load, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load;
@@ -141,14 +133,12 @@ SKYPAT_F(validate_Instr_load, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load;
@@ -177,14 +167,12 @@ SKYPAT_F(validate_Instr_load, align_too_much)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 4;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 4);
 
     // Check
     instr->parent.opcode = Op_i32_load;
@@ -213,14 +201,12 @@ SKYPAT_F(validate_Instr_load, no_enough_operand)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load;
@@ -246,14 +232,12 @@ SKYPAT_F(validate_Instr_loadN, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load8_s;
@@ -293,14 +277,12 @@ SKYPAT_F(validate_Instr_loadN, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load8_s;
@@ -329,13 +311,12 @@ SKYPAT_F(validate_Instr_loadN, no_enough_operand)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load8_s;
@@ -361,14 +342,12 @@ SKYPAT_F(validate_Instr_loadN, align_too_much)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load8_s;
@@ -422,14 +401,12 @@ SKYPAT_F(validate_Instr_store, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store;
@@ -457,14 +434,12 @@ SKYPAT_F(validate_Instr_store, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store;
@@ -493,14 +468,12 @@ SKYPAT_F(validate_Instr_store, align_too_much)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 4;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 4);
 
     // Check
     instr->parent.opcode = Op_i32_store;
@@ -529,14 +502,12 @@ SKYPAT_F(validate_Instr_store, no_enough_operand)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store;
@@ -566,14 +537,12 @@ SKYPAT_F(validate_Instr_storeN, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store8;
@@ -603,14 +572,12 @@ SKYPAT_F(validate_Instr_storeN, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store8;
@@ -639,13 +606,12 @@ SKYPAT_F(validate_Instr_storeN, no_enough_operand)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store8;
@@ -675,14 +641,13 @@ SKYPAT_F(validate_Instr_storeN, align_too_much)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
-    instr->offset = 0;
-    instr->align = 0;
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
+
 
     // Check
     instr->parent.opcode = Op_i32_store8;
@@ -721,12 +686,12 @@ SKYPAT_F(validate_Instr_memory_size, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_memory_size;
@@ -754,12 +719,12 @@ SKYPAT_F(validate_Instr_memory_size, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_memory_size;
@@ -786,12 +751,12 @@ SKYPAT_F(validate_Instr_memory_grow, valid)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_memory_grow;
@@ -821,12 +786,12 @@ SKYPAT_F(validate_Instr_memory_grow, memory_not_exist)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_memory_grow;
@@ -855,12 +820,12 @@ SKYPAT_F(validate_Instr_memory_grow, no_enough_operand)
     memory->max = 0;
     module->mems->push_back(module->mems, memory);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack();
-    stack* ctrls = new_stack();
+    stack* opds = new_stack(free);
+    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = (WasmMemoryInstr*)malloc(sizeof(WasmMemoryInstr));
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 0);
 
     // Check
     instr->parent.opcode = Op_memory_grow;

@@ -9,4 +9,7 @@ typedef struct _wasm_variable_instr {
     uint32_t    index;
 } WasmVariableInstr;
 
+WasmVariableInstr* new_WasmVariableInstr(uint32_t index);
+void free_WasmVariableInstr(WasmVariableInstr* instr);
+
 #endif

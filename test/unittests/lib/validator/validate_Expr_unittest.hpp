@@ -4,6 +4,7 @@
 extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
+#include <dataTypes/list.h>
 #include <dataTypes/vector.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/FuncType.h>
@@ -26,24 +27,24 @@ SKYPAT_F(validate_Expr, valid)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    vector* exprs = new_vector(sizeof(WasmInstr), free);
+    list* exprs = new_list((void(*)(void*))free_WasmInstr);
 
-    WasmNumericInstr* instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
     exprs->push_back(exprs, instr);
-    WasmParametricInstr* dropInstr = (WasmParametricInstr*) malloc(sizeof(WasmParametricInstr*));
+    WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
     exprs->push_back(exprs, dropInstr);
 
@@ -51,7 +52,7 @@ SKYPAT_F(validate_Expr, valid)
     EXPECT_EQ(validate_Expr(exprs, context), 0);
 
     free_Context(context);
-    free_vector(exprs);
+    free_list(exprs);
     free_WasmModule(module);
 }
 
@@ -64,17 +65,18 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    vector* exprs = new_vector(sizeof(WasmInstr), free);
+    list* exprs = new_list((void(*)(void*))free_WasmInstr);
 
     WasmInstr* instr = (WasmInstr*) malloc(sizeof(WasmInstr));
     instr->opcode = 0xFF;
+    instr->free = (void(*)(WasmInstr*))free;
     exprs->push_back(exprs, instr);
 
     // Check
     EXPECT_EQ(validate_Expr(exprs, context), -1);
 
     free_Context(context);
-    free_vector(exprs);
+    free_list(exprs);
     free_WasmModule(module);
 }
 
@@ -87,21 +89,21 @@ SKYPAT_F(validate_Expr, remain_operand)
     FuncType* type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    vector* exprs = new_vector(sizeof(WasmInstr), free);
+    list* exprs = new_list((void(*)(void*))free_WasmInstr);
 
-    WasmNumericInstr* instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
     exprs->push_back(exprs, instr);
 
@@ -109,7 +111,7 @@ SKYPAT_F(validate_Expr, remain_operand)
     EXPECT_EQ(validate_Expr(exprs, context), -2);
 
     free_Context(context);
-    free_vector(exprs);
+    free_list(exprs);
     free_WasmModule(module);
 }
 
@@ -125,21 +127,21 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     type->results->push_back(type->results, result);
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    vector* exprs = new_vector(sizeof(WasmInstr), free);
+    list* exprs = new_list((void(*)(void*))free_WasmInstr);
 
-    WasmNumericInstr* instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
     exprs->push_back(exprs, instr);
-    instr = (WasmNumericInstr*) malloc(sizeof(WasmNumericInstr));
+    instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
     exprs->push_back(exprs, instr);
 
@@ -147,6 +149,6 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     EXPECT_EQ(validate_Expr(exprs, context), -3);
 
     free_Context(context);
-    free_vector(exprs);
+    free_list(exprs);
     free_WasmModule(module);
 }

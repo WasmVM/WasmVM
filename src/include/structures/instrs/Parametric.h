@@ -7,4 +7,7 @@ typedef struct _wasm_parametric_instr {
     WasmInstr parent;
 } WasmParametricInstr;
 
+WasmParametricInstr* new_WasmParametricInstr();
+void free_WasmParametricInstr(WasmParametricInstr* instr);
+
 #endif
