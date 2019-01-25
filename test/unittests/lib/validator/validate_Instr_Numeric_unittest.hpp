@@ -35,7 +35,7 @@ static void test_binop(stack* opds, Context* context, stack* ctrls, WasmNumericI
     *value1 = expect;
     opds->push(opds, value1);
     ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
-    *value1 = expect;
+    *value2 = expect;
     opds->push(opds, value2);
 
     EXPECT_EQ(validate_Instr_binop(instr, context, opds, ctrls), 0);
@@ -66,7 +66,7 @@ static void test_relop(stack* opds, Context* context, stack* ctrls, WasmNumericI
     *value1 = input;
     opds->push(opds, value1);
     ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
-    *value1 = input;
+    *value2 = input;
     opds->push(opds, value2);
 
     EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), 0);
