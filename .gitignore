@@ -1,6 +1,6 @@
 # ignore all object file 
 *.o
-build/
+build*/
 
 # ignore .vscode
 .vscode/
@@ -13,6 +13,8 @@ node_modules/
 
 # ignore dia temporary
 *.dia~
+
+.bash_history
 
 # ignore mac ds_store
 .DS_Store
