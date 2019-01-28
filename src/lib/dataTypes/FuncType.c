@@ -6,14 +6,18 @@
 FuncType* new_FuncType()
 {
     FuncType* newFuncType = (FuncType*)malloc(sizeof(FuncType));
-    newFuncType->params = new_vector(sizeof(ValueType));
-    newFuncType->results = new_vector(sizeof(ValueType));
+    newFuncType->params = new_vector(sizeof(ValueType), NULL);
+    newFuncType->results = new_vector(sizeof(ValueType), NULL);
     return newFuncType;
 }
 
 void free_FuncType(FuncType* funcType)
 {
+    clean_FuncType(funcType);
+    free(funcType);
+}
+void clean_FuncType(FuncType* funcType)
+{
     free_vector(funcType->params);
     free_vector(funcType->results);
-    free(funcType);
 }

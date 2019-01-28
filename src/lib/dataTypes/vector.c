@@ -44,12 +44,13 @@ static void* _at(vector* thisVector, size_t index)
     return (uint8_t*)thisVector->data + (index * thisVector->unitSize);
 }
 
-vector* new_vector(size_t unitSize)
+vector* new_vector(size_t unitSize, void (*cleanFunc)(void*))
 {
     vector* thisVector = (vector*) malloc(sizeof(vector));
     thisVector->data = NULL;
     thisVector->length = 0;
     thisVector->capacity = 0;
+    thisVector->cleanFunc = cleanFunc;
     thisVector->unitSize = unitSize;
     thisVector->push_back = _push_back;
     thisVector->pop_back = _pop_back;
@@ -59,6 +60,11 @@ vector* new_vector(size_t unitSize)
 }
 void free_vector(vector* thisVector)
 {
+    if(thisVector->cleanFunc) {
+        for(uint32_t i = thisVector->length; i > 0; --i) {
+            thisVector->cleanFunc((void*)((char*)thisVector->data + (i - 1) * thisVector->unitSize));
+        }
+    }
     free(thisVector->data);
     free(thisVector);
 }
