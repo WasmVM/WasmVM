@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(vector, create_delete)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int));
+    vector* newVector = new_vector(sizeof(int), NULL);
 
     // Check
     EXPECT_EQ(newVector->data, NULL);
@@ -24,7 +24,7 @@ SKYPAT_F(vector, create_delete)
 SKYPAT_F(vector, push_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int));
+    vector* newVector = new_vector(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -46,7 +46,7 @@ SKYPAT_F(vector, push_back)
 SKYPAT_F(vector, pop_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int));
+    vector* newVector = new_vector(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -82,7 +82,7 @@ SKYPAT_F(vector, pop_back)
 SKYPAT_F(vector, shrink)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int));
+    vector* newVector = new_vector(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -105,7 +105,7 @@ SKYPAT_F(vector, shrink)
 SKYPAT_F(vector, at)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int));
+    vector* newVector = new_vector(sizeof(int), NULL);
 
     // Check
     int data1 = 5;

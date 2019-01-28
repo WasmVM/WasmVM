@@ -47,7 +47,6 @@ SKYPAT_F(Validate_Instr_nop, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -92,7 +91,6 @@ SKYPAT_F(Validate_Instr_block, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -137,7 +135,6 @@ SKYPAT_F(Validate_Instr_loop, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -173,7 +170,6 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -216,7 +212,6 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -261,7 +256,6 @@ SKYPAT_F(Validate_Instr_if, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -307,7 +301,6 @@ SKYPAT_F(Validate_Instr_end, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -341,7 +334,6 @@ SKYPAT_F(Validate_Instr_end, no_frame_to_end)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -382,7 +374,6 @@ SKYPAT_F(Validate_Instr_end, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -422,7 +413,6 @@ SKYPAT_F(Validate_Instr_end, too_much_operand)
     free(endType1);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -468,7 +458,6 @@ SKYPAT_F(Validate_Instr_else, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -502,7 +491,6 @@ SKYPAT_F(Validate_Instr_else, no_frame_to_end)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -543,7 +531,6 @@ SKYPAT_F(Validate_Instr_else, no_enough_operand)
     free(endType1);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -583,7 +570,6 @@ SKYPAT_F(Validate_Instr_else, too_much_operand)
     free(endType1);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -629,7 +615,6 @@ SKYPAT_F(Validate_Instr_br, valid)
     free(index);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -673,7 +658,6 @@ SKYPAT_F(Validate_Instr_br, index_out_of_range)
     free(index);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -713,7 +697,6 @@ SKYPAT_F(Validate_Instr_br, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -762,7 +745,6 @@ SKYPAT_F(Validate_Instr_br_if, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -800,7 +782,6 @@ SKYPAT_F(Validate_Instr_br_if, index_out_of_range)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -834,7 +815,6 @@ SKYPAT_F(validate_Instr_br_if, no_condition_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -878,7 +858,6 @@ SKYPAT_F(Validate_Instr_br_if, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -940,7 +919,6 @@ SKYPAT_F(validate_Instr_br_table, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1001,7 +979,6 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1062,7 +1039,6 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1126,7 +1102,6 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1187,7 +1162,6 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1245,7 +1219,6 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1303,7 +1276,6 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
     free_WasmFunc(func);
     free_WasmModule(module);
 }
@@ -1331,8 +1303,6 @@ SKYPAT_F(validate_Instr_return, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
-    free_WasmFunc(func);
     free_WasmModule(module);
 }
 
@@ -1367,9 +1337,6 @@ SKYPAT_F(validate_Instr_call, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free_WasmModule(module);
 }
 
@@ -1404,9 +1371,6 @@ SKYPAT_F(validate_Instr_call, index_out_of_range)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free_WasmModule(module);
 }
 
@@ -1446,9 +1410,6 @@ SKYPAT_F(validate_Instr_call_indirect, valid)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free(table);
-    free_FuncType(type);
-    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1484,8 +1445,6 @@ SKYPAT_F(validate_Instr_call_indirect, no_table)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free_FuncType(type);
-    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1525,9 +1484,6 @@ SKYPAT_F(validate_Instr_call_indirect, index_out_of_range)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free(table);
-    free_FuncType(type);
-    free_WasmFunc(func1);
     free_WasmModule(module);
 }
 
@@ -1563,8 +1519,5 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
     free_WasmControlInstr(instr);
     clean(opds, ctrls);
     free_Context(context);
-    free(table);
-    free_FuncType(type);
-    free_WasmFunc(func1);
     free_WasmModule(module);
 }
