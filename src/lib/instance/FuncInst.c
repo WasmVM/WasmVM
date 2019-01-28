@@ -7,20 +7,25 @@
 FuncInst* new_FuncInst()
 {
     FuncInst* instance = (FuncInst*) malloc(sizeof(FuncInst));
-    instance->type.params = new_vector(sizeof(ValueType));
-    instance->type.results = new_vector(sizeof(ValueType));
-    instance->locals = new_vector(sizeof(ValueType));
+    instance->type.params = new_vector(sizeof(ValueType), NULL);
+    instance->type.results = new_vector(sizeof(ValueType), NULL);
+    instance->locals = new_vector(sizeof(ValueType), NULL);
     instance->module = NULL;
     instance->code = new_vector(sizeof(InstrInst));
     instance->hostcode = NULL;
     return instance;
 }
 
-void free_FuncInst(FuncInst* funcInst)
+void clean_FuncInst(FuncInst* funcInst)
 {
     free_vector(funcInst->type.params);
     free_vector(funcInst->type.results);
     free_vector(funcInst->locals);
     free_vector(funcInst->code);
+}
+
+void free_FuncInst(FuncInst* funcInst)
+{
+    clean_FuncInst(funcInst);
     free(funcInst);
 }

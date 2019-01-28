@@ -13,6 +13,7 @@ typedef struct ModuleInst_ {
 } ModuleInst;
 
 ModuleInst* new_ModuleInst();
+void clean_ModuleInst(ModuleInst* moduleInst);
 void free_ModuleInst(ModuleInst* moduleInst);
 
 #endif

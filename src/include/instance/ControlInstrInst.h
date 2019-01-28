@@ -13,5 +13,6 @@ typedef struct {
 } ControlInstrInst;
 
 ControlInstrInst* new_ControlInstrInst();
+void clean_ControlInstrInst(ControlInstrInst* instance);
 void free_ControlInstrInst(ControlInstrInst* instance);
 #endif
