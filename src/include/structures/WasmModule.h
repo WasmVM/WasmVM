@@ -29,6 +29,7 @@ typedef struct _wasm_module {
 } WasmModule;
 
 WasmModule* new_WasmModule(char* module_name);
+void clean_WasmModule(WasmModule* module);
 void free_WasmModule(WasmModule* module);
 
 #endif
