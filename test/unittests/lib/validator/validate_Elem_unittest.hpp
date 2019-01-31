@@ -36,9 +36,6 @@ SKYPAT_F(Validate_Elem, valid)
 
     free_WasmElem(elem);
     free_WasmModule(module);
-    free(table);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free(index);
 }
 
@@ -65,9 +62,6 @@ SKYPAT_F(Validate_Elem, func_index_out_of_range)
 
     free_WasmElem(elem);
     free_WasmModule(module);
-    free(table);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free(index);
 }
 
@@ -96,9 +90,6 @@ SKYPAT_F(Validate_Elem, table_index_out_of_range)
 
     free_WasmElem(elem);
     free_WasmModule(module);
-    free(table);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free(index);
 }
 
@@ -125,8 +116,5 @@ SKYPAT_F(Validate_Elem, expr_not_i32)
 
     free_WasmElem(elem);
     free_WasmModule(module);
-    free(table);
-    free_WasmFunc(func1);
-    free_WasmFunc(func2);
     free(index);
 }

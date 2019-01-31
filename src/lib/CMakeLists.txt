@@ -33,6 +33,8 @@ add_library(wasmvm_core
     structures/WasmElem.c
     structures/WasmFunc.c
     structures/WasmModule.c
+    structures/WasmExport.c
+    structures/WasmImport.c
     validator/Validator.c
     validator/Validates.c
     validator/Context.c

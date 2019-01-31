@@ -6,7 +6,7 @@ Context* new_Context(WasmModule* module, WasmFunc* func)
 {
     Context* context = (Context*) malloc(sizeof(Context));
     context->module = module;
-    context->locals = new_vector(sizeof(ValueType));
+    context->locals = new_vector(sizeof(ValueType), NULL);
     // params
     FuncType* funcType = (FuncType*) module->types->at(module->types, func->type);
     for(size_t i = 0; i < funcType->params->length; ++i) {
@@ -16,7 +16,7 @@ Context* new_Context(WasmModule* module, WasmFunc* func)
     for(size_t i = 0; i < func->locals->length; ++i) {
         context->locals->push_back(context->locals, func->locals->at(func->locals, i));
     }
-    context->returns = new_vector(sizeof(ValueType));
+    context->returns = new_vector(sizeof(ValueType), NULL);
     // returns
     for(size_t i = 0; i < funcType->results->length; ++i) {
         context->returns->push_back(context->returns, funcType->results->at(funcType->results, i));
@@ -35,8 +35,8 @@ ctrl_frame* new_ctrl_frame(stack* opds)
 {
     ctrl_frame* frame = (ctrl_frame*) malloc(sizeof(ctrl_frame));
     frame->unreachable = 0;
-    frame->label_types = new_vector(sizeof(ValueType));
-    frame->end_types = new_vector(sizeof(ValueType));
+    frame->label_types = new_vector(sizeof(ValueType), NULL);
+    frame->end_types = new_vector(sizeof(ValueType), NULL);
     frame->height = opds->size;
     return frame;
 }

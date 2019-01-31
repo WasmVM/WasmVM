@@ -14,5 +14,6 @@ typedef struct _wasm_control_instr {
 } WasmControlInstr;
 
 WasmControlInstr* new_WasmControlInstr();
+void clean_WasmControlInstr(WasmControlInstr* thisInstr);
 void free_WasmControlInstr(WasmControlInstr* thisInstr);
 #endif

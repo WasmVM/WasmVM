@@ -14,6 +14,7 @@ typedef struct {
 } FuncInst;
 
 FuncInst* new_FuncInst();
+void clean_FuncInst(FuncInst* funcInst);
 void free_FuncInst(FuncInst* funcInst);
 
 #endif

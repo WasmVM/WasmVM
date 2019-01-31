@@ -11,8 +11,13 @@ ExportInst* new_ExportInst()
     return instance;
 }
 
-void free_ExportInst(ExportInst* exportInst)
+void clean_ExportInst(ExportInst* exportInst)
 {
     free(exportInst->name);
+}
+
+void free_ExportInst(ExportInst* exportInst)
+{
+    clean_ExportInst(exportInst);
     free(exportInst);
 }

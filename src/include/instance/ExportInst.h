@@ -11,6 +11,7 @@ typedef struct {
 } ExportInst;
 
 ExportInst* new_ExportInst();
+void clean_ExportInst(ExportInst* exportInst);
 void free_ExportInst(ExportInst* exportInst);
 
 #endif

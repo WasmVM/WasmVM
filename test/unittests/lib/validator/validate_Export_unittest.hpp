@@ -30,7 +30,6 @@ SKYPAT_F(Validate_Export, valid_func)
 
     free(wasmExport);
     free_WasmModule(module);
-    free_WasmFunc(func);
 }
 
 SKYPAT_F(Validate_Export, func_not_defined)
@@ -48,7 +47,6 @@ SKYPAT_F(Validate_Export, func_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
-    free_WasmFunc(func);
 }
 
 SKYPAT_F(Validate_Export, valid_table)
@@ -66,7 +64,6 @@ SKYPAT_F(Validate_Export, valid_table)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(table);
 }
 
 SKYPAT_F(Validate_Export, table_not_defined)
@@ -84,7 +81,6 @@ SKYPAT_F(Validate_Export, table_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(table);
 }
 
 SKYPAT_F(Validate_Export, valid_memory)
@@ -102,7 +98,6 @@ SKYPAT_F(Validate_Export, valid_memory)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(memory);
 }
 
 SKYPAT_F(Validate_Export, momory_not_defined)
@@ -120,7 +115,6 @@ SKYPAT_F(Validate_Export, momory_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(memory);
 }
 
 SKYPAT_F(Validate_Export, valid_global)
@@ -138,7 +132,6 @@ SKYPAT_F(Validate_Export, valid_global)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(global);
 }
 
 SKYPAT_F(Validate_Export, global_not_defined)
@@ -156,5 +149,4 @@ SKYPAT_F(Validate_Export, global_not_defined)
 
     free(wasmExport);
     free_WasmModule(module);
-    free(global);
 }

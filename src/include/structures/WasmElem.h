@@ -12,6 +12,7 @@ typedef struct _wasm_elem {
 } WasmElem;
 
 WasmElem* new_WasmElem();
+void clean_WasmElem(WasmElem *thisWasmElem);
 void free_WasmElem(WasmElem *thisWasmElem);
 
 #endif

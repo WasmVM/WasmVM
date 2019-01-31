@@ -26,7 +26,6 @@ SKYPAT_F(Validate_Import, valid_func)
 
     free(import);
     free_WasmModule(module);
-    free_FuncType(funcType);
 }
 
 SKYPAT_F(Validate_Import, func_type_not_defined)
@@ -44,7 +43,6 @@ SKYPAT_F(Validate_Import, func_type_not_defined)
 
     free(import);
     free_WasmModule(module);
-    free_FuncType(funcType);
 }
 
 SKYPAT_F(Validate_Import, limits_valid)

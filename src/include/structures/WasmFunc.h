@@ -12,8 +12,8 @@ typedef struct _wasm_func {
     vector*     locals;     // ValueType
     list*     body;       // WasmInstr
 } WasmFunc;
-
 WasmFunc* new_WasmFunc();
+void clean_WasmFunc(WasmFunc* thisWasmFunc);
 void free_WasmFunc(WasmFunc* thisWasmFunc);
 
 #endif

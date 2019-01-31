@@ -11,4 +11,8 @@ typedef struct _wasm_export {
     uint32_t    descIdx;
 } WasmExport;
 
+WasmExport* new_WasmExport(char* name, DescType descType, uint32_t descIdx);
+void clean_WasmExport(WasmExport *thisWasmExport);
+void free_WasmExport(WasmExport *thisWasmExport);
+
 #endif
