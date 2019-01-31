@@ -7,12 +7,18 @@ ControlInstrInst* new_ControlInstrInst()
 {
     ControlInstrInst* instrInst = (ControlInstrInst*) malloc(sizeof(ControlInstrInst));
     instrInst->parent.free = (void(*)(InstrInst*))free_ControlInstrInst;
+    instrInst->parent.clean = (void(*)(InstrInst*))clean_ControlInstrInst;
     instrInst->resultType = Value_Unspecified;
-    instrInst->indices = new_vector(sizeof(uint32_t));
+    instrInst->indices = new_vector(sizeof(uint32_t), NULL);
     return instrInst;
 }
-void free_ControlInstrInst(ControlInstrInst* instance)
+void clean_ControlInstrInst(ControlInstrInst* instance)
 {
     free_vector(instance->indices);
+}
+
+void free_ControlInstrInst(ControlInstrInst* instance)
+{
+    clean_ControlInstrInst(instance);
     free(instance);
 }

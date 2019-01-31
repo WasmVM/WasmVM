@@ -12,6 +12,7 @@ typedef struct _wasm_data {
 } WasmData;
 
 WasmData* new_WasmData();
+void clean_WasmData(WasmData* thisWasmData);
 void free_WasmData(WasmData* thisWasmData);
 
 #endif

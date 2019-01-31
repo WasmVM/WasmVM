@@ -10,6 +10,7 @@ typedef struct {
 } TableInst;
 
 TableInst* new_TableInst();
+void clean_TableInst(TableInst* tableInst);
 void free_TableInst(TableInst* tableInst);
 
 #endif

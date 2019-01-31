@@ -8,16 +8,16 @@
 ModuleInst* new_ModuleInst()
 {
     ModuleInst* newModuleInst = (ModuleInst*) malloc(sizeof(ModuleInst));
-    newModuleInst->types = new_vector(sizeof(FuncType));
-    newModuleInst->funcaddrs = new_vector(sizeof(uint32_t));
-    newModuleInst->tableaddrs = new_vector(sizeof(uint32_t));
-    newModuleInst->memaddrs = new_vector(sizeof(uint32_t));
-    newModuleInst->globaladdrs = new_vector(sizeof(uint32_t));
-    newModuleInst->exports = new_vector(sizeof(ExportInst));
+    newModuleInst->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
+    newModuleInst->funcaddrs = new_vector(sizeof(uint32_t), NULL);
+    newModuleInst->tableaddrs = new_vector(sizeof(uint32_t), NULL);
+    newModuleInst->memaddrs = new_vector(sizeof(uint32_t), NULL);
+    newModuleInst->globaladdrs = new_vector(sizeof(uint32_t), NULL);
+    newModuleInst->exports = new_vector(sizeof(ExportInst), (void(*)(void*))(clean_ExportInst));
     return newModuleInst;
 }
 
-void free_ModuleInst(ModuleInst* moduleInst)
+void clean_ModuleInst(ModuleInst* moduleInst)
 {
     free_vector(moduleInst->types);
     free_vector(moduleInst->funcaddrs);
@@ -25,5 +25,10 @@ void free_ModuleInst(ModuleInst* moduleInst)
     free_vector(moduleInst->memaddrs);
     free_vector(moduleInst->globaladdrs);
     free_vector(moduleInst->exports);
+}
+
+void free_ModuleInst(ModuleInst* moduleInst)
+{
+    clean_ModuleInst(moduleInst);
     free(moduleInst);
 }
