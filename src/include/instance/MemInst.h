@@ -10,6 +10,7 @@ typedef struct MemInst_ {
 } MemInst;
 
 MemInst* new_MemInst();
+void clean_MemInst(MemInst* memInst);
 void free_MemInst(MemInst* memInst);
 
 #endif

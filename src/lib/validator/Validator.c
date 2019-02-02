@@ -1,6 +1,7 @@
 #include <Validator.h>
 
 #include <stdlib.h>
+#include "Validates.h"
 
 static void setInput(Validator* validator, void* input)
 {
@@ -12,8 +13,7 @@ static void* getOutput(Validator* validator)
 }
 static int runValidator(Validator* validator)
 {
-    //TODO:
-    return 0;
+    return validate_Module(validator->input);
 }
 
 Validator* new_Validator(WasmModule* module)

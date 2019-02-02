@@ -10,5 +10,6 @@ typedef struct {
 
 FuncType* new_FuncType();
 void free_FuncType(FuncType* funcType);
+void clean_FuncType(FuncType* funcType);
 
 #endif

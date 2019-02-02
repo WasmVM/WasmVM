@@ -11,6 +11,7 @@ typedef struct {
 } Store;
 
 Store* new_Store();
+void clean_Store(Store* thisStore);
 void free_Store(Store* thisStore);
 
 #endif

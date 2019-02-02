@@ -8,14 +8,14 @@ typedef struct vector_ {
     size_t length;
     size_t capacity;
     size_t unitSize;
-    void (*freeElem)(void* elem);
+    void (*cleanFunc)(void*);
     void (*push_back)(struct vector_* thisVector, const void* value);
     void* (*pop_back)(struct vector_* thisVector);
     void (*shrink)(struct vector_* thisVector);
     void* (*at)(struct vector_* thisVector, size_t index);
 } vector;
 
-vector* new_vector(size_t unitSize);
+vector* new_vector(size_t unitSize, void (*cleanFunc)(void*));
 void free_vector(vector* vectorPtr);
 
 #endif

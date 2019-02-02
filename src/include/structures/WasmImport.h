@@ -17,7 +17,10 @@ typedef struct _wasm_import {
         } limits;
         Value value;
     } desc;
-
 } WasmImport;
+
+WasmImport* new_WasmImport(char* moduleName, char* name);
+void clean_WasmImport(WasmImport* import);
+void free_WasmImport(WasmImport* import);
 
 #endif
