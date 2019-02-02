@@ -58,3 +58,4 @@ add_runtime_unittest(f32_load_unittest)
 # Control Unittest
 add_runtime_unittest(nop_unittest)
 add_runtime_unittest(drop_unittest)
+add_runtime_unittest(select_unittest)
