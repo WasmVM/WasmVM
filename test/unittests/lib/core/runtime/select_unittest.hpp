@@ -12,12 +12,12 @@ SKYPAT_F(Runtime_nop, regular)
     Stack* stack = new_Stack((void (*)(void*))free_Value);
     int32_t check_value;
 
-    Value *value_1 = new_i32Value(0);
-    Value *value_2 = new_i32Value(1);
-    Value *value_3 = new_i32Value(2);
-    Value *value_4 = new_i32Value(3);
-    Value *value_5 = new_i32Value(4);
-    Value *value_6 = new_i32Value(5);
+    Value *value_1 = new_i32Value(5);
+    Value *value_2 = new_i32Value(4);
+    Value *value_3 = new_i32Value(3);
+    Value *value_4 = new_i32Value(2);
+    Value *value_5 = new_i32Value(1);
+    Value *value_6 = new_i32Value(0);
     Value *check = NULL;
 
     stack->entries->push(stack->entries, value_1);
@@ -26,23 +26,20 @@ SKYPAT_F(Runtime_nop, regular)
     stack->entries->push(stack->entries, value_4);
     stack->entries->push(stack->entries, value_5);
     stack->entries->push(stack->entries, value_6);
-    EXPECT_EQ(stack->entries->size, 6);
 
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
     EXPECT_EQ(stack->entries->size, 4);
 
     stack->entries->pop(stack->entries, (void**)&check);
-    EXPECT_EQ(check->value.i32, 4);
-    EXPECT_EQ(stack->entries->size, 3);
+    EXPECT_EQ(check->value.i32, 1);
 
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
     EXPECT_EQ(stack->entries->size, 1);
 
-    //stack->entries->pop(stack->entries, (void**)&check);
-    //EXPECT_EQ(check->value.i32, 2);
-    //EXPECT_EQ(stack->entries->size, 0);
+    stack->entries->pop(stack->entries, (void**)&check);
+    EXPECT_EQ(check->value.i32, 5);
 
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value, -1);
