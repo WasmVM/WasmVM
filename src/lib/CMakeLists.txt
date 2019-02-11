@@ -41,6 +41,7 @@ add_library(wasmvm_core
     validator/Context.c
     validator/ExprValidate.c
     validator/InstrValidates.c
+    instanciator/Instanciator.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 
