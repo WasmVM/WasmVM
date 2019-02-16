@@ -36,12 +36,12 @@ add_library(wasmvm_core
     structures/WasmModule.c
     structures/WasmExport.c
     structures/WasmImport.c
-    validator/Validator.c
-    validator/Validates.c
-    validator/Context.c
-    validator/ExprValidate.c
-    validator/InstrValidates.c
-    instanciator/Instanciator.c
+    stages/validator/Validator.c
+    stages/validator/Validates.c
+    stages/validator/Context.c
+    stages/validator/ExprValidate.c
+    stages/validator/InstrValidates.c
+    stages/instanciator/Instanciator.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 

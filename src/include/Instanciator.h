@@ -6,7 +6,11 @@
 #include <core/Store.h>
 #include <instance/ModuleInst.h>
 
-typedef Stage Instanciator;
+typedef struct {
+    Stage parent;
+    Store* store;
+    ModuleInst* moduleInst;
+} Instanciator;
 
 Instanciator* new_Instanciator(WasmModule* module, Store* store, ModuleInst* moduleInst);
 

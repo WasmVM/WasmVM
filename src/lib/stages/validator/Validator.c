@@ -24,5 +24,6 @@ Validator* new_Validator(WasmModule* module)
     validator->setInput = setInput;
     validator->getOutput = getOutput;
     validator->run = runValidator;
+    validator->free = (void(*)(Validator*))free;
     return validator;
 }

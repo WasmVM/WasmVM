@@ -42,7 +42,7 @@ static void* run_Loader(Loader* loader)
             Stage* stage = NULL;
             request->stages->pop(request->stages, (void**)&stage);
             *result = stage->run(stage);
-            free(stage);
+            stage->free(stage);
             if(*result) {
                 request->free(request);
                 return result;
@@ -58,7 +58,7 @@ static void* run_Loader(Loader* loader)
         request->stages->pop(request->stages, (void**)&stage);
         *result = stage->run(stage);
         request->free(request);
-        free(stage);
+        stage->free(stage);
         if(*result) {
             return result;
         }
