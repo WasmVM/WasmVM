@@ -123,3 +123,16 @@ SKYPAT_F(vector, at)
 
     free_vector(newVector);
 }
+
+SKYPAT_F(vector, resize)
+{
+    // Prepare
+    vector* newVector = new_vector(sizeof(int), NULL);
+
+    // Check
+    newVector->resize(newVector, 50);
+    EXPECT_EQ(newVector->length, 50);
+    EXPECT_EQ(newVector->capacity, 50);
+
+    free_vector(newVector);
+}

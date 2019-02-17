@@ -15,10 +15,10 @@
 #include <instance/InstrInst.h>
 
 int allocate_Module(WasmModule* module, Store* store, ModuleInst** allocated);
-FuncInst* allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst);
 InstrInst* allocate_Instruction(WasmInstr* instr);
-int allocate_Table(WasmTable* table, Store* store, FuncInst** allocated);
-int allocate_Memory(WasmMemory* memory, Store* store, MemInst** allocated);
-int allocate_Global(WasmGlobal* global, Store* store, GlobalInst** allocated);
+uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst);
+uint32_t allocate_Table(WasmTable* table, Store* store);
+uint32_t allocate_Memory(WasmMemory* memory, Store* store);
+uint32_t allocate_Global(WasmGlobal* global, Store* store);
 
 #endif

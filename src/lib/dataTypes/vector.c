@@ -27,6 +27,9 @@ static void* _pop_back(vector* thisVector)
     memcpy(valuePtr, thisVector->at(thisVector, thisVector->length - 1),
            thisVector->unitSize);
     --thisVector->length;
+    if(thisVector->cleanFunc) {
+        thisVector->cleanFunc(thisVector->data + (thisVector->unitSize * thisVector->length));
+    }
     return valuePtr;
 }
 static void _shrink(vector* thisVector)
@@ -43,6 +46,19 @@ static void* _at(vector* thisVector, size_t index)
     }
     return (uint8_t*)thisVector->data + (index * thisVector->unitSize);
 }
+static void _resize(vector* thisVector, size_t length)
+{
+    if(length < thisVector->length && thisVector->cleanFunc) {
+        for(size_t i = thisVector->length - length; i > 0; --i) {
+            thisVector->cleanFunc(thisVector->data + (thisVector->unitSize * (length + i - 1)));
+        }
+    }
+    if(length != thisVector->length) {
+        thisVector->length = length;
+        thisVector->capacity = length;
+        thisVector->data = realloc(thisVector->data, thisVector->unitSize * thisVector->length);
+    }
+}
 
 vector* new_vector(size_t unitSize, void (*cleanFunc)(void*))
 {
@@ -56,6 +72,7 @@ vector* new_vector(size_t unitSize, void (*cleanFunc)(void*))
     thisVector->pop_back = _pop_back;
     thisVector->shrink = _shrink;
     thisVector->at = _at;
+    thisVector->resize = _resize;
     return thisVector;
 }
 void free_vector(vector* thisVector)

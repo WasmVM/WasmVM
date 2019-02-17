@@ -51,7 +51,8 @@ SKYPAT_F(allocate_function, valid)
     func->body->push_back(func->body, addInstr);
 
     // Test
-    FuncInst* funcInst = allocate_Function(func, store, moduleInst);
+    uint32_t address = allocate_Function(func, store, moduleInst);
+    FuncInst* funcInst = (FuncInst*)store->funcs->at(store->funcs, address);
     EXPECT_EQ(funcInst->type->params->length, 1);
     EXPECT_EQ(*(ValueType*)funcInst->type->params->at(funcInst->type->params, 0), Value_i32);
     EXPECT_EQ(funcInst->type->results->length, 1);
