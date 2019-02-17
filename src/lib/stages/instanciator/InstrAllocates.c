@@ -5,8 +5,14 @@
 #include <dataTypes/Value.h>
 #include <structures/instrs/Control.h>
 #include <structures/instrs/Parametric.h>
+#include <structures/instrs/Variable.h>
+#include <structures/instrs/Memory.h>
+#include <structures/instrs/Numeric.h>
 #include <instance/ControlInstrInst.h>
 #include <instance/ParametricInstrInst.h>
+#include <instance/VariableInstrInst.h>
+#include <instance/MemoryInstrInst.h>
+#include <instance/NumericInstrInst.h>
 
 static InstrInst* allocate_ControlInstr(WasmControlInstr* instr)
 {
@@ -22,6 +28,38 @@ static InstrInst* allocate_ControlInstr(WasmControlInstr* instr)
         *index = *(uint32_t*)instr->indices->at(instr->indices, i);
         instrInst->indices->push_back(instrInst->indices, index);
     }
+    return (InstrInst*)instrInst;
+}
+
+static InstrInst* allocate_ParametricInstr(WasmParametricInstr* instr)
+{
+    ParametricInstrInst* instrInst = new_ParametricInstrInst();
+    instrInst->opcode = instr->parent.opcode;
+    return (InstrInst*)instrInst;
+}
+
+static InstrInst* allocate_VariableInstr(WasmVariableInstr* instr)
+{
+    VariableInstrInst* instrInst = new_VariableInstrInst();
+    instrInst->parent.opcode = instr->parent.opcode;
+    instrInst->index = instr->index;
+    return (InstrInst*)instrInst;
+}
+
+static InstrInst* allocate_MemoryInstr(WasmMemoryInstr* instr)
+{
+    MemoryInstrInst* instrInst = new_MemoryInstrInst();
+    instrInst->parent.opcode = instr->parent.opcode;
+    instrInst->offset = instr->offset;
+    instrInst->align = instr->align;
+    return (InstrInst*)instrInst;
+}
+
+static InstrInst* allocate_NumericInstr(WasmNumericInstr* instr)
+{
+    NumericInstrInst* instrInst = new_NumericInstrInst();
+    instrInst->parent.opcode = instr->parent.opcode;
+    instrInst->constant = instr->constant;
     return (InstrInst*)instrInst;
 }
 
@@ -46,13 +84,15 @@ InstrInst* allocate_Instruction(WasmInstr* instr)
             break;
         case Op_drop:
         case Op_select:
-
+            instrInst = allocate_ParametricInstr((WasmParametricInstr*)instr);
+            break;
         case Op_get_local:
         case Op_set_local:
         case Op_tee_local:
         case Op_get_global:
         case Op_set_global:
-
+            instrInst = allocate_VariableInstr((WasmVariableInstr*)instr);
+            break;
         case Op_i32_load:
         case Op_i64_load:
         case Op_f32_load:
@@ -78,6 +118,8 @@ InstrInst* allocate_Instruction(WasmInstr* instr)
         case Op_i64_store32:
         case Op_memory_size:
         case Op_memory_grow:
+            instrInst = allocate_MemoryInstr((WasmMemoryInstr*)instr);
+            break;
         case Op_i32_const:
         case Op_i64_const:
         case Op_f32_const:
@@ -201,6 +243,8 @@ InstrInst* allocate_Instruction(WasmInstr* instr)
         case Op_f64_convert_s_i64:
         case Op_f64_convert_u_i64:
         case Op_f64_promote_f32:
+            instrInst = allocate_NumericInstr((WasmNumericInstr*)instr);
+            break;
         default:
             break;
     }

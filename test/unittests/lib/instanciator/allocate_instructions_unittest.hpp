@@ -5,11 +5,18 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <Allocates.h>
-#include <structures/instrs/Control.h>
 #include <dataTypes/vector.h>
 #include <dataTypes/Value.h>
 #include <Opcodes.h>
+#include <structures/instrs/Control.h>
+#include <structures/instrs/Variable.h>
+#include <structures/instrs/Parametric.h>
+#include <structures/instrs/Memory.h>
+#include <structures/instrs/Numeric.h>
 #include <instance/ControlInstrInst.h>
+#include <instance/ParametricInstrInst.h>
+#include <instance/MemoryInstrInst.h>
+#include <instance/VariableInstrInst.h>
 #include <instance/NumericInstrInst.h>
 }
 #undef _Bool
@@ -45,4 +52,57 @@ SKYPAT_F(allocate_instructions, control)
     // Clean
     free_ControlInstrInst(instrInst);
     free_WasmControlInstr(instr);
+}
+
+SKYPAT_F(allocate_instructions, parametric)
+{
+    // Prepare
+    WasmParametricInstr* instr = new_WasmParametricInstr();
+    instr->parent.opcode = Op_drop;
+
+    // Test
+    ParametricInstrInst* instrInst = (ParametricInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    EXPECT_EQ(instrInst->opcode, Op_drop);
+
+    // Clean
+    free_ParametricInstrInst(instrInst);
+    free_WasmParametricInstr(instr);
+}
+
+SKYPAT_F(allocate_instructions, memory)
+{
+    // Prepare
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(87, 16);
+    instr->parent.opcode = Op_i32_store;
+
+    // Test
+    MemoryInstrInst* instrInst = (MemoryInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    EXPECT_EQ(instrInst->parent.opcode, Op_i32_store);
+    EXPECT_EQ(instrInst->offset, 87);
+    EXPECT_EQ(instrInst->align, 16);
+
+    // Clean
+    free_MemoryInstrInst(instrInst);
+    free_WasmMemoryInstr(instr);
+}
+
+SKYPAT_F(allocate_instructions, numeric)
+{
+    // Prepare
+    WasmNumericInstr* instr = new_WasmNumericInstr();
+    instr->parent.opcode = Op_i32_const;
+    instr->constant.parent.entryType = Entry_Value;
+    instr->constant.type = Value_i32;
+    instr->constant.value.i32 = 45;
+
+    // Test
+    NumericInstrInst* instrInst = (NumericInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    EXPECT_EQ(instrInst->parent.opcode, Op_i32_const);
+    EXPECT_EQ(instr->constant.parent.entryType, Entry_Value);
+    EXPECT_EQ(instr->constant.type, Value_i32);
+    EXPECT_EQ(instr->constant.value.i32, 45);
+
+    // Clean
+    free_NumericInstrInst(instrInst);
+    free_WasmNumericInstr(instr);
 }

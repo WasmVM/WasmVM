@@ -52,7 +52,10 @@ SKYPAT_F(allocate_function, valid)
 
     // Test
     FuncInst* funcInst = allocate_Function(func, store, moduleInst);
-    EXPECT_EQ(funcInst->type, type);
+    EXPECT_EQ(funcInst->type->params->length, 1);
+    EXPECT_EQ(*(ValueType*)funcInst->type->params->at(funcInst->type->params, 0), Value_i32);
+    EXPECT_EQ(funcInst->type->results->length, 1);
+    EXPECT_EQ(*(ValueType*)funcInst->type->results->at(funcInst->type->results, 0), Value_i32);
     EXPECT_EQ(*(ValueType*)funcInst->locals->at(funcInst->locals, 0), Value_i32);
     EXPECT_EQ(funcInst->module, moduleInst);
     EXPECT_EQ(((VariableInstrInst*)funcInst->code->at(funcInst->code, 0))->parent.opcode, Op_get_local);

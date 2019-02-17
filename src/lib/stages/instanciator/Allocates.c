@@ -17,6 +17,9 @@ FuncInst* allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst
         *local = *(ValueType*)func->locals->at(func->locals, i);
         funcInst->locals->push_back(funcInst->locals, local);
     }
+    for(size_t i = 0; i < func->body->size; ++i) {
+        funcInst->code->push_back(funcInst->code, allocate_Instruction((WasmInstr*)func->body->at(func->body, i)));
+    }
     return funcInst;
 }
 int allocate_Table(WasmTable* table, Store* store, FuncInst** allocated)

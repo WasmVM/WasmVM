@@ -23,8 +23,8 @@ SKYPAT_F(FuncInst, create_delete)
     EXPECT_EQ(funcInst->type, type);
     EXPECT_EQ(funcInst->locals->length, 0);
     EXPECT_EQ(funcInst->locals->data, NULL);
-    EXPECT_EQ(funcInst->code->length, 0);
-    EXPECT_EQ(funcInst->code->data, NULL);
+    EXPECT_EQ(funcInst->code->size, 0);
+    EXPECT_EQ(funcInst->code->head, NULL);
     EXPECT_EQ(funcInst->hostcode, NULL);
     EXPECT_EQ(funcInst->module, module);
 

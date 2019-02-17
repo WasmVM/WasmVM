@@ -2,6 +2,7 @@
 #define WASMVM_INSTANCE_FUNCINST_DEF
 
 #include <dataTypes/vector.h>
+#include <dataTypes/list.h>
 #include <dataTypes/FuncType.h>
 #include <instance/ModuleInst.h>
 
@@ -9,7 +10,7 @@ typedef struct {
     FuncType* type;
     vector* locals;    // ValueType
     ModuleInst* module;
-    vector* code;    // InstrInst
+    list* code;    // InstrInst
     int (*hostcode)(); // TODO: accelerator
 } FuncInst;
 
