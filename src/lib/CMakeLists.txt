@@ -42,6 +42,8 @@ add_library(wasmvm_core
     stages/validator/ExprValidate.c
     stages/validator/InstrValidates.c
     stages/instanciator/Instanciator.c
+    stages/instanciator/Allocates.c
+    stages/instanciator/InstrAllocates.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 

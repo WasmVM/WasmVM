@@ -6,14 +6,14 @@
 #include <instance/ModuleInst.h>
 
 typedef struct {
-    FuncType type;
+    FuncType* type;
     vector* locals;    // ValueType
     ModuleInst* module;
     vector* code;    // InstrInst
-    int (*hostcode)();
+    int (*hostcode)(); // TODO: accelerator
 } FuncInst;
 
-FuncInst* new_FuncInst();
+FuncInst* new_FuncInst(ModuleInst* module, FuncType* type);
 void clean_FuncInst(FuncInst* funcInst);
 void free_FuncInst(FuncInst* funcInst);
 
