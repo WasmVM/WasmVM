@@ -10,12 +10,15 @@ typedef struct _wasm_import {
     char*       name;
     DescType    descType;
     union {
-        uint32_t typeidx;
+        uint32_t typeidx; // index of funcType in types
         struct {
             uint32_t min;
             uint32_t max;
-        } limits;
-        Value value;
+        } limits; // table, memory
+        struct {
+            _Bool mut;
+            Value value;
+        } global;
     } desc;
 } WasmImport;
 

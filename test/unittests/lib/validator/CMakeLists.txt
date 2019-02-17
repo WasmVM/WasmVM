@@ -1,4 +1,4 @@
-include_directories(${PROJECT_ROOT}/src/lib/validator)
+include_directories(${PROJECT_ROOT}/src/lib/stages/validator)
 
 macro(add_validate_unittest unittest)
     add_unittest(${unittest} lib/validator/)

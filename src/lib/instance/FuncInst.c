@@ -11,7 +11,7 @@ FuncInst* new_FuncInst()
     instance->type.results = new_vector(sizeof(ValueType), NULL);
     instance->locals = new_vector(sizeof(ValueType), NULL);
     instance->module = NULL;
-    instance->code = new_vector(sizeof(InstrInst), clean_InstrInst);
+    instance->code = new_vector(sizeof(InstrInst), (void(*)(void*))clean_InstrInst);
     instance->hostcode = NULL;
     return instance;
 }

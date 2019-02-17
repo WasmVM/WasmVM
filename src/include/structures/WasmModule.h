@@ -21,8 +21,8 @@ typedef struct _wasm_module {
     vector*   tables;     // tables:  Vector<WasmTable>
     vector*   mems;       // mems:    Vector<WasmMemory>
     vector*   globals;    // globals: Vector<WasmGlobal>
-    vector*   elems;      // globals: Vector<WasmElem>
-    vector*   datas;      // globals: Vector<WasmData>
+    vector*   elems;      // elems: Vector<WasmElem>
+    vector*   datas;      // datas: Vector<WasmData>
     uint32_t  start;      // start:   uint32_t
     vector*   imports;    // imports: Vector<WasmImport>
     vector*   exports;    // exports: Vector<WasmExport>
