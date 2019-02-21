@@ -57,8 +57,10 @@ add_runtime_unittest(i64_store8_unittest)
 add_runtime_unittest(f32_load_unittest)
 add_runtime_unittest(f32_store_unittest)
 
-# Control Unittest
-add_runtime_unittest(nop_unittest)
+# Parmeric Unittest
 add_runtime_unittest(drop_unittest)
 add_runtime_unittest(select_unittest)
+
+# Control Unittest
+add_runtime_unittest(nop_unittest)
 
