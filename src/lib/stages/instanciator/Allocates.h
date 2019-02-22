@@ -13,8 +13,9 @@
 #include <instance/MemInst.h>
 #include <instance/GlobalInst.h>
 #include <instance/InstrInst.h>
+#include <instance/ExportInst.h>
 
-int allocate_Module(WasmModule* module, Store* store, ModuleInst** allocated);
+ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* exportInsts[], size_t exportCount);
 InstrInst* allocate_Instruction(WasmInstr* instr);
 uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst);
 uint32_t allocate_Table(WasmTable* table, Store* store);

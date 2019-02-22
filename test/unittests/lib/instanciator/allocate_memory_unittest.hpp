@@ -25,7 +25,7 @@ SKYPAT_F(allocate_memory, valid)
     uint32_t address = allocate_Memory(memory, store);
     MemInst* memInst = (MemInst*)store->mems->at(store->mems, address);
     EXPECT_EQ(memInst->max, 20);
-    EXPECT_EQ(memInst->data->length, 10);
+    EXPECT_EQ(memInst->data->length, 10 * 65536);
 
     // Clean
     free_Store(store);

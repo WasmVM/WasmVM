@@ -17,7 +17,7 @@ typedef struct _wasm_import {
         } limits; // table, memory
         struct {
             _Bool mut;
-            Value value;
+            ValueType valueType;
         } global;
     } desc;
 } WasmImport;
