@@ -48,7 +48,7 @@ ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* export
                 break;
         }
     }
-
+    // TODO:
     return moduleInst;
 }
 uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)

@@ -8,6 +8,7 @@
 #include <instance/MemInst.h>
 #include <instance/ModuleInst.h>
 #include <instance/GlobalInst.h>
+#include <instance/TableInst.h>
 
 static void setInput(Instanciator* instanciator, void* input)
 {
@@ -57,6 +58,16 @@ static int matchMemory(WasmImport* import, MemInst* memInst)
     }
     return 0;
 }
+static int matchTable(WasmImport* import, TableInst* tableInst)
+{
+    if(tableInst->elem->length < import->desc.limits.min) {
+        return -1;
+    }
+    if(import->desc.limits.max != 0 && (tableInst->max == 0 || tableInst->max > import->desc.limits.max)) {
+        return -2;
+    }
+    return 0;
+}
 static int matchExport(WasmModule* module, WasmImport* import, vector* moduleInsts, Store* store, ExportInst** matched)
 {
     ModuleInst* moduleInst = NULL;
@@ -94,6 +105,9 @@ static int matchExport(WasmModule* module, WasmImport* import, vector* moduleIns
                     }
                     break;
                 case Desc_Table:
+                    if(matchTable(import, (TableInst*)store->tables->at(store->tables, export->valueAddr))) {
+                        return -5;
+                    }
                     break;
                 default:
                     return -6;
