@@ -34,6 +34,7 @@ add_runtime_unittest(i32_shl_unittest)
 add_runtime_unittest(i32_rotr_unittest)
 add_runtime_unittest(i32_rotl_unittest)
 add_runtime_unittest(i32_eqz_unittest)
+add_runtime_unittest(i64_popcnt_unittest)
 add_runtime_unittest(i64_add_unittest)
 add_runtime_unittest(i64_sub_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
@@ -57,8 +58,10 @@ add_runtime_unittest(i64_store8_unittest)
 add_runtime_unittest(f32_load_unittest)
 add_runtime_unittest(f32_store_unittest)
 
-# Control Unittest
-add_runtime_unittest(nop_unittest)
+# Parmeric Unittest
 add_runtime_unittest(drop_unittest)
 add_runtime_unittest(select_unittest)
+
+# Control Unittest
+add_runtime_unittest(nop_unittest)
 
