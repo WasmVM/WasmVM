@@ -42,6 +42,7 @@ add_runtime_unittest(i64_popcnt_unittest)
 add_runtime_unittest(i64_add_unittest)
 add_runtime_unittest(i64_sub_unittest)
 add_runtime_unittest(i64_mul_unittest)
+add_runtime_unittest(i64_div_s_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
 add_runtime_unittest(i64_extend_u_i32_unittest)
 
