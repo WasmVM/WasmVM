@@ -20,7 +20,7 @@ SKYPAT_F(Runtime_i64_ctz, regular)
     // check
     Value *check = NULL;
     stack->entries->pop(stack->entries, (void**)&check);
-    EXPECT_EQ(check->value.i32, 32);
+    EXPECT_EQ(check->value.i64, 32);
 
     // clean
     free_Value(check);

@@ -10,6 +10,7 @@ int runtime_i64_ctz(Stack* stack)
 
     stack->entries->pop(stack->entries, (void**)&value1);
     tmp = value1->value.i64;
+    free_Value(value1);
 
     // bit shift
     if (tmp == 0) {
@@ -39,8 +40,7 @@ int runtime_i64_ctz(Stack* stack)
             count += 1;
         }
     }
-    stack->entries->push(stack->entries, new_i32Value(count));
+    stack->entries->push(stack->entries, new_i64Value(count));
 
-    free_Value(value1);
     return 0;
 }

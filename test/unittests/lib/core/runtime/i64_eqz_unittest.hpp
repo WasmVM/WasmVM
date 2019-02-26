@@ -19,7 +19,7 @@ void i64_eqz_check(Stack* stack, int64_t value_1, int64_t expected)
     runtime_i64_eqz(stack);
 
     stack->entries->pop(stack->entries, (void**)&check);
-    EXPECT_EQ(check->value.i32, expected);
+    EXPECT_EQ(check->value.i64, expected);
     free_Value(check);
 }
 
@@ -28,10 +28,10 @@ SKYPAT_F(Runtime_i64_eqz, regular)
     Stack* stack = new_Stack((void (*)(void*))free_Value);
 
     // case 1: 10
-    i64_eqz_check(stack, 10, 0);
+    i64_eqz_check(stack, 10L << 32, 0);
 
     // case 2: -10
-    i64_eqz_check(stack, -10, 0);
+    i64_eqz_check(stack, -10L << 32, 0);
 
     // case 3: 0
     i64_eqz_check(stack, 0, 1);

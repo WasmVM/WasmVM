@@ -10,12 +10,13 @@ int runtime_i64_clz(Stack* stack)
 
     stack->entries->pop(stack->entries, (void**)&value1);
     tmp = value1->value.i64;
+    free_Value(value1);
 
     // bit shift
     if(!tmp) {
         count = 64;
     } else {
-        if((tmp>>32) == 0) {
+        if ((tmp >> 32) == 0) {
             count += 32;
             tmp <<= 32;
         }
@@ -39,9 +40,7 @@ int runtime_i64_clz(Stack* stack)
             count += 1;
         }
     }
-    stack->entries->push(stack->entries, new_i32Value(count));
-
-    free(value1);
+    stack->entries->push(stack->entries, new_i64Value(count));
 
     return 0;
 }
