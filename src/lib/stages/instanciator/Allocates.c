@@ -48,7 +48,48 @@ ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* export
                 break;
         }
     }
-    // TODO:
+    // Allocate new instances
+    for(size_t i = 0; i < module->funcs->length; ++i) {
+        uint32_t address = allocate_Function((WasmFunc*)module->funcs->at(module->funcs, i), store, moduleInst);
+        moduleInst->funcaddrs->push_back(moduleInst->funcaddrs, &address);
+    }
+    for(size_t i = 0; i < module->tables->length; ++i) {
+        uint32_t address = allocate_Table((WasmTable*)module->tables->at(module->tables, i), store);
+        moduleInst->tableaddrs->push_back(moduleInst->tableaddrs, &address);
+    }
+    for(size_t i = 0; i < module->mems->length; ++i) {
+        uint32_t address = allocate_Memory((WasmMemory*)module->mems->at(module->mems, i), store);
+        moduleInst->memaddrs->push_back(moduleInst->memaddrs, &address);
+    }
+    for(size_t i = 0; i < module->globals->length; ++i) {
+        uint32_t address = allocate_Global((WasmGlobal*)module->globals->at(module->globals, i), store);
+        moduleInst->globaladdrs->push_back(moduleInst->globaladdrs, &address);
+    }
+    // Exports
+    for(size_t i = 0; i < module->exports->length; ++i) {
+        WasmExport* export = (WasmExport*)module->exports->at(module->exports, i);
+        ExportInst* exportInst = new_ExportInst();
+        exportInst->name = (char*) malloc(sizeof(char) * (strlen(export->name) + 1));
+        strcpy(exportInst->name, export->name);
+        exportInst->descType = export->descType;
+        switch (export->descType) {
+            case Desc_Func:
+                exportInst->valueAddr = *(uint32_t*)moduleInst->funcaddrs->at(moduleInst->funcaddrs, export->descIdx);
+                break;
+            case Desc_Global:
+                exportInst->valueAddr = *(uint32_t*)moduleInst->globaladdrs->at(moduleInst->globaladdrs, export->descIdx);
+                break;
+            case Desc_Mem:
+                exportInst->valueAddr = *(uint32_t*)moduleInst->memaddrs->at(moduleInst->memaddrs, export->descIdx);
+                break;
+            case Desc_Table:
+                exportInst->valueAddr = *(uint32_t*)moduleInst->tableaddrs->at(moduleInst->tableaddrs, export->descIdx);
+                break;
+            default:
+                break;
+        }
+        moduleInst->exports->push_back(moduleInst->exports, exportInst);
+    }
     return moduleInst;
 }
 uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)
