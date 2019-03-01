@@ -10,7 +10,7 @@ int runtime_i64_rem_u(Stack* stack)
     stack->entries->pop(stack->entries, (void**)&value1); // Dividend
 
     // Error detection: divided by zero
-    if(value2->value.u64 == 0){
+    if(value2->value.u64 == 0) {
         fprintf(stderr, "Divided by zero!\n");
         free_Value(value1);
         free_Value(value2);

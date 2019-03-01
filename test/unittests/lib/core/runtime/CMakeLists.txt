@@ -46,6 +46,7 @@ add_runtime_unittest(i64_div_s_unittest)
 add_runtime_unittest(i64_div_u_unittest)
 add_runtime_unittest(i64_rem_s_unittest)
 add_runtime_unittest(i64_rem_u_unittest)
+add_runtime_unittest(i64_and_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
 add_runtime_unittest(i64_extend_u_i32_unittest)
 
