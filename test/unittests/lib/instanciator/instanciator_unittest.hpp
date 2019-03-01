@@ -8,6 +8,10 @@ extern "C" {
 #include <Instanciator.h>
 #include <core/Store.h>
 #include <structures/WasmModule.h>
+#include <structures/WasmTable.h>
+#include <structures/WasmElem.h>
+#include <structures/WasmData.h>
+#include <dataTypes/Value.h>
 #include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
 #include <instance/FuncInst.h>
@@ -17,6 +21,94 @@ extern "C" {
 #include <instance/TableInst.h>
 }
 #undef _Bool
+
+SKYPAT_F(Instanciator, valid)
+{
+    // Prepare
+    Store* store = new_Store();
+    char* name1 = (char*) malloc(sizeof(char) * 6);
+    strcpy(name1, "test1");
+    WasmModule* module1 = new_WasmModule(name1);
+    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Instanciator* instanciator = new_Instanciator(module1, store, moduleInsts);
+
+    FuncType* type1 = new_FuncType();
+    module1->types->push_back(module1->types, type1);
+
+    WasmFunc* func1 = new_WasmFunc();
+    func1->type = 0;
+    module1->funcs->push_back(module1->funcs, func1);
+    WasmFunc* func2 = new_WasmFunc();
+    func2->type = 0;
+    module1->funcs->push_back(module1->funcs, func2);
+    WasmFunc* func3 = new_WasmFunc();
+    func3->type = 0;
+    module1->funcs->push_back(module1->funcs, func3);
+
+    char* importModule1 = (char*) malloc(sizeof(char)*7);
+    strcpy(importModule1, "module");
+    char* importModule2 = (char*) malloc(sizeof(char)*7);
+    strcpy(importModule2, "module");
+    char* importName1 = (char*) malloc(sizeof(char)*6);
+    strcpy(importName1, "table");
+    char* importName2 = (char*) malloc(sizeof(char)*6);
+    strcpy(importName2, "table");
+
+    WasmImport* tableImport = new_WasmImport(importModule1, importName1);
+    tableImport->descType = Desc_Table;
+    tableImport->desc.typeidx = 0;
+    module1->imports->push_back(module1->imports, tableImport);
+
+    WasmElem* elem1 = new_WasmElem();
+    elem1->table = 0;
+    elem1->offset.value.i32 = 1;
+    uint32_t elemAddr = 2;
+    elem1->init->push_back(elem1->init, &elemAddr);
+    elemAddr = 1;
+    elem1->init->push_back(elem1->init, &elemAddr);
+    module1->elems->push_back(module1->elems, elem1);
+
+    ModuleInst* importedModule = new_ModuleInst(importModule2);
+    moduleInsts->push_back(moduleInsts, importedModule);
+
+    uint32_t zero = 0;
+    importedModule->tableaddrs->push_back(importedModule->tableaddrs, &zero);
+    TableInst* tableInst1 = new_TableInst();
+    tableInst1->elem->resize(tableInst1->elem, 5);
+    tableInst1->max = 0;
+    store->tables->push_back(store->tables, tableInst1);
+
+    ExportInst* importedExport = new_ExportInst();
+    importedExport->name = importName2;
+    importedExport->descType = Desc_Table;
+    importedExport->valueAddr = 0;
+    importedModule->exports->push_back(importedModule->exports, importedExport);
+
+    WasmData* data1 = new_WasmData();
+    data1->data = 0;
+    data1->offset.value.i32 = 10;
+    data1->init->resize(data1->init, 6);
+    strcpy((char*)data1->init->data, "Hello");
+    module1->datas->push_back(module1->datas, data1);
+
+    WasmMemory memory;
+    memory.min = 2;
+    memory.max = 0;
+    module1->mems->push_back(module1->mems, &memory);
+
+    // Test
+    EXPECT_EQ(instanciator->parent.run((Stage*)instanciator), 0);
+    EXPECT_EQ(*(uint32_t*)tableInst1->elem->at(tableInst1->elem, 1), 2);
+    EXPECT_EQ(*(uint32_t*)tableInst1->elem->at(tableInst1->elem, 2), 1);
+    MemInst* memInst = (MemInst*)store->mems->at(store->mems, 0);
+    EXPECT_FALSE(strcmp((char*)memInst->data->at(memInst->data, 10), "Hello"));
+
+    // Clean
+    free_Store(store);
+    free_WasmModule(module1);
+    free_vector(moduleInsts);
+    free(instanciator);
+}
 
 SKYPAT_F(Instanciator, no_imported_module)
 {
@@ -398,6 +490,73 @@ SKYPAT_F(Instanciator, no_imported_name)
     WasmImport* import = new_WasmImport(importModule2, importName);
     module->imports->push_back(module->imports, import);
     EXPECT_EQ(instanciator->parent.run((Stage*)instanciator), -7);
+
+    // Clean
+    free_Store(store);
+    free_WasmModule(module);
+    free_vector(moduleInsts);
+    free(instanciator);
+}
+
+SKYPAT_F(Instanciator, elem_init_out_of_range)
+{
+    // Prepare
+    Store* store = new_Store();
+    char* name = (char*) malloc(sizeof(char) * 5);
+    strcpy(name, "test");
+    WasmModule* module = new_WasmModule(name);
+    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Instanciator* instanciator = new_Instanciator(module, store, moduleInsts);
+
+    WasmTable table;
+    table.min = 3;
+    table.max = 0;
+    module->tables->push_back(module->tables, &table);
+
+    WasmElem* elem = new_WasmElem();
+    elem->table = 0;
+    elem->offset.value.i32 = 2;
+    elem->offset.type = Value_i32;
+    uint32_t address = 2;
+    elem->init->push_back(elem->init, &address);
+    elem->init->push_back(elem->init, &address);
+    module->elems->push_back(module->elems, elem);
+
+    // Test
+    EXPECT_EQ(instanciator->parent.run((Stage*)instanciator), -8);
+
+    // Clean
+    free_Store(store);
+    free_WasmModule(module);
+    free_vector(moduleInsts);
+    free(instanciator);
+}
+
+SKYPAT_F(Instanciator, data_init_out_of_range)
+{
+    // Prepare
+    Store* store = new_Store();
+    char* name = (char*) malloc(sizeof(char) * 5);
+    strcpy(name, "test");
+    WasmModule* module = new_WasmModule(name);
+    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Instanciator* instanciator = new_Instanciator(module, store, moduleInsts);
+
+    WasmMemory memory;
+    memory.min = 5;
+    memory.max = 0;
+    module->mems->push_back(module->mems, &memory);
+
+    WasmData* data = new_WasmData();
+    data->data = 0;
+    data->offset.value.i32 = 65535 * 5;
+    data->offset.type = Value_i32;
+    data->init->resize(data->init, sizeof(char) * 9);
+    strcpy((char*)data->init->data, "TestData");
+    module->datas->push_back(module->datas, data);
+
+    // Test
+    EXPECT_EQ(instanciator->parent.run((Stage*)instanciator), -9);
 
     // Clean
     free_Store(store);

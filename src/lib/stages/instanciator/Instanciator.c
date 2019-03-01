@@ -3,12 +3,15 @@
 #include <stdlib.h>
 #include <string.h>
 #include <core/Store.h>
+#include <structures/WasmElem.h>
+#include <structures/WasmData.h>
 #include <instance/ExportInst.h>
 #include <instance/FuncInst.h>
 #include <instance/MemInst.h>
 #include <instance/ModuleInst.h>
 #include <instance/GlobalInst.h>
 #include <instance/TableInst.h>
+#include "Allocates.h"
 
 static void setInput(Instanciator* instanciator, void* input)
 {
@@ -133,7 +136,43 @@ static int runInstanciator(Instanciator* instanciator)
         }
         exportInsts[i] = matched;
     }
-    // TODO: Allocate ModuleInst
+    // Allocate moduleInst
+    ModuleInst* moduleInst = allocate_Module(module, instanciator->store, exportInsts, module->imports->length);
+    // Elems
+    for(size_t i = 0; i < module->elems->length; ++i) {
+        WasmElem* elem = (WasmElem*)module->elems->at(module->elems, i);
+        TableInst* tableInst = (TableInst*)instanciator->store->tables->at(
+                                   instanciator->store->tables,
+                                   *(uint32_t*)moduleInst->tableaddrs->at(
+                                       moduleInst->tableaddrs,
+                                       elem->table
+                                   )
+                               );
+        if(elem->offset.value.i32 + elem->init->length > tableInst->elem->length) {
+            return -8;
+        }
+        for(size_t j = 0; j < elem->init->length; ++j) {
+            uint32_t* address = (uint32_t*)moduleInst->funcaddrs->at(moduleInst->funcaddrs, *(uint32_t*)elem->init->at(elem->init, j));
+            uint32_t* element = (uint32_t*)tableInst->elem->at(tableInst->elem, elem->offset.value.i32 + j);
+            *element = *address;
+        }
+    }
+    // Datas
+    for(size_t i = 0; i < module->datas->length; ++i) {
+        WasmData* data = (WasmData*)module->datas->at(module->datas, i);
+        MemInst* memInst = (MemInst*)instanciator->store->mems->at(
+                               instanciator->store->mems,
+                               *(uint32_t*)moduleInst->memaddrs->at(
+                                   moduleInst->memaddrs,
+                                   data->data
+                               )
+                           );
+        if(data->offset.value.i32 + data->init->length > memInst->data->length) {
+            return -9;
+        }
+        memcpy(((char*)memInst->data->data) + data->offset.value.i32, data->init->data, sizeof(char) * data->init->length);
+    }
+    // TODO: Start
     return 0;
 }
 
