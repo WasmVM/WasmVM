@@ -8,6 +8,8 @@
 typedef struct {
     InstrInst parent;
     vector* resultTypes; // ValueType
+    uint32_t elseAddr;
+    uint32_t endAddr;
     vector* indices; // uint32_t
 } ControlInstrInst;
 
