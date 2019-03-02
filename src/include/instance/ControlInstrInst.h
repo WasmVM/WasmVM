@@ -3,11 +3,12 @@
 
 #include <stdint.h>
 #include <dataTypes/vector.h>
+#include <dataTypes/Value.h>
 #include <instance/InstrInst.h>
 
 typedef struct {
     InstrInst parent;
-    vector* resultTypes; // ValueType
+    ValueType resultType;
     uint32_t elseAddr;
     uint32_t endAddr;
     vector* indices; // uint32_t
