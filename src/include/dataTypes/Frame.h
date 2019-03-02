@@ -5,8 +5,11 @@
 #include <ModuleInst.h>
 
 typedef struct {
-    vector* vals;       // ValueType
+    vector* localVals;       // ValueType
     ModuleInst* module_inst;
 } Frame;
+
+Frame* new_frame(vector* localVals, ModuleInst* module);
+void free_frame(Frame *thisFrame);
 
 #endif
