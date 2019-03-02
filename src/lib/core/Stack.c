@@ -1,5 +1,5 @@
 #include <core/Stack.h>
-
+#include <dataTypes/Label.h>
 #include <stdlib.h>
 #include <dataTypes/Entry.h>
 
@@ -13,4 +13,8 @@ void free_Stack(Stack* thisStack)
 {
     free_stack(thisStack->entries);
     free(thisStack);
+}
+void push_label(Stack* thisStack, Label* label)
+{
+    thisStack->curLabel = label->funcAddr;
 }
