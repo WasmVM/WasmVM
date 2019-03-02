@@ -50,6 +50,7 @@ add_runtime_unittest(i64_and_unittest)
 add_runtime_unittest(i64_or_unittest)
 add_runtime_unittest(i64_xor_unittest)
 add_runtime_unittest(i64_shl_unittest)
+add_runtime_unittest(i64_shr_u_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
 add_runtime_unittest(i64_extend_u_i32_unittest)
 
