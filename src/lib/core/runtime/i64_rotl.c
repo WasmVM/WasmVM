@@ -11,7 +11,7 @@ int runtime_i64_rotl(Stack* stack)
     stack->entries->pop(stack->entries, (void**)&value1);
 
     tmp = (value1->value.u64 << value2->value.i64) | (value1->value.u64 >> (64 - value2->value.i64));
-    
+
     stack->entries->push(stack->entries, new_i64Value(tmp));
 
     free(value1);
