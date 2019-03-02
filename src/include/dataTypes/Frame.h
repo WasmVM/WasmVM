@@ -9,7 +9,8 @@ typedef struct {
     ModuleInst* module_inst;
 } Frame;
 
-Frame* new_frame(vector* localVals, ModuleInst* module);
-void free_frame(Frame *thisFrame);
+//push the function arguments to localVals when calling new_frame
+Frame* new_Frame(vector* localVals, ModuleInst* module);
+void free_Frame(Frame *thisFrame);
 
 #endif
