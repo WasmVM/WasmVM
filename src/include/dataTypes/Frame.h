@@ -6,7 +6,7 @@
 
 typedef struct {
     vector* vals;       // ValueType
-    ModuleInst module_inst;
+    ModuleInst* module_inst;
 } Frame;
 
 #endif
