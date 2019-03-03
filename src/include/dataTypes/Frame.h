@@ -2,15 +2,15 @@
 #define WASMVM_INSTANCE_FRAME_DEF
 
 #include <dataTypes/vector.h>
-#include <ModuleInst.h>
+#include <instance/ModuleInst.h>
 
 typedef struct {
     vector* localVals;       // ValueType
-    ModuleInst* module_inst;
+    ModuleInst* moduleInst;
 } Frame;
 
-//push the function arguments to localVals when calling new_frame
-Frame* new_Frame(vector* localVals, ModuleInst* module);
+Frame* new_Frame();
+void clean_Frame(Frame *thisFrame);
 void free_Frame(Frame *thisFrame);
 
 #endif
