@@ -4,7 +4,7 @@
 #include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
 
-typedef struct {
+typedef struct Frame_{
     vector* localVals;       // ValueType
     ModuleInst* moduleInst;
 } Frame;
