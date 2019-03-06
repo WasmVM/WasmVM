@@ -8,9 +8,9 @@ int runtime_i32_rotr(Stack* stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;
-    int32_t overValue = 0;
-    int32_t temp1 = 0;
-    int32_t temp2 = 0;
+    uint32_t overValue = 0;
+    uint32_t temp1 = 0;
+    uint32_t temp2 = 0;
 
     stack->entries->pop(stack->entries, (void **)&value2);
     stack->entries->pop(stack->entries, (void **)&value1);
