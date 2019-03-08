@@ -11,6 +11,7 @@ typedef struct {
     vector* locals;    // ValueType
     ModuleInst* module;
     list* code;    // InstrInst
+    // intro of hostcode https://webassembly.github.io/spec/core/exec/runtime.html#function-instances
     int (*hostcode)(); // TODO: accelerator
 } FuncInst;
 
