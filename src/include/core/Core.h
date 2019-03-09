@@ -26,6 +26,6 @@ typedef struct Core_
 Core* new_Core(Store *thisStore);
 void free_Core(Core *core);
 // run the assigned Core obj with the assigned ModuleInst. In this way the Core can be reused, after finishing one ModuleInst
-void run_Core(Core *core, ModuleInst *thisModule, stack *thisStack, FuncInst *startFunc); 
+void run_Core(Core *core, ModuleInst *thisModule, FuncInst *startFunc); 
 
 #endif

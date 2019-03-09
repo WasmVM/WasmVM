@@ -16,16 +16,16 @@ void free_Core(Core* thisCore)
     free(thisCore);
 }
 
-void run_Core(Core *core, ModuleInst *thisModule, stack *thisStack, FuncInst *startFunc)
+void run_Core(Core *core, ModuleInst *thisModule, FuncInst *startFunc)
 {
     core->moduleInst = thisModule;
-    core->thisStack = thisStack; //maybe remove the arg thisStack and malloc a new Stack for Core here
+    core->thisStack = new_Stack(NULL);
     // setup Frame of startFunc
-    core->thisFrame = (Frame *) malloc(sizeof(Frame));
-    core->thisFrame->moduleInst = thisModule;
-    core->thisFrame->localVals = startFunc->locals;
+    Frame *startFrame = new_Frame();
+    memcpy(startFrame->moduleInst, thisModule);
+    core->thisStack->entries->push(core->thisStack->entries, startFrame); //push the addres of Frame onto Stack
     
-    // TODO save the next instruction after the current function finished to InstrInst *instrInst
+    // TODO save the next instruction after the current function finished to InstrInst *instrInst, but startFunc doesnt return 
     
     // TODO traverse all the instrInst in FuncInst->code
     vector *code = startFunc->code;
@@ -35,7 +35,7 @@ void run_Core(Core *core, ModuleInst *thisModule, stack *thisStack, FuncInst *st
         cur_inst = code->at(code, i);
         // process opcode
         switch(cur_inst->opcode) {
-
+            // 收到 InstrInst 之後 opcode 得到 型態, 強制轉換成其他NumericInstrInst
         }
             
     }
