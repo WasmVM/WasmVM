@@ -7,8 +7,8 @@
 typedef struct {
     Entry parent;
     uint32_t funcAddr;
-    uint32_t instrIndex;
-    uint32_t contInstr;
+    uint32_t instrIndex; // what's the number of this Label
+    uint32_t contInstr;  // where will it go, if we meet a if
 } Label;
 
 Label* new_Label(uint32_t funcAddr, uint32_t instrIndex, uint32_t contInstr);

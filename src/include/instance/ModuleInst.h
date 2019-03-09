@@ -6,6 +6,7 @@
 typedef struct ModuleInst_ {
     char* name;
     vector* types;       // FuncType
+    // funcaddrs is static index of vector* funcs in Store
     vector* funcaddrs;   // uint32_t
     vector* tableaddrs;  // uint32_t
     vector* memaddrs;    // uint32_t
