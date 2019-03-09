@@ -120,7 +120,7 @@ uint32_t allocate_Memory(WasmMemory* memory, Store* store)
 {
     MemInst* memInst = new_MemInst();
     memInst->data->resize(memInst->data, memory->min * 65536);
-    memset(memInst->data, 65536, sizeof(char));
+    memset(memInst->data->data, 0, memory->min * 65536 * sizeof(char));
     memInst->max = memory->max;
     uint32_t address = store->mems->length;
     store->mems->push_back(store->mems, memInst);
