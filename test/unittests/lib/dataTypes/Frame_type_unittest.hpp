@@ -2,26 +2,25 @@
 
 #define _Bool bool
 extern "C" {
+#include <string.h>
+#include <stdlib.h>
 #include <dataTypes/Frame.h>
+#include <instance/ModuleInst.h>
 }
 #undef _Bool
 
 SKYPAT_F(Frame, create_delete)
 {
     // Prepare
-    Frame *frame = new_Frame();
+    char* moduleName = (char*)malloc(sizeof(char) * 5);
+    strcpy(moduleName, "Test");
+    ModuleInst* module = new_ModuleInst(moduleName);
+    Frame *frame = new_Frame(module);
 
     // Check
-    EXPECT_EQ(frame->localVals->length, 0);
-    EXPECT_EQ(frame->localVals->data, NULL);
-    EXPECT_EQ(frame->moduleInst->funcaddrs->length, 0);
-    EXPECT_EQ(frame->moduleInst->funcaddrs->data, NULL);
-    EXPECT_EQ(frame->moduleInst->tableaddrs->length, 0);
-    EXPECT_EQ(frame->moduleInst->tableaddrs->data, NULL);
-    EXPECT_EQ(frame->moduleInst->memaddrs->length, 0);
-    EXPECT_EQ(frame->moduleInst->memaddrs->data, NULL);
-    EXPECT_EQ(frame->moduleInst->globaladdrs->length, 0);
-    EXPECT_EQ(frame->moduleInst->globaladdrs->data, NULL);
+    EXPECT_EQ(frame->locals->length, 0);
+    EXPECT_EQ(frame->locals->data, NULL);
+    EXPECT_EQ(frame->moduleInst, module);
 
     free_Frame(frame);
 }
