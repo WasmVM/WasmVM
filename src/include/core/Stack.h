@@ -6,7 +6,7 @@
 
 typedef struct {
     stack* entries; // Entry
-    uint32_t* curLabel; // current Label
+    Label* curLabel; // current Label
 } Stack;
 
 Stack* new_Stack(void (*freeElem)(void* elem));
