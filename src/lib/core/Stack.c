@@ -16,5 +16,6 @@ void free_Stack(Stack* thisStack)
 }
 void push_label(Stack* thisStack, Label* label)
 {
-    thisStack->curLabel = label->funcAddr;
+    thisStack->curLabel = labe;
+    thisStack->entries->push(thisStack->entries, label);
 }
