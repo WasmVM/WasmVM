@@ -56,7 +56,8 @@ SKYPAT_F(Instanciator, valid)
 
     WasmImport* tableImport = new_WasmImport(importModule1, importName1);
     tableImport->descType = Desc_Table;
-    tableImport->desc.typeidx = 0;
+    tableImport->desc.limits.min = 5;
+    tableImport->desc.limits.max = 0;
     module1->imports->push_back(module1->imports, tableImport);
 
     WasmElem* elem1 = new_WasmElem();
