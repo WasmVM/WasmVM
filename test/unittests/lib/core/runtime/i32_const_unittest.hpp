@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i32_const, regular)
 {
     // Prepare
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // Run
     runtime_i32_const(stack, 10);

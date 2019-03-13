@@ -25,7 +25,7 @@ void i64_eqz_check(Stack* stack, int64_t value_1, int64_t expected)
 
 SKYPAT_F(Runtime_i64_eqz, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // case 1: 10
     i64_eqz_check(stack, 10L << 32, 0);

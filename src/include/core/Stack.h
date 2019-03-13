@@ -3,14 +3,18 @@
 
 #include <dataTypes/stack.h>
 #include <dataTypes/Label.h>
+#include <dataTypes/Frame.h>
+#include <dataTypes/Value.h>
 
 typedef struct {
     stack* entries; // Entry
     Label* curLabel; // current Label
+    Frame* curFrame; // current Frame
 } Stack;
 
-Stack* new_Stack(void (*freeElem)(void* elem));
+Stack* new_Stack();
 void free_Stack(Stack* thisStack);
-void push_label(Stack* thisStack, Label* label);
+void push_Label(Stack* thisStack, Label* label);
+void push_Frame(Stack* thisStack, Frame* frame);
 
 #endif

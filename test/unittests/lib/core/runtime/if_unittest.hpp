@@ -11,31 +11,31 @@ extern "C" {
 
 SKYPAT_F(Runtime_control_if, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // Label: {Entry, funcAddr, instrIndex, contInstr}
     Label* currentLabel;
-    currentLabel->funcAddr = 0x0000000;
-    currentLabel->instrIndex = 0x00000001;
-    currentLabel->contInstr = 0x00000002;
+    currentLabel->funcAddr = 0;
+    currentLabel->instrIndex = 1;
+    currentLabel->contInstr = 2;
 
     ControlInstrInst* currentControl = new_ControlInstrInst();
-    currentControl->elseAddr = 0x00000003;
-    currentControl->endAddr = 0x00000004;
+    currentControl->elseAddr = 3;
+    currentControl->endAddr = 4;
 
     Value *check_value = new_i32Value(0);
     stack->entries->push(stack->entries, check_value);
+    push_Label(stack, currentLabel);
 
-    runtime_if(stack, currentLabel, currentControl);
+    runtime_if(stack, currentControl);
 
     // Expect label's instrIndex to be ControlInstrInst's elseAddr.
-    EXPECT_EQ(currentLabel->instrIndex, 0x00000003);
+    EXPECT_EQ(currentLabel->instrIndex, 3);
 
     // curLabel should be updated to the latest label's function address.
-    EXPECT_EQ(stack->curLabel, 0x00000000);
+    EXPECT_EQ(stack->curLabel, 0);
 
     // clean
-    free_Value(check_value);
     free_Stack(stack);
     free_ControlInstrInst(currentControl);
 }

@@ -15,7 +15,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_store8, regular)
 {
     MemInst *memory = new_MemInst();
-    Stack   *stack  = new_Stack((void (*)(void*)) free_Value);
+    Stack   *stack  = new_Stack();
     memory->max = 1;
 
     uint32_t memlength = 1024 * sizeof(int64_t);

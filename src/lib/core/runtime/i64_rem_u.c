@@ -14,6 +14,7 @@ int runtime_i64_rem_u(Stack* stack)
         fprintf(stderr, "Divided by zero!\n");
         free_Value(value1);
         free_Value(value2);
+        return -1;
     } else {
         stack->entries->push(stack->entries, new_i64Value(value1->value.u64 % value2->value.u64));
         free_Value(value1);

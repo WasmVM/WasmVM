@@ -10,8 +10,8 @@ extern "C" {
 SKYPAT_F(Runtime_i32_popcnt, regular)
 {
     // Prepare
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
-    Value *value1 = new_i32Value(-1);
+    Stack* stack = new_Stack();
+    Value *value1 = new_i32Value(-1); // 1111011 in binary, which has 6 1's
     stack->entries->push(stack->entries, value1);
 
     // Run

@@ -28,7 +28,7 @@ void i64_rem_u_check(Stack* stack, int64_t value_1, int64_t value_2, uint64_t ex
 
 SKYPAT_F(Runtime_i64_div_u, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // case 1: 20 % 3
     i64_rem_u_check(stack, 20L << 32, 3, 2);

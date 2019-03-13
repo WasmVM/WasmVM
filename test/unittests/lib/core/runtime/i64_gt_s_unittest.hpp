@@ -27,7 +27,7 @@ void i64_gt_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t expe
 
 SKYPAT_F(Runtime_i64_gt_s, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // case 1: 20 > 3
     i64_gt_s_check(stack, 20L << 32, 3L << 32, 1);

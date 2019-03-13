@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Stack, create_delete)
 {
     // Prepare
-    Stack* stack = new_Stack(free);
+    Stack* stack = new_Stack();
 
     // Check
     EXPECT_EQ(stack->entries->size, 0);

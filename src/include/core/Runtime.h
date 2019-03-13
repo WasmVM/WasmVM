@@ -168,7 +168,7 @@ int runtime_drop(Stack* stack);
 int runtime_select(Stack* stack);
 
 /*** Control ***/
-void runtime_nop();
-void runtime_if(Stack* stack, Label *label, ControlInstrInst *control);
+int runtime_nop();
+int runtime_if(Stack* stack, ControlInstrInst *control);
 
 #endif

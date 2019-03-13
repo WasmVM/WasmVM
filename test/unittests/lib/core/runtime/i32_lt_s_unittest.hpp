@@ -27,7 +27,7 @@ void i32_lt_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expe
 
 SKYPAT_F(Runtime_i32_lt_s, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // case 1: 20 < 3
     i32_lt_s_check(stack, 20, 3, 0);

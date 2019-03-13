@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(runtime_i64_load16_s, regular)
 {
     // Prepare
-    Stack *stack = new_Stack((void (*)(void*))free_Value);
+    Stack *stack = new_Stack();
     MemInst *memory = new_MemInst();
 
     memory->max = 1;

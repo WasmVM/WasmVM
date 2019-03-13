@@ -15,7 +15,7 @@ extern "C" {
 SKYPAT_F(Runtime_f32_store, regular)
 {
     MemInst *memory = new_MemInst();
-    Stack   *stack  = new_Stack((void (*)(void*)) free_Value);
+    Stack   *stack  = new_Stack();
     memory->max = 1;
     float data[] = {
         0, 1, 4, 16, 64, 256, 518, 1040,

@@ -9,7 +9,7 @@ extern "C" {
 
 SKYPAT_F(Runtime_nop, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
     int32_t check_value;
 
     Value *value_1 = new_i32Value(5);
