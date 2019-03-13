@@ -7,16 +7,16 @@ int runtime_i32_popcnt(Stack* stack)
     Value *value1 = NULL;
     stack->entries->pop(stack->entries, (void**)&value1);
 
-    int32_t value = value1->value.i32;
-    uint8_t count = 0;
-    while (value) {
-        if (value & 0x1) {
-            count++;
-        }
-        value = value >> 1;
-    }
-    stack->entries->push(stack->entries, new_i32Value(count));
-    free(value1);
+    uint32_t *n = &(value1->value.u32);
+
+    *n -= (*n >> 1)  & 0x55555555;
+    *n  = (*n & 0x33333333) + ((*n >> 2) & 0x33333333);
+    *n  = ((*n >> 4) + *n) & 0x0F0F0F0F;
+    *n += *n >> 8;
+    *n += *n >> 16;
+    *n &= 0x0000003F;
+
+    stack->entries->push(stack->entries, (void*)value1);
 
     return 0;
 }
