@@ -5,10 +5,10 @@
 int runtime_i64_ge_u(Stack* stack)
 {
     Value *value1 = NULL, *value2 = NULL;
-    stack->entries->pop(stack->entries, (void**)&value2);
-    stack->entries->pop(stack->entries, (void**)&value1);
+    pop_Value(stack,&value2);
+    pop_Value(stack,&value1);
 
-    stack->entries->push(stack->entries, new_i64Value(value1->value.u64 >= value2->value.u64));
+    push_Value(stack, new_i64Value(value1->value.u64 >= value2->value.u64));
     free(value1);
     free(value2);
     return 0;

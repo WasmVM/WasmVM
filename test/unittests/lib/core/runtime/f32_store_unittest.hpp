@@ -35,8 +35,8 @@ SKYPAT_F(Runtime_f32_store, regular)
 
     // test store
     for(uint32_t lop = 0; lop < dataSize; lop++) {
-        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(float)));
-        stack->entries->push(stack->entries, new_f32Value(data[lop]));
+        push_Value(stack, new_i32Value(lop * sizeof(float)));
+        push_Value(stack, new_f32Value(data[lop]));
 
         int ret = runtime_f32_store(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
@@ -48,8 +48,8 @@ SKYPAT_F(Runtime_f32_store, regular)
     // error check
     Value *err      = new_i32Value(65537);
     Value *err_data = new_f32Value(1);
-    stack->entries->push(stack->entries, err);
-    stack->entries->push(stack->entries, err_data);
+    push_Value(stack, err);
+    push_Value(stack, err_data);
     int ret = runtime_f32_store(stack, memory, offset, 0);  // ea > 65536 check
     EXPECT_EQ(ret, -1);
 

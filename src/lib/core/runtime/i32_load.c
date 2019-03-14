@@ -10,7 +10,7 @@ int runtime_i32_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t al
 {
     Value *value1 = NULL;
 
-    stack->entries->pop(stack->entries, (void **)&value1);
+    pop_Value(stack,&value1);
     uint32_t ea = (uint32_t)value1->value.i32 + offset;
     if(ea + (32 / 8) >= memory->max * 65536) {
         fprintf(stderr, "over the memory range! \n");
@@ -18,7 +18,7 @@ int runtime_i32_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t al
         return -1;
     }
     int32_t* data = (int32_t*)((int8_t*)memory->data->data + ea);
-    stack->entries->push(stack->entries, new_i32Value(*data));
+    push_Value(stack, new_i32Value(*data));
     free(value1);
     return 0;
 }

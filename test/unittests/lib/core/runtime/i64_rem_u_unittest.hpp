@@ -17,11 +17,11 @@ void i64_rem_u_check(Stack* stack, int64_t value_1, int64_t value_2, uint64_t ex
     Value *_value_1 = new_i64Value(value_1); // dividend
     Value *_value_2 = new_i64Value(value_2); // divisor
 
-    stack->entries->push(stack->entries, _value_1);
-    stack->entries->push(stack->entries, _value_2);
+    push_Value(stack, _value_1);
+    push_Value(stack, _value_2);
     runtime_i64_rem_u(stack);
 
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.u64, expected);
     free_Value(check);
 }

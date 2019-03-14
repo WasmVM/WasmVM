@@ -8,7 +8,7 @@ int runtime_if(Stack *stack, ControlInstrInst *control)
 {
     Value *value = NULL;
     // Pop out the value to determine whether it should jump.
-    stack->entries->pop(stack->entries, (void**)&value);
+    pop_Value(stack,&value);
 
     Label* label = (Label*) malloc(sizeof(Label));
     label->parent.entryType = Entry_Label;

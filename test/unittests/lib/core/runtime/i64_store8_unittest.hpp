@@ -29,8 +29,8 @@ SKYPAT_F(Runtime_i64_store8, regular)
 
     // test store
     for(uint32_t lop = 0; lop < 1024; lop++) {
-        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int64_t)));
-        stack->entries->push(stack->entries, new_i64Value(lop + 1));
+        push_Value(stack, new_i32Value(lop * sizeof(int64_t)));
+        push_Value(stack, new_i64Value(lop + 1));
 
         int ret = runtime_i64_store8(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
@@ -42,8 +42,8 @@ SKYPAT_F(Runtime_i64_store8, regular)
     // error check
     Value *err      = new_i32Value(65537);
     Value *err_data = new_i64Value(1);
-    stack->entries->push(stack->entries, err);
-    stack->entries->push(stack->entries, err_data);
+    push_Value(stack, err);
+    push_Value(stack, err_data);
     int ret = runtime_i64_store8(stack, memory, offset, 0);  // ea > 65536 check
     EXPECT_EQ(ret, -1);
 

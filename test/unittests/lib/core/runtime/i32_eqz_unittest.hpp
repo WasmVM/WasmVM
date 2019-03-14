@@ -15,10 +15,10 @@ void i32_eqz_check(Stack* stack, int32_t value_1, int32_t expected)
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1);
 
-    stack->entries->push(stack->entries, _value_1);
+    push_Value(stack, _value_1);
     runtime_i32_eqz(stack);
 
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.i32, expected);
     free_Value(check);
 }

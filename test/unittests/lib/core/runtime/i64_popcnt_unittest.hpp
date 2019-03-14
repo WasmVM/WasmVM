@@ -12,14 +12,14 @@ SKYPAT_F(Runtime_i64_popcnt, regular)
     // Prepare
     Stack *stack = new_Stack();
     Value *value1 = new_i64Value(-1);
-    stack->entries->push(stack->entries, value1);
+    push_Value(stack, value1);
 
     // Run
     runtime_i64_popcnt(stack);
 
     // Check
     Value *check = NULL;
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.i64, 64);
 
     // Clean

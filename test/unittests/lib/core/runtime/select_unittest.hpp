@@ -22,12 +22,12 @@ SKYPAT_F(Runtime_nop, regular)
     Value *check1 = NULL;
     Value *check2 = NULL;
 
-    stack->entries->push(stack->entries, value_1);
-    stack->entries->push(stack->entries, value_2);
-    stack->entries->push(stack->entries, value_3);
-    stack->entries->push(stack->entries, value_4);
-    stack->entries->push(stack->entries, value_5);
-    stack->entries->push(stack->entries, value_6);
+    push_Value(stack, value_1);
+    push_Value(stack, value_2);
+    push_Value(stack, value_3);
+    push_Value(stack, value_4);
+    push_Value(stack, value_5);
+    push_Value(stack, value_6);
 
     // 5 4 3 2 1 0
     check_value = runtime_select(stack);
@@ -35,7 +35,7 @@ SKYPAT_F(Runtime_nop, regular)
     EXPECT_EQ(stack->entries->size, 4);
 
     // 5 4 3 1
-    stack->entries->pop(stack->entries, (void**)&check1);
+    pop_Value(stack,&check1);
     EXPECT_EQ(check1->value.i32, 1);
 
     // 5 4 3
@@ -44,7 +44,7 @@ SKYPAT_F(Runtime_nop, regular)
     EXPECT_EQ(stack->entries->size, 1);
 
     // 5
-    stack->entries->pop(stack->entries, (void**)&check2);
+    pop_Value(stack,&check2);
     EXPECT_EQ(check2->value.i32, 5);
 
     // empty

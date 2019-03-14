@@ -14,7 +14,8 @@ SKYPAT_F(Runtime_control_if, regular)
     Stack* stack = new_Stack();
 
     // Label: {Entry, funcAddr, instrIndex, contInstr}
-    Label* currentLabel;
+    Label* currentLabel = (Label*)malloc(sizeof(Label));
+    currentLabel->parent.entryType = Entry_Label;
     currentLabel->funcAddr = 0;
     currentLabel->instrIndex = 1;
     currentLabel->contInstr = 2;
@@ -23,9 +24,9 @@ SKYPAT_F(Runtime_control_if, regular)
     currentControl->elseAddr = 3;
     currentControl->endAddr = 4;
 
-    Value *check_value = new_i32Value(0);
-    stack->entries->push(stack->entries, check_value);
     push_Label(stack, currentLabel);
+    push_Value(stack, new_i32Value(0));
+
 
     runtime_if(stack, currentControl);
 

@@ -13,8 +13,8 @@ int runtime_i32_store8(Stack* stack, MemInst* memory, uint32_t offset, uint32_t 
     uint32_t ea = 0;
 
     // pop data form stack
-    stack->entries->pop(stack->entries, (void **)&value2);
-    stack->entries->pop(stack->entries, (void **)&value1);
+    pop_Value(stack,&value2);
+    pop_Value(stack,&value1);
 
     // check memory range
     ea = (uint32_t)value1->value.i32 + offset;

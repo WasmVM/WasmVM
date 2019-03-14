@@ -5,7 +5,7 @@
 int runtime_i32_popcnt(Stack* stack)
 {
     Value *value1 = NULL;
-    stack->entries->pop(stack->entries, (void**)&value1);
+    pop_Value(stack,&value1);
 
     uint32_t *n = &(value1->value.u32);
 
@@ -19,8 +19,8 @@ int runtime_i32_popcnt(Stack* stack)
     *n += *n >> 8;
     *n += *n >> 16;
     *n &= 0x0000003F;
-
-    stack->entries->push(stack->entries, (void*)value1);
+    push_Value(stack, value1);
+    free(value1);
 
     return 0;
 }

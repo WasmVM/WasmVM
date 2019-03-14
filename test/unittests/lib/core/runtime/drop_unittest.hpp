@@ -14,7 +14,7 @@ SKYPAT_F(Runtime_drop, regular)
 
     // stack is not empty
     Value *value_1 = new_i32Value(3);
-    stack->entries->push(stack->entries, value_1);
+    push_Value(stack, value_1);
     check_value = runtime_drop(stack);
     EXPECT_EQ(check_value, 0);
 

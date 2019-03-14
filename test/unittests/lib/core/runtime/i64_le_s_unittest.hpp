@@ -16,11 +16,11 @@ void i64_le_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t expe
     Value *_value_1 = new_i64Value(value_1);
     Value *_value_2 = new_i64Value(value_2);
 
-    stack->entries->push(stack->entries, _value_1);
-    stack->entries->push(stack->entries, _value_2);
+    push_Value(stack, _value_1);
+    push_Value(stack, _value_2);
     runtime_i64_le_s(stack);
 
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.i64, expected);
     free_Value(check);
 }

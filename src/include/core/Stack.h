@@ -16,5 +16,9 @@ Stack* new_Stack();
 void free_Stack(Stack* thisStack);
 void push_Label(Stack* thisStack, Label* label);
 void push_Frame(Stack* thisStack, Frame* frame);
+void push_Value(Stack* thisStack, Value* value);
+int pop_Label(Stack* thisStack, Label** label);
+int pop_Frame(Stack* thisStack, Frame** frame);
+int pop_Value(Stack* thisStack, Value** value);
 
 #endif
