@@ -4,24 +4,21 @@
 #include <dataTypes/Value.h>
 #include <instance/InstrInst.h>
 
-FuncInst* new_FuncInst()
+FuncInst* new_FuncInst(ModuleInst* module, FuncType* type)
 {
     FuncInst* instance = (FuncInst*) malloc(sizeof(FuncInst));
-    instance->type.params = new_vector(sizeof(ValueType), NULL);
-    instance->type.results = new_vector(sizeof(ValueType), NULL);
+    instance->type = type;
     instance->locals = new_vector(sizeof(ValueType), NULL);
-    instance->module = NULL;
-    instance->code = new_vector(sizeof(InstrInst), clean_InstrInst);
+    instance->module = module;
+    instance->code = new_list((void(*)(void*))free_InstrInst);
     instance->hostcode = NULL;
     return instance;
 }
 
 void clean_FuncInst(FuncInst* funcInst)
 {
-    free_vector(funcInst->type.params);
-    free_vector(funcInst->type.results);
     free_vector(funcInst->locals);
-    free_vector(funcInst->code);
+    free_list(funcInst->code);
 }
 
 void free_FuncInst(FuncInst* funcInst)

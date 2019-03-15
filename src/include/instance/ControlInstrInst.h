@@ -1,14 +1,13 @@
-#ifndef WASMVM_INSTANCE_NUMEFICINSTRINST_DEF
-#define WASMVM_INSTANCE_NUMEFICINSTRINST_DEF
+#ifndef WASMVM_INSTANCE_CONTROLINSTRINST_DEF
+#define WASMVM_INSTANCE_CONTROLINSTRINST_DEF
 
 #include <stdint.h>
-#include <dataTypes/Value.h>
 #include <dataTypes/vector.h>
 #include <instance/InstrInst.h>
 
 typedef struct {
     InstrInst parent;
-    ValueType resultType;
+    vector* resultTypes; // ValueType
     vector* indices; // uint32_t
 } ControlInstrInst;
 

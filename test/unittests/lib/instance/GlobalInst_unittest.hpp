@@ -12,7 +12,7 @@ SKYPAT_F(GlobalInst, create_delete)
     GlobalInst* globalInst = new_GlobalInst();
 
     // Check
-    EXPECT_EQ(globalInst->mul, 0);
+    EXPECT_EQ(globalInst->mut, 0);
     EXPECT_EQ(globalInst->value.type, Value_Unspecified);
     EXPECT_EQ(globalInst->value.parent.entryType, Entry_Value);
 

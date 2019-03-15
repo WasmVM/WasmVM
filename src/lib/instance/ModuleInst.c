@@ -5,9 +5,10 @@
 #include <dataTypes/FuncType.h>
 #include <instance/ExportInst.h>
 
-ModuleInst* new_ModuleInst()
+ModuleInst* new_ModuleInst(char* name)
 {
     ModuleInst* newModuleInst = (ModuleInst*) malloc(sizeof(ModuleInst));
+    newModuleInst->name = name;
     newModuleInst->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
     newModuleInst->funcaddrs = new_vector(sizeof(uint32_t), NULL);
     newModuleInst->tableaddrs = new_vector(sizeof(uint32_t), NULL);
@@ -19,6 +20,7 @@ ModuleInst* new_ModuleInst()
 
 void clean_ModuleInst(ModuleInst* moduleInst)
 {
+    free(moduleInst->name);
     free_vector(moduleInst->types);
     free_vector(moduleInst->funcaddrs);
     free_vector(moduleInst->tableaddrs);

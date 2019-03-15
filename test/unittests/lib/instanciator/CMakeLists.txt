@@ -1,0 +1,13 @@
+include_directories(${PROJECT_ROOT}/src/lib/stages/instanciator)
+
+macro(add_instanciator_unittest unittest)
+    add_unittest(${unittest} lib/instanciator/)
+endmacro(add_instanciator_unittest unittest)
+
+add_instanciator_unittest(instanciator_unittest)
+add_instanciator_unittest(allocate_function_unittest)
+add_instanciator_unittest(allocate_table_unittest)
+add_instanciator_unittest(allocate_memory_unittest)
+add_instanciator_unittest(allocate_global_unittest)
+add_instanciator_unittest(allocate_instructions_unittest)
+add_instanciator_unittest(allocate_module_unittest)

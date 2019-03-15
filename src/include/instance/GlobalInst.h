@@ -5,7 +5,7 @@
 
 typedef struct {
     Value value;
-    _Bool mul;
+    _Bool mut;
 } GlobalInst;
 
 GlobalInst* new_GlobalInst();

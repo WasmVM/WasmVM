@@ -12,6 +12,7 @@ typedef struct vector_ {
     void (*push_back)(struct vector_* thisVector, const void* value);
     void* (*pop_back)(struct vector_* thisVector);
     void (*shrink)(struct vector_* thisVector);
+    void (*resize)(struct vector_* thisVector, size_t length);
     void* (*at)(struct vector_* thisVector, size_t index);
 } vector;
 

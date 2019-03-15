@@ -5,7 +5,7 @@
 GlobalInst* new_GlobalInst()
 {
     GlobalInst* globalInst = (GlobalInst*) malloc(sizeof(GlobalInst));
-    globalInst->mul = 0;
+    globalInst->mut = 0;
     globalInst->value.type = Value_Unspecified;
     globalInst->value.parent.entryType = Entry_Value;
     return globalInst;

@@ -13,7 +13,8 @@ SKYPAT_F(ControlInstrInst, create_delete)
     ControlInstrInst* instrInst = new_ControlInstrInst();
 
     // Check
-    EXPECT_EQ(instrInst->resultType, Value_Unspecified);
+    EXPECT_EQ(instrInst->resultTypes->length, 0);
+    EXPECT_EQ(instrInst->resultTypes->data, NULL);
     EXPECT_EQ(instrInst->indices->length, 0);
     EXPECT_EQ(instrInst->indices->data, NULL);
 
