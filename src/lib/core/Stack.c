@@ -55,11 +55,31 @@ int pop_Label(Stack* thisStack, Label** label)
     if(!thisStack->curLabel) {
         return -1;
     }
-    *label = thisStack->curLabel;
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = cur->next) {
-        if(((Entry*)cur->data)->entryType == Entry_Label) {
-            thisStack->curLabel = (Label*)cur->data;
-            return 0;
+        Entry* entry = (Entry*)cur->data;
+        if(entry->entryType == Entry_Label) {
+            thisStack->entries->pop(thisStack->entries, (void**)label);
+            break;
+        } else if(entry->entryType == Entry_Value) {
+            Value* value = NULL;
+            pop_Value(thisStack, &value);
+            free_Value(value);
+        } else {
+            thisStack->curLabel = NULL;
+            return -1;
+        }
+    }
+    for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = cur->next) {
+        Entry* entry = (Entry*)cur->data;
+        switch (entry->entryType) {
+            case Entry_Label:
+                thisStack->curLabel = (Label*)cur->data;
+                return 0;
+            case Entry_Frame:
+                thisStack->curLabel = NULL;
+                return 0;
+            default:
+                break;
         }
     }
     thisStack->curLabel = NULL;
@@ -70,14 +90,38 @@ int pop_Frame(Stack* thisStack, Frame** frame)
     if(!thisStack->curFrame) {
         return -1;
     }
-    *frame = thisStack->curFrame;
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = cur->next) {
-        if(((Entry*)cur->data)->entryType == Entry_Frame) {
-            thisStack->curFrame = (Frame*)cur->data;
-            return 0;
+        Entry* entry = (Entry*)cur->data;
+        if(entry->entryType == Entry_Frame) {
+            thisStack->entries->pop(thisStack->entries, (void**)frame);
+            break;
+        } else if(entry->entryType == Entry_Value) {
+            Value* value = NULL;
+            pop_Value(thisStack, &value);
+            free_Value(value);
+        } else if(entry->entryType == Entry_Label) {
+            Label* label = NULL;
+            pop_Label(thisStack, &label);
+            free_Label(label);
+        } else {
+            thisStack->curFrame = NULL;
+            return -1;
         }
     }
-    thisStack->curFrame = NULL;
+    for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = cur->next) {
+        Entry* entry = (Entry*)cur->data;
+        switch (entry->entryType) {
+            case Entry_Label:
+                thisStack->curLabel = (Label*)cur->data;
+                return 0;
+            case Entry_Frame:
+                thisStack->curLabel = NULL;
+                return 0;
+            default:
+                break;
+        }
+    }
+    thisStack->curLabel = NULL;
     return 0;
 }
 int pop_Value(Stack* thisStack, Value** value)
