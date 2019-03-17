@@ -5,7 +5,8 @@
 #include <dataTypes/Value.h>
 #include <instance/ModuleInst.h>
 
-typedef struct Frame_{
+typedef struct Frame_ {
+    Entry parent;
     vector* locals;       // Value
     ModuleInst* moduleInst;
 } Frame;
