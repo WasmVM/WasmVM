@@ -1,12 +1,18 @@
 #include <structures/WasmModule.h>
 
 #include <stdlib.h>
+#include <string.h>
 
 WasmModule* new_WasmModule(char* module_name)
 {
     WasmModule* newModule = (WasmModule*) malloc(sizeof(WasmModule));
     // construct
-    newModule->module_name = module_name;
+    if(module_name) {
+        newModule->module_name = (char*)malloc(sizeof(char) * (strlen(module_name) + 1));
+        strcpy(newModule->module_name, module_name);
+    } else {
+        newModule->module_name = NULL;
+    }
     newModule->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
     newModule->funcs = new_vector(sizeof(WasmFunc), (void(*)(void*))clean_WasmFunc);
     newModule->tables = new_vector(sizeof(WasmTable), NULL);

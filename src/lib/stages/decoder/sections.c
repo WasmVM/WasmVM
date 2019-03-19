@@ -1,12 +1,14 @@
-#include <stages/decoder/sections.h>
+#include "sections.h"
 #include <Opcodes.h>
 
 #include "Utils.h"
 
+#include <stdio.h>
 #include <stdint.h>
+#include <string.h>
 #include <stdlib.h>
 
-char skip_to_section(uint8_t sectionNum, uint8_t **ptr, uint8_t **endAddr)
+static char skip_to_section(uint8_t sectionNum, uint8_t **ptr, uint8_t **endAddr)
 {
     if(*ptr > *endAddr) {
         return -1;
@@ -20,7 +22,7 @@ char skip_to_section(uint8_t sectionNum, uint8_t **ptr, uint8_t **endAddr)
     }
     char ret = **ptr;
     if(ret == sectionNum) {
-        getLeb128_u32(++(ptr), (endAddr));
+        getLeb128_u32(++(ptr), endAddr);
     }
 
     return ret;
@@ -38,7 +40,7 @@ int parse_magic_version(WasmModule *module, uint8_t **read_p)
     if(*(uint32_t*) *read_p != toLittle32(WASM_VERSION, 0)) {
         printf("Wrong version of %s.\n", module->module_name);
         // return error code
-        return -1;
+        return -2;
     }
     *read_p += 4;
 
@@ -53,8 +55,8 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
         // FuncType init
         FuncType* newType = (FuncType*) malloc(sizeof(FuncType));
         // use default free function
-        newType->params = new_vector(sizeof(ValueType));
-        newType->results = new_vector(sizeof(ValueType));
+        newType->params = new_vector(sizeof(ValueType), NULL);
+        newType->results = new_vector(sizeof(ValueType), NULL);
         if(**read_p != TYPE_Func) {
             printf("%s : Function type must start with function type code. (Wrong wasm)\n", newModule->module_name);
             return -1;
@@ -63,50 +65,60 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
         uint32_t paramNum = getLeb128_u32(++read_p, end_p);
 
         while(paramNum-- > 0) {
+            ValueType* valType = (ValueType*)malloc(sizeof(ValueType));
             switch(**read_p) {
                 case TYPE_i32:
-                    newType->params->push_back(newType->params, Value_i32);
+                    *valType = Value_i32;
+                    newType->params->push_back(newType->params, (void*)valType);
                     break;
                 case TYPE_i64:
-                    newType->params->push_back(newType->params, Value_i64);
+                    *valType = Value_i64;
+                    newType->params->push_back(newType->params, (void*)valType);
                     break;
                 case TYPE_f32:
-                    newType->params->push_back(newType->params, Value_f32);
+                    *valType = Value_f32;
+                    newType->params->push_back(newType->params, (void*)valType);
                     break;
                 case TYPE_f64:
-                    newType->params->push_back(newType->params, Value_f64);
+                    *valType = Value_f64;
+                    newType->params->push_back(newType->params, (void*)valType);
                     break;
                 default:
                     printf("%s : No such parameter type.\n", newModule->module_name);
                     return -1;
             }
-            *read_p++;
+            *read_p += 1;
         }
 
         // Results
         uint32_t resultNum = getLeb128_u32(read_p, end_p);
         while (resultNum-- > 0) {
+            ValueType* valType = (ValueType*)malloc(sizeof(ValueType));
             switch (**read_p) {
                 case TYPE_i32:
-                    newType->results->push_back(newType->results, Value_i32);
+                    *valType = Value_i32;
+                    newType->results->push_back(newType->results, (void*)valType);
                     break;
                 case TYPE_i64:
-                    newType->results->push_back(newType->results, Value_i32);
+                    *valType = Value_i32;
+                    newType->results->push_back(newType->results, (void*)valType);
                     break;
                 case TYPE_f32:
-                    newType->results->push_back(newType->results, Value_i32);
+                    *valType = Value_i32;
+                    newType->results->push_back(newType->results, (void*)valType);
                     break;
                 case TYPE_f64:
-                    newType->results->push_back(newType->results, Value_i32);
+                    *valType = Value_i32;
+                    newType->results->push_back(newType->results, (void*)valType);
                     break;
                 default:
                     printf("%s : No such parameter type.\n", newModule->module_name);
                     return -1;
             }
-            *read_p++;
+            *read_p += 1;
         }
         // Push into newModule
-        newModule->types->push_back(newModule->types,newType);
+        newModule->types->push_back(newModule->types, (void*)newType);
     }
 
     return 0;
@@ -122,7 +134,7 @@ int parse_import_section(WasmModule *newModule, uint32_t *importedFuncCount, uin
         // Get Module Name
         char depName[depNameLen + 1];
         depName[depNameLen] = '\0';
-        strncpy(depName, *read_p, depNameLen);
+        strncpy(depName, (char*)*read_p, depNameLen);
         *read_p += depNameLen;
         newImport->module = depName;
         // Get Name length
@@ -130,7 +142,7 @@ int parse_import_section(WasmModule *newModule, uint32_t *importedFuncCount, uin
         // Get name
         char name[nameLen + 1];
         name[nameLen] = '\0';
-        strncpy(name, *read_p, nameLen);
+        strncpy(name, (char*)*read_p, nameLen);
         *read_p += nameLen;
         newImport->name = name;
         // Load dependencies
@@ -139,32 +151,32 @@ int parse_import_section(WasmModule *newModule, uint32_t *importedFuncCount, uin
         // Or just pass the handler to Loader?
 
         // import kind
-        // Follow & Reference:
+        // Reference:
         // - https://webassembly.github.io/spec/core/syntax/modules.html#syntax-index
         // - https://webassembly.github.io/spec/core/binary/modules.html#binary-importsec
         switch(*(*read_p++)) {
             case IMPORT_Func:
                 newImport->descType = Desc_Func;
-                newImport->descIdex = getLeb128_u32(read_p, end_p);
+                newImport->desc.typeidx = getLeb128_u32(read_p, end_p);
                 // if exceed, then return with error
                 /*if(newImport.descIdex >= newModule->types->length){
                     printf("%s: Type index of imported function must be defined.\n", newModule->module_name);
                     return -1;
                 }*/
                 // inc number of func
-                *importedFuncCount++;
+                *importedFuncCount += 1;
                 break;
             case IMPORT_Table:
                 newImport->descType = Desc_Table;
-                newImport->descIdex = getLeb128_u32(read_p, end_p);
+                newImport->desc.typeidx = getLeb128_u32(read_p, end_p);
                 break;
             case IMPORT_Mem:
                 newImport->descType = Desc_Mem;
-                newImport->descIdex = getLeb128_u32(read_p, end_p);
+                newImport->desc.typeidx = getLeb128_u32(read_p, end_p);
                 break;
             case IMPORT_Global:
                 newImport->descType = Desc_Global;
-                newImport->descIdex = getLeb128_u32(read_p, end_p);
+                newImport->desc.typeidx = getLeb128_u32(read_p, end_p);
                 break;
             default:
                 printf("%s: Unknown import type.\n", newModule->module_name);
@@ -194,18 +206,18 @@ int parse_func_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
 int parse_table_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
 {
     /* FIXME: check current spec */
-    if(*read_p++ > 1) {
+    if(*((*read_p)++) > 1) {
         printf("%s: There's only one table allowed currently.\n", newModule->module_name);
         return -1;
     }
-    if(*read_p++ != TYPE_Table_anyfunc) {
+    if(*((*read_p)++) != TYPE_Table_anyfunc) {
         printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
         return -1;
     }
 
     // create WasmTable instance
     WasmTable *newTable = (WasmTable*)malloc(sizeof(WasmTable));
-    newTable->elemType = *(*read_p++);
+    newTable->elemType = *((*read_p)++);
     newTable->min = getLeb128_u32(read_p, end_p);
     if(newTable->elemType) {
         newTable->max = getLeb128_u32(read_p, end_p);
@@ -220,7 +232,7 @@ int parse_table_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p
 int parse_memory_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
 {
     /* FIXME: check current spec */
-    if(*read_p++ > 1) {
+    if(*((*read_p)++) > 1) {
         printf("%s: There's only one memory allowed currently.\n", newModule->module_name);
         return -1;
     }
@@ -279,7 +291,7 @@ int parse_global_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_
                 return -1;
         }
         // Skip end
-        *read_p++;
+        *read_p += 1;
         // Push into newModule
         newModule->globals->push_back(newModule->globals,newGlobal);
     }
@@ -296,11 +308,9 @@ int parse_export_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_
         // Get name
         char name[nameLen + 1];
         name[nameLen] = '\0';
-        strncpy(name, *read_p, nameLen);
+        strncpy(name, (char*)*read_p, nameLen);
         *read_p += nameLen;
         newExport->name = name;
-        // FIXME: add checking mechanism, to pop out newModule->exports
-        // , and compare with name with newExport->name
 
         // Export kind
         switch(*(*read_p++)) {
@@ -332,10 +342,6 @@ int parse_start_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p
 {
     newModule->start = getLeb128_u32(read_p, end_p);
 
-    // FIXME: checking mechanism
-    // - index in Funcs: use newModule->start - importedFuncCount
-    // - checking if start function is a void function
-
     return 0;
 }
 
@@ -347,7 +353,7 @@ int parse_element_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end
         // Index
         newElem->table = getLeb128_u32(read_p, end_p);
         if(newElem->table) {
-            printf("%s: Only table 0 is allowed currently.\n");
+            printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
             return -1;
         }
         // Offset
@@ -358,16 +364,16 @@ int parse_element_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end
             return -1;
         }
         // Skip end
-        *read_p++;
+        *read_p += 1;
         // Init
         uint32_t initNum = getLeb128_u32(read_p, end_p);
         while(initNum-- > 0) {
             uint32_t initIndex = getLeb128_u32(read_p, end_p);
             if(initIndex >= newModule->funcs->length) {
-                printf("%s: Index of element function must be defined.\n");
+                printf("%s: Index of element function must be defined.\n", newModule->module_name);
                 return -1;
             }
-            newElem->init->push_back(newElem->init, initIndex);
+            newElem->init->push_back(newElem->init, &initIndex);
         }
         // Push into newModule
         newModule->elems->push_back(newModule->elems, newElem);
@@ -386,7 +392,7 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
 
     for(uint32_t i = 0; i < codeNum; ++i) {
         uint32_t codeSize = getLeb128_u32(read_p, end_p);
-        char *curAddr = *read_p;
+        uint8_t *curAddr = *read_p;
         // Locals
         uint32_t localCount = getLeb128_u32(read_p, end_p);
         while(localCount-- > 0) {
@@ -411,13 +417,13 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
             }
             while(typeCount-- > 0) {
                 WasmFunc *existedFunc = (WasmFunc*)newModule->funcs->at(newModule->funcs, i);
-                existedFunc->locals->push_back(existedFunc->locals, newType);
+                existedFunc->locals->push_back(existedFunc->locals, &newType);
             }
         }
         // Code
         codeSize -= (*read_p - curAddr);
         WasmInstr *existedInstr = (WasmInstr*)newModule->funcs->at(newModule->funcs, i);
-        strncpy(existedInstr->opcode, *read_p, codeSize);
+        existedInstr->opcode = **read_p;
         // shift
         *read_p += codeSize;
     }
@@ -443,13 +449,13 @@ int parse_data_section(WasmModule *newModule, uint8_t **read_p, uint8_t **end_p)
             printf("%s: Data offset must be an i32.const expression.\n", newModule->module_name);
             return -1;
         }
-        *read_p++;
+        *read_p += 1;
         // Init data
         uint32_t dataSize = getLeb128_u32(read_p, end_p);
         char initData[dataSize];
-        strncpy(initData, *read_p, dataSize);
+        strncpy(initData, (char*)*read_p, dataSize);
         for(int i=0; i<dataSize; i++) {
-            newWasmData->init->push_back(newWasmData->init, initData[i]);
+            newWasmData->init->push_back(newWasmData->init, initData + i);
         }
         *read_p += dataSize;
         // Push into newModule
