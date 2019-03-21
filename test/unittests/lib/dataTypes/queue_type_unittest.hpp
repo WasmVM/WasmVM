@@ -13,7 +13,7 @@ extern "C" {
 SKYPAT_F(queue, create_delete)
 {
     queue *pQueue = new_queue(free);
-    
+
     /* test queue */
     EXPECT_EQ(pQueue->head, NULL);
     EXPECT_EQ(pQueue->size, 0);
@@ -25,7 +25,7 @@ SKYPAT_F(queue, create_delete)
 SKYPAT_F(queue, push)
 {
     queue *pQueue = new_queue(free);
-    
+
     /* test push method */
     int32_t *value1 = (int32_t *)malloc(sizeof(uint32_t));
     *value1 = 1023;
@@ -60,7 +60,7 @@ SKYPAT_F(queue, pop)
 {
     int test = 0;
     queue *pQueue = new_queue(free);
-    
+
     /* push data */
     int32_t *pop_value1 = (int32_t *)malloc(sizeof(int32_t));
     *pop_value1 = 1023;
@@ -118,7 +118,7 @@ SKYPAT_F(queue, top)
 {
     int test = 0;
     queue *pQueue = new_queue(free);
-    
+
     /* push data */
     int32_t *top_value1 = (int32_t *)malloc(sizeof(int32_t));
     *top_value1 = 1023;
