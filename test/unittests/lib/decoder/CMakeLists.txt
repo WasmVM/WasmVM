@@ -5,3 +5,4 @@ macro(add_decoder_unittest unittest)
 endmacro(add_decoder_unittest unittest)
 
 add_decoder_unittest(decode_magic_version_unittest)
+add_decoder_unittest(decode_type_unittest)

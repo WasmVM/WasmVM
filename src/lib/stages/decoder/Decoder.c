@@ -46,14 +46,12 @@ static int run(Decoder* decoder)
     }
 
     // record number of imported function
-    /*    uint32_t importedFuncCount = 0;
-        // Section 1: Type
-        if(skip_to_section(1, &read_p, &end_p) == 1) {
-            // Parse "Type" Section, and then store the value into newModule
-            if(parse_type_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
-        }
+    uint32_t importedFuncCount = 0;
+    // Section 1: Type
+    if(parse_type_section(newModule, &read_p, &end_p) < 0) {
+        return -1;
+    }
+    /*
         // Section 2: Import
         if(skip_to_section(2, &read_p, &end_p) == 2) {
             // Parse "Import" Section
@@ -125,6 +123,7 @@ static int run(Decoder* decoder)
             }
         }
     */
+    free(wasm_source);
     return 0;
 }
 
