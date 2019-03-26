@@ -45,20 +45,15 @@ static int run(Decoder* decoder)
         return -1;
     }
 
-    // record number of imported function
-    uint32_t importedFuncCount = 0;
     // Section 1: Type
     if(parse_type_section(newModule, &read_p, &end_p) < 0) {
         return -1;
     }
+    // Section 2: Import
+    if(parse_import_section(newModule, &read_p, &end_p) < 0) {
+        return -1;
+    }
     /*
-        // Section 2: Import
-        if(skip_to_section(2, &read_p, &end_p) == 2) {
-            // Parse "Import" Section
-            if(parse_import_section(newModule, &importedFuncCount, &read_p, &end_p) < 0) {
-                return -1;
-            }
-        }
         // Section 3: Function
         if(skip_to_section(3, &read_p, &end_p) == 3) {
             // Parse "Function" Section
