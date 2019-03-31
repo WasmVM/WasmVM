@@ -237,21 +237,23 @@ int parse_func_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
 
 int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    if(skip_to_section(4, read_p, end_p) == 1) {
+    if(skip_to_section(4, read_p, end_p) == 4) {
         for(uint32_t tableNum = getLeb128_u32(read_p, end_p); tableNum > 0; --tableNum) {
             if(tableNum > 1) {
                 printf("%s: There's only one table allowed currently.\n", newModule->module_name);
                 return -1;
             }
-            if(*((*read_p)++) != TYPE_Table_anyfunc) {
-                printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
-                return -2;
-            }
+
             // create WasmTable instance
             WasmTable *newTable = (WasmTable*)malloc(sizeof(WasmTable));
             newTable->elemType = *((*read_p)++);
+            if(newTable->elemType != TYPE_Table_anyfunc) {
+                printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
+                return -2;
+            }
+            uint8_t flags = *((*read_p)++);
             newTable->min = getLeb128_u32(read_p, end_p);
-            if(newTable->elemType) {
+            if(flags == 1) {
                 newTable->max = getLeb128_u32(read_p, end_p);
             }
 

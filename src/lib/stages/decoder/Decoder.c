@@ -57,10 +57,10 @@ static int run(Decoder* decoder)
         return -4;
     }
     // Section 4: Table
-    if(parse_table_section(newModule, &read_p, &end_p) < 0) {
+    if(parse_table_section(newModule, &read_p, end_p) < 0) {
         return -5;
     }
-
+    /*
     // Section 5: Memory
     if(skip_to_section(5, &read_p, &end_p) == 5) {
         // Parse "Memory" Section
