@@ -68,14 +68,11 @@ static int run(Decoder* decoder)
     if(parse_global_section(newModule, &read_p, end_p) < 0) {
         return -7;
     }
-    /*
     // Section 7: Export
-    if(skip_to_section(7, &read_p, &end_p) == 7) {
-        // Parse "Export" Section
-        if(parse_export_section(newModule, &read_p, &end_p) < 0) {
-            return -1;
-        }
+    if(parse_export_section(newModule, &read_p, &end_p) < 0) {
+        return -1;
     }
+    /*
     // Section 8: Start
     if(skip_to_section(8, &read_p, &end_p) == 8) {
         // Parse "Start" Section

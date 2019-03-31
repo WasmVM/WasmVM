@@ -345,41 +345,39 @@ int parse_global_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
 
 int parse_export_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t exportNum = getLeb128_u32(read_p, end_p);
-    while(exportNum-- > 0) {
-        WasmExport* newExport = (WasmExport*)malloc(sizeof(WasmExport));
-        // Get name length
-        uint32_t nameLen = getLeb128_u32(read_p, end_p);
-        // Get name
-        char name[nameLen + 1];
-        name[nameLen] = '\0';
-        strncpy(name, (char*)*read_p, nameLen);
-        *read_p += nameLen;
-        newExport->name = name;
+    if(skip_to_section(7, read_p, end_p) == 7) {
+        for(uint32_t exportNum = getLeb128_u32(read_p, end_p); exportNum > 0; --exportNum) {
+            // Get name length
+            uint32_t nameLen = getLeb128_u32(read_p, end_p);
+            // Get name
+            char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
+            name[nameLen] = '\0';
+            strncpy(name, (char*)*read_p, nameLen);
+            *read_p += nameLen;
 
-        // Export kind
-        switch(*(*read_p++)) {
-            case IMPORT_Func:
-                newExport->descType = Desc_Func;
-                break;
-            case IMPORT_Table:
-                newExport->descType = Desc_Table;
-                break;
-            case IMPORT_Mem:
-                newExport->descType = Desc_Mem;
-                break;
-            case IMPORT_Global:
-                newExport->descType = Desc_Global;
-                break;
-            default:
-                printf("%s: Unknown export type.\n", newModule->module_name);
-                return -1;
+            // Export kind
+            DescType descType = Desc_Unspecified;
+            switch(*((*read_p)++)) {
+                case IMPORT_Func:
+                    descType = Desc_Func;
+                    break;
+                case IMPORT_Table:
+                    descType = Desc_Table;
+                    break;
+                case IMPORT_Mem:
+                    descType = Desc_Mem;
+                    break;
+                case IMPORT_Global:
+                    descType = Desc_Global;
+                    break;
+                default:
+                    printf("%s: Unknown export type.\n", newModule->module_name);
+                    return -1;
+            }
+            // Push into export list
+            newModule->exports->push_back(newModule->exports, new_WasmExport(name, descType, getLeb128_u32(read_p, end_p)));
         }
-        newExport->descIdx = getLeb128_u32(read_p, end_p);
-        // Push into export list
-        newModule->exports->push_back(newModule->exports, newExport);
     }
-
     return 0;
 }
 
