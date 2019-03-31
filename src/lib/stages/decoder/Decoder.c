@@ -40,7 +40,7 @@ static int run(Decoder* decoder)
     uint8_t *read_p = wasm_source;
     uint8_t *end_p = wasm_source + file_len - 1;
 
-    // - magic number & version
+    // magic number & version
     if(parse_magic_version(newModule, &read_p) < 0) {
         return -1;
     }
@@ -60,14 +60,11 @@ static int run(Decoder* decoder)
     if(parse_table_section(newModule, &read_p, end_p) < 0) {
         return -5;
     }
-    /*
     // Section 5: Memory
-    if(skip_to_section(5, &read_p, &end_p) == 5) {
-        // Parse "Memory" Section
-        if(parse_memory_section(newModule, &read_p, &end_p) < 0) {
-            return -1;
-        }
+    if(parse_memory_section(newModule, &read_p, end_p) < 0) {
+        return -1;
     }
+    /*
     // Section 6: Global
     if(skip_to_section(6, &read_p, &end_p) == 6) {
         // Parse "Global" Section

@@ -266,18 +266,23 @@ int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *
 
 int parse_memory_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    /* FIXME: check current spec */
-    if(*((*read_p)++) > 1) {
-        printf("%s: There's only one memory allowed currently.\n", newModule->module_name);
-        return -1;
+    if(skip_to_section(5, read_p, end_p) == 5) {
+        for(uint32_t memNum = getLeb128_u32(read_p, end_p); memNum > 0; --memNum) {
+            if(memNum > 1) {
+                printf("%s: There's only one memory allowed currently.\n", newModule->module_name);
+                return -1;
+            }
+
+            WasmMemory *newMem = (WasmMemory*)malloc(sizeof(WasmMemory));
+            uint8_t flags = *((*read_p)++);
+            newMem->min = getLeb128_u32(read_p, end_p);
+            if(flags == 1) {
+                newMem->max = getLeb128_u32(read_p, end_p);
+            }
+
+            newModule->mems->push_back(newModule->mems, newMem);
+        }
     }
-
-    WasmMemory *newMem = (WasmMemory*)malloc(sizeof(WasmMemory));
-    newMem->min = getLeb128_u32(read_p, end_p);
-    newMem->max = getLeb128_u32(read_p, end_p);
-
-    newModule->mems->push_back(newModule->mems, newMem);
-
     return 0;
 }
 
