@@ -44,79 +44,72 @@ static int run(Decoder* decoder)
     if(parse_magic_version(newModule, &read_p) < 0) {
         return -1;
     }
-
     // Section 1: Type
-    if(parse_type_section(newModule, &read_p, &end_p) < 0) {
-        return -1;
+    if(parse_type_section(newModule, &read_p, end_p) < 0) {
+        return -2;
     }
     // Section 2: Import
-    if(parse_import_section(newModule, &read_p, &end_p) < 0) {
-        return -1;
+    if(parse_import_section(newModule, &read_p, end_p) < 0) {
+        return -3;
     }
-    /*
-        // Section 3: Function
-        if(skip_to_section(3, &read_p, &end_p) == 3) {
-            // Parse "Function" Section
-            if(parse_func_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    // Section 3: Function
+    if(parse_func_section(newModule, &read_p, end_p) < 0) {
+        return -4;
+    }
+    // Section 4: Table
+    if(parse_table_section(newModule, &read_p, &end_p) < 0) {
+        return -5;
+    }
+
+    // Section 5: Memory
+    if(skip_to_section(5, &read_p, &end_p) == 5) {
+        // Parse "Memory" Section
+        if(parse_memory_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 4: Table
-        if(skip_to_section(4, &read_p, &end_p) == 4) {
-            // Parse "Table" Section
-            if(parse_table_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 6: Global
+    if(skip_to_section(6, &read_p, &end_p) == 6) {
+        // Parse "Global" Section
+        if(parse_global_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 5: Memory
-        if(skip_to_section(5, &read_p, &end_p) == 5) {
-            // Parse "Memory" Section
-            if(parse_memory_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 7: Export
+    if(skip_to_section(7, &read_p, &end_p) == 7) {
+        // Parse "Export" Section
+        if(parse_export_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 6: Global
-        if(skip_to_section(6, &read_p, &end_p) == 6) {
-            // Parse "Global" Section
-            if(parse_global_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 8: Start
+    if(skip_to_section(8, &read_p, &end_p) == 8) {
+        // Parse "Start" Section
+        if(parse_start_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 7: Export
-        if(skip_to_section(7, &read_p, &end_p) == 7) {
-            // Parse "Export" Section
-            if(parse_export_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 9: Element
+    if(skip_to_section(9, &read_p, &end_p) == 9) {
+        // Parse "Element" Section
+        if(parse_element_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 8: Start
-        if(skip_to_section(8, &read_p, &end_p) == 8) {
-            // Parse "Start" Section
-            if(parse_start_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 10: Code
+    if(skip_to_section(10, &read_p, &end_p) == 10) {
+        // Parse "Code" Section
+        if(parse_code_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 9: Element
-        if(skip_to_section(9, &read_p, &end_p) == 9) {
-            // Parse "Element" Section
-            if(parse_element_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
+    }
+    // Section 11: Data
+    if(skip_to_section(11, &read_p, &end_p) == 11) {
+        // Parse "Data" Section
+        if(parse_data_section(newModule, &read_p, &end_p) < 0) {
+            return -1;
         }
-        // Section 10: Code
-        if(skip_to_section(10, &read_p, &end_p) == 10) {
-            // Parse "Code" Section
-            if(parse_code_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
-        }
-        // Section 11: Data
-        if(skip_to_section(11, &read_p, &end_p) == 11) {
-            // Parse "Data" Section
-            if(parse_data_section(newModule, &read_p, &end_p) < 0) {
-                return -1;
-            }
-        }
+    }
     */
     free(wasm_source);
     return 0;

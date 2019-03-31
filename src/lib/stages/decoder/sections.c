@@ -223,40 +223,42 @@ int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
 
 int parse_func_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t funcNum = getLeb128_u32(read_p, end_p);
-    while(funcNum-- > 0) {
-        // allocate WasmFunc
-        WasmFunc *newFunc = new_WasmFunc();
-        newFunc->type = getLeb128_u32(read_p, end_p);
-        // Push into newModule
-        newModule->funcs->push_back(newModule->funcs, newFunc);
+    if(skip_to_section(3, read_p, end_p) == 3) {
+        for(uint32_t funcNum = getLeb128_u32(read_p, end_p); funcNum > 0; --funcNum) {
+            // allocate WasmFunc
+            WasmFunc *newFunc = new_WasmFunc();
+            newFunc->type = getLeb128_u32(read_p, end_p);
+            // Push into newModule
+            newModule->funcs->push_back(newModule->funcs, newFunc);
+        }
     }
     return 0;
 }
 
 int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    /* FIXME: check current spec */
-    if(*((*read_p)++) > 1) {
-        printf("%s: There's only one table allowed currently.\n", newModule->module_name);
-        return -1;
-    }
-    if(*((*read_p)++) != TYPE_Table_anyfunc) {
-        printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
-        return -1;
-    }
+    if(skip_to_section(4, read_p, end_p) == 1) {
+        for(uint32_t tableNum = getLeb128_u32(read_p, end_p); tableNum > 0; --tableNum) {
+            if(tableNum > 1) {
+                printf("%s: There's only one table allowed currently.\n", newModule->module_name);
+                return -1;
+            }
+            if(*((*read_p)++) != TYPE_Table_anyfunc) {
+                printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
+                return -2;
+            }
+            // create WasmTable instance
+            WasmTable *newTable = (WasmTable*)malloc(sizeof(WasmTable));
+            newTable->elemType = *((*read_p)++);
+            newTable->min = getLeb128_u32(read_p, end_p);
+            if(newTable->elemType) {
+                newTable->max = getLeb128_u32(read_p, end_p);
+            }
 
-    // create WasmTable instance
-    WasmTable *newTable = (WasmTable*)malloc(sizeof(WasmTable));
-    newTable->elemType = *((*read_p)++);
-    newTable->min = getLeb128_u32(read_p, end_p);
-    if(newTable->elemType) {
-        newTable->max = getLeb128_u32(read_p, end_p);
+            // Push into newModule
+            newModule->tables->push_back(newModule->tables, newTable);
+        }
     }
-
-    // Push into newModule
-    newModule->tables->push_back(newModule->tables, newTable);
-
     return 0;
 }
 
