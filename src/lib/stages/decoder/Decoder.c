@@ -62,16 +62,13 @@ static int run(Decoder* decoder)
     }
     // Section 5: Memory
     if(parse_memory_section(newModule, &read_p, end_p) < 0) {
-        return -1;
+        return -6;
+    }
+    // Section 6: Global
+    if(parse_global_section(newModule, &read_p, end_p) < 0) {
+        return -7;
     }
     /*
-    // Section 6: Global
-    if(skip_to_section(6, &read_p, &end_p) == 6) {
-        // Parse "Global" Section
-        if(parse_global_section(newModule, &read_p, &end_p) < 0) {
-            return -1;
-        }
-    }
     // Section 7: Export
     if(skip_to_section(7, &read_p, &end_p) == 7) {
         // Parse "Export" Section

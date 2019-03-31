@@ -288,52 +288,57 @@ int parse_memory_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
 
 int parse_global_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t globalNum = getLeb128_u32(read_p, end_p);
-    while(globalNum-- > 0) {
-        WasmGlobal *newGlobal = (WasmGlobal*)malloc(sizeof(WasmGlobal));
-        switch(*(*read_p++)) {
-            case TYPE_i32:
-                newGlobal->valType = Value_i32;
-                break;
-            case TYPE_i64:
-                newGlobal->valType = Value_i64;
-                break;
-            case TYPE_f32:
-                newGlobal->valType = Value_f32;
-                break;
-            case TYPE_f64:
-                newGlobal->valType = Value_f64;
-                break;
-            default:
-                printf("%s: Unknown global value type.\n", newModule->module_name);
-                return -1;
+    if(skip_to_section(6, read_p, end_p) == 6) {
+        for(uint32_t globalNum = getLeb128_u32(read_p, end_p); globalNum > 0; --globalNum) {
+            WasmGlobal *newGlobal = (WasmGlobal*)malloc(sizeof(WasmGlobal));
+            switch(*((*read_p)++)) {
+                case TYPE_i32:
+                    newGlobal->valType = Value_i32;
+                    break;
+                case TYPE_i64:
+                    newGlobal->valType = Value_i64;
+                    break;
+                case TYPE_f32:
+                    newGlobal->valType = Value_f32;
+                    break;
+                case TYPE_f64:
+                    newGlobal->valType = Value_f64;
+                    break;
+                default:
+                    printf("%s: Unknown global value type.\n", newModule->module_name);
+                    return -1;
+            }
+            // Set mut
+            newGlobal->mut = *((*read_p)++);
+            // Set value
+            switch(*((*read_p)++)) {
+                case Op_i32_const:
+                    newGlobal->init.type = Value_i32;
+                    newGlobal->init.value.i32 = (int32_t)getLeb128_i32(read_p, end_p);
+                    break;
+                case Op_i64_const:
+                    newGlobal->init.type = Value_i64;
+                    newGlobal->init.value.i64 = (int64_t)getLeb128_i64(read_p, end_p);
+                    break;
+                case Op_f32_const:
+                    newGlobal->init.type = Value_f32;
+                    newGlobal->init.value.u32 = toLittle32(*((uint32_t*)*read_p), 0);
+                    *read_p += 4;
+                    break;
+                case Op_f64_const:
+                    newGlobal->init.type = Value_f64;
+                    newGlobal->init.value.u64 = toLittle64(*((uint64_t*)*read_p), 0);
+                    *read_p += 8;
+                    break;
+                default:
+                    printf("%s: Global must be initialized with a constant expression.\n", newModule->module_name);
+                    return -2;
+            }
+            // Skip end
+            *read_p += 1;
+            // Push into newModule
+            newModule->globals->push_back(newModule->globals,newGlobal);
         }
-        // Set mut
-        newGlobal->mut = *(*read_p++);
-        // Set value
-        switch(*(*read_p++)) {
-            case Op_i32_const:
-                newGlobal->init.value.i32 = (int32_t)getLeb128_i32(read_p, end_p);
-                break;
-            case Op_i64_const:
-                newGlobal->init.value.i64 = (int64_t)getLeb128_i64(read_p, end_p);
-                break;
-            case Op_f32_const:
-                newGlobal->init.value.f32 = toLittle32(*((uint32_t*)*read_p), 0);
-                *read_p += 4;
-                break;
-            case Op_f64_const:
-                newGlobal->init.value.f64 = toLittle64(*((uint64_t*)*read_p), 0);
-                *read_p += 8;
-                break;
-            default:
-                printf("%s: Global must be initialized with a constant expression.\n", newModule->module_name);
-                return -1;
-        }
-        // Skip end
-        *read_p += 1;
-        // Push into newModule
-        newModule->globals->push_back(newModule->globals,newGlobal);
     }
     return 0;
 }
