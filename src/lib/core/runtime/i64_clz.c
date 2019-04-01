@@ -8,7 +8,7 @@ int runtime_i64_clz(Stack* stack)
     uint8_t count = 0;
     uint64_t tmp;
 
-    stack->entries->pop(stack->entries, (void**)&value1);
+    pop_Value(stack,&value1);
     tmp = value1->value.i64;
     free_Value(value1);
 
@@ -40,7 +40,7 @@ int runtime_i64_clz(Stack* stack)
             count += 1;
         }
     }
-    stack->entries->push(stack->entries, new_i64Value(count));
+    push_Value(stack, new_i64Value(count));
 
     return 0;
 }

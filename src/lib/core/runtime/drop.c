@@ -7,7 +7,7 @@
 int runtime_drop(Stack* stack)
 {
     Value *value = NULL;
-    if(stack->entries->pop(stack->entries, (void**)&value)) return -1;
+    if(pop_Value(stack,&value)) return -1;
     free_Value(value);
     return 0;
 }
