@@ -70,20 +70,18 @@ static int run(Decoder* decoder)
     }
     // Section 7: Export
     if(parse_export_section(newModule, &read_p, end_p) < 0) {
-        return -1;
+        return -8;
     }
     // Section 8: Start
     if(parse_start_section(newModule, &read_p, end_p) < 0) {
-        return -1;
+        return -9;
     }
-    /*
     // Section 9: Element
-    if(skip_to_section(9, &read_p, &end_p) == 9) {
-        // Parse "Element" Section
-        if(parse_element_section(newModule, &read_p, end_p) < 0) {
-            return -1;
-        }
+    if(parse_element_section(newModule, &read_p, end_p) < 0) {
+        return -10;
     }
+
+    /*
     // Section 10: Code
     if(skip_to_section(10, &read_p, &end_p) == 10) {
         // Parse "Code" Section

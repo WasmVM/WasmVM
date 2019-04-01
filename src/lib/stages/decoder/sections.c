@@ -391,38 +391,34 @@ int parse_start_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *
 
 int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t elemNum = getLeb128_u32(read_p, end_p);
-    while(elemNum-- > 0) {
-        WasmElem *newElem = new_WasmElem();
-        // Index
-        newElem->table = getLeb128_u32(read_p, end_p);
-        if(newElem->table) {
-            printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
-            return -1;
-        }
-        // Offset
-        if(*(*read_p++) == Op_i32_const) {
-            newElem->offset.value.i32 = getLeb128_i32(read_p, end_p);
-        } else {
-            printf("%s: Element offset must be an i32.const expression.\n", newModule->module_name);
-            return -1;
-        }
-        // Skip end
-        *read_p += 1;
-        // Init
-        uint32_t initNum = getLeb128_u32(read_p, end_p);
-        while(initNum-- > 0) {
-            uint32_t initIndex = getLeb128_u32(read_p, end_p);
-            if(initIndex >= newModule->funcs->length) {
-                printf("%s: Index of element function must be defined.\n", newModule->module_name);
+    if(skip_to_section(9, read_p, end_p) == 9) {
+        for(uint32_t elemNum = getLeb128_u32(read_p, end_p); elemNum > 0; --elemNum) {
+            WasmElem *newElem = new_WasmElem();
+            // Index
+            newElem->table = getLeb128_u32(read_p, end_p);
+            if(newElem->table) {
+                printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
                 return -1;
             }
-            newElem->init->push_back(newElem->init, &initIndex);
+            // Offset
+            if(*((*read_p)++) == Op_i32_const) {
+                newElem->offset.type = Value_i32;
+                newElem->offset.value.i32 = getLeb128_i32(read_p, end_p);
+            } else {
+                printf("%s: Element offset must be an i32.const expression.\n", newModule->module_name);
+                return -2;
+            }
+            // Skip end
+            *read_p += 1;
+            // Init
+            for(uint32_t initNum = getLeb128_u32(read_p, end_p); initNum > 0; --initNum) {
+                uint32_t initIndex = getLeb128_u32(read_p, end_p);
+                newElem->init->push_back(newElem->init, &initIndex);
+            }
+            // Push into newModule
+            newModule->elems->push_back(newModule->elems, newElem);
         }
-        // Push into newModule
-        newModule->elems->push_back(newModule->elems, newElem);
     }
-
     return 0;
 }
 
