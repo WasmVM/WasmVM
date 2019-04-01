@@ -69,35 +69,32 @@ static int run(Decoder* decoder)
         return -7;
     }
     // Section 7: Export
-    if(parse_export_section(newModule, &read_p, &end_p) < 0) {
+    if(parse_export_section(newModule, &read_p, end_p) < 0) {
+        return -1;
+    }
+    // Section 8: Start
+    if(parse_start_section(newModule, &read_p, end_p) < 0) {
         return -1;
     }
     /*
-    // Section 8: Start
-    if(skip_to_section(8, &read_p, &end_p) == 8) {
-        // Parse "Start" Section
-        if(parse_start_section(newModule, &read_p, &end_p) < 0) {
-            return -1;
-        }
-    }
     // Section 9: Element
     if(skip_to_section(9, &read_p, &end_p) == 9) {
         // Parse "Element" Section
-        if(parse_element_section(newModule, &read_p, &end_p) < 0) {
+        if(parse_element_section(newModule, &read_p, end_p) < 0) {
             return -1;
         }
     }
     // Section 10: Code
     if(skip_to_section(10, &read_p, &end_p) == 10) {
         // Parse "Code" Section
-        if(parse_code_section(newModule, &read_p, &end_p) < 0) {
+        if(parse_code_section(newModule, &read_p, end_p) < 0) {
             return -1;
         }
     }
     // Section 11: Data
     if(skip_to_section(11, &read_p, &end_p) == 11) {
         // Parse "Data" Section
-        if(parse_data_section(newModule, &read_p, &end_p) < 0) {
+        if(parse_data_section(newModule, &read_p, end_p) < 0) {
             return -1;
         }
     }

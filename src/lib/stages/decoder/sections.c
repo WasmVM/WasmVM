@@ -383,8 +383,9 @@ int parse_export_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
 
 int parse_start_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    newModule->start = getLeb128_u32(read_p, end_p);
-
+    if(skip_to_section(8, read_p, end_p) == 8) {
+        newModule->start = getLeb128_u32(read_p, end_p);
+    }
     return 0;
 }
 
