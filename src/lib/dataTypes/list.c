@@ -40,10 +40,14 @@ static int listRemoveAt(list* thislist, size_t index)
         cur = cur->next;
     }
     *previous = cur->next;
+    if(*previous == (listNode *)NULL) {
+        thislist->tail = (listNode *)NULL;
+    }
     if(thislist->freeElem) {
         thislist->freeElem(cur->data);
     }
     free(cur);
+    --thislist->size;
     return 0;
 }
 
