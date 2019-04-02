@@ -17,18 +17,18 @@ void i32_rem_u_check(Stack* stack, int32_t value_1, int32_t value_2, uint32_t ex
     Value *_value_1 = new_i32Value(value_1); // dividend
     Value *_value_2 = new_i32Value(value_2); // divisor
 
-    stack->entries->push(stack->entries, _value_1);
-    stack->entries->push(stack->entries, _value_2);
+    push_Value(stack, _value_1);
+    push_Value(stack, _value_2);
     runtime_i32_rem_u(stack);
 
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.u32, expected);
     free_Value(check);
 }
 
 SKYPAT_F(Runtime_i32_div_u, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
 
     // case 1: 20 % 3
     i32_rem_u_check(stack, 20, 3, 2);

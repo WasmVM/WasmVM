@@ -6,6 +6,8 @@
 #include <instance/MemInst.h>
 #include <core/Stack.h>
 #include <core/Store.h>
+#include <instance/ControlInstrInst.h>
+#include <dataTypes/Label.h>
 
 /*** Numeric ***/
 int runtime_i32_const(Stack* stack, int32_t value);
@@ -166,6 +168,7 @@ int runtime_drop(Stack* stack);
 int runtime_select(Stack* stack);
 
 /*** Control ***/
-void runtime_nop();
+int runtime_nop();
+int runtime_if(Stack* stack, ControlInstrInst *control);
 
 #endif

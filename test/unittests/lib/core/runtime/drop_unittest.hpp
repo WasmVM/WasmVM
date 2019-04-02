@@ -9,12 +9,12 @@ extern "C" {
 
 SKYPAT_F(Runtime_drop, regular)
 {
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
     int32_t check_value;
 
     // stack is not empty
     Value *value_1 = new_i32Value(3);
-    stack->entries->push(stack->entries, value_1);
+    push_Value(stack, value_1);
     check_value = runtime_drop(stack);
     EXPECT_EQ(check_value, 0);
 

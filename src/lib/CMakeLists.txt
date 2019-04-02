@@ -22,6 +22,7 @@ add_library(wasmvm_core
     dataTypes/vector.c
     dataTypes/list.c
     dataTypes/queue.c
+    dataTypes/Label.c
     dataTypes/FuncType.c
     dataTypes/Frame.c
     structures/instrs/Control.c

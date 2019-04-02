@@ -10,16 +10,16 @@ extern "C" {
 SKYPAT_F(Runtime_i64_extend_s_i32, regular)
 {
     // Prepare
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
     Value *value1 = new_i32Value(-20);
-    stack->entries->push(stack->entries, value1);
+    push_Value(stack, value1);
 
     // Run
     runtime_i64_extend_s_i32(stack);
 
     // Check
     Value *check = NULL;
-    stack->entries->pop(stack->entries, (void**)&check);
+    pop_Value(stack,&check);
     EXPECT_EQ(check->value.i64, -20);
 
     // Clean

@@ -9,7 +9,7 @@ int runtime_i64_load16_s(Stack *stack, MemInst *memory, uint32_t offset,
 {
     Value *value1 = NULL;
 
-    stack->entries->pop(stack->entries, (void **)&value1);
+    pop_Value(stack,&value1);
 
     uint32_t ea = value1->value.u32 + offset;
 
@@ -21,7 +21,7 @@ int runtime_i64_load16_s(Stack *stack, MemInst *memory, uint32_t offset,
 
     int16_t *data = (int16_t *)((uint8_t *)memory->data->data + ea);
 
-    stack->entries->push(stack->entries, new_i64Value((int64_t)*data));
+    push_Value(stack, new_i64Value((int64_t)*data));
     free(value1);
     return 0;
 }

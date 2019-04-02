@@ -10,7 +10,7 @@ int runtime_i32_clz(Stack* stack)
     int32_t num = 0;
     uint32_t tmp;
 
-    stack->entries->pop(stack->entries, (void**)&value1);
+    pop_Value(stack,&value1);
     tmp = value1->value.i32;
 
     // bit shift
@@ -37,7 +37,7 @@ int runtime_i32_clz(Stack* stack)
             num += 1;
         }
     }
-    stack->entries->push(stack->entries, new_i32Value(num));
+    push_Value(stack, new_i32Value(num));
 
     free(value1);
 

@@ -14,7 +14,7 @@ extern "C" {
 SKYPAT_F(runtime_i32_load_32, regular)
 {
     // Prepare
-    Stack* stack = new_Stack((void (*)(void*))free_Value);
+    Stack* stack = new_Stack();
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int32_t data[] = { 1000, 2000, 3000, 4000, 5000 };
@@ -35,7 +35,7 @@ SKYPAT_F(runtime_i32_load_32, regular)
 
     for(uint32_t lop = 0; lop < 5; lop++) {
         // Set load location
-        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int32_t)));
+        push_Value(stack, new_i32Value(lop * sizeof(int32_t)));
 
         // Run
         int ret = runtime_i32_load(stack, memory, offset, 0);
@@ -43,7 +43,7 @@ SKYPAT_F(runtime_i32_load_32, regular)
 
         // Check
         Value *check = NULL;
-        stack->entries->pop(stack->entries, (void**)&check);
+        pop_Value(stack,&check);
         EXPECT_EQ(check->value.i32, data[lop]);
 
         // Clean
@@ -51,7 +51,7 @@ SKYPAT_F(runtime_i32_load_32, regular)
     }
 
     // error check
-    stack->entries->push(stack->entries, new_i32Value(65537));
+    push_Value(stack, new_i32Value(65537));
     int ret = runtime_i32_load(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
 

@@ -1,3 +1,6 @@
 #include <core/Runtime.h>
 
-void runtime_nop() {}
+int runtime_nop()
+{
+    return 0;
+}

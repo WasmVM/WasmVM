@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(runtime_i64_load16_s, regular)
 {
     // Prepare
-    Stack *stack = new_Stack((void (*)(void*))free_Value);
+    Stack *stack = new_Stack();
     MemInst *memory = new_MemInst();
 
     memory->max = 1;
@@ -35,19 +35,19 @@ SKYPAT_F(runtime_i64_load16_s, regular)
 
     // start testing (set memory location -> run load function -> check -> clean)
     for (uint8_t lop = 0; lop < arraySize; ++lop) {
-        stack->entries->push(stack->entries,
-                             new_i32Value(lop * sizeof(int64_t)));
+        push_Value(stack,
+                   new_i32Value(lop * sizeof(int64_t)));
         runtime_i64_load16_s(stack, memory, offset, 0);
 
         Value *check = NULL;
 
-        stack->entries->pop(stack->entries, (void **)&check);
+        pop_Value(stack,&check);
         EXPECT_EQ(check->value.i64, dataArray[lop]);
         free_Value(check);
     }
 
     // check error (65540 exceeds memory range, since max is 1)
-    stack->entries->push(stack->entries, new_i32Value(65540));
+    push_Value(stack, new_i32Value(65540));
     int ret = runtime_i64_load16_s(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
 
