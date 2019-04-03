@@ -80,15 +80,11 @@ static int run(Decoder* decoder)
     if(parse_element_section(newModule, &read_p, end_p) < 0) {
         return -10;
     }
-
-    /*
     // Section 10: Code
-    if(skip_to_section(10, &read_p, &end_p) == 10) {
-        // Parse "Code" Section
-        if(parse_code_section(newModule, &read_p, end_p) < 0) {
-            return -1;
-        }
+    if(parse_code_section(newModule, &read_p, end_p) < 0) {
+        return -1;
     }
+    /*
     // Section 11: Data
     if(skip_to_section(11, &read_p, &end_p) == 11) {
         // Parse "Data" Section

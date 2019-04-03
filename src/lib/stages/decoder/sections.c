@@ -1,12 +1,14 @@
 #include "sections.h"
-#include <Opcodes.h>
-
-#include "Utils.h"
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
 #include <stdlib.h>
+
+#include <Opcodes.h>
+
+#include "Utils.h"
+#include "parseInstr.h"
 
 static char skip_to_section(uint8_t sectionNum, uint8_t **ptr, const uint8_t *endAddr)
 {
@@ -424,50 +426,50 @@ int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t
 
 int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t codeNum = getLeb128_u32(read_p, end_p);
-    if(codeNum != newModule->funcs->length) {
-        printf("%s: Code count doesn't match function count.\n", newModule->module_name);
-        return -1;
-    }
+    if(skip_to_section(10, read_p, end_p) == 10) {
+        uint32_t codeNum = getLeb128_u32(read_p, end_p);
+        if(codeNum != newModule->funcs->length) {
+            printf("%s: Code count doesn't match function count.\n", newModule->module_name);
+            return -1;
+        }
 
-    for(uint32_t i = 0; i < codeNum; ++i) {
-        uint32_t codeSize = getLeb128_u32(read_p, end_p);
-        uint8_t *curAddr = *read_p;
-        // Locals
-        uint32_t localCount = getLeb128_u32(read_p, end_p);
-        while(localCount-- > 0) {
-            uint32_t typeCount = getLeb128_u32(read_p, end_p);
-            ValueType newType;
-            switch(*(*read_p++)) {
-                case TYPE_i32:
-                    newType = Value_i32;
-                    break;
-                case TYPE_i64:
-                    newType = Value_i64;
-                    break;
-                case TYPE_f32:
-                    newType = Value_f32;
-                    break;
-                case TYPE_f64:
-                    newType = Value_f64;
-                    break;
-                default:
-                    printf("%s: Unknown local type.\n", newModule->module_name);
-                    return -1;
+        for(uint32_t i = 0; i < codeNum; ++i) {
+            uint8_t* bodyEnd = *read_p + getLeb128_u32(read_p, end_p);
+            WasmFunc *func = (WasmFunc*)newModule->funcs->at(newModule->funcs, i);
+            // Locals
+            for(uint32_t localCount = getLeb128_u32(read_p, end_p); localCount > 0; --localCount) {
+                uint32_t typeCount = getLeb128_u32(read_p, end_p);
+                ValueType newType;
+                switch(*((*read_p)++)) {
+                    case TYPE_i32:
+                        newType = Value_i32;
+                        break;
+                    case TYPE_i64:
+                        newType = Value_i64;
+                        break;
+                    case TYPE_f32:
+                        newType = Value_f32;
+                        break;
+                    case TYPE_f64:
+                        newType = Value_f64;
+                        break;
+                    default:
+                        printf("%s: Unknown local type.\n", newModule->module_name);
+                        return -2;
+                }
+                while(typeCount-- > 0) {
+                    func->locals->push_back(func->locals, &newType);
+                }
             }
-            while(typeCount-- > 0) {
-                WasmFunc *existedFunc = (WasmFunc*)newModule->funcs->at(newModule->funcs, i);
-                existedFunc->locals->push_back(existedFunc->locals, &newType);
+            // Code
+
+            while(*read_p != bodyEnd) {
+                if(parseInstr(func, read_p, end_p)) {
+                    return -3;
+                }
             }
         }
-        // Code
-        codeSize -= (*read_p - curAddr);
-        WasmInstr *existedInstr = (WasmInstr*)newModule->funcs->at(newModule->funcs, i);
-        existedInstr->opcode = **read_p;
-        // shift
-        *read_p += codeSize;
     }
-
     return 0;
 }
 
@@ -501,6 +503,5 @@ int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
         // Push into newModule
         newModule->datas->push_back(newModule->datas, newWasmData);
     }
-
     return 0;
 }

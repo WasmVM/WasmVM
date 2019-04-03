@@ -45,6 +45,7 @@ add_library(wasmvm_core
     stages/instanciator/InstrAllocates.c
     stages/decoder/Decoder.c
     stages/decoder/sections.c
+    stages/decoder/parseInstr.c
     stages/decoder/Utils.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
