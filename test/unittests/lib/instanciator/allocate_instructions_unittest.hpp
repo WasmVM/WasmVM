@@ -72,14 +72,14 @@ SKYPAT_F(allocate_instructions, parametric)
 SKYPAT_F(allocate_instructions, memory)
 {
     // Prepare
-    WasmMemoryInstr* instr = new_WasmMemoryInstr(87, 16);
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(16, 87);
     instr->parent.opcode = Op_i32_store;
 
     // Test
     MemoryInstrInst* instrInst = (MemoryInstrInst*)allocate_Instruction((WasmInstr*) instr);
     EXPECT_EQ(instrInst->parent.opcode, Op_i32_store);
-    EXPECT_EQ(instrInst->offset, 87);
     EXPECT_EQ(instrInst->align, 16);
+    EXPECT_EQ(instrInst->offset, 87);
 
     // Clean
     free_MemoryInstrInst(instrInst);

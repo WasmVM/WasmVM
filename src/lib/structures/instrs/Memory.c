@@ -1,7 +1,7 @@
 #include <structures/instrs/Memory.h>
 #include <stdlib.h>
 
-WasmMemoryInstr* new_WasmMemoryInstr(uint32_t offset, uint32_t align)
+WasmMemoryInstr* new_WasmMemoryInstr(uint32_t align, uint32_t offset)
 {
     WasmMemoryInstr* instr = (WasmMemoryInstr*) malloc(sizeof(WasmMemoryInstr));
     instr->parent.free = (void(*)(WasmInstr*))free_WasmMemoryInstr;

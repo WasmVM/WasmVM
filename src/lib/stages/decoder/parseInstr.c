@@ -240,6 +240,9 @@ WasmMemoryInstr* parseMemoryInstr(uint8_t opcode, uint8_t **read_p, const uint8_
     switch (opcode) {
         case Op_memory_size:
         case Op_memory_grow:
+            if(*((*read_p)++) != 0x00) {
+                return NULL;
+            }
             instr = new_WasmMemoryInstr(0, 0);
             break;
         default:
