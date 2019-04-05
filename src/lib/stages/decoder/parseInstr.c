@@ -263,15 +263,19 @@ WasmControlInstr* parseControlInstr(uint8_t opcode, uint8_t **read_p, const uint
                 case TYPE_i32:
                     resultType = Value_i32;
                     instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    break;
                 case TYPE_i64:
                     resultType = Value_i64;
                     instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    break;
                 case TYPE_f32:
                     resultType = Value_f32;
                     instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    break;
                 case TYPE_f64:
                     resultType = Value_f64;
                     instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    break;
                 default:
                     free_WasmControlInstr(instr);
                     return NULL;
