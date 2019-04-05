@@ -243,6 +243,10 @@ InstrInst* allocate_Instruction(WasmInstr* instr)
         case Op_f64_convert_s_i64:
         case Op_f64_convert_u_i64:
         case Op_f64_promote_f32:
+        case Op_i32_reinterpret_f32:
+        case Op_i64_reinterpret_f64:
+        case Op_f32_reinterpret_i32:
+        case Op_f64_reinterpret_i64:
             instrInst = allocate_NumericInstr((WasmNumericInstr*)instr);
             break;
         default:

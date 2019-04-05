@@ -12,7 +12,7 @@ extern "C" {
 }
 #undef _Bool
 
-SKYPAT_F(decoder_parse_variable, memory_size)
+SKYPAT_F(decoder_parse_memory, memory_size)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x3f\x00";
@@ -22,7 +22,7 @@ SKYPAT_F(decoder_parse_variable, memory_size)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, memory_grow)
+SKYPAT_F(decoder_parse_memory, memory_grow)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x40\x00";
@@ -32,7 +32,7 @@ SKYPAT_F(decoder_parse_variable, memory_grow)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, i32_load_x)
+SKYPAT_F(decoder_parse_memory, i32_load_x)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x28\x01\x04\x2c\x01\x04\x2d\x01\x04\x2e\x01\x04\x2f\x01\x04";
@@ -64,7 +64,7 @@ SKYPAT_F(decoder_parse_variable, i32_load_x)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, i64_load_x)
+SKYPAT_F(decoder_parse_memory, i64_load_x)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x29\x01\x04\x30\x01\x04\x31\x01\x04\x32\x01\x04\x33\x01\x04\x34\x01\x04\x35\x01\x04";
@@ -106,7 +106,7 @@ SKYPAT_F(decoder_parse_variable, i64_load_x)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, f32_load)
+SKYPAT_F(decoder_parse_memory, f32_load)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x2a\x01\x04";
@@ -118,7 +118,7 @@ SKYPAT_F(decoder_parse_variable, f32_load)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, f64_load)
+SKYPAT_F(decoder_parse_memory, f64_load)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x2b\x01\x04";
@@ -130,7 +130,7 @@ SKYPAT_F(decoder_parse_variable, f64_load)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, i32_store_x)
+SKYPAT_F(decoder_parse_memory, i32_store_x)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x36\x01\x04\x3a\x01\x04\x3b\x01\x04";
@@ -152,7 +152,7 @@ SKYPAT_F(decoder_parse_variable, i32_store_x)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, i64_store_x)
+SKYPAT_F(decoder_parse_memory, i64_store_x)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x37\x01\x04\x3c\x01\x04\x3d\x01\x04\x3e\x01\x04";
@@ -179,7 +179,7 @@ SKYPAT_F(decoder_parse_variable, i64_store_x)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, f32_store)
+SKYPAT_F(decoder_parse_memory, f32_store)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x38\x01\x04";
@@ -191,7 +191,7 @@ SKYPAT_F(decoder_parse_variable, f32_store)
     free_WasmFunc(func);
 }
 
-SKYPAT_F(decoder_parse_variable, f64_store)
+SKYPAT_F(decoder_parse_memory, f64_store)
 {
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x39\x01\x04";

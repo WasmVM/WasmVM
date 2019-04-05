@@ -185,6 +185,10 @@ int parseInstr(WasmFunc *func, uint8_t **read_p, const uint8_t *end_p)
         case Op_f64_convert_s_i64:
         case Op_f64_convert_u_i64:
         case Op_f64_promote_f32:
+        case Op_i32_reinterpret_f32:
+        case Op_i64_reinterpret_f64:
+        case Op_f32_reinterpret_i32:
+        case Op_f64_reinterpret_i64:
             instr = (WasmInstr*)parseNumericInstr(opcode, read_p, end_p);
             break;
         default:
@@ -212,10 +216,12 @@ WasmNumericInstr* parseNumericInstr(uint8_t opcode, uint8_t **read_p, const uint
         case Op_f32_const:
             instr->constant.type = Value_f32;
             instr->constant.value.i32 = toLittle32(*((uint32_t*)*read_p), 0);
+            *read_p += 4;
             break;
         case Op_f64_const:
             instr->constant.type = Value_f64;
             instr->constant.value.i64 = toLittle64(*((uint32_t*)*read_p), 0);
+            *read_p += 8;
             break;
         default:
             break;

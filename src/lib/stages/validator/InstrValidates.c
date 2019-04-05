@@ -316,6 +316,22 @@ int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack* opds,
             expect = Value_f32;
             result = Value_f64;
             break;
+        case Op_i32_reinterpret_f32:
+            expect = Value_f32;
+            result = Value_i32;
+            break;
+        case Op_i64_reinterpret_f64:
+            expect = Value_f64;
+            result = Value_i64;
+            break;
+        case Op_f32_reinterpret_i32:
+            expect = Value_i32;
+            result = Value_f32;
+            break;
+        case Op_f64_reinterpret_i64:
+            expect = Value_i64;
+            result = Value_f64;
+            break;
         default:
             return -1;
     }
