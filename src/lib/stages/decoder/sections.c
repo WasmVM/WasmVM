@@ -432,7 +432,6 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
             printf("%s: Code count doesn't match function count.\n", newModule->module_name);
             return -1;
         }
-
         for(uint32_t i = 0; i < codeNum; ++i) {
             uint8_t* bodyEnd = *read_p + getLeb128_u32(read_p, end_p);
             WasmFunc *func = (WasmFunc*)newModule->funcs->at(newModule->funcs, i);
@@ -462,7 +461,6 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
                 }
             }
             // Code
-
             while(*read_p != bodyEnd) {
                 if(parseInstr(func, read_p, end_p)) {
                     return -3;
@@ -475,33 +473,31 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
 
 int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 {
-    uint32_t dataNum = getLeb128_u32(read_p, end_p);
-    while(dataNum-- > 0) {
-        WasmData* newWasmData = new_WasmData();
-        // Index
-        newWasmData->data = getLeb128_u32(read_p, end_p);
-        if(newWasmData->data) {
-            printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
-            return -1;
+    if(skip_to_section(11, read_p, end_p) == 11) {
+        for(uint32_t dataNum = getLeb128_u32(read_p, end_p); dataNum > 0; --dataNum) {
+            WasmData* newWasmData = new_WasmData();
+            // Index
+            newWasmData->data = getLeb128_u32(read_p, end_p);
+            if(newWasmData->data) {
+                printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
+                return -1;
+            }
+            // Offset
+            if(*((*read_p)++) == Op_i32_const) {
+                newWasmData->offset.type = Value_i32;
+                newWasmData->offset.value.i32 = getLeb128_i32(read_p, end_p);
+            } else {
+                printf("%s: Data offset must be an i32.const expression.\n", newModule->module_name);
+                return -2;
+            }
+            *read_p += 1;
+            // Init data
+            newWasmData->init->resize(newWasmData->init, getLeb128_u32(read_p, end_p));
+            strncpy((char*)newWasmData->init->data, (char*)*read_p, newWasmData->init->length);
+            *read_p += newWasmData->init->length;
+            // Push into newModule
+            newModule->datas->push_back(newModule->datas, newWasmData);
         }
-        // Offset
-        if(*(*read_p++) == Op_i32_const) {
-            newWasmData->offset.value.i32 = getLeb128_i32(read_p, end_p);
-        } else {
-            printf("%s: Data offset must be an i32.const expression.\n", newModule->module_name);
-            return -1;
-        }
-        *read_p += 1;
-        // Init data
-        uint32_t dataSize = getLeb128_u32(read_p, end_p);
-        char initData[dataSize];
-        strncpy(initData, (char*)*read_p, dataSize);
-        for(int i=0; i<dataSize; i++) {
-            newWasmData->init->push_back(newWasmData->init, initData + i);
-        }
-        *read_p += dataSize;
-        // Push into newModule
-        newModule->datas->push_back(newModule->datas, newWasmData);
     }
     return 0;
 }

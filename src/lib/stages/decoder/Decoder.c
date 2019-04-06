@@ -82,17 +82,12 @@ static int run(Decoder* decoder)
     }
     // Section 10: Code
     if(parse_code_section(newModule, &read_p, end_p) < 0) {
-        return -1;
+        return -11;
     }
-    /*
     // Section 11: Data
-    if(skip_to_section(11, &read_p, &end_p) == 11) {
-        // Parse "Data" Section
-        if(parse_data_section(newModule, &read_p, end_p) < 0) {
-            return -1;
-        }
+    if(parse_data_section(newModule, &read_p, end_p) < 0) {
+        return -12;
     }
-    */
     free(wasm_source);
     return 0;
 }

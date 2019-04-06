@@ -251,8 +251,13 @@ WasmMemoryInstr* parseMemoryInstr(uint8_t opcode, uint8_t **read_p, const uint8_
             }
             instr = new_WasmMemoryInstr(0, 0);
             break;
-        default:
-            instr = new_WasmMemoryInstr(getLeb128_u32(read_p, end_p), getLeb128_u32(read_p, end_p));
+        default: {
+            uint32_t align = getLeb128_u32(read_p, end_p);
+            uint32_t offset = getLeb128_u32(read_p, end_p);
+            instr = new_WasmMemoryInstr(align, offset);
+        }
+        break;
+
     }
     instr->parent.opcode = opcode;
     return instr;
