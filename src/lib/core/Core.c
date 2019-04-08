@@ -18,10 +18,34 @@ void free_Core(Core* thisCore)
 
 static void run_control_runtime_func(Stack *stack, ControlInstrInst *controlInstrInst, uint8_t opcode)
 {
-
+    switch (opcode)
+    {
+        case Op_unreachable:
+            // call 
+            break;
+        case Op_nop:
+            runtime_nop();
+            break;
+            case Op_block:
+                runtme_block();
+            case Op_loop:
+            case Op_if:
+            
+            case Op_else:
+            case Op_end:
+            case Op_br:
+            case Op_br_if:
+            case Op_br_table:
+            case Op_return:
+            case Op_call:
+            case Op_call_indirect:
+    
+        default:
+            break;
+    }
 }
 
-static void run_control_runtime_func(Stack *stack, ParametricInstrInst *parametricInstrInst, uint8_t opcode)
+static void run_parametric_runtime_func(Stack *stack, ParametricInstrInst *parametricInstrInst, uint8_t opcode)
 {
     switch (opcode) {
         case Op_drop:
@@ -33,6 +57,21 @@ static void run_control_runtime_func(Stack *stack, ParametricInstrInst *parametr
         default:
             break;
     }
+}
+
+static void run_variable_runtime_func(Stack *stack, VariableInstrInst *variableInstrInst, uint8_t opcode)
+{
+
+}
+
+static void run_memory_runtime_func(Stack *stack, MemoryInstrInst *memoryInstrInst, uint8_t opcode)
+{
+
+}
+
+static void run_numeric_runtime_func(Stack *stack, MemoryInstrInst *memoryInstrInst, uint8_t opcode)
+{
+
 }
 
 void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
@@ -53,8 +92,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
     memcpy(funcType, startFunc->type);
 
     // 5. set local value type of func
-    vector *localValType = new_vector(sizeof(ValueType), NULL);
-    memcpy(localValType, startFunc->locals);
+    vector *localValType = startFunc->locals;
 
     // 6. insert end
     startFunc->code->push_back(startFunc->code, Op_end);
@@ -82,12 +120,13 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
     core->thisStack->entries->push(core->thisStack->entries, startFrame);
 
     // execute the instructions
-    // this TODO is wrong: TODO traverse all the instrInst in FuncInst->code
     vector *code = startFunc->code;
     size_t inst_len = code->length;
     InstrInst *instr;
-    for (int i = 0; i < inst_len; i++) {
-        instr = code->at(code, i);
+    uint32_t instr_index = 0;
+    // run this loop untill nothing on Stack
+    while(!(core->thisStack->entries)) {
+        instr = code->at(code, instr_index);
         // process opcode
         switch(instr->opcode) {
             // 收到 InstrInst 之後 opcode 得到 型態, 強制轉換成其他NumericInstrInst
@@ -110,7 +149,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             case Op_drop:
             case Op_select:
                 ParametricInstrInst *parametricInstrInst = (ParametricInstrInst*)instr;
-                run_control_runtime_func(core->thisStack, parametricInstrInst, instr->opcode);
+                run_parametric_runtime_func(core->thisStack, parametricInstrInst, instr->opcode);
                 break;
             case Op_get_local:
             case Op_set_local:
@@ -118,6 +157,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             case Op_get_global:
             case Op_set_global:
                 VariableInstrInst *variableInstrInst = (VariableInstrInst*)instr;
+                run_variable_runtime_func(core->thisStack, variableInstrInst, instr->opcode);
                 break;
             case Op_i32_load:
             case Op_i64_load:
@@ -145,6 +185,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             case Op_memory_size:
             case Op_memory_grow:
                 MemoryInstrInst *memoryInstrInst = (MemoryInstrInst*)instr;
+                run_memory_runtime_func(core->thisStack, memoryInstrInst, instr->opcode);
                 break;
             case Op_i32_const:
             case Op_i64_const:
@@ -270,10 +311,12 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             case Op_f64_convert_u_i64:
             case Op_f64_promote_f32:
                 NumericInstrInst *numericInstrInst = (NumericInstrInst*)instr;
+                run_numeric_runtime_func(core->thisStack, numericInstrInst, instr->opcode);
                 break;
             default:
                 break;
 
+            instr_index++;
         }
 
     }
