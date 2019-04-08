@@ -1,7 +1,6 @@
 add_subdirectory(core/runtime)
 
 add_library(wasmvm_core
-    Decoder.c
     Loader.c
     core/Store.c
     core/Stack.c
@@ -45,6 +44,10 @@ add_library(wasmvm_core
     stages/instanciator/Instanciator.c
     stages/instanciator/Allocates.c
     stages/instanciator/InstrAllocates.c
+    stages/decoder/Decoder.c
+    stages/decoder/sections.c
+    stages/decoder/parseInstr.c
+    stages/decoder/Utils.c
     $<TARGET_OBJECTS:wasmvm_runtime>
 )
 

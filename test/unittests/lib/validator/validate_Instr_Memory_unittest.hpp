@@ -172,7 +172,7 @@ SKYPAT_F(validate_Instr_load, align_too_much)
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 4);
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(4, 0);
 
     // Check
     instr->parent.opcode = Op_i32_load;
@@ -473,7 +473,7 @@ SKYPAT_F(validate_Instr_store, align_too_much)
     ctrl_frame* frame = new_ctrl_frame(opds);
     ctrls->push(ctrls, frame);
 
-    WasmMemoryInstr* instr = new_WasmMemoryInstr(0, 4);
+    WasmMemoryInstr* instr = new_WasmMemoryInstr(4, 0);
 
     // Check
     instr->parent.opcode = Op_i32_store;

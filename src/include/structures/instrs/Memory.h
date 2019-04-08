@@ -6,11 +6,11 @@
 
 typedef struct _wasm_memory_instr {
     WasmInstr   parent;
-    uint32_t    offset;
     uint32_t    align;
+    uint32_t    offset;
 } WasmMemoryInstr;
 
-WasmMemoryInstr* new_WasmMemoryInstr(uint32_t offset, uint32_t align);
+WasmMemoryInstr* new_WasmMemoryInstr(uint32_t align, uint32_t offset);
 void free_WasmMemoryInstr(WasmMemoryInstr* instr);
 
 #endif

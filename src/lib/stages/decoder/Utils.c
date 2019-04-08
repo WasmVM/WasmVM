@@ -1,5 +1,7 @@
 #include "Utils.h"
 
+#include <stdio.h>
+
 _Bool checkBigEndian()
 {
     uint32_t i = 0x12345678;
@@ -40,17 +42,17 @@ uint64_t toLittle64(const uint64_t val, _Bool force)
     }
 }
 
-uint32_t getLeb128_u32(char **ptr, const char **max)
+uint32_t getLeb128_u32(uint8_t **ptr, const uint8_t* max)
 {
     // uleb128 reference: https://en.wikipedia.org/wiki/LEB128
     uint32_t ret = 0;
     // Maximum: 5 bytes
     for(int i=0; i<5; ++i) {
-        if(*ptr > *max) {
+        if(*ptr > max) {
             // error code
             return -1;
         }
-        uint32_t byte = *(*ptr++);
+        uint32_t byte = *((*ptr)++);
         ret |= (byte & 0x7F) << (7*i);
         // check range
         if(i==4) {
@@ -71,16 +73,16 @@ uint32_t getLeb128_u32(char **ptr, const char **max)
     return toLittle32(ret, 0);
 }
 
-int32_t getLeb128_i32(char **ptr, const char **max)
+int32_t getLeb128_i32(uint8_t **ptr, const uint8_t* max)
 {
     int32_t ret = 0;
     for(int i=0; i < 5; ++i) {
-        if(*ptr > *max) {
+        if(*ptr > max) {
             printf("Pointer exceed max while decode leb128_32.\n");
             // error code
             return -1;
         }
-        int32_t byte = *(*ptr++);
+        int32_t byte = *((*ptr)++);
         ret |= (byte & 0x7F) << (7*i);
         // Check range
         if( i == 4 ) {
@@ -115,16 +117,16 @@ int32_t getLeb128_i32(char **ptr, const char **max)
     return toLittle32(ret, 0);
 }
 
-int64_t getLeb128_i64(char **ptr, const char **max)
+int64_t getLeb128_i64(uint8_t **ptr, const uint8_t *max)
 {
     int64_t ret = 0;
     for(int i=0; i < 10; i++) {
-        if(*ptr > *max) {
+        if(*ptr > max) {
             printf("Pointer exceed max while decode leb128_64.\n");
             // error code
             return -1;
         }
-        int64_t byte = *(*ptr++);
+        int64_t byte = *((*ptr)++);
         ret |= (byte & 0x7F) << (7*i);
         // Check range
         if(i==9) {

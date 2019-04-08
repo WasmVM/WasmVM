@@ -639,6 +639,14 @@ SKYPAT_F(validate_Instr_cvtop, valid)
     test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f64);
     instr->parent.opcode = Op_f64_promote_f32;
     test_cvtop(opds, context, ctrls, instr, Value_f32, Value_f64);
+    instr->parent.opcode = Op_i32_reinterpret_f32;
+    test_cvtop(opds, context, ctrls, instr, Value_f32, Value_i32);
+    instr->parent.opcode = Op_i64_reinterpret_f64;
+    test_cvtop(opds, context, ctrls, instr, Value_f64, Value_i64);
+    instr->parent.opcode = Op_f32_reinterpret_i32;
+    test_cvtop(opds, context, ctrls, instr, Value_i32, Value_f32);
+    instr->parent.opcode = Op_f64_reinterpret_i64;
+    test_cvtop(opds, context, ctrls, instr, Value_i64, Value_f64);
 
     // Clean
     free(instr);

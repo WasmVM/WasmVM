@@ -173,5 +173,9 @@
 #define Op_f64_convert_s_i64	0xB9
 #define Op_f64_convert_u_i64	0xBA
 #define Op_f64_promote_f32		0xBB
+#define Op_i32_reinterpret_f32	0xBC
+#define Op_i64_reinterpret_f64	0xBD
+#define Op_f32_reinterpret_i32	0xBE
+#define Op_f64_reinterpret_i64	0xBF
 
 #endif
