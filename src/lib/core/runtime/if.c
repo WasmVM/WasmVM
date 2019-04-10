@@ -8,7 +8,7 @@ int runtime_if(Stack *stack, ControlInstrInst *control)
 {
     Value *value = NULL;
     // Pop out the value to determine whether it should jump.
-    pop_Value(stack,&value);
+    pop_Value(stack, &value);
 
     Label* label = NULL;
 

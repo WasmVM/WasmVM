@@ -16,30 +16,51 @@ void free_Core(Core* thisCore)
     free(thisCore);
 }
 
-static void run_control_runtime_func(Stack *stack, ControlInstrInst *controlInstrInst, uint8_t opcode)
+static void run_control_runtime_func(Stack *stack, ControlInstrInst *controlInstrInst, uint8_t opcode, uint32_t *instr_index)
 {
-    switch (opcode)
-    {
+    switch (opcode) {
         case Op_unreachable:
-            // call 
+            // call
             break;
         case Op_nop:
             runtime_nop();
             break;
-            case Op_block:
-                runtme_block();
-            case Op_loop:
-            case Op_if:
+        case Op_block:
+            runtime_block();
+            break;
+        case Op_loop:
+            runtime_loop();
+            break;
+        case Op_if:
+            runtime_if(stack, controlInstrInst);
             
-            case Op_else:
-            case Op_end:
-            case Op_br:
-            case Op_br_if:
-            case Op_br_table:
-            case Op_return:
-            case Op_call:
-            case Op_call_indirect:
-    
+            *instr_index = stack->curLabel->contInstr;
+            
+            break;
+        case Op_else:
+            runtime_else();
+            break;
+        case Op_end:
+            runtime_end();
+            break;
+        case Op_br:
+            runtime_br();
+            break;
+        case Op_br_if:
+            runtime_br_if();
+            break;
+        case Op_br_table:
+            runtime_br_table();
+            break;
+        case Op_return:
+            runtime_return();
+            break;
+        case Op_call:
+            runtime_call();
+            break;
+        case Op_call_indirect:
+            runtime_call_indirect();
+            break;
         default:
             break;
     }
@@ -157,7 +178,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             case Op_get_global:
             case Op_set_global:
                 VariableInstrInst *variableInstrInst = (VariableInstrInst*)instr;
-                run_variable_runtime_func(core->thisStack, variableInstrInst, instr->opcode);
+                run_variable_runtime_func(core->thisStack, variableInstrInst, instr->opcode, &instr_index);
                 break;
             case Op_i32_load:
             case Op_i64_load:
@@ -316,7 +337,7 @@ void run_Core(Core *core, ModuleInst *moduleInst, FuncInst *startFunc)
             default:
                 break;
 
-            instr_index++;
+                instr_index++;
         }
 
     }

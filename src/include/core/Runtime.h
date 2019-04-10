@@ -169,6 +169,15 @@ int runtime_select(Stack* stack);
 
 /*** Control ***/
 int runtime_nop();
+int runtime_block();
+int runtime_loop();
 int runtime_if(Stack* stack, ControlInstrInst *control);
-
+int runtime_else();
+int runtime_end();
+int runtime_br();
+int runtime_br_if();
+int runtime_br_table();
+int runtime_return();
+int runtime_call();
+int runtime_call_indirect();
 #endif
