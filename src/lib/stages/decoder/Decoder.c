@@ -11,7 +11,6 @@ static void setInput(Decoder* decoder, char* input)
 {
     // store filename
     decoder->parent.input = (void*) input;
-    decoder->module_name = input;
 }
 
 static WasmModule* getOutput(Decoder* decoder)
@@ -22,13 +21,11 @@ static WasmModule* getOutput(Decoder* decoder)
 static int run(Decoder* decoder)
 {
     // allocate WasmModule
-    WasmModule* newModule = (WasmModule *) malloc(sizeof(WasmModule));
-    decoder->parent.output = (void*) newModule;
-    newModule->module_name = decoder->module_name;
+    WasmModule* module = decoder->parent.output;
 
     // read from input (read bytes)
     uint32_t file_len;
-    FILE *fin = fopen(decoder->module_name, "rb");
+    FILE *fin = fopen(module->module_name, "rb");
     fseek(fin, 0, SEEK_END);
     file_len = ftell(fin);
     rewind(fin);
@@ -41,67 +38,68 @@ static int run(Decoder* decoder)
     uint8_t *end_p = wasm_source + file_len - 1;
 
     // magic number & version
-    if(parse_magic_version(newModule, &read_p) < 0) {
+    if(parse_magic_version(module, &read_p) < 0) {
         return -1;
     }
     // Section 1: Type
-    if(parse_type_section(newModule, &read_p, end_p) < 0) {
+    if(parse_type_section(module, &read_p, end_p) < 0) {
         return -2;
     }
     // Section 2: Import
-    if(parse_import_section(newModule, &read_p, end_p) < 0) {
+    if(parse_import_section(module, &read_p, end_p, decoder->loader, decoder->store, decoder->moduleInsts) < 0) {
         return -3;
     }
     // Section 3: Function
-    if(parse_func_section(newModule, &read_p, end_p) < 0) {
+    if(parse_func_section(module, &read_p, end_p) < 0) {
         return -4;
     }
     // Section 4: Table
-    if(parse_table_section(newModule, &read_p, end_p) < 0) {
+    if(parse_table_section(module, &read_p, end_p) < 0) {
         return -5;
     }
     // Section 5: Memory
-    if(parse_memory_section(newModule, &read_p, end_p) < 0) {
+    if(parse_memory_section(module, &read_p, end_p) < 0) {
         return -6;
     }
     // Section 6: Global
-    if(parse_global_section(newModule, &read_p, end_p) < 0) {
+    if(parse_global_section(module, &read_p, end_p) < 0) {
         return -7;
     }
     // Section 7: Export
-    if(parse_export_section(newModule, &read_p, end_p) < 0) {
+    if(parse_export_section(module, &read_p, end_p) < 0) {
         return -8;
     }
     // Section 8: Start
-    if(parse_start_section(newModule, &read_p, end_p) < 0) {
+    if(parse_start_section(module, &read_p, end_p) < 0) {
         return -9;
     }
     // Section 9: Element
-    if(parse_element_section(newModule, &read_p, end_p) < 0) {
+    if(parse_element_section(module, &read_p, end_p) < 0) {
         return -10;
     }
     // Section 10: Code
-    if(parse_code_section(newModule, &read_p, end_p) < 0) {
+    if(parse_code_section(module, &read_p, end_p) < 0) {
         return -11;
     }
     // Section 11: Data
-    if(parse_data_section(newModule, &read_p, end_p) < 0) {
+    if(parse_data_section(module, &read_p, end_p) < 0) {
         return -12;
     }
     free(wasm_source);
     return 0;
 }
 
-Decoder* new_Decoder(Loader* loader)
+Decoder* new_Decoder(Component* loader, Store* store, vector* moduleInsts)
 {
     Decoder* newDecoder = (Decoder*) malloc(sizeof(Decoder));
     /* Attributes */
-    newDecoder->loader = loader;
+    newDecoder->loader = (Loader*)loader;
+    newDecoder->store = store;
+    newDecoder->moduleInsts = moduleInsts;
     /* Member function */
     newDecoder->parent.setInput = (void(*)(Stage*, void*))setInput;
     newDecoder->parent.getOutput = (void*(*)(Stage*))getOutput;
     newDecoder->parent.run = (int(*)(Stage*))run;
-
     return newDecoder;
 }
 

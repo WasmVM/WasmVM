@@ -8,12 +8,12 @@
 
 typedef struct _decoder {
     Stage       parent;         // inherit from Stage
-    uint8_t*    wasm_source;    // source of input wasm file (uint8_t array)
-    char*       module_name;    // module name of input source
     Loader*     loader;
+    Store* store;
+    vector* moduleInsts;
 } Decoder;
 
-Decoder* new_Decoder(Loader* loader); // pass Loader pointer to Decoder constructor
+Decoder* new_Decoder(Component* loader, Store* store, vector* moduleInsts); // pass Loader pointer to Decoder constructor
 void free_Decoder(Decoder* decoder);
 
 #endif

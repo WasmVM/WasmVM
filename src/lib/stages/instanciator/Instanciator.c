@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <core/Store.h>
+#include <structures/WasmModule.h>
 #include <structures/WasmElem.h>
 #include <structures/WasmData.h>
 #include <instance/ExportInst.h>
@@ -173,6 +174,8 @@ static int runInstanciator(Instanciator* instanciator)
         memcpy(((char*)memInst->data->data) + data->offset.value.i32, data->init->data, sizeof(char) * data->init->length);
     }
     // TODO: Start
+    // Free WasmModule
+    free_WasmModule(module);
     return 0;
 }
 

@@ -6,7 +6,10 @@ extern "C" {
 #include <string.h>
 #include <stdio.h>
 #include <Loader.h>
-#include <mock/MockRequest.h>
+#include <core/Store.h>
+#include <dataTypes/vector.h>
+#include <instance/ModuleInst.h>
+#include <mock/MockLoaderRequest.h>
 #include <mock/MockStage.h>
 }
 #undef _Bool
@@ -60,8 +63,9 @@ SKYPAT_F(Loader, add_request)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Request* request = new_MockRequest();
-
+    Store* store = new_Store();
+    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, store, moduleInsts);
     // Check
     loader->addRequest(loader, request);
     EXPECT_EQ(loader->requests->size, 1);
@@ -69,36 +73,41 @@ SKYPAT_F(Loader, add_request)
 
     // Clean
     free_Loader(loader);
+    free_Store(store);
+    free_vector(moduleInsts);
 }
 
 SKYPAT_F(Loader, activate)
 {
     // Prepare
     Loader* loader = new_Loader();
+    Store* store = new_Store();
+    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    Request* request1 = new_MockRequest();
+    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->stages->push(request1->stages, stage1);
-    request1->stages->push(request1->stages, stage2);
+    request1->parent.stages->push(request1->parent.stages, stage1);
+    request1->parent.stages->push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    Request* request2 = new_MockRequest();
+    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->stages->push(request2->stages, stage3);
-    request2->stages->push(request2->stages, stage4);
+    request2->parent.stages->push(request2->parent.stages, stage3);
+    request2->parent.stages->push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -126,27 +135,27 @@ SKYPAT_F(Loader, activate_loaded)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    Request* request1 = new_MockRequest();
+    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->stages->push(request1->stages, stage1);
-    request1->stages->push(request1->stages, stage2);
+    request1->parent.stages->push(request1->parent.stages, stage1);
+    request1->parent.stages->push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test1");
     mockInput2->loader = loader;
-    Request* request2 = new_MockRequest();
+    LoaderRequest* request2 = new_MockLoaderRequest("Request1");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->stages->push(request2->stages, stage3);
-    request2->stages->push(request2->stages, stage4);
+    request2->parent.stages->push(request2->parent.stages, stage3);
+    request2->parent.stages->push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -174,27 +183,27 @@ SKYPAT_F(Loader, activate_halt)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    Request* request1 = new_MockRequest();
+    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->stages->push(request1->stages, stage1);
-    request1->stages->push(request1->stages, stage2);
+    request1->parent.stages->push(request1->parent.stages, stage1);
+    request1->parent.stages->push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    Request* request2 = new_MockRequest();
+    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_halt);
-    request2->stages->push(request2->stages, stage3);
-    request2->stages->push(request2->stages, stage4);
+    request2->parent.stages->push(request2->parent.stages, stage3);
+    request2->parent.stages->push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -222,27 +231,27 @@ SKYPAT_F(Loader, terminate)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    Request* request1 = new_MockRequest();
+    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->stages->push(request1->stages, stage1);
-    request1->stages->push(request1->stages, stage2);
+    request1->parent.stages->push(request1->parent.stages, stage1);
+    request1->parent.stages->push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    Request* request2 = new_MockRequest();
+    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_terminate);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->stages->push(request2->stages, stage3);
-    request2->stages->push(request2->stages, stage4);
+    request2->parent.stages->push(request2->parent.stages, stage3);
+    request2->parent.stages->push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
