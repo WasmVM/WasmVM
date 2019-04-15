@@ -20,7 +20,7 @@ SKYPAT_F(runtime_i64_load_16, regular)
     int32_t dataSize = sizeof(data) / sizeof(data[0]);
     uint32_t byteLen = sizeof(data);
     uint32_t offset = 4 * sizeof(int64_t);
-    
+
     uint8_t* bytePtr = (uint8_t*) data;
     uint8_t zero = 0;
 
@@ -35,7 +35,7 @@ SKYPAT_F(runtime_i64_load_16, regular)
         push_Value(stack, new_i32Value(lop * sizeof(int64_t)));
         // Run
         int ret = runtime_i64_load(stack, memory, offset, 0);
-	EXPECT_EQ(ret, 0);
+        EXPECT_EQ(ret, 0);
         // Check
         Value *check = NULL;
         pop_Value(stack,&check);
