@@ -10,6 +10,21 @@
 
 static void addRequest(struct Loader_* loader, LoaderRequest* request)
 {
+    // Check whether loaded or not
+    _Bool loaded = 0;
+    for(listNode* cur = loader->loadedList->head; cur != NULL; cur = cur->next) {
+        if(!strcmp(request->moduleName, (char*)cur->data)) {
+            loaded = 1;
+            break;
+        }
+    }
+    if(loaded) {
+        request->parent.free((Request*)request);
+        return;
+    }
+    char* loadName = (char*)malloc(sizeof(char) * strlen(request->moduleName));
+    strcpy(loadName, request->moduleName);
+    loader->loadedList->push_back(loader->loadedList, loadName);
     loader->requests->push(loader->requests, request);
 }
 
@@ -21,23 +36,6 @@ static void* run_Loader(Loader* loader)
     while(loader->requests->size > 0 && !loader->parent.isTerminated) {
         LoaderRequest* request = NULL;
         loader->requests->pop(loader->requests, (void**)&request);
-        // Check whether loaded or not
-        char* loadName = (char*)malloc(sizeof(char) * strlen(request->moduleName));
-        strcpy(loadName, request->moduleName);
-        _Bool loaded = 0;
-        for(listNode* cur = loader->loadedList->head; cur != NULL; cur = cur->next) {
-            if(!strcmp(loadName, (char*)cur->data)) {
-                loaded = 1;
-                break;
-            }
-        }
-        if(loaded) {
-            free(loadName);
-            request->parent.free((Request*)request);
-            continue;
-        }
-
-        loader->loadedList->push_back(loader->loadedList, loadName);
         // Run stages
         while(request->parent.stages->size > 1) {
             Stage* stage = NULL;

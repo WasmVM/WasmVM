@@ -5,6 +5,7 @@ macro(add_lib_unittest unittest)
 endmacro(add_lib_unittest unittest)
 
 add_lib_unittest(Loader_unittest)
+add_lib_unittest(LoaderRequest_unittest)
 
 add_subdirectory(core)
 add_subdirectory(instance)

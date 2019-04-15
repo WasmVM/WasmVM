@@ -21,31 +21,34 @@ SKYPAT_F(decode_import, valid)
     Loader* loader = new_Loader();
     Store* store = new_Store();
     vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
-    uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x70\x01\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x7f\x00";
+
+    uint8_t* testBin = (uint8_t*) "\x02\x3f\x04\x05Test1\x05Test1\x00\x00\x05Test1\x05Test2\x01\x70\x01\x03\x05\x05Test2\x05Test3\x02\x01\x02\x04\x05Test2\x05Test4\x03\x7f\x00";
     EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), 0);
+    EXPECT_EQ(loader->requests->size, 2);
+
     WasmImport* import = (WasmImport*)module->imports->at(module->imports, 0);
     // Test 1
-    EXPECT_FALSE(strcmp(import->module, "Test"));
+    EXPECT_FALSE(strcmp(import->module, "Test1"));
     EXPECT_FALSE(strcmp(import->name, "Test1"));
     EXPECT_EQ(import->descType, Desc_Func);
     EXPECT_EQ(import->desc.typeidx, 0);
     // Test 2
     import = (WasmImport*)module->imports->at(module->imports, 1);
-    EXPECT_FALSE(strcmp(import->module, "Test"));
+    EXPECT_FALSE(strcmp(import->module, "Test1"));
     EXPECT_FALSE(strcmp(import->name, "Test2"));
     EXPECT_EQ(import->descType, Desc_Table);
     EXPECT_EQ(import->desc.limits.min, 3);
     EXPECT_EQ(import->desc.limits.max, 5);
     // Test 3
     import = (WasmImport*)module->imports->at(module->imports, 2);
-    EXPECT_FALSE(strcmp(import->module, "Test"));
+    EXPECT_FALSE(strcmp(import->module, "Test2"));
     EXPECT_FALSE(strcmp(import->name, "Test3"));
     EXPECT_EQ(import->descType, Desc_Mem);
     EXPECT_EQ(import->desc.limits.min, 2);
     EXPECT_EQ(import->desc.limits.max, 4);
     // Test 4
     import = (WasmImport*)module->imports->at(module->imports, 3);
-    EXPECT_FALSE(strcmp(import->module, "Test"));
+    EXPECT_FALSE(strcmp(import->module, "Test2"));
     EXPECT_FALSE(strcmp(import->name, "Test4"));
     EXPECT_EQ(import->descType, Desc_Global);
     EXPECT_EQ(import->desc.global.valueType, Value_i32);

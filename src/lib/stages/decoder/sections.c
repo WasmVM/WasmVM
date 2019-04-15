@@ -162,7 +162,7 @@ int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
             *read_p += nameLen;
             newImport->name = name;
             // Load dependencies
-            loader->addRequest(loader, new_LoaderRequest(newImport->name, loader, store, moduleInsts));
+            loader->addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, store, moduleInsts));
             // import kind
             switch(*((*read_p)++)) {
                 case IMPORT_Func:
