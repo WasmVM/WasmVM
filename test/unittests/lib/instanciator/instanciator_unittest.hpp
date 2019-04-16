@@ -106,7 +106,6 @@ SKYPAT_F(Instanciator, valid)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module1);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -132,7 +131,6 @@ SKYPAT_F(Instanciator, no_imported_module)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -180,7 +178,6 @@ SKYPAT_F(Instanciator, function_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -227,7 +224,6 @@ SKYPAT_F(Instanciator, global_mut_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -274,7 +270,6 @@ SKYPAT_F(Instanciator, global_value_type_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -320,7 +315,6 @@ SKYPAT_F(Instanciator, memory_min_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -369,7 +363,6 @@ SKYPAT_F(Instanciator, memory_max_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -415,7 +408,6 @@ SKYPAT_F(Instanciator, table_min_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -464,7 +456,6 @@ SKYPAT_F(Instanciator, table_max_not_match)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -494,7 +485,6 @@ SKYPAT_F(Instanciator, no_imported_name)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -528,7 +518,6 @@ SKYPAT_F(Instanciator, elem_init_out_of_range)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
@@ -561,7 +550,6 @@ SKYPAT_F(Instanciator, data_init_out_of_range)
 
     // Clean
     free_Store(store);
-    free_WasmModule(module);
     free_vector(moduleInsts);
     free(instanciator);
 }
