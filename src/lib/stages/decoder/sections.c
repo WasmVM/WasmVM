@@ -463,6 +463,7 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
                     return -3;
                 }
             }
+            (*read_p)++;
         }
     }
     return 0;

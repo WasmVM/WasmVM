@@ -126,19 +126,23 @@ static int matchExport(WasmModule* module, WasmImport* import, vector* moduleIns
 static int runInstanciator(Instanciator* instanciator)
 {
     WasmModule* module = instanciator->parent.input;
-    ExportInst* exportInsts[module->imports->length];
-    // Match import with exports
-    for(size_t i = 0; i < module->imports->length; ++i) {
-        WasmImport* import = module->imports->at(module->imports, i);
-        ExportInst* matched = NULL;
-        int matchResult = matchExport(module, import, instanciator->moduleInsts, instanciator->store, &matched);
-        if(matchResult) {
-            return matchResult;
+    ExportInst** exportInsts = NULL;
+    if(module->imports->length > 0) {
+        exportInsts = (ExportInst**) malloc(sizeof(ExportInst*) * module->imports->length);
+        // Match import with exports
+        for(size_t i = 0; i < module->imports->length; ++i) {
+            WasmImport* import = module->imports->at(module->imports, i);
+            ExportInst* matched = NULL;
+            int matchResult = matchExport(module, import, instanciator->moduleInsts, instanciator->store, &matched);
+            if(matchResult) {
+                return matchResult;
+            }
+            exportInsts[i] = matched;
         }
-        exportInsts[i] = matched;
     }
     // Allocate moduleInst
     ModuleInst* moduleInst = allocate_Module(module, instanciator->store, exportInsts, module->imports->length);
+    free(exportInsts);
     // Elems
     for(size_t i = 0; i < module->elems->length; ++i) {
         WasmElem* elem = (WasmElem*)module->elems->at(module->elems, i);

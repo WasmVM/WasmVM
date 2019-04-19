@@ -75,6 +75,11 @@ static void terminate_Loader(Component* component)
     component->isTerminated = 1;
 }
 
+static int join_Loader(Component* component, int** resultPtr)
+{
+    return pthread_join(component->thread, (void**)resultPtr);
+}
+
 static void freeRequest(Request* request)
 {
     request->free(request);
@@ -85,6 +90,7 @@ Loader* new_Loader()
     Loader* newLoader = (Loader*)malloc(sizeof(Loader));
     newLoader->parent.activate = activate_Loader;
     newLoader->parent.terminate = terminate_Loader;
+    newLoader->parent.join = join_Loader;
     newLoader->parent.isTerminated = 0;
     newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list(free);

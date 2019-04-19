@@ -1,6 +1,7 @@
 add_subdirectory(core/runtime)
 
 add_library(wasmvm_core
+    Executor.c
     Loader.c
     LoaderRequest.c
     core/Store.c
