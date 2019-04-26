@@ -9,7 +9,7 @@
 int runtime_f64_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align)
 {
     Value *value1 = NULL;
-    
+
     pop_Value(stack, &value1);
     uint32_t ea = (uint32_t)value1->value.u32 + offset;
 
@@ -22,6 +22,6 @@ int runtime_f64_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t al
     double *data = (double *) ((uint8_t *)  memory->data->data + ea);
     push_Value(stack, new_f64Value(*data));
     free(value1);
-    
+
     return 0;
 }
