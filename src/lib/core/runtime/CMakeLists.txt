@@ -164,4 +164,5 @@ add_library(wasmvm_runtime OBJECT
 	# Control
 	nop.c
 	if.c
+	else.c
 )
