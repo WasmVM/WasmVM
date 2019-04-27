@@ -2,10 +2,11 @@
 #define WASMVM_INSTANCE_FRAME_DEF
 
 #include <dataTypes/vector.h>
-#include <dataTypes/Value.h>
+#include <dataTypes/Entry.h>
 #include <instance/ModuleInst.h>
 
 typedef struct {
+    Entry parent;
     vector* locals;       // Value
     ModuleInst* moduleInst;
 } Frame;
