@@ -96,3 +96,4 @@ add_runtime_unittest(select_unittest)
 # Control Unittest
 add_runtime_unittest(nop_unittest)
 add_runtime_unittest(if_unittest)
+add_runtime_unittest(else_unittest)

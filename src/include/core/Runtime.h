@@ -170,5 +170,6 @@ int runtime_select(Stack* stack);
 /*** Control ***/
 int runtime_nop();
 int runtime_if(Stack* stack, ControlInstrInst *control);
+int runtime_else(Stack* stack, ControlInstrInst *control);
 
 #endif
