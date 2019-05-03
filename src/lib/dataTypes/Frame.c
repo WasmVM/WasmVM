@@ -1,10 +1,13 @@
 #include "dataTypes/Frame.h"
+
 #include <stdint.h>
 #include <stdlib.h>
+#include <dataTypes/Value.h>
 
 Frame* new_Frame(ModuleInst* moduleInst)
 {
     Frame *frame = (Frame*) malloc(sizeof(Frame));
+    frame->parent.entryType = Entry_Frame;
     frame->locals = new_vector(sizeof(Value), NULL);
     frame->moduleInst = moduleInst;
     return frame;
