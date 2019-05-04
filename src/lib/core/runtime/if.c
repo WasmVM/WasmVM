@@ -18,6 +18,7 @@ int runtime_if(Stack *stack, ControlInstrInst *control)
     } else {
         label = new_Label(stack->curLabel->funcAddr, stack->curLabel->instrIndex, control->endAddr);
     }
+    label->resultTypes = control->resultTypes;
 
     // Push the latast label to stack.
     push_Label(stack, label);
