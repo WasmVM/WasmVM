@@ -5,6 +5,7 @@ add_library(wasmvm_core
     LoaderRequest.c
     core/Store.c
     core/Stack.c
+    core/Core.c
     instance/ExportInst.c
     instance/FuncInst.c
     instance/GlobalInst.c

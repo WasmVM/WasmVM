@@ -28,7 +28,7 @@ SKYPAT_F(Runtime_control_if, regular)
 
     // Check
     Label* result = NULL;
-    runtime_else(stack, currentControl);
+    runtime_else(stack);
     pop_Label(stack, &result);
     // Expect label's instrIndex to be ControlInstrInst's endAddr.
     EXPECT_EQ(result->instrIndex, 4);

@@ -6,6 +6,7 @@ extern "C" {
 #include <stdlib.h>
 #include <Allocates.h>
 #include <dataTypes/vector.h>
+#include <dataTypes/list.h>
 #include <dataTypes/Value.h>
 #include <Opcodes.h>
 #include <structures/instrs/Control.h>
@@ -38,9 +39,11 @@ SKYPAT_F(allocate_instructions, control)
     uint32_t* index2 = (uint32_t*) malloc(sizeof(uint32_t));
     *index2 = 4;
     instr->indices->push_back(instr->indices, index2);
+    list* body = new_list((void(*)(void*))free_WasmControlInstr);
+    body->push_back(body, instr);
 
     // Test
-    ControlInstrInst* instrInst = (ControlInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    ControlInstrInst* instrInst = (ControlInstrInst*)allocate_Instruction(body, 0);
     EXPECT_EQ(instrInst->parent.opcode, Op_br_table);
     EXPECT_EQ(instrInst->resultTypes->length, 2);
     EXPECT_EQ(*(ValueType*)instrInst->resultTypes->at(instrInst->resultTypes, 0), Value_i32);
@@ -59,9 +62,11 @@ SKYPAT_F(allocate_instructions, parametric)
     // Prepare
     WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_drop;
+    list* body = new_list((void(*)(void*))free_WasmParametricInstr);
+    body->push_back(body, instr);
 
     // Test
-    ParametricInstrInst* instrInst = (ParametricInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    ParametricInstrInst* instrInst = (ParametricInstrInst*)allocate_Instruction(body, 0);
     EXPECT_EQ(instrInst->opcode, Op_drop);
 
     // Clean
@@ -74,9 +79,11 @@ SKYPAT_F(allocate_instructions, memory)
     // Prepare
     WasmMemoryInstr* instr = new_WasmMemoryInstr(16, 87);
     instr->parent.opcode = Op_i32_store;
+    list* body = new_list((void(*)(void*))free_WasmMemoryInstr);
+    body->push_back(body, instr);
 
     // Test
-    MemoryInstrInst* instrInst = (MemoryInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    MemoryInstrInst* instrInst = (MemoryInstrInst*)allocate_Instruction(body, 0);
     EXPECT_EQ(instrInst->parent.opcode, Op_i32_store);
     EXPECT_EQ(instrInst->align, 16);
     EXPECT_EQ(instrInst->offset, 87);
@@ -94,9 +101,11 @@ SKYPAT_F(allocate_instructions, numeric)
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 45;
+    list* body = new_list((void(*)(void*))free_WasmNumericInstr);
+    body->push_back(body, instr);
 
     // Test
-    NumericInstrInst* instrInst = (NumericInstrInst*)allocate_Instruction((WasmInstr*) instr);
+    NumericInstrInst* instrInst = (NumericInstrInst*)allocate_Instruction(body, 0);
     EXPECT_EQ(instrInst->parent.opcode, Op_i32_const);
     EXPECT_EQ(instr->constant.parent.entryType, Entry_Value);
     EXPECT_EQ(instr->constant.type, Value_i32);
