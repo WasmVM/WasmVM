@@ -4,6 +4,10 @@
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <core/Runtime.h>
+#include <dataTypes/stack.h>
+#include <dataTypes/Value.h>
+#include <dataTypes/Label.h>
+#include <dataTypes/Frame.h>
 #include <instance/FuncInst.h>
 #include <instance/InstrInst.h>
 #include <instance/MemInst.h>
@@ -77,7 +81,6 @@ static int run_parametric_instr(Stack* stack, uint8_t opcode)
     stack->curLabel->instrIndex += 1;
     return result;
 }
-
 
 static int run_variable_instr(Stack* stack, VariableInstrInst* instr, uint8_t opcode)
 {
@@ -591,6 +594,46 @@ static void* exec_Core(void* corePtr)
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
         FuncInst* func = (FuncInst*) core->store->funcs->at(core->store->funcs, core->stack->curLabel->funcAddr);
+        if(core->stack->curLabel->instrIndex >= func->code->size) {
+            // No end in the function, manual do end
+            Label* label = NULL;
+            if(pop_Label(core->stack, &label)) {
+                core->status = Core_Stop;
+                *result = -1;
+                return result;
+            }
+            stack* valStack = new_stack(NULL);
+            for(uint32_t i = 0; i < func->type->results->length; ++i) {
+                Value* retValue = NULL;
+                if(pop_Value(core->stack, &retValue)) {
+                    core->status = Core_Stop;
+                    *result = -2;
+                    return result;
+                }
+                valStack->push(valStack, retValue);
+            }
+            Frame* frame = NULL;
+            if(pop_Frame(core->stack, &frame)) {
+                core->status = Core_Stop;
+                *result = -3;
+                return result;
+            }
+            for(uint32_t i = 0; i < func->type->results->length; ++i) {
+                ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
+                Value* retValue = NULL;
+                valStack->pop(valStack, (void**)&retValue);
+                if(retValue->type == *resultType) {
+                    push_Value(core->stack, retValue);
+                } else {
+                    core->status = Core_Stop;
+                    *result = -4;
+                    return result;
+                }
+            }
+            free_stack(valStack);
+            free_Label(label);
+            free_Frame(frame);
+        }
         InstrInst* instr = (InstrInst*)func->code->at(func->code, core->stack->curLabel->instrIndex);
         switch (instr->opcode) {
             case Op_unreachable:
@@ -779,7 +822,9 @@ static void* exec_Core(void* corePtr)
                 break;
         }
     }
-    core->status = Core_Stop;
+    if(core->status == Core_Running) {
+        core->status = Core_Stop;
+    }
     return result;
 }
 
@@ -821,6 +866,34 @@ static int run_Core(Core* core)
     return 0;
 }
 
+static int stop_core(Core* core)
+{
+    core->status = Core_Stop;
+    int* resultPtr = NULL;
+    pthread_join(core->thread, &resultPtr);
+    free_Stack(core->stack);
+    core->stack = NULL;
+    int result = *resultPtr;
+    free(resultPtr);
+    return result;
+}
+
+static int pause_core(Core* core)
+{
+    core->status = Core_Paused;
+    int* resultPtr = NULL;
+    pthread_join(core->thread, &resultPtr);
+    int result = *resultPtr;
+    free(resultPtr);
+    return result;
+}
+
+static int resume_core(Core* core)
+{
+    core->status = Core_Running;
+    return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
+}
+
 Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
 {
     Core *core = (Core *) malloc(sizeof(Core));
@@ -830,6 +903,9 @@ Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
     core->status = Core_Stop;
     core->module = module;
     core->run = run_Core;
+    core->stop = stop_core;
+    core->pause = pause_core;
+    core->resume = resume_core;
     return core;
 }
 
