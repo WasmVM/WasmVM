@@ -88,6 +88,8 @@ add_runtime_unittest(f32_store_unittest)
 add_runtime_unittest(f64_load_unittest)
 add_runtime_unittest(f64_store_unittest)
 add_runtime_unittest(f32_neg_unittest)
+add_runtime_unittest(f32_abs_unittest)
+
 
 # Parmeric Unittest
 add_runtime_unittest(drop_unittest)
