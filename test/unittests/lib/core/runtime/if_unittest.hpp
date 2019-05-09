@@ -32,7 +32,7 @@ SKYPAT_F(Runtime_control_if, regular)
     runtime_if(stack, currentControl);
     pop_Label(stack, &result);
     // Expect label's instrIndex to be ControlInstrInst's elseAddr.
-    EXPECT_EQ(result->instrIndex, 3);
+    EXPECT_EQ(result->instrIndex, 4);
     // curLabel should be updated to the latest label's function address.
     EXPECT_EQ(result->funcAddr, 0);
     EXPECT_EQ(result->contInstr, 4);
@@ -41,7 +41,7 @@ SKYPAT_F(Runtime_control_if, regular)
     push_Value(stack, new_i32Value(1));
     runtime_if(stack, currentControl);
     pop_Label(stack, &result);
-    EXPECT_EQ(result->instrIndex, 1);
+    EXPECT_EQ(result->instrIndex, 2);
     EXPECT_EQ(result->funcAddr, 0);
     EXPECT_EQ(result->contInstr, 4);
     free(result);

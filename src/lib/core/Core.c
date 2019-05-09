@@ -1,5 +1,6 @@
 #include <core/Core.h>
 
+#include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <Opcodes.h>
@@ -8,6 +9,7 @@
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
+#include <dataTypes/Entry.h>
 #include <instance/FuncInst.h>
 #include <instance/InstrInst.h>
 #include <instance/MemInst.h>
@@ -590,18 +592,39 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
 static void* exec_Core(void* corePtr)
 {
     Core* core = (Core*) corePtr;
+    core->status = Core_Running;
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
         FuncInst* func = (FuncInst*) core->store->funcs->at(core->store->funcs, core->stack->curLabel->funcAddr);
         if(core->stack->curLabel->instrIndex >= func->code->size) {
             // No end in the function, manual do end
-            Label* label = NULL;
-            if(pop_Label(core->stack, &label)) {
-                core->status = Core_Stop;
-                *result = -1;
-                return result;
+#ifndef NDEBUG
+            for(stackNode* cur = core->stack->entries->head; cur != NULL; cur = cur->next) {
+                Entry* entry = (Entry*)cur->data;
+                if(entry->entryType == Entry_Value) {
+                    Value* retValue = (Value*)entry;
+                    switch (retValue->type) {
+                        case Value_i32:
+                            printf("[%d] i32 %d\n", core->stack->curLabel->funcAddr, retValue->value.i32);
+                            break;
+                        case Value_i64:
+                            printf("[%d] i64 %lld\n", core->stack->curLabel->funcAddr, retValue->value.i64);
+                            break;
+                        case Value_f32:
+                            printf("[%d] f32 %f\n", core->stack->curLabel->funcAddr, retValue->value.f32);
+                            break;
+                        case Value_f64:
+                            printf("[%d] f64 %lf\n", core->stack->curLabel->funcAddr, retValue->value.f64);
+                            break;
+                        default:
+                            break;
+                    }
+                } else {
+                    break;
+                }
             }
+#endif
             stack* valStack = new_stack(NULL);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 Value* retValue = NULL;
@@ -612,6 +635,14 @@ static void* exec_Core(void* corePtr)
                 }
                 valStack->push(valStack, retValue);
             }
+
+            Label* label = NULL;
+            if(pop_Label(core->stack, &label)) {
+                core->status = Core_Stop;
+                *result = -1;
+                return result;
+            }
+
             Frame* frame = NULL;
             if(pop_Frame(core->stack, &frame)) {
                 core->status = Core_Stop;
@@ -633,6 +664,7 @@ static void* exec_Core(void* corePtr)
             free_stack(valStack);
             free_Label(label);
             free_Frame(frame);
+            continue;
         }
         InstrInst* instr = (InstrInst*)func->code->at(func->code, core->stack->curLabel->instrIndex);
         switch (instr->opcode) {
@@ -858,7 +890,7 @@ static int run_Core(Core* core)
         }
     }
     push_Frame(core->stack, frame);
-    Label* label = new_Label(core->startFuncAddr, 0, (startFunc->code->size > 0) ? startFunc->code->size - 1 : 0);
+    Label* label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
     label->resultTypes = startFunc->type->results;
     push_Label(core->stack, label);
     // Run in thread
@@ -870,11 +902,11 @@ static int stop_core(Core* core)
 {
     core->status = Core_Stop;
     int* resultPtr = NULL;
-    pthread_join(core->thread, &resultPtr);
+    pthread_join(core->thread, (void**)&resultPtr);
+    int result = (resultPtr) ? *resultPtr : 0;
+    free(resultPtr);
     free_Stack(core->stack);
     core->stack = NULL;
-    int result = *resultPtr;
-    free(resultPtr);
     return result;
 }
 
@@ -882,7 +914,7 @@ static int pause_core(Core* core)
 {
     core->status = Core_Paused;
     int* resultPtr = NULL;
-    pthread_join(core->thread, &resultPtr);
+    pthread_join(core->thread, (void**)&resultPtr);
     int result = *resultPtr;
     free(resultPtr);
     return result;
@@ -890,7 +922,6 @@ static int pause_core(Core* core)
 
 static int resume_core(Core* core)
 {
-    core->status = Core_Running;
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
@@ -911,7 +942,8 @@ Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
 
 void free_Core(Core* core)
 {
-    core->stop(core);
-    free_Stack(core->stack);
+    if(core->status != Core_Stop) {
+        core->stop(core);
+    }
     free(core);
 }
