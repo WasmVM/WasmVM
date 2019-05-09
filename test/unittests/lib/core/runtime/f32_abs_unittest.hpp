@@ -8,7 +8,7 @@ extern "C" {
 }
 #undef _Bool
 
-SKYPAT_F(Runtime_f32_neg, negative)
+SKYPAT_F(Runtime_f32_abs, negative)
 {
     // prepare
     Stack* stack = new_Stack();
@@ -28,7 +28,7 @@ SKYPAT_F(Runtime_f32_neg, negative)
     free_Stack(stack);
 }
 
-SKYPAT_F(Runtime_f32_neg, positive)
+SKYPAT_F(Runtime_f32_abs, positive)
 {
     // prepare
     Stack* stack = new_Stack();
