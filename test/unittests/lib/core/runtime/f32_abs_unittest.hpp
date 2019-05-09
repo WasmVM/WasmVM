@@ -12,9 +12,8 @@ SKYPAT_F(Runtime_f32_neg, negative)
 {
     // prepare
     Stack* stack = new_Stack();
-    Value *val1 = new_f32Value(5), *val2 = new_f32Value(-3);
+    Value *val1 = new_f32Value(-3);
     push_Value(stack, val1);
-    push_Value(stack, val2);
 
     // run
     runtime_f32_abs(stack);
@@ -33,9 +32,8 @@ SKYPAT_F(Runtime_f32_neg, positive)
 {
     // prepare
     Stack* stack = new_Stack();
-    Value *val1 = new_f32Value(5), *val2 = new_f32Value(8);
+    Value *val1 = new_f32Value(8);
     push_Value(stack, val1);
-    push_Value(stack, val2);
 
     // run
     runtime_f32_abs(stack);
