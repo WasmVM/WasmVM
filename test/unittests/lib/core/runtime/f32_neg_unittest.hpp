@@ -15,15 +15,24 @@ SKYPAT_F(Runtime_f32_neg, regular)
     push_Value(stack, val1);
     push_Value(stack, val2);
 
-    // run
+    // run negative
     runtime_f32_neg(stack);
 
     // check
-    Value *check = NULL;
-    pop_Value(stack,&check);
-    EXPECT_EQ(check->value.f32, 3);
+    Value *check1 = NULL;
+    pop_Value(stack,&check1);
+    EXPECT_EQ(check1->value.f32, 3);
+
+    // run positive
+    runtime_f32_neg(stack);
+
+    // check
+    Value *check2 = NULL;
+    pop_Value(stack,&check2);
+    EXPECT_EQ(check2->value.f32, -5);
 
     // clean
-    free_Value(check);
+    free_Value(check1);
+    free_Value(check2);
     free_Stack(stack);
 }
