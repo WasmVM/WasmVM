@@ -10,6 +10,7 @@ typedef struct {
     uint32_t funcAddr;
     uint32_t instrIndex;
     uint32_t contInstr;
+    uint32_t endInstr;
     vector* resultTypes; // ValueType
 } Label;
 

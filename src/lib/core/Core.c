@@ -625,41 +625,27 @@ static void* exec_Core(void* corePtr)
                 }
             }
 #endif
-            stack* valStack = new_stack(NULL);
-            for(uint32_t i = 0; i < func->type->results->length; ++i) {
-                Value* retValue = NULL;
-                if(pop_Value(core->stack, &retValue)) {
-                    core->status = Core_Stop;
-                    *result = -2;
-                    return result;
-                }
-                valStack->push(valStack, retValue);
-            }
-
             Label* label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
                 *result = -1;
-                return result;
+                pthread_exit(result);
+            }
+
+            stack* valStack = new_stack(NULL);
+            for(uint32_t i = 0; i < func->type->results->length; ++i) {
+                Value* retValue = NULL;
+                pop_Value(core->stack, &retValue);
+                valStack->push(valStack, retValue);
             }
 
             Frame* frame = NULL;
-            if(pop_Frame(core->stack, &frame)) {
-                core->status = Core_Stop;
-                *result = -3;
-                return result;
-            }
+            pop_Frame(core->stack, &frame);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
                 Value* retValue = NULL;
                 valStack->pop(valStack, (void**)&retValue);
-                if(retValue->type == *resultType) {
-                    push_Value(core->stack, retValue);
-                } else {
-                    core->status = Core_Stop;
-                    *result = -4;
-                    return result;
-                }
+                push_Value(core->stack, retValue);
             }
             free_stack(valStack);
             free_Label(label);
@@ -857,7 +843,7 @@ static void* exec_Core(void* corePtr)
     if(core->status == Core_Running) {
         core->status = Core_Stop;
     }
-    return result;
+    pthread_exit(result);
 }
 
 static int run_Core(Core* core)
@@ -894,8 +880,7 @@ static int run_Core(Core* core)
     label->resultTypes = startFunc->type->results;
     push_Label(core->stack, label);
     // Run in thread
-    pthread_create(&core->thread, NULL, exec_Core, (void*)core);
-    return 0;
+    return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
 static int stop_core(Core* core)
