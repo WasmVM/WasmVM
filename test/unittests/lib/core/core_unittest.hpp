@@ -87,21 +87,9 @@ SKYPAT_F(Core, run_stop)
     store->funcs->push_back(store->funcs, func);
 
     // Check
-    char buf[100];
-    fflush(stdout);
-    int oldOut = dup(STDOUT_FILENO);
-    memset(buf, 0, sizeof(char) * 100);
-    freopen("/dev/null", "a", stdout);
-    setvbuf(stdout, buf, _IOFBF, 100);
-
     Core* core = new_Core(store, module, 0);
     EXPECT_EQ(core->run(core), 0);
     EXPECT_EQ(core->stop(core), 0);
-    EXPECT_FALSE(strcmp(buf, "[0] i32 12\n"));
-
-    freopen("/dev/null", "a", stdout);
-    dup2(oldOut, STDOUT_FILENO);
-    setvbuf(stdout, NULL, _IONBF, 100);
 
     // Clean
     free_Core(core);
@@ -291,20 +279,8 @@ SKYPAT_F(Core, resume)
     push_Label(core->stack, label);
 
     // Check
-    char buf[100];
-    fflush(stdout);
-    int oldOut = dup(STDOUT_FILENO);
-    memset(buf, 0, sizeof(char) * 100);
-    freopen("/dev/null", "a", stdout);
-    setvbuf(stdout, buf, _IOFBF, 100);
-
     EXPECT_EQ(core->resume(core), 0);
     core->stop(core);
-    EXPECT_FALSE(strcmp(buf, "[0] i32 12\n"));
-
-    freopen("/dev/null", "a", stdout);
-    dup2(oldOut, STDOUT_FILENO);
-    setvbuf(stdout, NULL, _IONBF, 100);
 
     // Clean
     free_Core(core);
