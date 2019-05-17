@@ -830,6 +830,23 @@ int validate_Instr_call(WasmControlInstr* instr, Context* context, stack* opds, 
     if(index >= funcs->length) {
         return -1;
     }
+    WasmFunc* func = (WasmFunc*)context->module->funcs->at(context->module->funcs, index);
+    // Parameter
+    FuncType* type = (FuncType*)context->module->types->at(context->module->types, func->type);
+    for(uint32_t i = type->params->length; i > 0; --i) {
+        ValueType* param = NULL;
+        if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {
+            free(param);
+            return -2;
+        }
+        free(param);
+    }
+    // Push results
+    for(uint32_t i = 0; i < type->results->length; ++i) {
+        ValueType* result = (ValueType*)malloc(sizeof(ValueType));
+        *result = *(ValueType*)type->results->at(type->results, i);
+        opds->push(opds, result);
+    }
     return 0;
 }
 int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
@@ -843,11 +860,28 @@ int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stac
     if(index >= types->length) {
         return -2;
     }
+    // Func parameter
+    FuncType* type = (FuncType*)types->at(types, index);
+    for(uint32_t i = type->params->length; i > 0; --i) {
+        ValueType* param = NULL;
+        if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {
+            free(param);
+            return -3;
+        }
+        free(param);
+    }
+    // Operand
     ValueType* operand = NULL;
     if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
         free(operand);
-        return -3;
+        return -4;
     }
     free(operand);
+    // Push results
+    for(uint32_t i = 0; i < type->results->length; ++i) {
+        ValueType* result = (ValueType*)malloc(sizeof(ValueType));
+        *result = *(ValueType*)type->results->at(type->results, i);
+        opds->push(opds, result);
+    }
     return 0;
 }

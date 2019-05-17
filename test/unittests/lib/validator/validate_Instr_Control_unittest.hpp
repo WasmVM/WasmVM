@@ -1512,7 +1512,7 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
     instr->indices->push_back(instr->indices, index);
 
     // Check
-    EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -3);
+    EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -4);
 
     // Clean
     free(index);

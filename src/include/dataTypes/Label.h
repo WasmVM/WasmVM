@@ -3,12 +3,14 @@
 
 #include <stdint.h>
 #include <dataTypes/Entry.h>
+#include <dataTypes/vector.h>
 
 typedef struct {
     Entry parent;
     uint32_t funcAddr;
     uint32_t instrIndex;
     uint32_t contInstr;
+    vector* resultTypes; // ValueType
 } Label;
 
 Label* new_Label(uint32_t funcAddr, uint32_t instrIndex, uint32_t contInstr);

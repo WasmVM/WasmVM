@@ -165,4 +165,5 @@ add_library(wasmvm_runtime OBJECT
 	nop.c
 	if.c
 	else.c
+	call.c
 )
