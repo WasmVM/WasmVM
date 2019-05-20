@@ -17,7 +17,7 @@ int runtime_i64_load32_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_
         return -1;
     }
 
-    int32_t *data = (int32_t)((uint8_t*)memory->data->data + ea);
+    int32_t *data = (int32_t*)((uint8_t*)memory->data->data + ea);
 
     push_Value(stack, new_i64Value((int64_t)*data));
 

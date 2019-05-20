@@ -1,4 +1,5 @@
 #include <core/Stack.h>
+#include <dataTypes/stack.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Value.h>
@@ -32,7 +33,9 @@ Stack* new_Stack()
 }
 void free_Stack(Stack* thisStack)
 {
-    free_stack(thisStack->entries);
+    if(thisStack) {
+        free_stack(thisStack->entries);
+    }
     free(thisStack);
 }
 void push_Label(Stack* thisStack, Label* label)
@@ -58,6 +61,19 @@ int pop_Label(Stack* thisStack, Label** label)
     if(!thisStack->curLabel) {
         return -1;
     }
+    // Save results
+    stack* results = new_stack(NULL);
+    vector* resultTypes = thisStack->curLabel->resultTypes;
+    if(resultTypes) {
+        for(uint32_t i = 0; i < thisStack->curLabel->resultTypes->length; ++i) {
+            Value* result = NULL;
+            if(pop_Value(thisStack, &result)) {
+                return -3;
+            }
+            results->push(results, result);
+        }
+    }
+    // Pop label
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = thisStack->entries->head) {
         Entry* entry = (Entry*)cur->data;
         if(entry->entryType == Entry_Label) {
@@ -72,6 +88,21 @@ int pop_Label(Stack* thisStack, Label** label)
             return -2;
         }
     }
+    // Restore results
+    if(resultTypes) {
+        for(uint32_t i = 0; i < resultTypes->length; ++i) {
+            ValueType* type = (ValueType*)resultTypes->at(resultTypes, i);
+            Value* result = NULL;
+            results->pop(results, (void**)&result);
+            if(result->type != *type) {
+                free(result);
+                return -4;
+            }
+            push_Value(thisStack, result);
+        }
+    }
+    free_stack(results);
+    // Update curlabel
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = cur->next) {
         Entry* entry = (Entry*)cur->data;
         switch (entry->entryType) {

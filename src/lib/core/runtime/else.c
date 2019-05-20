@@ -4,9 +4,8 @@
 #include <dataTypes/Label.h>
 #include <instance/ControlInstrInst.h>
 
-int runtime_else(Stack *stack, ControlInstrInst *control)
+int runtime_else(Stack *stack)
 {
-    stack->curLabel->instrIndex = control->endAddr;
-    stack->curLabel->contInstr = control->endAddr;
+    stack->curLabel->instrIndex = stack->curLabel->contInstr;
     return 0;
 }

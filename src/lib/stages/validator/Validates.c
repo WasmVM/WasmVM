@@ -47,7 +47,8 @@ int validate_Module(WasmModule* module)
             return result;
         }
     }
-    // Start
+
+    // Validate start function
     if(module->start >= module->funcs->length) {
         return -1;
     }

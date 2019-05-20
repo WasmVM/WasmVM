@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <dataTypes/Value.h>
+#include <structures/instrs/WasmInstr.h>
 #include <structures/instrs/Control.h>
 #include <structures/instrs/Parametric.h>
 #include <structures/instrs/Variable.h>
@@ -14,7 +15,7 @@
 #include <instance/MemoryInstrInst.h>
 #include <instance/NumericInstrInst.h>
 
-static InstrInst* allocate_ControlInstr(WasmControlInstr* instr)
+static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list* funcBody, size_t index)
 {
     ControlInstrInst* instrInst = new_ControlInstrInst();
     instrInst->parent.opcode = instr->parent.opcode;
@@ -27,6 +28,24 @@ static InstrInst* allocate_ControlInstr(WasmControlInstr* instr)
         uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
         *index = *(uint32_t*)instr->indices->at(instr->indices, i);
         instrInst->indices->push_back(instrInst->indices, index);
+    }
+    if(instr->parent.opcode == Op_if || instr->parent.opcode == Op_block || instr->parent.opcode == Op_loop) {
+        uint32_t endLevel = 0;
+        for(size_t i = index + 1; i < funcBody->size; ++i) {
+            InstrInst* curInstr = (InstrInst*)funcBody->at(funcBody, i);
+            if(curInstr->opcode == Op_if || curInstr->opcode == Op_block || curInstr->opcode == Op_loop) {
+                endLevel += 1;
+            } else if(curInstr->opcode == Op_end) {
+                if(endLevel == 0) {
+                    instrInst->endAddr = i;
+                    break;
+                } else {
+                    endLevel -= 1;
+                }
+            } else if(instr->parent.opcode == Op_if && curInstr->opcode == Op_else && endLevel == 0) {
+                instrInst->elseAddr = i;
+            }
+        }
     }
     return (InstrInst*)instrInst;
 }
@@ -63,8 +82,9 @@ static InstrInst* allocate_NumericInstr(WasmNumericInstr* instr)
     return (InstrInst*)instrInst;
 }
 
-InstrInst* allocate_Instruction(WasmInstr* instr)
+InstrInst* allocate_Instruction(list* funcBody, size_t index)
 {
+    WasmInstr* instr = (WasmInstr*)funcBody->at(funcBody, index);
     InstrInst* instrInst = NULL;
     switch (instr->opcode) {
         case Op_unreachable:
@@ -80,7 +100,7 @@ InstrInst* allocate_Instruction(WasmInstr* instr)
         case Op_return:
         case Op_call:
         case Op_call_indirect:
-            instrInst = allocate_ControlInstr((WasmControlInstr*)instr);
+            instrInst = allocate_ControlInstr((WasmControlInstr*)instr, funcBody, index);
             break;
         case Op_drop:
         case Op_select:

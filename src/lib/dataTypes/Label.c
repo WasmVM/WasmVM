@@ -9,6 +9,8 @@ Label* new_Label(uint32_t funcAddr, uint32_t instrIndex, uint32_t contInstr)
     label->funcAddr = funcAddr;
     label->instrIndex = instrIndex;
     label->contInstr = contInstr;
+    label->endInstr = contInstr;
+    label->resultTypes = NULL;
     return label;
 }
 void free_Label(Label *label)
