@@ -7,7 +7,7 @@
 #include <Validator.h>
 #include <Instanciator.h>
 
-LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Store* store, vector* moduleInsts)
+LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor* executor)
 {
     LoaderRequest* request = (LoaderRequest*) malloc(sizeof(LoaderRequest));
     request->parent.stages = new_queue(free);
@@ -16,7 +16,7 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Stor
     strcpy(request->moduleName, moduleName);
     WasmModule* module = new_WasmModule(request->moduleName);
     // Decoder
-    Decoder* decoder = new_Decoder(loader, store, moduleInsts);
+    Decoder* decoder = new_Decoder(loader, executor);
     decoder->parent.input = NULL;
     decoder->parent.output = module;
     request->parent.stages->push(request->parent.stages, (void*)decoder);
@@ -24,7 +24,7 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Stor
     Validator* validator = new_Validator(module);
     request->parent.stages->push(request->parent.stages, (void*)validator);
     // Instanciator
-    Instanciator* instanciator = new_Instanciator(module, store, moduleInsts);
+    Instanciator* instanciator = new_Instanciator(module, executor);
     request->parent.stages->push(request->parent.stages, (void*)instanciator);
     return request;
 }

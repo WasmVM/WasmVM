@@ -140,7 +140,7 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
     return 0;
 }
 
-int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Store* store, vector* moduleInsts)
+int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor* executor)
 {
     if(skip_to_section(2, read_p, end_p) == 2) {
         for(uint32_t importNum = getLeb128_u32(read_p, end_p); importNum > 0; --importNum) {
@@ -162,7 +162,7 @@ int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
             *read_p += nameLen;
             newImport->name = name;
             // Load dependencies
-            loader->addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, store, moduleInsts));
+            loader->addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, executor));
             // import kind
             switch(*((*read_p)++)) {
                 case IMPORT_Func:

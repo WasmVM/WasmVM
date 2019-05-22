@@ -1,45 +1,46 @@
 #include <Executor.h>
 
 #include <stdlib.h>
-#include <instance/ModuleInst.h>
 
-static void* run_Executor(Executor* executor)
+static int run_Executor(Executor* executor)
 {
-    int* result = (int*) malloc(sizeof(int));
-    *result = 0;
-    // TODO:
-    return result;
+    return 0;
 }
 
-static int activate_Executor(Component* component)
+static int stop_Executor(Executor* executor)
 {
-    return pthread_create(&component->thread, NULL, (void* (*) (void*))run_Executor, (void*)component);
+    return 0;
 }
 
-static void terminate_Executor(Component* component)
+static int addModule_Executor(Executor* executor, ModuleInst* module, uint32_t startFuncIndex)
 {
-    component->isTerminated = 1;
-}
-
-static int join_Executor(Component* component, int** resultPtr)
-{
-    return pthread_join(component->thread, (void**)resultPtr);
+    if(executor->status == Executor_Terminated) {
+        return -1;
+    }
+    executor->modules->push_back(executor->modules, module);
+    Core* core = new_Core(executor->store, module, *(uint32_t*)module->funcaddrs->at(module->funcaddrs, startFuncIndex));
+    executor->cores->push_back(executor->cores, (void*) core);
+    if(executor->status == Executor_Running) {
+        return core->run(core);
+    }
+    return 0;
 }
 
 Executor* new_Executor()
 {
     Executor* executor = (Executor*) malloc(sizeof(Executor));
-    executor->parent.activate = activate_Executor;
-    executor->parent.terminate = terminate_Executor;
-    executor->parent.isTerminated = 0;
-    executor->parent.join = join_Executor;
-    executor->cores = NULL; // FIXME:
+    executor->status = Executor_Stop;
+    executor->run = run_Executor;
+    executor->stop = stop_Executor;
+    executor->cores = new_vector(sizeof(Core), (void(*)(void*))free_Core);
     executor->modules = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
     executor->store = new_Store();
+    executor->addModule = addModule_Executor;
     return executor;
 }
 void free_Executor(Executor* executor)
 {
+    free_vector(executor->cores);
     free_vector(executor->modules);
     free_Store(executor->store);
     free(executor);

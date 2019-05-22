@@ -9,7 +9,6 @@
 #include <instance/ExportInst.h>
 #include <instance/FuncInst.h>
 #include <instance/MemInst.h>
-#include <instance/ModuleInst.h>
 #include <instance/GlobalInst.h>
 #include <instance/TableInst.h>
 #include "Allocates.h"
@@ -133,7 +132,7 @@ static int runInstanciator(Instanciator* instanciator)
         for(size_t i = 0; i < module->imports->length; ++i) {
             WasmImport* import = module->imports->at(module->imports, i);
             ExportInst* matched = NULL;
-            int matchResult = matchExport(module, import, instanciator->moduleInsts, instanciator->store, &matched);
+            int matchResult = matchExport(module, import, instanciator->executor->modules, instanciator->executor->store, &matched);
             if(matchResult) {
                 return matchResult;
             }
@@ -141,13 +140,13 @@ static int runInstanciator(Instanciator* instanciator)
         }
     }
     // Allocate moduleInst
-    ModuleInst* moduleInst = allocate_Module(module, instanciator->store, exportInsts, module->imports->length);
+    ModuleInst* moduleInst = allocate_Module(module, instanciator->executor->store, exportInsts, module->imports->length);
     free(exportInsts);
     // Elems
     for(size_t i = 0; i < module->elems->length; ++i) {
         WasmElem* elem = (WasmElem*)module->elems->at(module->elems, i);
-        TableInst* tableInst = (TableInst*)instanciator->store->tables->at(
-                                   instanciator->store->tables,
+        TableInst* tableInst = (TableInst*)instanciator->executor->store->tables->at(
+                                   instanciator->executor->store->tables,
                                    *(uint32_t*)moduleInst->tableaddrs->at(
                                        moduleInst->tableaddrs,
                                        elem->table
@@ -165,8 +164,8 @@ static int runInstanciator(Instanciator* instanciator)
     // Datas
     for(size_t i = 0; i < module->datas->length; ++i) {
         WasmData* data = (WasmData*)module->datas->at(module->datas, i);
-        MemInst* memInst = (MemInst*)instanciator->store->mems->at(
-                               instanciator->store->mems,
+        MemInst* memInst = (MemInst*)instanciator->executor->store->mems->at(
+                               instanciator->executor->store->mems,
                                *(uint32_t*)moduleInst->memaddrs->at(
                                    moduleInst->memaddrs,
                                    data->data
@@ -177,13 +176,14 @@ static int runInstanciator(Instanciator* instanciator)
         }
         memcpy(((char*)memInst->data->data) + data->offset.value.i32, data->init->data, sizeof(char) * data->init->length);
     }
-    // TODO: Start
+    // Start
+    instanciator->executor->addModule(instanciator->executor, moduleInst, module->start);
     // Free WasmModule
     free_WasmModule(module);
     return 0;
 }
 
-Instanciator* new_Instanciator(WasmModule* module, Store* store, vector* moduleInsts)
+Instanciator* new_Instanciator(WasmModule* module, Executor* executor)
 {
     Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
     instanciator->parent.input = module;
@@ -191,7 +191,6 @@ Instanciator* new_Instanciator(WasmModule* module, Store* store, vector* moduleI
     instanciator->parent.setInput = (void(*)(Stage*, void*))setInput;
     instanciator->parent.getOutput = (void*(*)(Stage*))getOutput;
     instanciator->parent.run = (int(*)(Stage*))runInstanciator;
-    instanciator->moduleInsts = moduleInsts;
-    instanciator->store = store;
+    instanciator->executor = executor;
     return instanciator;
 }

@@ -1,17 +1,19 @@
 #ifndef WASMVM_INSTANCIATOR_DEF
 #define WASMVM_INSTANCIATOR_DEF
 
+#include <stdint.h>
 #include <Stage.h>
 #include <structures/WasmModule.h>
+#include <instance/ModuleInst.h>
 #include <core/Store.h>
+#include <Executor.h>
 #include <dataTypes/vector.h>
 
 typedef struct {
     Stage parent;
-    Store* store;
-    vector* moduleInsts;
+    Executor* executor;
 } Instanciator;
 
-Instanciator* new_Instanciator(WasmModule* module, Store* store, vector* moduleInsts);
+Instanciator* new_Instanciator(WasmModule* module, Executor* executor);
 
 #endif

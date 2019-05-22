@@ -4,6 +4,7 @@
 extern "C" {
 #include <string.h>
 #include <Loader.h>
+#include <Executor.h>
 #include <core/Store.h>
 #include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
@@ -15,10 +16,9 @@ SKYPAT_F(LoaderRequest, new)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
 
-    LoaderRequest* request = new_LoaderRequest("TestModule", (Component*)loader, store, moduleInsts);
+    LoaderRequest* request = new_LoaderRequest("TestModule", (Component*)loader, executor);
 
     // Check
     EXPECT_FALSE(strcmp(request->moduleName, "TestModule"));
@@ -26,6 +26,5 @@ SKYPAT_F(LoaderRequest, new)
 
     free_LoaderRequest(request);
     free_Loader(loader);
-    free_Store(store);
-    free_vector(moduleInsts);
+    free_Executor(executor);
 }
