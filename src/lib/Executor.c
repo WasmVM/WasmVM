@@ -32,7 +32,7 @@ Executor* new_Executor()
     executor->status = Executor_Stop;
     executor->run = run_Executor;
     executor->stop = stop_Executor;
-    executor->cores = new_vector(sizeof(Core), (void(*)(void*))free_Core);
+    executor->cores = new_vector(sizeof(Core), (void(*)(void*))clean_Core);
     executor->modules = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
     executor->store = new_Store();
     executor->addModule = addModule_Executor;

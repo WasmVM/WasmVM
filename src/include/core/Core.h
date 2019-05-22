@@ -27,6 +27,7 @@ typedef struct Core_ {
 } Core;
 
 Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr);
+void clean_Core(Core *core);
 void free_Core(Core *core);
 
 #endif

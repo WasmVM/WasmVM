@@ -925,10 +925,15 @@ Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
     return core;
 }
 
-void free_Core(Core* core)
+void clean_Core(Core *core)
 {
     if(core->status != Core_Stop) {
         core->stop(core);
     }
+}
+
+void free_Core(Core* core)
+{
+    clean_Core(core);
     free(core);
 }
