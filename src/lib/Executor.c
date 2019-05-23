@@ -4,11 +4,34 @@
 
 static int run_Executor(Executor* executor)
 {
+    if(executor->status != Executor_Stop) {
+        return -1;
+    }
+    for(uint32_t i = 0; i < executor->cores->length; ++i) {
+        Core* core = (Core*) executor->cores->at(executor->cores, i);
+        int res = core->run(core);
+        if(res) {
+            return res;
+        }
+    }
+    executor->status = Executor_Running;
     return 0;
 }
 
 static int stop_Executor(Executor* executor)
 {
+    if(executor->status != Executor_Running) {
+        return -1;
+    }
+    executor->status = Executor_Terminated;
+    for(uint32_t i = 0; i < executor->cores->length; ++i) {
+        Core* core = (Core*) executor->cores->at(executor->cores, i);
+        int res = core->stop(core);
+        if(res) {
+            return res;
+        }
+    }
+    executor->status = Executor_Stop;
     return 0;
 }
 
