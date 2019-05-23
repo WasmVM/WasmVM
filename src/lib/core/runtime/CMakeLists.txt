@@ -135,6 +135,7 @@ add_library(wasmvm_runtime OBJECT
 	f64_convert_u_i64.c
 	f64_reinterpret_i64.c
 	# Memory
+    memory_size.c
 	f32_load.c
 	f32_store.c
 	f64_load.c
