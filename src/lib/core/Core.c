@@ -2,6 +2,7 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdatomic.h>
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <core/Runtime.h>
@@ -593,10 +594,11 @@ static void* exec_Core(void* corePtr)
 {
     Core* core = (Core*) corePtr;
     core->status = Core_Running;
+    atomic_fetch_add(&(core->executor->runningCores), 1);
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
-        FuncInst* func = (FuncInst*) core->store->funcs->at(core->store->funcs, core->stack->curLabel->funcAddr);
+        FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, core->stack->curLabel->funcAddr);
         if(core->stack->curLabel->instrIndex >= func->code->size) {
             // No end in the function, manual do end
 #ifndef NDEBUG
@@ -667,7 +669,7 @@ static void* exec_Core(void* corePtr)
             case Op_return:
             case Op_call:
             case Op_call_indirect:
-                *result = run_control_instr(core->stack, core->store, (ControlInstrInst*)instr, instr->opcode);
+                *result = run_control_instr(core->stack, core->executor->store, (ControlInstrInst*)instr, instr->opcode);
                 break;
             case Op_drop:
             case Op_select:
@@ -705,7 +707,7 @@ static void* exec_Core(void* corePtr)
             case Op_i64_store32:
             case Op_memory_size:
             case Op_memory_grow:
-                *result = run_memory_instr(core->stack, core->store, core->module, (MemoryInstrInst*)instr, instr->opcode);
+                *result = run_memory_instr(core->stack, core->executor->store, core->module, (MemoryInstrInst*)instr, instr->opcode);
                 break;
             case Op_i32_const:
             case Op_i64_const:
@@ -843,6 +845,8 @@ static void* exec_Core(void* corePtr)
     if(core->status == Core_Running) {
         core->status = Core_Stop;
     }
+    atomic_fetch_sub(&(core->executor->runningCores), 1);
+    pthread_cond_signal(&(core->executor->cond));
     pthread_exit(result);
 }
 
@@ -853,7 +857,7 @@ static int run_Core(Core* core)
     }
     core->stack = new_Stack();
     // Get function instance
-    FuncInst* startFunc = (FuncInst*)core->store->funcs->at(core->store->funcs, core->startFuncAddr);
+    FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
     // Set frame
     Frame* frame = new_Frame(startFunc->module);
     // Set local values of start function
@@ -910,10 +914,10 @@ static int resume_core(Core* core)
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
-Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
+Core* new_Core(Executor *executor, ModuleInst* module, uint32_t startFuncAddr)
 {
     Core *core = (Core *) malloc(sizeof(Core));
-    core->store = store;
+    core->executor = executor;
     core->stack = NULL;
     core->startFuncAddr = startFuncAddr;
     core->status = Core_Stop;

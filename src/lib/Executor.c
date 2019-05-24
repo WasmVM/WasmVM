@@ -1,4 +1,5 @@
 #include <Executor.h>
+#include <core/Core.h>
 
 #include <stdlib.h>
 
@@ -35,13 +36,27 @@ static int stop_Executor(Executor* executor)
     return 0;
 }
 
+static int join_Executor(Executor* executor)
+{
+    if(executor->status != Executor_Running) {
+        return 0;
+    }
+    while(atomic_load(&(executor->runningCores)) > 0) {
+        pthread_mutex_lock(&(executor->mutex));
+        pthread_cond_wait(&(executor->cond), &(executor->mutex));
+        pthread_mutex_unlock(&(executor->mutex));
+    }
+    executor->status = Executor_Stop;
+    return 0;
+}
+
 static int addModule_Executor(Executor* executor, ModuleInst* module, uint32_t startFuncIndex)
 {
     if(executor->status == Executor_Terminated) {
         return -1;
     }
     executor->modules->push_back(executor->modules, module);
-    Core* core = new_Core(executor->store, module, *(uint32_t*)module->funcaddrs->at(module->funcaddrs, startFuncIndex));
+    Core* core = new_Core(executor, module, *(uint32_t*)module->funcaddrs->at(module->funcaddrs, startFuncIndex));
     executor->cores->push_back(executor->cores, (void*) core);
     if(executor->status == Executor_Running) {
         return core->run(core);
@@ -52,9 +67,13 @@ static int addModule_Executor(Executor* executor, ModuleInst* module, uint32_t s
 Executor* new_Executor()
 {
     Executor* executor = (Executor*) malloc(sizeof(Executor));
+    atomic_init(&(executor->runningCores), 0);
+    pthread_mutex_init(&(executor->mutex), NULL);
+    pthread_cond_init(&(executor->cond), NULL);
     executor->status = Executor_Stop;
     executor->run = run_Executor;
     executor->stop = stop_Executor;
+    executor->join = join_Executor;
     executor->cores = new_vector(sizeof(Core), (void(*)(void*))clean_Core);
     executor->modules = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
     executor->store = new_Store();

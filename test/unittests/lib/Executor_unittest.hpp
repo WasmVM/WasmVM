@@ -5,6 +5,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdatomic.h>
 #include <Executor.h>
 #include <dataTypes/FuncType.h>
 #include <instance/ModuleInst.h>
@@ -18,6 +19,7 @@ SKYPAT_F(Executor, create_delete)
     Executor* executor = new_Executor();
 
     // Check
+    EXPECT_EQ(atomic_load(executor->runningCores), 0);
     EXPECT_EQ(executor->status, Executor_Stop);
     EXPECT_EQ(executor->cores->length, 0);
     EXPECT_EQ(executor->modules->length, 0);

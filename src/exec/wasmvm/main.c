@@ -23,12 +23,17 @@ int main(int argc, char const *argv[])
     // Request
     LoaderRequest* request = new_LoaderRequest(argv[1], (Component*)loader, executor);
     loader->addRequest(loader, request);
-    // Run
+    // Run Loader
     loader->parent.activate((Component*)loader);
-    // Clean
+    // Join Loader
     int result = 0;
     int* resultPtr = &result;
-    loader->parent.join((Component*)loader, &resultPtr);
+    if(loader->parent.join((Component*)loader, &resultPtr) || result) {
+        free_Loader(loader);
+        free_Executor(executor);
+        return -1;
+    }
+    // Run Executor
     free_Loader(loader);
     free_Executor(executor);
     return result;

@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <pthread.h>
 #include <core/Stack.h>
-#include <core/Store.h>
+#include <Executor.h>
 #include <instance/ModuleInst.h>
 
 typedef enum {
@@ -16,7 +16,7 @@ typedef enum {
 typedef struct Core_ {
     CoreStatus status;
     pthread_t thread;
-    Store *store; // Share with other Core
+    Executor* executor;
     Stack *stack; // Core's private Stack
     ModuleInst* module;
     uint32_t startFuncAddr;
@@ -26,7 +26,7 @@ typedef struct Core_ {
     int (*stop)(struct Core_* core);
 } Core;
 
-Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr);
+Core* new_Core(Executor* executor, ModuleInst* module, uint32_t startFuncAddr);
 void clean_Core(Core *core);
 void free_Core(Core *core);
 
