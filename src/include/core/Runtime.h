@@ -139,6 +139,7 @@ int runtime_f64_convert_u_i64(Stack* stack);
 int runtime_f64_reinterpret_i64(Stack* stack);
 
 /*** Memory ***/
+int memory_grow(Stack* stack, MemInst* memory);
 int runtime_i32_load8_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align);
 int runtime_i32_load8_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align);
 int runtime_i32_load16_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align);
