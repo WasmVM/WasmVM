@@ -34,6 +34,10 @@ int main(int argc, char const *argv[])
         return -1;
     }
     // Run Executor
+    if((result = executor->run(executor)) == 0) {
+        result = executor->join(executor);
+    }
+    // Clean
     free_Loader(loader);
     free_Executor(executor);
     return result;
