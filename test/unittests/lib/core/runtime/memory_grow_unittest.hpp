@@ -19,7 +19,7 @@ SKYPAT_F(memory_grow, regular)
     memory->max = 4;
     uint32_t currect_sz = 0;
 
-    // testing grow 1 page
+    // testing grow memory to 1 page
     Value *check = NULL;
     push_Value(stack, new_i32Value(1));
     memory_grow(stack, memory);
@@ -28,16 +28,16 @@ SKYPAT_F(memory_grow, regular)
     currect_sz = 1;
     free_Value(check);
 
-    // testing grow 2 page
-    push_Value(stack, new_i32Value(2));
+    // testing grow memory to 2 page
+    push_Value(stack, new_i32Value(1));
     memory_grow(stack, memory);
     pop_Value(stack, &check);
     EXPECT_EQ(check->value.i32, currect_sz);
     currect_sz = 2;
     free_Value(check);
 
-    // testing grow 3 page
-    push_Value(stack, new_i32Value(3));
+    // testing grow memory to 3 page
+    push_Value(stack, new_i32Value(1));
     memory_grow(stack, memory);
     pop_Value(stack, &check);
     EXPECT_EQ(check->value.i32, currect_sz);
@@ -45,21 +45,21 @@ SKYPAT_F(memory_grow, regular)
     free_Value(check);
 
     // error testing grow <= memory:sz
-    push_Value(stack, new_i32Value(2));
+    push_Value(stack, new_i32Value(0));
     memory_grow(stack, memory);
     pop_Value(stack, &check);
     EXPECT_EQ(check->value.i32, -1);
     free_Value(check);
 
     // error testing grow >= memory:max
-    push_Value(stack, new_i32Value(5));
+    push_Value(stack, new_i32Value(2));
     memory_grow(stack, memory);
     pop_Value(stack, &check);
     EXPECT_EQ(check->value.i32, -1);
     free_Value(check);
 
     // error testing grow by error type
-    push_Value(stack, new_i64Value(4));
+    push_Value(stack, new_i64Value(1));
     memory_grow(stack, memory);
     pop_Value(stack, &check);
 

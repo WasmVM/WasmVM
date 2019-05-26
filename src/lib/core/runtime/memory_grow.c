@@ -22,12 +22,12 @@ int memory_grow(Stack* stack, MemInst* memory)
 
     // check memory max of pages and grow memory
     int32_t n = value->value.i32;
-    if(n > sz && n <= memory->max) {
-        memory->data->resize(memory->data, n * pageSize);
+    if(n + sz <= memory->max) {
+        memory->data->resize(memory->data, (n + sz) * pageSize);
     }
 
     // check result
-    if(memory->data->length != n * pageSize || memory->data == NULL) {
+    if(memory->data->length == sz * pageSize || memory->data == NULL) {
         push_Value(stack, new_i32Value(-1));
     } else {
         push_Value(stack, new_i32Value(sz));
