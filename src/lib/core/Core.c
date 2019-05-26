@@ -640,11 +640,7 @@ static void* exec_Core(void* corePtr)
             }
 
             Frame* frame = NULL;
-            if(pop_Frame(core->stack, &frame)) {
-                core->status = Core_Stop;
-                *result = -1;
-                pthread_exit(result);
-            }
+            pop_Frame(core->stack, &frame);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
                 Value* retValue = NULL;
