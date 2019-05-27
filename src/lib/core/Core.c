@@ -600,33 +600,6 @@ static void* exec_Core(void* corePtr)
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
         FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, core->stack->curLabel->funcAddr);
         if(core->stack->curLabel->instrIndex >= func->code->size) {
-            // No end in the function, manual do end
-#ifndef NDEBUG
-            for(stackNode* cur = core->stack->entries->head; cur != NULL; cur = cur->next) {
-                Entry* entry = (Entry*)cur->data;
-                if(entry->entryType == Entry_Value) {
-                    Value* retValue = (Value*)entry;
-                    switch (retValue->type) {
-                        case Value_i32:
-                            printf("[%d] i32 %d\n", core->stack->curLabel->funcAddr, retValue->value.i32);
-                            break;
-                        case Value_i64:
-                            printf("[%d] i64 %lld\n", core->stack->curLabel->funcAddr, retValue->value.i64);
-                            break;
-                        case Value_f32:
-                            printf("[%d] f32 %f\n", core->stack->curLabel->funcAddr, retValue->value.f32);
-                            break;
-                        case Value_f64:
-                            printf("[%d] f64 %lf\n", core->stack->curLabel->funcAddr, retValue->value.f64);
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    break;
-                }
-            }
-#endif
             Label* label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
