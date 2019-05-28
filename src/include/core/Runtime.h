@@ -175,4 +175,5 @@ int runtime_if(Stack* stack, ControlInstrInst *control);
 int runtime_else(Stack* stack);
 int runtime_call(Stack* stack, Store* store, ControlInstrInst *control);
 int runtime_loop(Stack* stack, ControlInstrInst *control);
+int runtime_end(Stack* stack, Store* store);
 #endif

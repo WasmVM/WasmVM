@@ -42,7 +42,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
         case Op_else:
             return runtime_else(stack);
         case Op_end:
-            // TODO:
+            return runtime_end(stack, store);
             break;
         case Op_br:
             // TODO:
