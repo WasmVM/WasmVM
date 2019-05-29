@@ -16,7 +16,7 @@ static char skip_to_section(uint8_t sectionNum, uint8_t **ptr, const uint8_t *en
         return -1;
     }
     // Check section code, and move ptr to the target
-    while(**ptr < sectionNum) {
+    while(**ptr < sectionNum && **ptr != 0x00) {
         (*ptr)++;
         // Get section size
         uint32_t size = getLeb128_u32(ptr, endAddr);

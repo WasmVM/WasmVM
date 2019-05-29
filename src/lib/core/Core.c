@@ -57,7 +57,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
             // TODO:
             break;
         case Op_call:
-            // TODO:
+            return runtime_call(stack, store, instr);
             break;
         case Op_call_indirect:
             // TODO:
