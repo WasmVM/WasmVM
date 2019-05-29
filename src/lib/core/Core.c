@@ -593,8 +593,6 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
 static void* exec_Core(void* corePtr)
 {
     Core* core = (Core*) corePtr;
-    core->status = Core_Running;
-    atomic_fetch_add(&(core->executor->runningCores), 1);
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
@@ -828,6 +826,8 @@ static int run_Core(Core* core)
     if(core->status != Core_Stop) {
         return -1;
     }
+    core->status = Core_Running;
+    atomic_fetch_add(&(core->executor->runningCores), 1);
     core->stack = new_Stack();
     // Get function instance
     FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
@@ -884,6 +884,8 @@ static int pause_core(Core* core)
 
 static int resume_core(Core* core)
 {
+    core->status = Core_Running;
+    atomic_fetch_add(&(core->executor->runningCores), 1);
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 

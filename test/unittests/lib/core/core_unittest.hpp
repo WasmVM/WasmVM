@@ -95,96 +95,6 @@ SKYPAT_F(Core, run_stop)
     free_ModuleInst(module);
 }
 
-SKYPAT_F(Core, run_no_match_result_type)
-{
-    // Prepare
-    Executor* executor = new_Executor();
-    char* moduleName = (char*) malloc(sizeof(char) * 5);
-    strcpy(moduleName, "test");
-    ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* funcType = new_FuncType();
-    ValueType result1 = Value_f32;
-    funcType->results->push_back(funcType->results, &result1);
-    module->types->push_back(module->types, funcType);
-    uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncInst* func = new_FuncInst(module, funcType);
-    NumericInstrInst* instr1 = new_NumericInstrInst();
-    instr1->parent.opcode = Op_i32_const;
-    instr1->constant.parent.entryType = Entry_Value;
-    instr1->constant.type = Value_i32;
-    instr1->constant.value.i32 = 5;
-    func->code->push_back(func->code, instr1);
-    NumericInstrInst* instr2 = new_NumericInstrInst();
-    instr2->parent.opcode = Op_i32_const;
-    instr2->constant.parent.entryType = Entry_Value;
-    instr2->constant.type = Value_i32;
-    instr2->constant.value.i32 = 7;
-    func->code->push_back(func->code, instr2);
-    NumericInstrInst* instr3 = new_NumericInstrInst();
-    instr3->parent.opcode = Op_i32_add;
-    func->code->push_back(func->code, instr3);
-    ValueType localType1 = Value_i32;
-    func->locals->push_back(func->locals, &localType1);
-    executor->store->funcs->push_back(executor->store->funcs, func);
-
-    // Check
-    Core* core = new_Core(executor, module, 0);
-    EXPECT_EQ(core->run(core), 0);
-    EXPECT_EQ(core->stop(core), -1);
-
-    // Clean
-    free_Core(core);
-    free_Executor(executor);
-    free_ModuleInst(module);
-}
-
-SKYPAT_F(Core, run_no_enough_result)
-{
-    // Prepare
-    Executor* executor = new_Executor();
-    char* moduleName = (char*) malloc(sizeof(char) * 5);
-    strcpy(moduleName, "test");
-    ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* funcType = new_FuncType();
-    ValueType result1 = Value_i32;
-    funcType->results->push_back(funcType->results, &result1);
-    ValueType result2 = Value_i32;
-    funcType->results->push_back(funcType->results, &result2);
-    module->types->push_back(module->types, funcType);
-    uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncInst* func = new_FuncInst(module, funcType);
-    NumericInstrInst* instr1 = new_NumericInstrInst();
-    instr1->parent.opcode = Op_i32_const;
-    instr1->constant.parent.entryType = Entry_Value;
-    instr1->constant.type = Value_i32;
-    instr1->constant.value.i32 = 5;
-    func->code->push_back(func->code, instr1);
-    NumericInstrInst* instr2 = new_NumericInstrInst();
-    instr2->parent.opcode = Op_i32_const;
-    instr2->constant.parent.entryType = Entry_Value;
-    instr2->constant.type = Value_i32;
-    instr2->constant.value.i32 = 7;
-    func->code->push_back(func->code, instr2);
-    NumericInstrInst* instr3 = new_NumericInstrInst();
-    instr3->parent.opcode = Op_i32_add;
-    func->code->push_back(func->code, instr3);
-    ValueType localType1 = Value_i32;
-    func->locals->push_back(func->locals, &localType1);
-    executor->store->funcs->push_back(executor->store->funcs, func);
-
-    // Check
-    Core* core = new_Core(executor, module, 0);
-    EXPECT_EQ(core->run(core), 0);
-    EXPECT_EQ(core->stop(core), -1);
-
-    // Clean
-    free_Core(core);
-    free_Executor(executor);
-    free_ModuleInst(module);
-}
-
 SKYPAT_F(Core, resume)
 {
     // Prepare
@@ -238,9 +148,4 @@ SKYPAT_F(Core, resume)
     free_Core(core);
     free_Executor(executor);
     free_ModuleInst(module);
-}
-
-SKYPAT_F(Core, pause)
-{
-    // TODO:
 }
