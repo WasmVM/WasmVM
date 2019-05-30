@@ -1,9 +1,10 @@
 #include <core/Stack.h>
 #include <dataTypes/stack.h>
 #include <dataTypes/Label.h>
-#include <dataTypes/Frame.h>
+#include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <dataTypes/Entry.h>
 
 static void free_entries(void* entryPtr)
@@ -11,7 +12,7 @@ static void free_entries(void* entryPtr)
     Entry* entry = (Entry*) entryPtr;
     switch (entry->entryType) {
         case Entry_Frame:
-            free_Frame((Frame*)entry);
+            free_Frame((Frame)entry);
             break;
         case Entry_Value:
             free_Value((Value*)entry);
@@ -42,17 +43,41 @@ void push_Label(Stack* thisStack, Label* label)
 {
     thisStack->curLabel = label;
     thisStack->entries->push(thisStack->entries, label);
+#ifndef NDEBUG
+    printf("Push label of function %u\n", label->funcAddr);
+#endif
 }
 
-void push_Frame(Stack* thisStack, Frame* frame)
+void push_Frame(Stack* thisStack, Frame frame)
 {
     thisStack->curFrame = frame;
     thisStack->curLabel = NULL;
     thisStack->entries->push(thisStack->entries, frame);
+#ifndef NDEBUG
+    printf("Push frame of module %s\n", frame->moduleInst->name);
+#endif
 }
 
 void push_Value(Stack* thisStack, Value* value)
 {
+#ifndef NDEBUG
+    switch (value->type) {
+        case Value_i32:
+            printf("Push value i32 %d\n", value->value.i32);
+            break;
+        case Value_i64:
+            printf("Push value i64 %lld\n", value->value.i64);
+            break;
+        case Value_f32:
+            printf("Push value f32 %f\n", value->value.f32);
+            break;
+        case Value_f64:
+            printf("Push value f64 %lf\n", value->value.f64);
+            break;
+        default:
+            break;
+    }
+#endif
     thisStack->entries->push(thisStack->entries, value);
 }
 
@@ -107,20 +132,29 @@ int pop_Label(Stack* thisStack, Label** label)
         Entry* entry = (Entry*)cur->data;
         switch (entry->entryType) {
             case Entry_Label:
+#ifndef NDEBUG
+                printf("Pop label of function %u\n", (*label)->funcAddr);
+#endif
                 thisStack->curLabel = (Label*)cur->data;
                 return 0;
             case Entry_Frame:
+#ifndef NDEBUG
+                printf("Pop label of function %u\n", (*label)->funcAddr);
+#endif
                 thisStack->curLabel = NULL;
                 return 0;
             default:
                 break;
         }
     }
+#ifndef NDEBUG
+    printf("Pop label of function %u\n", (*label)->funcAddr);
+#endif
     thisStack->curLabel = NULL;
     return 0;
 }
 
-int pop_Frame(Stack* thisStack, Frame** frame)
+int pop_Frame(Stack* thisStack, Frame* framePtr)
 {
     if(!thisStack->curFrame) {
         return -1;
@@ -128,7 +162,7 @@ int pop_Frame(Stack* thisStack, Frame** frame)
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = thisStack->entries->head) {
         Entry* entry = (Entry*)cur->data;
         if(entry->entryType == Entry_Frame) {
-            thisStack->entries->pop(thisStack->entries, (void**)frame);
+            thisStack->entries->pop(thisStack->entries, (void**)framePtr);
             break;
         } else if(entry->entryType == Entry_Value) {
             Value* value = NULL;
@@ -153,13 +187,19 @@ int pop_Frame(Stack* thisStack, Frame** frame)
                 }
                 break;
             case Entry_Frame:
-                thisStack->curFrame = (Frame*)cur->data;
+#ifndef NDEBUG
+                printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
+#endif
+                thisStack->curFrame = (Frame)cur->data;
                 return 0;
             default:
                 break;
         }
     }
     thisStack->curFrame = NULL;
+#ifndef NDEBUG
+    printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
+#endif
     return 0;
 }
 
@@ -167,7 +207,28 @@ int pop_Value(Stack* thisStack, Value** value)
 {
     Entry* cur = NULL;
     if(!thisStack->entries->top(thisStack->entries, (void**)&cur) && cur->entryType == Entry_Value) {
+#ifndef NDEBUG
+        int result = thisStack->entries->pop(thisStack->entries, (void**)value);
+        switch ((*value)->type) {
+            case Value_i32:
+                printf("Pop value i32 %d\n", (*value)->value.i32);
+                break;
+            case Value_i64:
+                printf("Pop value i64 %lld\n", (*value)->value.i64);
+                break;
+            case Value_f32:
+                printf("Pop value f32 %f\n", (*value)->value.f32);
+                break;
+            case Value_f64:
+                printf("Pop value f64 %lf\n", (*value)->value.f64);
+                break;
+            default:
+                break;
+        }
+        return result;
+#else
         return thisStack->entries->pop(thisStack->entries, (void**)value);
+#endif
     } else {
         *value = NULL;
         return -1;

@@ -2,13 +2,14 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <stdatomic.h>
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <core/Runtime.h>
 #include <dataTypes/stack.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <dataTypes/Frame.h>
+#include <dataTypes/Frame_.h>
 #include <dataTypes/Entry.h>
 #include <instance/FuncInst.h>
 #include <instance/InstrInst.h>
@@ -41,7 +42,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
         case Op_else:
             return runtime_else(stack);
         case Op_end:
-            // TODO:
+            return runtime_end(stack, store);
             break;
         case Op_br:
             // TODO:
@@ -56,7 +57,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
             // TODO:
             break;
         case Op_call:
-            // TODO:
+            return runtime_call(stack, store, instr);
             break;
         case Op_call_indirect:
             // TODO:
@@ -592,39 +593,11 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
 static void* exec_Core(void* corePtr)
 {
     Core* core = (Core*) corePtr;
-    core->status = Core_Running;
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
-        FuncInst* func = (FuncInst*) core->store->funcs->at(core->store->funcs, core->stack->curLabel->funcAddr);
+        FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, core->stack->curLabel->funcAddr);
         if(core->stack->curLabel->instrIndex >= func->code->size) {
-            // No end in the function, manual do end
-#ifndef NDEBUG
-            for(stackNode* cur = core->stack->entries->head; cur != NULL; cur = cur->next) {
-                Entry* entry = (Entry*)cur->data;
-                if(entry->entryType == Entry_Value) {
-                    Value* retValue = (Value*)entry;
-                    switch (retValue->type) {
-                        case Value_i32:
-                            printf("[%d] i32 %d\n", core->stack->curLabel->funcAddr, retValue->value.i32);
-                            break;
-                        case Value_i64:
-                            printf("[%d] i64 %lld\n", core->stack->curLabel->funcAddr, retValue->value.i64);
-                            break;
-                        case Value_f32:
-                            printf("[%d] f32 %f\n", core->stack->curLabel->funcAddr, retValue->value.f32);
-                            break;
-                        case Value_f64:
-                            printf("[%d] f64 %lf\n", core->stack->curLabel->funcAddr, retValue->value.f64);
-                            break;
-                        default:
-                            break;
-                    }
-                } else {
-                    break;
-                }
-            }
-#endif
             Label* label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
@@ -639,7 +612,7 @@ static void* exec_Core(void* corePtr)
                 valStack->push(valStack, retValue);
             }
 
-            Frame* frame = NULL;
+            Frame frame = NULL;
             pop_Frame(core->stack, &frame);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
@@ -667,7 +640,7 @@ static void* exec_Core(void* corePtr)
             case Op_return:
             case Op_call:
             case Op_call_indirect:
-                *result = run_control_instr(core->stack, core->store, (ControlInstrInst*)instr, instr->opcode);
+                *result = run_control_instr(core->stack, core->executor->store, (ControlInstrInst*)instr, instr->opcode);
                 break;
             case Op_drop:
             case Op_select:
@@ -705,7 +678,7 @@ static void* exec_Core(void* corePtr)
             case Op_i64_store32:
             case Op_memory_size:
             case Op_memory_grow:
-                *result = run_memory_instr(core->stack, core->store, core->module, (MemoryInstrInst*)instr, instr->opcode);
+                *result = run_memory_instr(core->stack, core->executor->store, core->module, (MemoryInstrInst*)instr, instr->opcode);
                 break;
             case Op_i32_const:
             case Op_i64_const:
@@ -843,6 +816,8 @@ static void* exec_Core(void* corePtr)
     if(core->status == Core_Running) {
         core->status = Core_Stop;
     }
+    atomic_fetch_sub(&(core->executor->runningCores), 1);
+    pthread_cond_signal(&(core->executor->cond));
     pthread_exit(result);
 }
 
@@ -851,11 +826,13 @@ static int run_Core(Core* core)
     if(core->status != Core_Stop) {
         return -1;
     }
+    core->status = Core_Running;
+    atomic_fetch_add(&(core->executor->runningCores), 1);
     core->stack = new_Stack();
     // Get function instance
-    FuncInst* startFunc = (FuncInst*)core->store->funcs->at(core->store->funcs, core->startFuncAddr);
+    FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
     // Set frame
-    Frame* frame = new_Frame(startFunc->module);
+    Frame frame = new_Frame(startFunc->module);
     // Set local values of start function
     for(uint32_t i = 0; i < startFunc->locals->length; ++i) {
         switch (*(ValueType*)startFunc->locals->at(startFunc->locals, i)) {
@@ -907,13 +884,15 @@ static int pause_core(Core* core)
 
 static int resume_core(Core* core)
 {
+    core->status = Core_Running;
+    atomic_fetch_add(&(core->executor->runningCores), 1);
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
-Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
+Core* new_Core(Executor *executor, ModuleInst* module, uint32_t startFuncAddr)
 {
     Core *core = (Core *) malloc(sizeof(Core));
-    core->store = store;
+    core->executor = executor;
     core->stack = NULL;
     core->startFuncAddr = startFuncAddr;
     core->status = Core_Stop;
@@ -925,10 +904,15 @@ Core* new_Core(Store *store, ModuleInst* module, uint32_t startFuncAddr)
     return core;
 }
 
-void free_Core(Core* core)
+void clean_Core(Core *core)
 {
     if(core->status != Core_Stop) {
         core->stop(core);
     }
+}
+
+void free_Core(Core* core)
+{
+    clean_Core(core);
     free(core);
 }

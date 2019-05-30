@@ -6,6 +6,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <Loader.h>
+#include <Executor.h>
 #include <core/Store.h>
 #include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
@@ -19,11 +20,10 @@ SKYPAT_F(decode_import, valid)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
 
     uint8_t* testBin = (uint8_t*) "\x02\x3f\x04\x05Test1\x05Test1\x00\x00\x05Test1\x05Test2\x01\x70\x01\x03\x05\x05Test2\x05Test3\x02\x01\x02\x04\x05Test2\x05Test4\x03\x7f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), 0);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), 0);
     EXPECT_EQ(loader->requests->size, 2);
 
     WasmImport* import = (WasmImport*)module->imports->at(module->imports, 0);
@@ -55,97 +55,84 @@ SKYPAT_F(decode_import, valid)
     EXPECT_EQ(import->desc.global.mut, 0);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, unknown_import_type)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x0a\x00\x04Test\x05Test2\x01\x70\x01\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x7f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -1);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -1);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, table_element_not_anyfunc)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x77\x01\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x7f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -2);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -2);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, unknown_table_limit_flag)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x70\x03\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x7f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -3);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -3);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, unknown_memory_limit_flag)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x70\x01\x03\x05\x04Test\x05Test3\x02\x05\x02\x04\x04Test\x05Test4\x03\x7f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -4);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -4);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, unknown_global_type)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x70\x01\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x6f\x00";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -5);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -5);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }
 
 SKYPAT_F(decode_import, unknown_global_mut)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
     uint8_t* testBin = (uint8_t*) "\x02\x3b\x04\x04Test\x05Test1\x00\x00\x04Test\x05Test2\x01\x70\x01\x03\x05\x04Test\x05Test3\x02\x01\x02\x04\x04Test\x05Test4\x03\x7f\x08";
-    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, store, moduleInsts), -6);
+    EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), -6);
 
     free_WasmModule(module);
-    free_Store(store);
+    free_Executor(executor);
     free_Loader(loader);
-    free_vector(moduleInsts);
 }

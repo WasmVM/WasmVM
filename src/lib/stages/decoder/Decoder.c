@@ -46,7 +46,7 @@ static int run(Decoder* decoder)
         return -2;
     }
     // Section 2: Import
-    if(parse_import_section(module, &read_p, end_p, decoder->loader, decoder->store, decoder->moduleInsts) < 0) {
+    if(parse_import_section(module, &read_p, end_p, decoder->loader, decoder->executor) < 0) {
         return -3;
     }
     // Section 3: Function
@@ -89,13 +89,12 @@ static int run(Decoder* decoder)
     return 0;
 }
 
-Decoder* new_Decoder(Component* loader, Store* store, vector* moduleInsts)
+Decoder* new_Decoder(Component* loader, Executor* executor)
 {
     Decoder* newDecoder = (Decoder*) malloc(sizeof(Decoder));
     /* Attributes */
     newDecoder->loader = (Loader*)loader;
-    newDecoder->store = store;
-    newDecoder->moduleInsts = moduleInsts;
+    newDecoder->executor = executor;
     /* Member function */
     newDecoder->parent.setInput = (void(*)(Stage*, void*))setInput;
     newDecoder->parent.getOutput = (void*(*)(Stage*))getOutput;

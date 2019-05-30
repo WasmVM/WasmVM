@@ -36,7 +36,7 @@ SKYPAT_F(Runtime_control_if, regular)
     *local = Value_f32;
     func->locals->push_back(func->locals, local);
     store->funcs->push_back(store->funcs, (void*)func);
-    Frame* frame = new_Frame(module);
+    Frame frame = new_Frame(module);
     push_Frame(stack, frame);
 
     ControlInstrInst* control = new_ControlInstrInst();
@@ -53,14 +53,16 @@ SKYPAT_F(Runtime_control_if, regular)
     EXPECT_EQ(resultLabel->contInstr, 0);
     EXPECT_EQ(resultLabel->resultTypes->length, 0);
     free_Label(resultLabel);
-    Frame* resultFrame = NULL;
+    Frame resultFrame = NULL;
     EXPECT_EQ(pop_Frame(stack, &resultFrame), 0);
-    EXPECT_EQ(resultFrame->locals->length, 2);
-    EXPECT_EQ(resultFrame->moduleInst, module);
-    Value* resultLocal = (Value*)resultFrame->locals->at(resultFrame->locals, 0);
+    ModuleInst* resultModule = frame_get_module(resultFrame);
+    EXPECT_EQ(resultModule, module);
+    vector* resultLocals = frame_get_locals(frame);
+    EXPECT_EQ(resultLocals->length, 2);
+    Value* resultLocal = (Value*)resultLocals->at(resultLocals, 0);
     EXPECT_EQ(resultLocal->type, Value_i32);
     EXPECT_EQ(resultLocal->value.i32, 28);
-    resultLocal = (Value*)resultFrame->locals->at(resultFrame->locals, 1);
+    resultLocal = (Value*)resultLocals->at(resultLocals, 1);
     EXPECT_EQ(resultLocal->type, Value_f32);
     EXPECT_EQ(resultLocal->value.f32, 0);
     free_Frame(resultFrame);

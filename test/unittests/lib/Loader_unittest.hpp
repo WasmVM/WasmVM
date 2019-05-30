@@ -6,6 +6,7 @@ extern "C" {
 #include <string.h>
 #include <stdio.h>
 #include <Loader.h>
+#include <Executor.h>
 #include <core/Store.h>
 #include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
@@ -63,9 +64,8 @@ SKYPAT_F(Loader, add_request)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
-    LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, store, moduleInsts);
+    Executor* executor = new_Executor();
+    LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, executor);
     // Check
     loader->addRequest(loader, request);
     EXPECT_EQ(loader->requests->size, 1);
@@ -73,16 +73,14 @@ SKYPAT_F(Loader, add_request)
 
     // Clean
     free_Loader(loader);
-    free_Store(store);
-    free_vector(moduleInsts);
+    free_Executor(executor);
 }
 
 SKYPAT_F(Loader, activate)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Store* store = new_Store();
-    vector* moduleInsts = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    Executor* executor = new_Executor();
 
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
@@ -125,6 +123,7 @@ SKYPAT_F(Loader, activate)
     EXPECT_EQ(*resValue, 0);
 
     free_Loader(loader);
+    free_Executor(executor);
     free(resValue);
 }
 

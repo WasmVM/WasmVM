@@ -16,7 +16,7 @@ static char skip_to_section(uint8_t sectionNum, uint8_t **ptr, const uint8_t *en
         return -1;
     }
     // Check section code, and move ptr to the target
-    while(**ptr < sectionNum) {
+    while(**ptr < sectionNum && **ptr != 0x00) {
         (*ptr)++;
         // Get section size
         uint32_t size = getLeb128_u32(ptr, endAddr);
@@ -140,7 +140,7 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
     return 0;
 }
 
-int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Store* store, vector* moduleInsts)
+int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor* executor)
 {
     if(skip_to_section(2, read_p, end_p) == 2) {
         for(uint32_t importNum = getLeb128_u32(read_p, end_p); importNum > 0; --importNum) {
@@ -162,7 +162,7 @@ int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
             *read_p += nameLen;
             newImport->name = name;
             // Load dependencies
-            loader->addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, store, moduleInsts));
+            loader->addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, executor));
             // import kind
             switch(*((*read_p)++)) {
                 case IMPORT_Func:
@@ -463,6 +463,7 @@ int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
                     return -3;
                 }
             }
+            (*read_p)++;
         }
     }
     return 0;

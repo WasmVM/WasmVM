@@ -1,10 +1,3 @@
-#set(INSTRS "")
-
-#foreach(INSTR IN LISTS INSTRS)
-#    configure_file(${CMAKE_CURRENT_LIST_DIR}/Instruction.c.in ${CMAKE_CURRENT_LIST_DIR}/${INSTR}.c)
-#endforeach(INSTR IN LISTS INSTRS)
-
-
 add_library(wasmvm_runtime OBJECT
 	# Numeric
 	i32_const.c
@@ -169,4 +162,5 @@ add_library(wasmvm_runtime OBJECT
 	else.c
 	call.c
 	loop.c
+	end.c
 )
