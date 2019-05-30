@@ -9,7 +9,7 @@
 #include <dataTypes/stack.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <dataTypes/Frame.h>
+#include <dataTypes/Frame_.h>
 #include <dataTypes/Entry.h>
 #include <instance/FuncInst.h>
 #include <instance/InstrInst.h>
@@ -612,7 +612,7 @@ static void* exec_Core(void* corePtr)
                 valStack->push(valStack, retValue);
             }
 
-            Frame* frame = NULL;
+            Frame frame = NULL;
             pop_Frame(core->stack, &frame);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
@@ -832,7 +832,7 @@ static int run_Core(Core* core)
     // Get function instance
     FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
     // Set frame
-    Frame* frame = new_Frame(startFunc->module);
+    Frame frame = new_Frame(startFunc->module);
     // Set local values of start function
     for(uint32_t i = 0; i < startFunc->locals->length; ++i) {
         switch (*(ValueType*)startFunc->locals->at(startFunc->locals, i)) {

@@ -1,7 +1,7 @@
 #include <core/Stack.h>
 #include <dataTypes/stack.h>
 #include <dataTypes/Label.h>
-#include <dataTypes/Frame.h>
+#include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 #include <stdio.h>
@@ -12,7 +12,7 @@ static void free_entries(void* entryPtr)
     Entry* entry = (Entry*) entryPtr;
     switch (entry->entryType) {
         case Entry_Frame:
-            free_Frame((Frame*)entry);
+            free_Frame((Frame)entry);
             break;
         case Entry_Value:
             free_Value((Value*)entry);
@@ -48,7 +48,7 @@ void push_Label(Stack* thisStack, Label* label)
 #endif
 }
 
-void push_Frame(Stack* thisStack, Frame* frame)
+void push_Frame(Stack* thisStack, Frame frame)
 {
     thisStack->curFrame = frame;
     thisStack->curLabel = NULL;
@@ -154,7 +154,7 @@ int pop_Label(Stack* thisStack, Label** label)
     return 0;
 }
 
-int pop_Frame(Stack* thisStack, Frame** frame)
+int pop_Frame(Stack* thisStack, Frame* framePtr)
 {
     if(!thisStack->curFrame) {
         return -1;
@@ -162,7 +162,7 @@ int pop_Frame(Stack* thisStack, Frame** frame)
     for(stackNode* cur = thisStack->entries->head; cur != NULL; cur = thisStack->entries->head) {
         Entry* entry = (Entry*)cur->data;
         if(entry->entryType == Entry_Frame) {
-            thisStack->entries->pop(thisStack->entries, (void**)frame);
+            thisStack->entries->pop(thisStack->entries, (void**)framePtr);
             break;
         } else if(entry->entryType == Entry_Value) {
             Value* value = NULL;
@@ -188,9 +188,9 @@ int pop_Frame(Stack* thisStack, Frame** frame)
                 break;
             case Entry_Frame:
 #ifndef NDEBUG
-                printf("Pop frame of module %s\n", (*frame)->moduleInst->name);
+                printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
 #endif
-                thisStack->curFrame = (Frame*)cur->data;
+                thisStack->curFrame = (Frame)cur->data;
                 return 0;
             default:
                 break;
@@ -198,7 +198,7 @@ int pop_Frame(Stack* thisStack, Frame** frame)
     }
     thisStack->curFrame = NULL;
 #ifndef NDEBUG
-    printf("Pop frame of module %s\n", (*frame)->moduleInst->name);
+    printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
 #endif
     return 0;
 }

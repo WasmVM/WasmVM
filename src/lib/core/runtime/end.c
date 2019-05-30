@@ -22,7 +22,7 @@ int runtime_end(Stack *theStack, Store* store)
             pop_Value(theStack, &retValue);
             valStack->push(valStack, retValue);
         }
-        Frame* frame = NULL;
+        Frame frame = NULL;
         if(pop_Frame(theStack, &frame)) {
             return -2;
         }

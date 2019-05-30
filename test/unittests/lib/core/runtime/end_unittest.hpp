@@ -64,7 +64,7 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
     store->funcs->push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
-    Frame* frame = new_Frame(module);
+    Frame frame = new_Frame(module);
     push_Frame(stack, frame);
     Label* label1 = new_Label(0, 1, 4);
     push_Label(stack, label1);
@@ -106,7 +106,7 @@ SKYPAT_F(Runtime_control_end, no_label)
     store->funcs->push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
-    Frame* frame = new_Frame(module);
+    Frame frame = new_Frame(module);
     push_Frame(stack, frame);
 
     // Check

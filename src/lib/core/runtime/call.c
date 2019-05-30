@@ -1,13 +1,13 @@
 #include <core/Runtime.h>
 
-#include <dataTypes/Frame.h>
+#include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
 #include <instance/FuncInst.h>
 
 int runtime_call(Stack* stack, Store* store, ControlInstrInst *control)
 {
-    Frame* frame = new_Frame(stack->curFrame->moduleInst);
+    Frame frame = new_Frame(stack->curFrame->moduleInst);
     uint32_t address = *(uint32_t*)frame->moduleInst->funcaddrs->at(frame->moduleInst->funcaddrs, *(uint32_t*)control->indices->at(control->indices, 0));
     FuncInst* func = (FuncInst*)store->funcs->at(store->funcs, address);
     // Pop parameters from Stack and append to local

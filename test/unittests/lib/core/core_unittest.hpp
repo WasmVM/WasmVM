@@ -134,7 +134,7 @@ SKYPAT_F(Core, resume)
     Core* core = new_Core(executor, module, 0);
     core->stack = new_Stack();
     FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
-    Frame* frame = new_Frame(startFunc->module);
+    Frame frame = new_Frame(startFunc->module);
     push_Frame(core->stack, frame);
     Label* label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
     label->resultTypes = startFunc->type->results;
