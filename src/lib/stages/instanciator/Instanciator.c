@@ -21,7 +21,7 @@ static void* getOutput(Instanciator* instanciator)
 {
     return instanciator->parent.output;
 }
-static int matchFunc(FuncType* importType, FuncType* exportType)
+static int matchFunc(FuncType importType, FuncType exportType)
 {
     if(importType->params->length != exportType->params->length) {
         return -1;
@@ -91,7 +91,7 @@ static int matchExport(WasmModule* module, WasmImport* import, vector* moduleIns
             switch (import->descType) {
                 case Desc_Func:
                     if(matchFunc(
-                                (FuncType*)module->types->at(module->types, import->desc.typeidx),
+                                (FuncType)module->types->at(module->types, import->desc.typeidx),
                                 ((FuncInst*)store->funcs->at(store->funcs, export->valueAddr))->type
                             )) {
                         return -2;

@@ -7,7 +7,7 @@
 #include <instance/ModuleInst.h>
 
 typedef struct {
-    FuncType* type;
+    FuncType type;
     vector* locals;    // ValueType
     ModuleInst* module;
     list* code;    // InstrInst
@@ -15,7 +15,7 @@ typedef struct {
     int (*hostcode)(); // TODO: accelerator
 } FuncInst;
 
-FuncInst* new_FuncInst(ModuleInst* module, FuncType* type);
+FuncInst* new_FuncInst(ModuleInst* module, FuncType type);
 void clean_FuncInst(FuncInst* funcInst);
 void free_FuncInst(FuncInst* funcInst);
 

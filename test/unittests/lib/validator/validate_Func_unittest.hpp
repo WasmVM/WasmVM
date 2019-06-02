@@ -19,7 +19,7 @@ SKYPAT_F(validate_Func, valid)
 {
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;

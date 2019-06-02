@@ -93,7 +93,7 @@ SKYPAT_F(validate_Instr_load, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -130,7 +130,7 @@ SKYPAT_F(validate_Instr_load, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -160,7 +160,7 @@ SKYPAT_F(validate_Instr_load, align_too_much)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -194,7 +194,7 @@ SKYPAT_F(validate_Instr_load, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -225,7 +225,7 @@ SKYPAT_F(validate_Instr_loadN, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -274,7 +274,7 @@ SKYPAT_F(validate_Instr_loadN, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -304,7 +304,7 @@ SKYPAT_F(validate_Instr_loadN, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -335,7 +335,7 @@ SKYPAT_F(validate_Instr_loadN, align_too_much)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -394,7 +394,7 @@ SKYPAT_F(validate_Instr_store, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -431,7 +431,7 @@ SKYPAT_F(validate_Instr_store, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -461,7 +461,7 @@ SKYPAT_F(validate_Instr_store, align_too_much)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -495,7 +495,7 @@ SKYPAT_F(validate_Instr_store, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -530,7 +530,7 @@ SKYPAT_F(validate_Instr_storeN, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -569,7 +569,7 @@ SKYPAT_F(validate_Instr_storeN, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -599,7 +599,7 @@ SKYPAT_F(validate_Instr_storeN, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -634,7 +634,7 @@ SKYPAT_F(validate_Instr_storeN, align_too_much)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -679,7 +679,7 @@ SKYPAT_F(validate_Instr_memory_size, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -716,7 +716,7 @@ SKYPAT_F(validate_Instr_memory_size, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -744,7 +744,7 @@ SKYPAT_F(validate_Instr_memory_grow, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;
@@ -783,7 +783,7 @@ SKYPAT_F(validate_Instr_memory_grow, memory_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -813,7 +813,7 @@ SKYPAT_F(validate_Instr_memory_grow, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 1;

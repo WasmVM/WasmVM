@@ -24,7 +24,7 @@ SKYPAT_F(Core, create_delete)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     module->types->push_back(module->types, funcType);
     uint32_t funcAddr = 0;
     module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
@@ -60,7 +60,7 @@ SKYPAT_F(Core, run_stop)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     module->types->push_back(module->types, funcType);
     uint32_t funcAddr = 0;
     module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
@@ -102,7 +102,7 @@ SKYPAT_F(Core, resume)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     ValueType result1 = Value_i32;
     funcType->results->push_back(funcType->results, &result1);
     ValueType result2 = Value_i32;

@@ -21,7 +21,7 @@ SKYPAT_F(validate_Module, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
 
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();
@@ -51,7 +51,7 @@ SKYPAT_F(validate_Module, start_function_not_exist)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
 
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     module->start = 1;
     WasmFunc* func = new_WasmFunc();
@@ -83,7 +83,7 @@ SKYPAT_F(validate_Module, start_function_not_void)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
 
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();
@@ -118,7 +118,7 @@ SKYPAT_F(validate_Module, export_name_not_unique)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
 
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();

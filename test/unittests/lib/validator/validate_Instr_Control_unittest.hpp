@@ -29,7 +29,7 @@ SKYPAT_F(Validate_Instr_nop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -57,7 +57,7 @@ SKYPAT_F(Validate_Instr_block, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -101,7 +101,7 @@ SKYPAT_F(Validate_Instr_loop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -145,7 +145,7 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -180,7 +180,7 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -222,7 +222,7 @@ SKYPAT_F(Validate_Instr_if, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -266,7 +266,7 @@ SKYPAT_F(Validate_Instr_end, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -311,7 +311,7 @@ SKYPAT_F(Validate_Instr_end, no_frame_to_end)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -344,7 +344,7 @@ SKYPAT_F(Validate_Instr_end, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -384,7 +384,7 @@ SKYPAT_F(Validate_Instr_end, too_much_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -423,7 +423,7 @@ SKYPAT_F(Validate_Instr_else, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -468,7 +468,7 @@ SKYPAT_F(Validate_Instr_else, no_frame_to_end)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -501,7 +501,7 @@ SKYPAT_F(Validate_Instr_else, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -541,7 +541,7 @@ SKYPAT_F(Validate_Instr_else, too_much_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -580,7 +580,7 @@ SKYPAT_F(Validate_Instr_br, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -625,7 +625,7 @@ SKYPAT_F(Validate_Instr_br, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -668,7 +668,7 @@ SKYPAT_F(Validate_Instr_br, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -707,7 +707,7 @@ SKYPAT_F(Validate_Instr_br_if, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -755,7 +755,7 @@ SKYPAT_F(Validate_Instr_br_if, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -792,7 +792,7 @@ SKYPAT_F(validate_Instr_br_if, no_condition_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -825,7 +825,7 @@ SKYPAT_F(Validate_Instr_br_if, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -868,7 +868,7 @@ SKYPAT_F(validate_Instr_br_table, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -929,7 +929,7 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -989,7 +989,7 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1049,7 +1049,7 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1112,7 +1112,7 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1172,7 +1172,7 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1229,7 +1229,7 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1286,7 +1286,7 @@ SKYPAT_F(validate_Instr_return, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -1316,7 +1316,7 @@ SKYPAT_F(validate_Instr_call, valid)
     WasmFunc* func2 = new_WasmFunc();
     func2->type = 0;
     module->funcs->push_back(module->funcs, func2);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func1);
     stack* opds = new_stack(free);
@@ -1350,7 +1350,7 @@ SKYPAT_F(validate_Instr_call, index_out_of_range)
     WasmFunc* func2 = new_WasmFunc();
     func2->type = 0;
     module->funcs->push_back(module->funcs, func2);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func1);
     stack* opds = new_stack(free);
@@ -1381,7 +1381,7 @@ SKYPAT_F(validate_Instr_call_indirect, valid)
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
     module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;
@@ -1420,7 +1420,7 @@ SKYPAT_F(validate_Instr_call_indirect, no_table)
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
     module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func1);
     stack* opds = new_stack(free);
@@ -1455,7 +1455,7 @@ SKYPAT_F(validate_Instr_call_indirect, index_out_of_range)
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
     module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;
@@ -1494,7 +1494,7 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
     module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;

@@ -832,7 +832,7 @@ int validate_Instr_call(WasmControlInstr* instr, Context* context, stack* opds, 
     }
     WasmFunc* func = (WasmFunc*)context->module->funcs->at(context->module->funcs, index);
     // Parameter
-    FuncType* type = (FuncType*)context->module->types->at(context->module->types, func->type);
+    FuncType type = (FuncType)context->module->types->at(context->module->types, func->type);
     for(uint32_t i = type->params->length; i > 0; --i) {
         ValueType* param = NULL;
         if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {
@@ -861,7 +861,7 @@ int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stac
         return -2;
     }
     // Func parameter
-    FuncType* type = (FuncType*)types->at(types, index);
+    FuncType type = (FuncType)types->at(types, index);
     for(uint32_t i = type->params->length; i > 0; --i) {
         ValueType* param = NULL;
         if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {

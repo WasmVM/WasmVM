@@ -32,7 +32,7 @@ SKYPAT_F(validate_Instr_get_local, valid)
     ValueType* local1 = (ValueType*) malloc(sizeof(ValueType));
     *local1 = Value_i32;
     func->locals->push_back(func->locals, local1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -63,7 +63,7 @@ SKYPAT_F(validate_Instr_get_local, local_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -93,7 +93,7 @@ SKYPAT_F(validate_Instr_set_local, valid)
     ValueType* local1 = (ValueType*) malloc(sizeof(ValueType));
     *local1 = Value_i32;
     func->locals->push_back(func->locals, local1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -124,7 +124,7 @@ SKYPAT_F(validate_Instr_set_local, local_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -157,7 +157,7 @@ SKYPAT_F(validate_Instr_set_local, no_enough_operand)
     ValueType* local1 = (ValueType*) malloc(sizeof(ValueType));
     *local1 = Value_i32;
     func->locals->push_back(func->locals, local1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -187,7 +187,7 @@ SKYPAT_F(validate_Instr_tee_local, valid)
     ValueType* local1 = (ValueType*) malloc(sizeof(ValueType));
     *local1 = Value_i32;
     func->locals->push_back(func->locals, local1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -221,7 +221,7 @@ SKYPAT_F(validate_Instr_tee_local, local_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -254,7 +254,7 @@ SKYPAT_F(validate_Instr_tee_local, no_enough_operand)
     ValueType* local1 = (ValueType*) malloc(sizeof(ValueType));
     *local1 = Value_i32;
     func->locals->push_back(func->locals, local1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -287,7 +287,7 @@ SKYPAT_F(validate_Instr_get_global, valid)
     global1->init.type = Value_i32;
     global1->init.value.i32 = 1;
     module->globals->push_back(module->globals, global1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -318,7 +318,7 @@ SKYPAT_F(validate_Instr_get_global, global_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -352,7 +352,7 @@ SKYPAT_F(validate_Instr_set_global, valid)
     global1->init.type = Value_i32;
     global1->init.value.i32 = 1;
     module->globals->push_back(module->globals, global1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -383,7 +383,7 @@ SKYPAT_F(validate_Instr_set_global, global_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -420,7 +420,7 @@ SKYPAT_F(validate_Instr_set_global, mut_is_not_var)
     global1->init.type = Value_i32;
     global1->init.value.i32 = 1;
     module->globals->push_back(module->globals, global1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);
@@ -454,7 +454,7 @@ SKYPAT_F(validate_Instr_set_global, no_enough_operand)
     global1->init.type = Value_i32;
     global1->init.value.i32 = 1;
     module->globals->push_back(module->globals, global1);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack* opds = new_stack(free);

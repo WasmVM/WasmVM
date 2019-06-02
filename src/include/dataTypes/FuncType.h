@@ -1,15 +1,15 @@
-#ifndef WASMVM_INSTANCE_FUNCTYPE_DEF
-#define WASMVM_INSTANCE_FUNCTYPE_DEF
+#ifndef WASMVM_DATATYPES_FUNCTYPE_DEF
+#define WASMVM_DATATYPES_FUNCTYPE_DEF
 
 #include <dataTypes/vector.h>
 
-typedef struct {
+typedef struct FuncType_ {
     vector* params;     // ValueType
     vector* results;    // ValueType
-} FuncType;
+} * FuncType;
 
-FuncType* new_FuncType();
-void free_FuncType(FuncType* funcType);
-void clean_FuncType(FuncType* funcType);
+FuncType new_FuncType();
+void free_FuncType(FuncType funcType);
+void clean_FuncType(FuncType funcType);
 
 #endif

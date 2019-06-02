@@ -15,7 +15,7 @@ int runtime_end(Stack *theStack, Store* store)
         return -1;
     }
     if(theStack->curLabel == NULL) {
-        FuncType* type = ((FuncInst*)store->funcs->at(store->funcs, label->funcAddr))->type;
+        FuncType type = ((FuncInst*)store->funcs->at(store->funcs, label->funcAddr))->type;
         stack* valStack = new_stack(NULL);
         for(uint32_t i = 0; i < type->results->length; ++i) {
             Value* retValue = NULL;

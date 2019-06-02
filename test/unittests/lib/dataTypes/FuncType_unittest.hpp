@@ -9,7 +9,7 @@ extern "C" {
 SKYPAT_F(FuncType, create_delete)
 {
     // Prepare
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
 
     // Check
     EXPECT_EQ(funcType->params->length, 0);

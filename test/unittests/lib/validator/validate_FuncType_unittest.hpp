@@ -13,7 +13,7 @@ extern "C" {
 SKYPAT_F(Validate_FuncType, valid)
 {
     // Prepare
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     ValueType type1 = Value_i32, type2 = Value_i64;
     funcType->params->push_back(funcType->params, (void*)&type1);
     funcType->params->push_back(funcType->params, (void*)&type2);

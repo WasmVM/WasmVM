@@ -9,7 +9,7 @@ ModuleInst* new_ModuleInst(char* name)
 {
     ModuleInst* newModuleInst = (ModuleInst*) malloc(sizeof(ModuleInst));
     newModuleInst->name = name;
-    newModuleInst->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
+    newModuleInst->types = new_vector(sizeof(struct FuncType_), (void(*)(void*))clean_FuncType);
     newModuleInst->funcaddrs = new_vector(sizeof(uint32_t), NULL);
     newModuleInst->tableaddrs = new_vector(sizeof(uint32_t), NULL);
     newModuleInst->memaddrs = new_vector(sizeof(uint32_t), NULL);

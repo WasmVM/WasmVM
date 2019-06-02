@@ -24,7 +24,7 @@ SKYPAT_F(Runtime_control_end, valid_single_layer)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     ValueType result1 = Value_i32;
     type->results->push_back(type->results, (void*)&result1);
     module->types->push_back(module->types, (void*)type);
@@ -59,7 +59,7 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, (void*)type);
     store->funcs->push_back(store->funcs, new_FuncInst(module, type));
 
@@ -101,7 +101,7 @@ SKYPAT_F(Runtime_control_end, no_label)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, (void*)type);
     store->funcs->push_back(store->funcs, new_FuncInst(module, type));
 
@@ -124,7 +124,7 @@ SKYPAT_F(Runtime_control_end, no_frame)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, (void*)type);
     store->funcs->push_back(store->funcs, new_FuncInst(module, type));
 

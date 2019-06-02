@@ -37,7 +37,7 @@ SKYPAT_F(Executor, add_module)
     ModuleInst* module = new_ModuleInst(moduleName);
     uint32_t funcAddr = 0;
     module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     FuncInst* func = new_FuncInst(module, type);
     module->types->push_back(module->types, type);
     executor->store->funcs->push_back(executor->store->funcs, func);
@@ -58,7 +58,7 @@ SKYPAT_F(Executor, add_module_terminated)
     ModuleInst* module = new_ModuleInst(moduleName);
     uint32_t funcAddr = 0;
     module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     FuncInst* func = new_FuncInst(module, type);
     module->types->push_back(module->types, type);
     executor->store->funcs->push_back(executor->store->funcs, func);

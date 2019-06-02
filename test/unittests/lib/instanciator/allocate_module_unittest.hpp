@@ -23,7 +23,7 @@ SKYPAT_F(allocate_function, valid)
     strcpy(moduleName, "test");
     WasmModule* module = new_WasmModule(moduleName);
 
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     ValueType param1 = Value_i32;
     ValueType result1 = Value_i32;
     type->params->push_back(type->params, &param1);

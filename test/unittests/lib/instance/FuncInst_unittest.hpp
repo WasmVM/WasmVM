@@ -16,7 +16,7 @@ SKYPAT_F(FuncInst, create_delete)
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     FuncInst* funcInst = new_FuncInst(module, type);
 
     // Check

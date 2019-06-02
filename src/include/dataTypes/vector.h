@@ -1,5 +1,5 @@
-#ifndef WASMVM_VECTOR_DEF
-#define WASMVM_VECTOR_DEF
+#ifndef WASMVM_DATATYPES_VECTOR_DEF
+#define WASMVM_DATATYPES_VECTOR_DEF
 
 #include <stddef.h>
 

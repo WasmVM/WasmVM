@@ -1,5 +1,5 @@
-#ifndef WASMVM_STACK_DEF
-#define WASMVM_STACK_DEF
+#ifndef WASMVM_DATATYPES_STACK_DEF
+#define WASMVM_DATATYPES_STACK_DEF
 
 typedef struct stackNode_ {
     void* data;

@@ -8,7 +8,7 @@ Context* new_Context(WasmModule* module, WasmFunc* func)
     context->module = module;
     context->locals = new_vector(sizeof(ValueType), NULL);
     // params
-    FuncType* funcType = (FuncType*) module->types->at(module->types, func->type);
+    FuncType funcType = (FuncType) module->types->at(module->types, func->type);
     for(size_t i = 0; i < funcType->params->length; ++i) {
         context->locals->push_back(context->locals, funcType->params->at(funcType->params, i));
     }

@@ -1,5 +1,5 @@
-#ifndef WASMVM_INSTANCE_FRAME_DEF
-#define WASMVM_INSTANCE_FRAME_DEF
+#ifndef WASMVM_DATATYPES_FRAME_DEF
+#define WASMVM_DATATYPES_FRAME_DEF
 
 #include <instance/ModuleInst.h>
 

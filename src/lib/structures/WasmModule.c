@@ -13,7 +13,7 @@ WasmModule* new_WasmModule(char* module_name)
     } else {
         newModule->module_name = NULL;
     }
-    newModule->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
+    newModule->types = new_vector(sizeof(struct FuncType_), (void(*)(void*))clean_FuncType);
     newModule->funcs = new_vector(sizeof(WasmFunc), (void(*)(void*))clean_WasmFunc);
     newModule->tables = new_vector(sizeof(WasmTable), NULL);
     newModule->mems = new_vector(sizeof(WasmMemory), NULL);

@@ -25,7 +25,7 @@
 #include "Context.h"
 
 int validate_Module(WasmModule* module);
-int validate_FunctionType(FuncType* funcType);
+int validate_FunctionType(FuncType funcType);
 int validate_Func(WasmFunc* func, WasmModule* module);
 int validate_Expr(list* expr, Context* context);
 int validate_Table(WasmTable* table);

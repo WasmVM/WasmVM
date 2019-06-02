@@ -27,7 +27,7 @@ SKYPAT_F(Runtime_control_if, regular)
     uint32_t* funcAddr = (uint32_t*) malloc(sizeof(uint32_t));
     *funcAddr = 0;
     module->funcaddrs->push_back(module->funcaddrs, funcAddr);
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     ValueType* param = (ValueType*) malloc(sizeof(ValueType));
     *param = Value_i32;
     type->params->push_back(type->params, param);
@@ -57,7 +57,7 @@ SKYPAT_F(Runtime_control_if, regular)
     EXPECT_EQ(pop_Frame(stack, &resultFrame), 0);
     ModuleInst* resultModule = frame_get_module(resultFrame);
     EXPECT_EQ(resultModule, module);
-    vector* resultLocals = frame_get_locals(frame);
+    vector* resultLocals = frame_get_locals(resultFrame);
     EXPECT_EQ(resultLocals->length, 2);
     Value* resultLocal = (Value*)resultLocals->at(resultLocals, 0);
     EXPECT_EQ(resultLocal->type, Value_i32);

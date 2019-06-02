@@ -16,7 +16,7 @@ SKYPAT_F(Validate_Import, valid_func)
     // Prepare
     WasmImport* import = (WasmImport*)malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     module->types->push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 0;
@@ -33,7 +33,7 @@ SKYPAT_F(Validate_Import, func_type_not_defined)
     // Prepare
     WasmImport* import = (WasmImport*) malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
-    FuncType* funcType = new_FuncType();
+    FuncType funcType = new_FuncType();
     module->types->push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 1;

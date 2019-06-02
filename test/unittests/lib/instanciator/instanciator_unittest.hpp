@@ -30,7 +30,7 @@ SKYPAT_F(Instanciator, valid)
     Executor* executor = new_Executor();
     Instanciator* instanciator = new_Instanciator(module1, executor);
 
-    FuncType* type1 = new_FuncType();
+    FuncType type1 = new_FuncType();
     module1->types->push_back(module1->types, type1);
 
     WasmFunc* func1 = new_WasmFunc();
@@ -147,7 +147,7 @@ SKYPAT_F(Instanciator, function_not_match)
 
     ModuleInst* moduleInst = new_ModuleInst(importModule1);
     executor->modules->push_back(executor->modules, moduleInst);
-    FuncType* importedFuncType = new_FuncType();
+    FuncType importedFuncType = new_FuncType();
     ValueType* param1 = (ValueType*)malloc(sizeof(ValueType));
     *param1 = Value_f32;
     importedFuncType->params->push_back(importedFuncType->params, param1);

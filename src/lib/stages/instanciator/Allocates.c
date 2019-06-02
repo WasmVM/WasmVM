@@ -18,8 +18,8 @@ ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* export
     ModuleInst* moduleInst = new_ModuleInst(moduleName);
     // Copy types
     for(size_t i = 0; i < module->types->length; ++i) {
-        FuncType* type = (FuncType*) module->types->at(module->types, i);
-        FuncType* newType = new_FuncType();
+        FuncType type = (FuncType) module->types->at(module->types, i);
+        FuncType newType = new_FuncType();
         for(size_t j = 0; j < type->params->length; ++j) {
             newType->params->push_back(newType->params, type->params->at(type->params, j));
         }
@@ -94,7 +94,7 @@ ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* export
 }
 uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)
 {
-    FuncInst* funcInst = new_FuncInst(moduleInst, (FuncType*)moduleInst->types->at(moduleInst->types, func->type));
+    FuncInst* funcInst = new_FuncInst(moduleInst, (FuncType)moduleInst->types->at(moduleInst->types, func->type));
     for(size_t i = 0; i < func->locals->length; ++i) {
         ValueType* local = (ValueType*) malloc(sizeof(ValueType));
         *local = *(ValueType*)func->locals->at(func->locals, i);

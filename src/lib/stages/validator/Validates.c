@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <string.h>
 
-int validate_FunctionType(FuncType* funcType)
+int validate_FunctionType(FuncType funcType)
 {
     return 0; // Unleash result type restrict
 }
@@ -13,7 +13,7 @@ int validate_Module(WasmModule* module)
 {
     int result = 0;
     for(uint32_t i = 0; i < module->types->length; ++i) {
-        if((result = validate_FunctionType((FuncType*) module->types->at(module->types, i)))) {
+        if((result = validate_FunctionType((FuncType) module->types->at(module->types, i)))) {
             return result;
         }
     }
@@ -52,7 +52,7 @@ int validate_Module(WasmModule* module)
     if(module->start >= module->funcs->length) {
         return -1;
     }
-    FuncType* startFuncType = (FuncType*)module->types->at(module->types, ((WasmFunc*)module->funcs->at(module->funcs, module->start))->type);
+    FuncType startFuncType = (FuncType)module->types->at(module->types, ((WasmFunc*)module->funcs->at(module->funcs, module->start))->type);
     if(startFuncType->params->length != 0 || startFuncType->results->length != 0) {
         return -2;
     }

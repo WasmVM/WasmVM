@@ -24,7 +24,7 @@ SKYPAT_F(validate_Expr, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     list* exprs = new_list((void(*)(void*))free_WasmInstr);
@@ -62,7 +62,7 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     list* exprs = new_list((void(*)(void*))free_WasmInstr);
@@ -86,7 +86,7 @@ SKYPAT_F(validate_Expr, remain_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
     list* exprs = new_list((void(*)(void*))free_WasmInstr);
@@ -121,7 +121,7 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
+    FuncType type = new_FuncType();
     ValueType* result = (ValueType*) malloc(sizeof(ValueType));
     *result = Value_i64;
     type->results->push_back(type->results, result);
