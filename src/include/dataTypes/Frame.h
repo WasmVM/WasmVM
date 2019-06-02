@@ -1,6 +1,7 @@
 #ifndef WASMVM_DATATYPES_FRAME_DEF
 #define WASMVM_DATATYPES_FRAME_DEF
 
+#include <dataTypes/vector.h>
 #include <instance/ModuleInst.h>
 
 typedef struct Frame_ * Frame;

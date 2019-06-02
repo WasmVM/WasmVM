@@ -29,7 +29,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
             break;
         case Op_nop:
             result = runtime_nop();
-            stack->curLabel->instrIndex += 1;
+            label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
             break;
         case Op_block:
             // TODO:
@@ -81,7 +81,7 @@ static int run_parametric_instr(Stack* stack, uint8_t opcode)
         default:
             break;
     }
-    stack->curLabel->instrIndex += 1;
+    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
     return result;
 }
 
@@ -107,7 +107,7 @@ static int run_variable_instr(Stack* stack, VariableInstrInst* instr, uint8_t op
         default:
             break;
     }
-    stack->curLabel->instrIndex += 1;
+    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
     return result;
 }
 
@@ -194,7 +194,7 @@ static int run_memory_instr(Stack* stack, Store* store, ModuleInst* module, Memo
         default:
             break;
     }
-    stack->curLabel->instrIndex += 1;
+    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
     return result;
 }
 
@@ -586,7 +586,7 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
         default:
             break;
     }
-    stack->curLabel->instrIndex += 1;
+    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
     return result;
 }
 
@@ -596,9 +596,9 @@ static void* exec_Core(void* corePtr)
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
-        FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, core->stack->curLabel->funcAddr);
-        if(core->stack->curLabel->instrIndex >= func->code->size) {
-            Label* label = NULL;
+        FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, label_get_funcAddr(core->stack->curLabel));
+        if(label_get_instrIndex(core->stack->curLabel) >= func->code->size) {
+            Label label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
                 *result = -1;
@@ -625,7 +625,7 @@ static void* exec_Core(void* corePtr)
             free_Frame(frame);
             continue;
         }
-        InstrInst* instr = (InstrInst*)func->code->at(func->code, core->stack->curLabel->instrIndex);
+        InstrInst* instr = (InstrInst*)func->code->at(func->code, label_get_instrIndex(core->stack->curLabel));
         switch (instr->opcode) {
             case Op_unreachable:
             case Op_nop:
@@ -853,8 +853,8 @@ static int run_Core(Core* core)
         }
     }
     push_Frame(core->stack, frame);
-    Label* label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
-    label->resultTypes = startFunc->type->results;
+    Label label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
+    label_set_resultTypes(label, startFunc->type->results);
     push_Label(core->stack, label);
     // Run in thread
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);

@@ -2,19 +2,20 @@
 #define WASMVM_DATATYPES_LABEL_DEF
 
 #include <stdint.h>
-#include <dataTypes/Entry.h>
 #include <dataTypes/vector.h>
 
-typedef struct {
-    Entry parent;
-    uint32_t funcAddr;
-    uint32_t instrIndex;
-    uint32_t contInstr;
-    uint32_t endInstr;
-    vector* resultTypes; // ValueType
-} Label;
+typedef struct Label_ * Label;
 
-Label* new_Label(uint32_t funcAddr, uint32_t instrIndex, uint32_t contInstr);
-void free_Label(Label *label);
+Label new_Label(uint32_t funcAddr, uint32_t instrIndex, uint32_t contInstr);
+void free_Label(Label label);
+
+uint32_t label_get_funcAddr(Label label);
+uint32_t label_get_instrIndex(Label label);
+void label_set_instrIndex(Label label, uint32_t instrIndex);
+uint32_t label_get_contInstr(Label label);
+uint32_t label_get_endInstr(Label label);
+void label_set_endInstr(Label label, uint32_t endInstr);
+vector* label_get_resultTypes(Label label);
+void label_set_resultTypes(Label label, vector* resultTypes);
 
 #endif

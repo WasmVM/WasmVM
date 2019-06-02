@@ -10,12 +10,12 @@
 
 int runtime_end(Stack *theStack, Store* store)
 {
-    Label* label = NULL;
+    Label label = NULL;
     if(pop_Label(theStack, &label)) {
         return -1;
     }
     if(theStack->curLabel == NULL) {
-        FuncType type = ((FuncInst*)store->funcs->at(store->funcs, label->funcAddr))->type;
+        FuncType type = ((FuncInst*)store->funcs->at(store->funcs, label_get_funcAddr(label)))->type;
         stack* valStack = new_stack(NULL);
         for(uint32_t i = 0; i < type->results->length; ++i) {
             Value* retValue = NULL;
@@ -36,7 +36,7 @@ int runtime_end(Stack *theStack, Store* store)
         free_Frame(frame);
     }
     if(theStack->curLabel) {
-        theStack->curLabel->instrIndex = label->contInstr;
+        label_set_instrIndex(theStack->curLabel, label_get_contInstr(label));
     }
     free_Label(label);
     return 0;

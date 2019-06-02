@@ -40,8 +40,8 @@ int runtime_call(Stack* stack, Store* store, ControlInstrInst *control)
     // Push frame to Stack
     push_Frame(stack, frame);
     // Execute block
-    Label* label = new_Label(address, 0, (func->code->size > 0) ? func->code->size - 1 : 0);
-    label->resultTypes = func->type->results;
+    Label label = new_Label(address, 0, (func->code->size > 0) ? func->code->size - 1 : 0);
+    label_set_resultTypes(label, func->type->results);
     push_Label(stack, label);
     return 0;
 }

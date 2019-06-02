@@ -5,10 +5,10 @@
 
 int runtime_loop(Stack *stack, ControlInstrInst *control)
 {
-    Label* label = NULL;
-    label = new_Label(stack->curLabel->funcAddr, stack->curLabel->instrIndex + 1, stack->curLabel->instrIndex + 1);
-    label->endInstr = control->endAddr;
-    label->resultTypes = control->resultTypes;
+    Label label = NULL;
+    label = new_Label(label_get_funcAddr(stack->curLabel), label_get_instrIndex(stack->curLabel) + 1, label_get_instrIndex(stack->curLabel) + 1);
+    label_set_endInstr(label, control->endAddr);
+    label_set_resultTypes(label, control->resultTypes);
     push_Label(stack, label);
     return 0;
 }

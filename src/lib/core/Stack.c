@@ -39,12 +39,12 @@ void free_Stack(Stack* thisStack)
     }
     free(thisStack);
 }
-void push_Label(Stack* thisStack, Label* label)
+void push_Label(Stack* thisStack, Label label)
 {
     thisStack->curLabel = label;
     thisStack->entries->push(thisStack->entries, label);
 #ifndef NDEBUG
-    printf("Push label of function %u\n", label->funcAddr);
+    printf("Push label of function %u\n", label_get_funcAddr(label));
 #endif
 }
 
@@ -81,16 +81,16 @@ void push_Value(Stack* thisStack, Value* value)
     thisStack->entries->push(thisStack->entries, value);
 }
 
-int pop_Label(Stack* thisStack, Label** label)
+int pop_Label(Stack* thisStack, Label* label)
 {
     if(!thisStack->curLabel) {
         return -1;
     }
     // Save results
     stack* results = new_stack(NULL);
-    vector* resultTypes = thisStack->curLabel->resultTypes;
+    vector* resultTypes = label_get_resultTypes(thisStack->curLabel);
     if(resultTypes) {
-        for(uint32_t i = 0; i < thisStack->curLabel->resultTypes->length; ++i) {
+        for(uint32_t i = 0; i < resultTypes->length; ++i) {
             Value* result = NULL;
             if(pop_Value(thisStack, &result)) {
                 return -3;
@@ -133,13 +133,13 @@ int pop_Label(Stack* thisStack, Label** label)
         switch (entry->entryType) {
             case Entry_Label:
 #ifndef NDEBUG
-                printf("Pop label of function %u\n", (*label)->funcAddr);
+                printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
-                thisStack->curLabel = (Label*)cur->data;
+                thisStack->curLabel = (Label)cur->data;
                 return 0;
             case Entry_Frame:
 #ifndef NDEBUG
-                printf("Pop label of function %u\n", (*label)->funcAddr);
+                printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
                 thisStack->curLabel = NULL;
                 return 0;
@@ -148,7 +148,7 @@ int pop_Label(Stack* thisStack, Label** label)
         }
     }
 #ifndef NDEBUG
-    printf("Pop label of function %u\n", (*label)->funcAddr);
+    printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
     thisStack->curLabel = NULL;
     return 0;
@@ -169,7 +169,7 @@ int pop_Frame(Stack* thisStack, Frame* framePtr)
             pop_Value(thisStack, &value);
             free_Value(value);
         } else if(entry->entryType == Entry_Label) {
-            Label* label = NULL;
+            Label label = NULL;
             pop_Label(thisStack, &label);
             free_Label(label);
         } else {
@@ -183,7 +183,7 @@ int pop_Frame(Stack* thisStack, Frame* framePtr)
         switch (entry->entryType) {
             case Entry_Label:
                 if(!thisStack->curLabel) {
-                    thisStack->curLabel = (Label*)cur->data;
+                    thisStack->curLabel = (Label)cur->data;
                 }
                 break;
             case Entry_Frame:

@@ -14,7 +14,7 @@ SKYPAT_F(Runtime_control_if, regular)
     Stack* stack = new_Stack();
 
     // Label: {Entry, funcAddr, instrIndex, contInstr}
-    Label* currentLabel = new_Label(0, 4, 4);
+    Label currentLabel = new_Label(0, 4, 4);
 
     ControlInstrInst* currentControl = new_ControlInstrInst();
     currentControl->elseAddr = 3;
@@ -23,14 +23,14 @@ SKYPAT_F(Runtime_control_if, regular)
     push_Label(stack, currentLabel);
 
     // Check
-    Label* result = NULL;
+    Label result = NULL;
     runtime_else(stack);
     pop_Label(stack, &result);
     // Expect label's instrIndex to be ControlInstrInst's endAddr.
-    EXPECT_EQ(result->instrIndex, 4);
+    EXPECT_EQ(label_get_instrIndex(result), 4);
     // curLabel should be updated to the latest label's function address.
-    EXPECT_EQ(result->funcAddr, 0);
-    EXPECT_EQ(result->contInstr, 4);
+    EXPECT_EQ(label_get_funcAddr(result), 0);
+    EXPECT_EQ(label_get_contInstr(result), 4);
     free(result);
 
     // clean
