@@ -23,7 +23,7 @@ size_t queue_size(queue thisQueue)
 
 queue new_queue_(void (*freeElem)(void* elem))
 {
-    queue newQueue = (queue) malloc(sizeof(queue));
+    queue newQueue = (queue) malloc(sizeof(struct queue_));
     newQueue->head = NULL;
     newQueue->tail = NULL;
     newQueue->size = 0;

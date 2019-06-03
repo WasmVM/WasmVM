@@ -24,7 +24,7 @@ SKYPAT_F(decode_import, valid)
 
     uint8_t* testBin = (uint8_t*) "\x02\x3f\x04\x05Test1\x05Test1\x00\x00\x05Test1\x05Test2\x01\x70\x01\x03\x05\x05Test2\x05Test3\x02\x01\x02\x04\x05Test2\x05Test4\x03\x7f\x00";
     EXPECT_EQ(parse_import_section(module, &testBin, testBin + 60, loader, executor), 0);
-    EXPECT_EQ(loader->requests->size, 2);
+    EXPECT_EQ(queue_size(loader->requests), 2);
 
     WasmImport* import = (WasmImport*)module->imports->at(module->imports, 0);
     // Test 1

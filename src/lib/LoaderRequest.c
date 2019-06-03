@@ -19,13 +19,13 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Exec
     Decoder* decoder = new_Decoder(loader, executor);
     decoder->parent.input = NULL;
     decoder->parent.output = module;
-    request->parent.stages->push(request->parent.stages, (void*)decoder);
+    queue_push(request->parent.stages, decoder);
     // Validator
     Validator* validator = new_Validator(module);
-    request->parent.stages->push(request->parent.stages, (void*)validator);
+    queue_push(request->parent.stages, validator);
     // Instanciator
     Instanciator* instanciator = new_Instanciator(module, executor);
-    request->parent.stages->push(request->parent.stages, (void*)instanciator);
+    queue_push(request->parent.stages, instanciator);
     return request;
 }
 

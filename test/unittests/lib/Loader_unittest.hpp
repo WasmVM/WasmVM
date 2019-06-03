@@ -23,21 +23,21 @@ typedef struct {
 static int mock_activate_run(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %d, Decoded: %d\n", mockInput->loader->requests->size, mockInput->loader->decodedStack->size);
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), mockInput->loader->decodedStack->size);
     return 0;
 }
 
 static int mock_activate_halt(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %d, Decoded: %d\n", mockInput->loader->requests->size, mockInput->loader->decodedStack->size);
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), mockInput->loader->decodedStack->size);
     return 2;
 }
 
 static int mock_activate_terminate(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %d, Decoded: %d\n", mockInput->loader->requests->size, mockInput->loader->decodedStack->size);
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), mockInput->loader->decodedStack->size);
     mockInput->loader->parent.terminate((Component*)mockInput->loader);
     return 0;
 }
@@ -52,8 +52,8 @@ SKYPAT_F(Loader, create_delete)
     EXPECT_EQ(list_size(loader->loadedList), 0);
     EXPECT_EQ(loader->decodedStack->head, NULL);
     EXPECT_EQ(loader->decodedStack->size, 0);
-    EXPECT_EQ(loader->requests->head, NULL);
-    EXPECT_EQ(loader->requests->size, 0);
+    EXPECT_EQ(queue_size(loader->requests), 0);
+    EXPECT_EQ(queue_top(LoaderRequest*, loader->requests), NULL);
 
     free_Loader(loader);
 }
@@ -66,8 +66,8 @@ SKYPAT_F(Loader, add_request)
     LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, executor);
     // Check
     loader->addRequest(loader, request);
-    EXPECT_EQ(loader->requests->size, 1);
-    EXPECT_EQ(loader->requests->head->data, request);
+    EXPECT_EQ(queue_size(loader->requests), 1);
+    EXPECT_EQ(queue_top(LoaderRequest*, loader->requests), request);
 
     // Clean
     free_Loader(loader);
@@ -89,8 +89,8 @@ SKYPAT_F(Loader, activate)
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->parent.stages->push(request1->parent.stages, stage1);
-    request1->parent.stages->push(request1->parent.stages, stage2);
+    queue_push(request1->parent.stages, stage1);
+    queue_push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
@@ -102,8 +102,8 @@ SKYPAT_F(Loader, activate)
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->parent.stages->push(request2->parent.stages, stage3);
-    request2->parent.stages->push(request2->parent.stages, stage4);
+    queue_push(request2->parent.stages, stage3);
+    queue_push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -114,7 +114,7 @@ SKYPAT_F(Loader, activate)
     EXPECT_EQ(strcmp(result2, "Requests 0, Decoded: 0\n"), 0);
     EXPECT_EQ(strcmp(result3, "Requests 0, Decoded: 1\n"), 0);
     EXPECT_EQ(strcmp(result4, "Requests 0, Decoded: 1\n"), 0);
-    EXPECT_EQ(loader->requests->size, 0);
+    EXPECT_EQ(queue_size(loader->requests), 0);
     EXPECT_EQ(loader->decodedStack->size, 0);
     EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_FALSE(loader->parent.isTerminated);
@@ -138,8 +138,8 @@ SKYPAT_F(Loader, activate_loaded)
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->parent.stages->push(request1->parent.stages, stage1);
-    request1->parent.stages->push(request1->parent.stages, stage2);
+    queue_push(request1->parent.stages, stage1);
+    queue_push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
@@ -151,8 +151,8 @@ SKYPAT_F(Loader, activate_loaded)
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->parent.stages->push(request2->parent.stages, stage3);
-    request2->parent.stages->push(request2->parent.stages, stage4);
+    queue_push(request2->parent.stages, stage3);
+    queue_push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -163,7 +163,7 @@ SKYPAT_F(Loader, activate_loaded)
     EXPECT_EQ(strcmp(result2, "Requests 0, Decoded: 0\n"), 0);
     EXPECT_EQ(strcmp(result3, ""), 0);
     EXPECT_EQ(strcmp(result4, ""), 0);
-    EXPECT_EQ(loader->requests->size, 0);
+    EXPECT_EQ(queue_size(loader->requests), 0);
     EXPECT_EQ(loader->decodedStack->size, 0);
     EXPECT_EQ(list_size(loader->loadedList), 1);
     EXPECT_FALSE(loader->parent.isTerminated);
@@ -186,8 +186,8 @@ SKYPAT_F(Loader, activate_halt)
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->parent.stages->push(request1->parent.stages, stage1);
-    request1->parent.stages->push(request1->parent.stages, stage2);
+    queue_push(request1->parent.stages, stage1);
+    queue_push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
@@ -199,8 +199,8 @@ SKYPAT_F(Loader, activate_halt)
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_run);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_halt);
-    request2->parent.stages->push(request2->parent.stages, stage3);
-    request2->parent.stages->push(request2->parent.stages, stage4);
+    queue_push(request2->parent.stages, stage3);
+    queue_push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -211,7 +211,7 @@ SKYPAT_F(Loader, activate_halt)
     EXPECT_EQ(strcmp(result2, ""), 0);
     EXPECT_EQ(strcmp(result3, "Requests 0, Decoded: 1\n"), 0);
     EXPECT_EQ(strcmp(result4, "Requests 0, Decoded: 1\n"), 0);
-    EXPECT_EQ(loader->requests->size, 0);
+    EXPECT_EQ(queue_size(loader->requests), 0);
     EXPECT_EQ(loader->decodedStack->size, 1);
     EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_FALSE(loader->parent.isTerminated);
@@ -234,8 +234,8 @@ SKYPAT_F(Loader, terminate)
     memset(result2, '\0', sizeof(char) * 100);
     Stage* stage1 = new_MockStage((void*)mockInput1, (void*)result1, mock_activate_run);
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
-    request1->parent.stages->push(request1->parent.stages, stage1);
-    request1->parent.stages->push(request1->parent.stages, stage2);
+    queue_push(request1->parent.stages, stage1);
+    queue_push(request1->parent.stages, stage2);
     loader->addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
@@ -247,8 +247,8 @@ SKYPAT_F(Loader, terminate)
     memset(result4, '\0', sizeof(char) * 100);
     Stage* stage3 = new_MockStage((void*)mockInput2, (void*)result3, mock_activate_terminate);
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
-    request2->parent.stages->push(request2->parent.stages, stage3);
-    request2->parent.stages->push(request2->parent.stages, stage4);
+    queue_push(request2->parent.stages, stage3);
+    queue_push(request2->parent.stages, stage4);
     loader->addRequest(loader, request2);
 
     // Check
@@ -259,7 +259,7 @@ SKYPAT_F(Loader, terminate)
     EXPECT_EQ(strcmp(result2, ""), 0);
     EXPECT_EQ(strcmp(result3, "Requests 0, Decoded: 1\n"), 0);
     EXPECT_EQ(strcmp(result4, ""), 0);
-    EXPECT_EQ(loader->requests->size, 0);
+    EXPECT_EQ(queue_size(loader->requests), 0);
     EXPECT_EQ(loader->decodedStack->size, 2);
     EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_TRUE(loader->parent.isTerminated);

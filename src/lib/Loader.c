@@ -25,7 +25,7 @@ static void addRequest(struct Loader_* loader, LoaderRequest* request)
     char* loadName = (char*)malloc(sizeof(char) * strlen(request->moduleName));
     strcpy(loadName, request->moduleName);
     list_push_back(loader->loadedList, loadName);
-    loader->requests->push(loader->requests, request);
+    queue_push(loader->requests, request);
 }
 
 static void* run_Loader(Loader* loader)
@@ -33,13 +33,11 @@ static void* run_Loader(Loader* loader)
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     // Run requests
-    while(loader->requests->size > 0 && !loader->parent.isTerminated) {
-        LoaderRequest* request = NULL;
-        loader->requests->pop(loader->requests, (void**)&request);
+    while(queue_size(loader->requests) > 0 && !loader->parent.isTerminated) {
+        LoaderRequest* request = queue_pop(LoaderRequest*, loader->requests);
         // Run stages
-        while(request->parent.stages->size > 1) {
-            Stage* stage = NULL;
-            request->parent.stages->pop(request->parent.stages, (void**)&stage);
+        while(queue_size(request->parent.stages) > 1) {
+            Stage* stage = queue_pop(Stage*, request->parent.stages);
             *result = stage->run(stage);
             free(stage);
             if(*result) {
@@ -53,8 +51,7 @@ static void* run_Loader(Loader* loader)
     while(loader->decodedStack->size > 0 && !loader->parent.isTerminated) {
         LoaderRequest* request = NULL;
         loader->decodedStack->pop(loader->decodedStack, (void**)&request);
-        Stage* stage = NULL;
-        request->parent.stages->pop(request->parent.stages, (void**)&stage);
+        Stage* stage = queue_pop(Stage*, request->parent.stages);
         *result = stage->run(stage);
         request->parent.free((Request*)request);
         free(stage);
@@ -95,7 +92,7 @@ Loader* new_Loader()
     newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list(free);
     newLoader->decodedStack = new_stack((void (*)(void*))freeRequest);
-    newLoader->requests = new_queue((void (*)(void*))freeRequest);
+    newLoader->requests = new_queue(freeRequest);
     return newLoader;
 }
 

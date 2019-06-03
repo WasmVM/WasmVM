@@ -22,7 +22,7 @@ SKYPAT_F(LoaderRequest, new)
 
     // Check
     EXPECT_FALSE(strcmp(request->moduleName, "TestModule"));
-    EXPECT_EQ(request->parent.stages->size, 3);
+    EXPECT_EQ(queue_size(request->parent.stages), 3);
 
     free_LoaderRequest(request);
     free_Loader(loader);

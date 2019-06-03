@@ -4,7 +4,7 @@
 #include <dataTypes/queue.h>
 
 typedef struct Request_ {
-    queue* stages; // Stage*
+    queue stages;
     void (*free)(struct Request_* request);
 } Request;
 #endif

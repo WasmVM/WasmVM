@@ -15,7 +15,7 @@ void* queue_top_(queue thisQueue);
 
 #define new_queue(freeElemFunc) new_queue_((void(*)(void*))freeElemFunc)
 #define queue_push(thisQueue, valuePtr) queue_push_(thisQueue, (void*) valuePtr)
-#define queue_pop(T, thisQueue) (T)queue_pop_(thisQueue);
-#define queue_top(T, thisQueue) (T)queue_top_(thisQueue);
+#define queue_pop(T, thisQueue) (T)queue_pop_(thisQueue)
+#define queue_top(T, thisQueue) (T)queue_top_(thisQueue)
 
 #endif
