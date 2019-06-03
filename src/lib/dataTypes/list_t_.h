@@ -11,7 +11,7 @@ struct listNode_ {
     struct listNode_* next;
 };
 
-struct list_ {
+struct list_t_ {
     listNode* head;
     listNode* tail;
     size_t size;

@@ -27,7 +27,7 @@ SKYPAT_F(validate_Expr, valid)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list_t exprs = new_list((void(*)(void*))free_WasmInstr);
+    list_t exprs = new_list_t((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
@@ -52,7 +52,7 @@ SKYPAT_F(validate_Expr, valid)
     EXPECT_EQ(validate_Expr(exprs, context), 0);
 
     free_Context(context);
-    free_list(exprs);
+    free_list_t(exprs);
     free_WasmModule(module);
 }
 
@@ -65,7 +65,7 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list_t exprs = new_list((void(*)(void*))free_WasmInstr);
+    list_t exprs = new_list_t((void(*)(void*))free_WasmInstr);
 
     WasmInstr* instr = (WasmInstr*) malloc(sizeof(WasmInstr));
     instr->opcode = 0xFF;
@@ -76,7 +76,7 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     EXPECT_EQ(validate_Expr(exprs, context), -1);
 
     free_Context(context);
-    free_list(exprs);
+    free_list_t(exprs);
     free_WasmModule(module);
 }
 
@@ -89,7 +89,7 @@ SKYPAT_F(validate_Expr, remain_operand)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list_t exprs = new_list((void(*)(void*))free_WasmInstr);
+    list_t exprs = new_list_t((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
@@ -111,7 +111,7 @@ SKYPAT_F(validate_Expr, remain_operand)
     EXPECT_EQ(validate_Expr(exprs, context), -2);
 
     free_Context(context);
-    free_list(exprs);
+    free_list_t(exprs);
     free_WasmModule(module);
 }
 
@@ -127,7 +127,7 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     type->results->push_back(type->results, result);
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list_t exprs = new_list((void(*)(void*))free_WasmInstr);
+    list_t exprs = new_list_t((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
@@ -149,6 +149,6 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     EXPECT_EQ(validate_Expr(exprs, context), -3);
 
     free_Context(context);
-    free_list(exprs);
+    free_list_t(exprs);
     free_WasmModule(module);
 }

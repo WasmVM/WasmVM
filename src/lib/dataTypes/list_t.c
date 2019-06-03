@@ -71,9 +71,9 @@ int list_removeAt(list_t thisList, size_t index)
     return 0;
 }
 
-list_t new_list_(void (*freeElem)(void* elem))
+list_t new_list_t_(void (*freeElem)(void* elem))
 {
-    list_t newList = (list_t) malloc(sizeof(struct list_));
+    list_t newList = (list_t) malloc(sizeof(struct list_t_));
     newList->head = NULL;
     newList->tail = NULL;
     newList->size = 0;
@@ -81,7 +81,7 @@ list_t new_list_(void (*freeElem)(void* elem))
     return newList;
 }
 
-void free_list(list_t thislist)
+void free_list_t(list_t thislist)
 {
     if(thislist->freeElem) {
         listNode* cur = thislist->head;

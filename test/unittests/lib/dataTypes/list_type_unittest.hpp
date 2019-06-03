@@ -33,17 +33,17 @@ static int wasmvm_list_getIndex(list_t thisList, void *vData)
 
 SKYPAT_F(list_t, create_delete)
 {
-    list_t pList = new_list(free);
+    list_t pList = new_list_t(free);
 
     EXPECT_EQ(pList->head, NULL);
     EXPECT_EQ(pList->size, 0);
 
-    free_list(pList);
+    free_list_t(pList);
 }
 
 SKYPAT_F(list_t, push_back)
 {
-    list_t pList = new_list(free);
+    list_t pList = new_list_t(free);
 
     int ret = -1;
     wasmvm_list_new_object(int32_t, value1, 10255);
@@ -69,12 +69,12 @@ SKYPAT_F(list_t, push_back)
     EXPECT_EQ(ret >= 0, true);
 
     /* free list_t */
-    free_list(pList);
+    free_list_t(pList);
 }
 
 SKYPAT_F(list_t, at)
 {
-    list_t pList = new_list(free);
+    list_t pList = new_list_t(free);
 
     int index = -1;
     int32_t *at_value;
@@ -109,12 +109,12 @@ SKYPAT_F(list_t, at)
     EXPECT_EQ(*at_value, *value3);
 
     /* free list_t */
-    free_list(pList);
+    free_list_t(pList);
 }
 
 SKYPAT_F(list_t, remove_at)
 {
-    list_t pList = new_list(free);
+    list_t pList = new_list_t(free);
 
     int at_value;
 
@@ -146,5 +146,5 @@ SKYPAT_F(list_t, remove_at)
     EXPECT_EQ(pList->size, 0);
 
     /* free list_t */
-    free_list(pList);
+    free_list_t(pList);
 }

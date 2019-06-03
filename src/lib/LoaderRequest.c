@@ -2,7 +2,7 @@
 
 #include <stdlib.h>
 #include <string.h>
-#include <dataTypes/queue.h>
+#include <dataTypes/queue_t.h>
 #include <Decoder.h>
 #include <Validator.h>
 #include <Instanciator.h>
@@ -10,7 +10,7 @@
 LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor* executor)
 {
     LoaderRequest* request = (LoaderRequest*) malloc(sizeof(LoaderRequest));
-    request->parent.stages = new_queue(free);
+    request->parent.stages = new_queue_t(free);
     request->parent.free = (void(*)(Request*))free_LoaderRequest;
     request->moduleName = (char*) malloc(sizeof(char)*strlen(moduleName));
     strcpy(request->moduleName, moduleName);
@@ -31,6 +31,6 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Exec
 
 void free_LoaderRequest(LoaderRequest* request)
 {
-    free_queue(request->parent.stages);
+    free_queue_t(request->parent.stages);
     free(request);
 }

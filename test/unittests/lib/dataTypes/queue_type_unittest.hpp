@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <dataTypes/queue_.h>
+#include <dataTypes/queue_t_.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,19 +10,19 @@ extern "C" {
 }
 #undef _Bool
 
-SKYPAT_F(queue, create_delete)
+SKYPAT_F(queue_t, create_delete)
 {
-    queue pQueue = new_queue(free);
+    queue_t pQueue = new_queue_t(free);
 
     EXPECT_EQ(pQueue->head, NULL);
     EXPECT_EQ(pQueue->size, 0);
 
-    free_queue(pQueue);
+    free_queue_t(pQueue);
 }
 
-SKYPAT_F(queue, push)
+SKYPAT_F(queue_t, push)
 {
-    queue pQueue = new_queue(free);
+    queue_t pQueue = new_queue_t(free);
 
     int32_t *value1 = (int32_t *)malloc(sizeof(uint32_t));
     *value1 = 1023;
@@ -50,13 +50,13 @@ SKYPAT_F(queue, push)
     EXPECT_EQ(*(int32_t *)pQueue->head->next->next->data, -100);
 
     /* free object */
-    free_queue(pQueue);
+    free_queue_t(pQueue);
 }
 
-SKYPAT_F(queue, pop)
+SKYPAT_F(queue_t, pop)
 {
     int test = 0;
-    queue pQueue = new_queue(free);
+    queue_t pQueue = new_queue_t(free);
 
     /* push data */
     int32_t *pop_value1 = (int32_t *)malloc(sizeof(int32_t));
@@ -104,13 +104,13 @@ SKYPAT_F(queue, pop)
     EXPECT_EQ(pop_ans, NULL);
 
     /* free object */
-    free_queue(pQueue);
+    free_queue_t(pQueue);
 }
 
-SKYPAT_F(queue, top)
+SKYPAT_F(queue_t, top)
 {
     int test = 0;
-    queue pQueue = new_queue(free);
+    queue_t pQueue = new_queue_t(free);
 
     /* push data */
     int32_t *top_value1 = (int32_t *)malloc(sizeof(int32_t));
@@ -159,5 +159,5 @@ SKYPAT_F(queue, top)
     EXPECT_EQ(top_ans, NULL);
 
     /* free value */
-    free_queue(pQueue);
+    free_queue_t(pQueue);
 }
