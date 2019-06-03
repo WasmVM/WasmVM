@@ -3,22 +3,22 @@
 
 #include <stddef.h>
 
-typedef struct listNode_ {
-    void* data;
-    struct listNode_* next;
-} listNode;
+typedef struct list_ * list;
+typedef struct listNode_ * list_iterator;
 
-typedef struct list_ {
-    listNode* head;
-    listNode* tail;
-    size_t size;
-    void (*freeElem)(void* elem);
-    void (*push_back)(struct list_* thisList, const void* value);
-    void* (*at)(struct list_* thisList, size_t index);
-    int (*removeAt)(struct list_* thisList, size_t index);
-} list;
+#define new_list(freeElemFunc) new_list_((void (*)(void*))freeElemFunc);
+#define list_push_back(thisList, valuePtr) list_push_back_(thisList, (void*) valuePtr);
+#define list_at(T, thisList, index) (T*)list_at(thisList, index);
+#define list_iterator_get(T, it) (T*)list_iterator_get_(it);
 
-list* new_list(void (*freeElem)(void* elem));
-void free_list(list* thislistPtr);
+void free_list(list thisList);
+int list_removeAt(list thisList, size_t index);
+
+list new_list_(void (*freeElem)(void* elem));
+void list_push_back_(list thisList, void* valuePtr);
+void* list_at_(list thisList, size_t index);
+void* list_iterator_get_(list_iterator it);
+list_iterator list_head(list thisList);
+list_iterator list_next(list_iterator it);
 
 #endif

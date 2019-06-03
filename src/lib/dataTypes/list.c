@@ -1,11 +1,26 @@
-#include <dataTypes/list.h>
+#include "list_.h"
 
 #include <stdlib.h>
 
-static void listPushBack(list* thislist, void* data)
+void* list_iterator_get_(list_iterator it)
+{
+    return it->data;
+}
+
+list_iterator list_head(list thisList)
+{
+    return thisList->head;
+}
+
+list_iterator list_next(list_iterator it)
+{
+    return it->next;
+}
+
+void list_push_back_(list thislist, void* valuePtr)
 {
     listNode* newNode = (listNode*)malloc(sizeof(listNode));
-    newNode->data = data;
+    newNode->data = valuePtr;
     newNode->next = NULL;
     if(thislist->tail != NULL) {
         thislist->tail->next = newNode;
@@ -16,7 +31,7 @@ static void listPushBack(list* thislist, void* data)
     ++thislist->size;
 }
 
-static void* listAt(list* thislist, size_t index)
+void* list_at_(list thislist, size_t index)
 {
     if(index >= thislist->size) {
         return NULL;
@@ -28,53 +43,49 @@ static void* listAt(list* thislist, size_t index)
     return cur->data;
 }
 
-static int listRemoveAt(list* thislist, size_t index)
+int list_removeAt(list thisList, size_t index)
 {
-    if(index >= thislist->size) {
+    if(index >= thisList->size) {
         return -1;
     }
-    listNode** previous = &thislist->head;
-    listNode* cur = thislist->head;
+    listNode** previous = &thisList->head;
+    listNode* cur = thisList->head;
     for(size_t i = 0; i < index; ++i) {
         previous = &cur->next;
         cur = cur->next;
     }
     *previous = cur->next;
     if(*previous == (listNode *)NULL) {
-        thislist->tail = (listNode *)NULL;
+        thisList->tail = (listNode *)NULL;
     }
-    if(thislist->freeElem) {
-        thislist->freeElem(cur->data);
+    if(thisList->freeElem) {
+        thisList->freeElem(cur->data);
     }
     free(cur);
-    --thislist->size;
+    --thisList->size;
     return 0;
 }
 
-list* new_list(void (*freeElem)(void* elem))
+list new_list_(void (*freeElem)(void* elem))
 {
-    list* newQueue = (list*) malloc(sizeof(list));
-    newQueue->head = NULL;
-    newQueue->tail = NULL;
-    newQueue->size = 0;
-    newQueue->push_back = (void (*)(list*, const void*))listPushBack;
-    newQueue->at = listAt;
-    newQueue->removeAt = listRemoveAt;
-    newQueue->freeElem = freeElem;
-    return newQueue;
+    list newList = (list) malloc(sizeof(struct list_));
+    newList->head = NULL;
+    newList->tail = NULL;
+    newList->size = 0;
+    newList->freeElem = freeElem;
+    return newList;
 }
 
-void free_list(list* thislistPtr)
+void free_list(list thislist)
 {
-    if(thislistPtr->freeElem) {
-        listNode* cur = thislistPtr->head;
-        listNode* tmp;
+    if(thislist->freeElem) {
+        listNode* cur = thislist->head;
         while(cur != NULL) {
-            thislistPtr->freeElem(cur->data);
-            tmp = cur;
+            thislist->freeElem(cur->data);
+            listNode* tmp = cur;
             cur = cur->next;
             free(tmp);
         }
     }
-    free(thislistPtr);
+    free(thislist);
 }
