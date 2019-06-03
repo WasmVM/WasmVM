@@ -195,7 +195,7 @@ int parseInstr(WasmFunc *func, uint8_t **read_p, const uint8_t *end_p)
             return -1;
     }
     if(instr) {
-        func->body->push_back(func->body, instr);
+        list_push_back(func->body, instr);
         return 0;
     }
     return -2;

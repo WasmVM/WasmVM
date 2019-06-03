@@ -42,13 +42,13 @@ SKYPAT_F(allocate_function, valid)
     func->locals->push_back(func->locals, local1);
     WasmVariableInstr* getParamInstr = new_WasmVariableInstr(0);
     getParamInstr->parent.opcode = Op_get_local;
-    func->body->push_back(func->body, getParamInstr);
+    list_push_back(func->body, getParamInstr);
     WasmVariableInstr* getLocalInstr = new_WasmVariableInstr(1);
     getLocalInstr->parent.opcode = Op_get_local;
-    func->body->push_back(func->body, getLocalInstr);
+    list_push_back(func->body, getLocalInstr);
     WasmNumericInstr* addInstr = new_WasmNumericInstr();
     addInstr->parent.opcode = Op_i32_add;
-    func->body->push_back(func->body, addInstr);
+    list_push_back(func->body, addInstr);
 
     // Test
     uint32_t address = allocate_Function(func, store, moduleInst);
@@ -59,11 +59,11 @@ SKYPAT_F(allocate_function, valid)
     EXPECT_EQ(*(ValueType*)funcInst->type->results->at(funcInst->type->results, 0), Value_i32);
     EXPECT_EQ(*(ValueType*)funcInst->locals->at(funcInst->locals, 0), Value_i32);
     EXPECT_EQ(funcInst->module, moduleInst);
-    EXPECT_EQ(((VariableInstrInst*)funcInst->code->at(funcInst->code, 0))->parent.opcode, Op_get_local);
-    EXPECT_EQ(((VariableInstrInst*)funcInst->code->at(funcInst->code, 0))->index, 0);
-    EXPECT_EQ(((VariableInstrInst*)funcInst->code->at(funcInst->code, 1))->parent.opcode, Op_get_local);
-    EXPECT_EQ(((VariableInstrInst*)funcInst->code->at(funcInst->code, 1))->index, 1);
-    EXPECT_EQ(((NumericInstrInst*)funcInst->code->at(funcInst->code, 2))->parent.opcode, Op_i32_add);
+    EXPECT_EQ((list_at(VariableInstrInst*, funcInst->code, 0))->parent.opcode, Op_get_local);
+    EXPECT_EQ((list_at(VariableInstrInst*, funcInst->code, 0))->index, 0);
+    EXPECT_EQ((list_at(VariableInstrInst*, funcInst->code, 1))->parent.opcode, Op_get_local);
+    EXPECT_EQ((list_at(VariableInstrInst*, funcInst->code, 1))->index, 1);
+    EXPECT_EQ((list_at(NumericInstrInst*, funcInst->code, 2))->parent.opcode, Op_i32_add);
 
     // Clean
     free_Store(store);

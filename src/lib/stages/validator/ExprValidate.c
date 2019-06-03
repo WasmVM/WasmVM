@@ -10,7 +10,7 @@ static void clean(stack* opds, stack* ctrls)
     free_stack(ctrls);
 }
 
-int validate_Expr(list* expr, Context* context)
+int validate_Expr(list expr, Context* context)
 {
     // Prepare
     stack* opds = new_stack(free); // ValueType
@@ -21,8 +21,8 @@ int validate_Expr(list* expr, Context* context)
         frame->end_types->push_back(frame->end_types, context->returns->at(context->returns, i));
     }
     // Validate
-    for(size_t i = 0; i < expr->size; ++i) {
-        WasmInstr* instr = (WasmInstr*)expr->at(expr, i);
+    for(size_t i = 0; i < list_size(expr); ++i) {
+        WasmInstr* instr = list_at(WasmInstr*, expr, i);
         int result = 0;
         switch (instr->opcode) {
             case Op_unreachable:

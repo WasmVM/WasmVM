@@ -15,7 +15,7 @@
 #include <instance/MemoryInstrInst.h>
 #include <instance/NumericInstrInst.h>
 
-static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list* funcBody, size_t index)
+static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list funcBody, size_t index)
 {
     ControlInstrInst* instrInst = new_ControlInstrInst();
     instrInst->parent.opcode = instr->parent.opcode;
@@ -31,8 +31,8 @@ static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list* funcBody,
     }
     if(instr->parent.opcode == Op_if || instr->parent.opcode == Op_block || instr->parent.opcode == Op_loop) {
         uint32_t endLevel = 0;
-        for(size_t i = index + 1; i < funcBody->size; ++i) {
-            InstrInst* curInstr = (InstrInst*)funcBody->at(funcBody, i);
+        for(size_t i = index + 1; i < list_size(funcBody); ++i) {
+            InstrInst* curInstr = list_at(InstrInst*, funcBody, i);
             if(curInstr->opcode == Op_if || curInstr->opcode == Op_block || curInstr->opcode == Op_loop) {
                 endLevel += 1;
             } else if(curInstr->opcode == Op_end) {
@@ -82,9 +82,9 @@ static InstrInst* allocate_NumericInstr(WasmNumericInstr* instr)
     return (InstrInst*)instrInst;
 }
 
-InstrInst* allocate_Instruction(list* funcBody, size_t index)
+InstrInst* allocate_Instruction(list funcBody, size_t index)
 {
-    WasmInstr* instr = (WasmInstr*)funcBody->at(funcBody, index);
+    WasmInstr* instr = list_at(WasmInstr*, funcBody, index);
     InstrInst* instrInst = NULL;
     switch (instr->opcode) {
         case Op_unreachable:

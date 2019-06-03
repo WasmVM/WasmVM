@@ -1,5 +1,6 @@
 #include <core/Runtime.h>
 
+#include <dataTypes/list.h>
 #include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
@@ -40,7 +41,7 @@ int runtime_call(Stack* stack, Store* store, ControlInstrInst *control)
     // Push frame to Stack
     push_Frame(stack, frame);
     // Execute block
-    Label label = new_Label(address, 0, (func->code->size > 0) ? func->code->size - 1 : 0);
+    Label label = new_Label(address, 0, (list_size(func->code) > 0) ? list_size(func->code) - 1 : 0);
     label_set_resultTypes(label, func->type->results);
     push_Label(stack, label);
     return 0;

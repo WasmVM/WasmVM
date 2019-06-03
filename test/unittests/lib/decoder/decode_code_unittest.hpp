@@ -24,14 +24,14 @@ SKYPAT_F(decode_code, valid)
     EXPECT_EQ(func->locals->length, 2);
     EXPECT_EQ(*((ValueType*)func->locals->at(func->locals, 0)), Value_i32);
     EXPECT_EQ(*((ValueType*)func->locals->at(func->locals, 1)), Value_f32);
-    EXPECT_EQ(func->body->size, 3);
-    WasmVariableInstr* get_local = (WasmVariableInstr*)func->body->at(func->body, 0);
+    EXPECT_EQ(list_size(func->body), 3);
+    WasmVariableInstr* get_local = list_at(WasmVariableInstr*, func->body, 0);
     EXPECT_EQ(get_local->parent.opcode, Op_get_local);
     EXPECT_EQ(get_local->index, 0);
-    get_local = (WasmVariableInstr*)func->body->at(func->body, 1);
+    get_local = list_at(WasmVariableInstr*, func->body, 1);
     EXPECT_EQ(get_local->parent.opcode, Op_get_local);
     EXPECT_EQ(get_local->index, 1);
-    WasmNumericInstr* i32_add = (WasmNumericInstr*)func->body->at(func->body, 2);
+    WasmNumericInstr* i32_add = list_at(WasmNumericInstr*, func->body, 2);
     EXPECT_EQ(i32_add->parent.opcode, Op_i32_add);
     free_WasmModule(module);
 }

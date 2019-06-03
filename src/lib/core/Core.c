@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <core/Runtime.h>
+#include <dataTypes/list.h>
 #include <dataTypes/stack.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
@@ -597,7 +598,7 @@ static void* exec_Core(void* corePtr)
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
         FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, label_get_funcAddr(core->stack->curLabel));
-        if(label_get_instrIndex(core->stack->curLabel) >= func->code->size) {
+        if(label_get_instrIndex(core->stack->curLabel) >= list_size(func->code)) {
             Label label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
@@ -625,7 +626,7 @@ static void* exec_Core(void* corePtr)
             free_Frame(frame);
             continue;
         }
-        InstrInst* instr = (InstrInst*)func->code->at(func->code, label_get_instrIndex(core->stack->curLabel));
+        InstrInst* instr = list_at(InstrInst*, func->code, label_get_instrIndex(core->stack->curLabel));
         switch (instr->opcode) {
             case Op_unreachable:
             case Op_nop:
@@ -853,7 +854,7 @@ static int run_Core(Core* core)
         }
     }
     push_Frame(core->stack, frame);
-    Label label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
+    Label label = new_Label(core->startFuncAddr, 0, list_size(startFunc->code));
     label_set_resultTypes(label, startFunc->type->results);
     push_Label(core->stack, label);
     // Run in thread

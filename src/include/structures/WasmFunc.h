@@ -10,7 +10,7 @@
 typedef struct _wasm_func {
     uint32_t    type;
     vector*     locals;     // ValueType
-    list*     body;       // WasmInstr
+    list        body;       // WasmInstr
 } WasmFunc;
 WasmFunc* new_WasmFunc();
 void clean_WasmFunc(WasmFunc* thisWasmFunc);

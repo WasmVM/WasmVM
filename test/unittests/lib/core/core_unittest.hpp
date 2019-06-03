@@ -34,7 +34,7 @@ SKYPAT_F(Core, create_delete)
     instr1->constant.parent.entryType = Entry_Value;
     instr1->constant.type = Value_i32;
     instr1->constant.value.i32 = 5;
-    func->code->push_back(func->code, instr1);
+    list_push_back(func->code, instr1);
     ValueType localType1 = Value_i32;
     func->locals->push_back(func->locals, &localType1);
     executor->store->funcs->push_back(executor->store->funcs, func);
@@ -70,16 +70,16 @@ SKYPAT_F(Core, run_stop)
     instr1->constant.parent.entryType = Entry_Value;
     instr1->constant.type = Value_i32;
     instr1->constant.value.i32 = 5;
-    func->code->push_back(func->code, instr1);
+    list_push_back(func->code, instr1);
     NumericInstrInst* instr2 = new_NumericInstrInst();
     instr2->parent.opcode = Op_i32_const;
     instr2->constant.parent.entryType = Entry_Value;
     instr2->constant.type = Value_i32;
     instr2->constant.value.i32 = 7;
-    func->code->push_back(func->code, instr2);
+    list_push_back(func->code, instr2);
     NumericInstrInst* instr3 = new_NumericInstrInst();
     instr3->parent.opcode = Op_i32_add;
-    func->code->push_back(func->code, instr3);
+    list_push_back(func->code, instr3);
     ValueType localType1 = Value_i32;
     func->locals->push_back(func->locals, &localType1);
     executor->store->funcs->push_back(executor->store->funcs, func);
@@ -116,16 +116,16 @@ SKYPAT_F(Core, resume)
     instr1->constant.parent.entryType = Entry_Value;
     instr1->constant.type = Value_i32;
     instr1->constant.value.i32 = 5;
-    func->code->push_back(func->code, instr1);
+    list_push_back(func->code, instr1);
     NumericInstrInst* instr2 = new_NumericInstrInst();
     instr2->parent.opcode = Op_i32_const;
     instr2->constant.parent.entryType = Entry_Value;
     instr2->constant.type = Value_i32;
     instr2->constant.value.i32 = 7;
-    func->code->push_back(func->code, instr2);
+    list_push_back(func->code, instr2);
     NumericInstrInst* instr3 = new_NumericInstrInst();
     instr3->parent.opcode = Op_i32_add;
-    func->code->push_back(func->code, instr3);
+    list_push_back(func->code, instr3);
     ValueType localType1 = Value_i32;
     func->locals->push_back(func->locals, &localType1);
     executor->store->funcs->push_back(executor->store->funcs, func);
@@ -136,7 +136,7 @@ SKYPAT_F(Core, resume)
     FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
     Frame frame = new_Frame(startFunc->module);
     push_Frame(core->stack, frame);
-    Label label = new_Label(core->startFuncAddr, 0, startFunc->code->size);
+    Label label = new_Label(core->startFuncAddr, 0, list_size(startFunc->code));
     label_set_resultTypes(label, startFunc->type->results);
     push_Label(core->stack, label);
 

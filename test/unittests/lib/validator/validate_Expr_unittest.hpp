@@ -27,26 +27,26 @@ SKYPAT_F(validate_Expr, valid)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list* exprs = new_list((void(*)(void*))free_WasmInstr);
+    list exprs = new_list((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
-    exprs->push_back(exprs, dropInstr);
+    list_push_back(exprs, dropInstr);
 
     // Check
     EXPECT_EQ(validate_Expr(exprs, context), 0);
@@ -65,12 +65,12 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list* exprs = new_list((void(*)(void*))free_WasmInstr);
+    list exprs = new_list((void(*)(void*))free_WasmInstr);
 
     WasmInstr* instr = (WasmInstr*) malloc(sizeof(WasmInstr));
     instr->opcode = 0xFF;
     instr->free = (void(*)(WasmInstr*))free;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
 
     // Check
     EXPECT_EQ(validate_Expr(exprs, context), -1);
@@ -89,23 +89,23 @@ SKYPAT_F(validate_Expr, remain_operand)
     FuncType type = new_FuncType();
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list* exprs = new_list((void(*)(void*))free_WasmInstr);
+    list exprs = new_list((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
 
     // Check
     EXPECT_EQ(validate_Expr(exprs, context), -2);
@@ -127,23 +127,23 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     type->results->push_back(type->results, result);
     module->types->push_back(module->types, type);
     Context* context = new_Context(module, func);
-    list* exprs = new_list((void(*)(void*))free_WasmInstr);
+    list exprs = new_list((void(*)(void*))free_WasmInstr);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    exprs->push_back(exprs, instr);
+    list_push_back(exprs, instr);
 
     // Check
     EXPECT_EQ(validate_Expr(exprs, context), -3);

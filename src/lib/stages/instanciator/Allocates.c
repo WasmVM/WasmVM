@@ -100,8 +100,8 @@ uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)
         *local = *(ValueType*)func->locals->at(func->locals, i);
         funcInst->locals->push_back(funcInst->locals, local);
     }
-    for(size_t i = 0; i < func->body->size; ++i) {
-        funcInst->code->push_back(funcInst->code, allocate_Instruction(func->body, i));
+    for(size_t i = 0; i < list_size(func->body); ++i) {
+        list_push_back(funcInst->code, allocate_Instruction(func->body, i));
     }
     uint32_t address = store->funcs->length;
     store->funcs->push_back(store->funcs, funcInst);

@@ -17,6 +17,11 @@ list_iterator list_next(list_iterator it)
     return it->next;
 }
 
+size_t list_size(list thisList)
+{
+    return thisList->size;
+}
+
 void list_push_back_(list thislist, void* valuePtr)
 {
     listNode* newNode = (listNode*)malloc(sizeof(listNode));

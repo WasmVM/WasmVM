@@ -9,7 +9,7 @@
 
 typedef struct Loader_ {
     Component parent;
-    list* loadedList; // char*
+    list loadedList; // char*
     stack* decodedStack; // Request*
     queue* requests; // Request*
     void (*addRequest)(struct Loader_* loader, LoaderRequest* request);

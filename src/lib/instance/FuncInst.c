@@ -11,7 +11,7 @@ FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
     instance->type = type;
     instance->locals = new_vector(sizeof(ValueType), NULL);
     instance->module = module;
-    instance->code = new_list((void(*)(void*))free_InstrInst);
+    instance->code = new_list(free_InstrInst);
     instance->hostcode = NULL;
     return instance;
 }

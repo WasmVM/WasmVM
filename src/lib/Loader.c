@@ -12,8 +12,8 @@ static void addRequest(struct Loader_* loader, LoaderRequest* request)
 {
     // Check whether loaded or not
     _Bool loaded = 0;
-    for(listNode* cur = loader->loadedList->head; cur != NULL; cur = cur->next) {
-        if(!strcmp(request->moduleName, (char*)cur->data)) {
+    for(list_iterator it = list_head(loader->loadedList); it != NULL; it = list_next(it)) {
+        if(!strcmp(request->moduleName, list_iterator_get(char*, it))) {
             loaded = 1;
             break;
         }
@@ -24,7 +24,7 @@ static void addRequest(struct Loader_* loader, LoaderRequest* request)
     }
     char* loadName = (char*)malloc(sizeof(char) * strlen(request->moduleName));
     strcpy(loadName, request->moduleName);
-    loader->loadedList->push_back(loader->loadedList, loadName);
+    list_push_back(loader->loadedList, loadName);
     loader->requests->push(loader->requests, request);
 }
 

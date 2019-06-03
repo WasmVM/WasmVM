@@ -48,13 +48,11 @@ SKYPAT_F(Loader, create_delete)
     Loader* loader = new_Loader();
 
     // Check
-    EXPECT_EQ(loader->loadedList->head, NULL);
-    EXPECT_EQ(loader->loadedList->tail, NULL);
-    EXPECT_EQ(loader->loadedList->size, 0);
+    EXPECT_EQ(list_head(loader->loadedList), NULL);
+    EXPECT_EQ(list_size(loader->loadedList), 0);
     EXPECT_EQ(loader->decodedStack->head, NULL);
     EXPECT_EQ(loader->decodedStack->size, 0);
     EXPECT_EQ(loader->requests->head, NULL);
-    EXPECT_EQ(loader->requests->tail, NULL);
     EXPECT_EQ(loader->requests->size, 0);
 
     free_Loader(loader);
@@ -118,7 +116,7 @@ SKYPAT_F(Loader, activate)
     EXPECT_EQ(strcmp(result4, "Requests 0, Decoded: 1\n"), 0);
     EXPECT_EQ(loader->requests->size, 0);
     EXPECT_EQ(loader->decodedStack->size, 0);
-    EXPECT_EQ(loader->loadedList->size, 2);
+    EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_FALSE(loader->parent.isTerminated);
     EXPECT_EQ(*resValue, 0);
 
@@ -167,7 +165,7 @@ SKYPAT_F(Loader, activate_loaded)
     EXPECT_EQ(strcmp(result4, ""), 0);
     EXPECT_EQ(loader->requests->size, 0);
     EXPECT_EQ(loader->decodedStack->size, 0);
-    EXPECT_EQ(loader->loadedList->size, 1);
+    EXPECT_EQ(list_size(loader->loadedList), 1);
     EXPECT_FALSE(loader->parent.isTerminated);
     EXPECT_EQ(*resValue, 0);
 
@@ -215,7 +213,7 @@ SKYPAT_F(Loader, activate_halt)
     EXPECT_EQ(strcmp(result4, "Requests 0, Decoded: 1\n"), 0);
     EXPECT_EQ(loader->requests->size, 0);
     EXPECT_EQ(loader->decodedStack->size, 1);
-    EXPECT_EQ(loader->loadedList->size, 2);
+    EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_FALSE(loader->parent.isTerminated);
     EXPECT_EQ(*resValue, 2);
 
@@ -263,7 +261,7 @@ SKYPAT_F(Loader, terminate)
     EXPECT_EQ(strcmp(result4, ""), 0);
     EXPECT_EQ(loader->requests->size, 0);
     EXPECT_EQ(loader->decodedStack->size, 2);
-    EXPECT_EQ(loader->loadedList->size, 2);
+    EXPECT_EQ(list_size(loader->loadedList), 2);
     EXPECT_TRUE(loader->parent.isTerminated);
     EXPECT_EQ(*resValue, 0);
 

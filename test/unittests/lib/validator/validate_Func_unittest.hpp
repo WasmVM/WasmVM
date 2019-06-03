@@ -30,19 +30,19 @@ SKYPAT_F(validate_Func, valid)
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
-    func->body->push_back(func->body, dropInstr);
+    list_push_back(func->body, dropInstr);
 
     // Check
     EXPECT_EQ(validate_Func(func, module), 0);
@@ -63,19 +63,19 @@ SKYPAT_F(validate_Func, type_not_exist)
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
-    func->body->push_back(func->body, dropInstr);
+    list_push_back(func->body, dropInstr);
 
     // Check
     EXPECT_EQ(validate_Func(func, module), -1);

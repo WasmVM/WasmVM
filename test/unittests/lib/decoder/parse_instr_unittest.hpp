@@ -16,7 +16,7 @@ SKYPAT_F(decoder_parse_instr, valid)
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x6a";
     EXPECT_EQ(parseInstr(func, &testBin, testBin), 0);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 0))->opcode, Op_i32_add);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 0))->opcode, Op_i32_add);
     free_WasmFunc(func);
 }
 
