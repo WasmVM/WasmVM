@@ -1,72 +1,71 @@
-#include <dataTypes/queue.h>
+#include <dataTypes/queue_.h>
 
 #include <stdlib.h>
 
-static void queuePush(queue* thisqueue, void* data)
+void free_queue(queue thisQueue)
 {
-    queueNode* newNode = (queueNode*)malloc(sizeof(queueNode));
-    newNode->data = data;
-    newNode->next = NULL;
-    if(thisqueue->tail != NULL) {
-        thisqueue->tail->next = newNode;
-    } else {
-        thisqueue->head = newNode;
-    }
-    thisqueue->tail = newNode;
-    ++thisqueue->size;
-}
-
-static int queuePop(queue* thisqueue, void** dataPtr)
-{
-    if (thisqueue->size) {
-        queueNode* node = thisqueue->head;
-        thisqueue->head = node->next;
-        *dataPtr = node->data;
-        free(node);
-        if(thisqueue->head == NULL) {
-            thisqueue->tail = NULL;
-        }
-        --thisqueue->size;
-        return 0;
-    } else {
-        return -1;
-    }
-}
-
-static int queueTop(queue* thisqueue, void** dataPtr)
-{
-    if (thisqueue->size) {
-        *dataPtr = thisqueue->head->data;
-        return 0;
-    } else {
-        return -1;
-    }
-}
-
-queue* new_queue(void (*freeElem)(void* elem))
-{
-    queue* newQueue = (queue*) malloc(sizeof(queue));
-    newQueue->head = NULL;
-    newQueue->tail = NULL;
-    newQueue->size = 0;
-    newQueue->push = queuePush;
-    newQueue->pop = queuePop;
-    newQueue->top = queueTop;
-    newQueue->freeElem = freeElem;
-    return newQueue;
-}
-
-void free_queue(queue* thisqueuePtr)
-{
-    if(thisqueuePtr->freeElem) {
-        queueNode* cur = thisqueuePtr->head;
-        queueNode* tmp;
+    if(thisQueue->freeElem) {
+        queueNode cur = thisQueue->head;
         while(cur != NULL) {
-            thisqueuePtr->freeElem(cur->data);
-            tmp = cur;
+            thisQueue->freeElem(cur->data);
+            queueNode tmp = cur;
             cur = cur->next;
             free(tmp);
         }
     }
-    free(thisqueuePtr);
+    free(thisQueue);
+}
+
+size_t queue_size(queue thisQueue)
+{
+    return thisQueue->size;
+}
+
+queue new_queue_(void (*freeElem)(void* elem))
+{
+    queue newQueue = (queue) malloc(sizeof(queue));
+    newQueue->head = NULL;
+    newQueue->tail = NULL;
+    newQueue->size = 0;
+    newQueue->freeElem = freeElem;
+    return newQueue;
+}
+void queue_push_(queue thisQueue, void* valuePtr)
+{
+    queueNode newNode = (queueNode)malloc(sizeof(struct queueNode_));
+    newNode->data = valuePtr;
+    newNode->next = NULL;
+    if(thisQueue->tail != NULL) {
+        thisQueue->tail->next = newNode;
+    } else {
+        thisQueue->head = newNode;
+    }
+    thisQueue->tail = newNode;
+    ++thisQueue->size;
+}
+
+void* queue_pop_(queue thisQueue)
+{
+    if (thisQueue->size) {
+        queueNode node = thisQueue->head;
+        thisQueue->head = node->next;
+        void* dataPtr = node->data;
+        free(node);
+        if(thisQueue->head == NULL) {
+            thisQueue->tail = NULL;
+        }
+        --thisQueue->size;
+        return dataPtr;
+    } else {
+        return NULL;
+    }
+}
+
+void* queue_top_(queue thisQueue)
+{
+    if (thisQueue->size) {
+        return thisQueue->head->data;
+    } else {
+        return NULL;
+    }
 }
