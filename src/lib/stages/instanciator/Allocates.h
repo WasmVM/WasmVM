@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 #include <core/Store.h>
-#include <dataTypes/list.h>
+#include <dataTypes/list_t.h>
 #include <structures/WasmModule.h>
 #include <structures/WasmTable.h>
 #include <structures/WasmMemory.h>
@@ -18,7 +18,7 @@
 #include <instance/ExportInst.h>
 
 ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* exportInsts[], size_t exportCount);
-InstrInst* allocate_Instruction(list funcBody, size_t index);
+InstrInst* allocate_Instruction(list_t funcBody, size_t index);
 uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst);
 uint32_t allocate_Table(WasmTable* table, Store* store);
 uint32_t allocate_Memory(WasmMemory* memory, Store* store);

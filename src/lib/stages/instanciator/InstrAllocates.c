@@ -15,7 +15,7 @@
 #include <instance/MemoryInstrInst.h>
 #include <instance/NumericInstrInst.h>
 
-static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list funcBody, size_t index)
+static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list_t funcBody, size_t index)
 {
     ControlInstrInst* instrInst = new_ControlInstrInst();
     instrInst->parent.opcode = instr->parent.opcode;
@@ -82,7 +82,7 @@ static InstrInst* allocate_NumericInstr(WasmNumericInstr* instr)
     return (InstrInst*)instrInst;
 }
 
-InstrInst* allocate_Instruction(list funcBody, size_t index)
+InstrInst* allocate_Instruction(list_t funcBody, size_t index)
 {
     WasmInstr* instr = list_at(WasmInstr*, funcBody, index);
     InstrInst* instrInst = NULL;

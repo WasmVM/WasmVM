@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <dataTypes/list_.h>
+#include <dataTypes/list_t_.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,8 +10,8 @@ extern "C" {
 }
 #undef _Bool
 
-#define wasmvm_list_foreach(node_name, list)                \
-        for (list_iterator node_name = list_head(list);     \
+#define wasmvm_list_foreach(node_name, list_t)                \
+        for (list_iterator node_name = list_head(list_t);     \
              node_name != NULL;                             \
              node_name = list_next(node_name))
 
@@ -19,7 +19,7 @@ extern "C" {
         type * name = (type *)malloc(sizeof(type));     \
         *name = init_value
 
-static int wasmvm_list_getIndex(list thisList, void *vData)
+static int wasmvm_list_getIndex(list_t thisList, void *vData)
 {
     int i = 0;
     wasmvm_list_foreach(node, thisList) {
@@ -31,9 +31,9 @@ static int wasmvm_list_getIndex(list thisList, void *vData)
     return -1;
 }
 
-SKYPAT_F(list, create_delete)
+SKYPAT_F(list_t, create_delete)
 {
-    list pList = new_list(free);
+    list_t pList = new_list(free);
 
     EXPECT_EQ(pList->head, NULL);
     EXPECT_EQ(pList->size, 0);
@@ -41,9 +41,9 @@ SKYPAT_F(list, create_delete)
     free_list(pList);
 }
 
-SKYPAT_F(list, push_back)
+SKYPAT_F(list_t, push_back)
 {
-    list pList = new_list(free);
+    list_t pList = new_list(free);
 
     int ret = -1;
     wasmvm_list_new_object(int32_t, value1, 10255);
@@ -54,7 +54,7 @@ SKYPAT_F(list, push_back)
     list_push_back(pList, value1);
     EXPECT_EQ(pList->size, 1);
     ret = wasmvm_list_getIndex(pList, (void *)value1);
-    EXPECT_EQ(ret >= 0, true);      // check data exist in list
+    EXPECT_EQ(ret >= 0, true);      // check data exist in list_t
     ret = -1;
 
     list_push_back(pList, value2);
@@ -68,13 +68,13 @@ SKYPAT_F(list, push_back)
     ret = wasmvm_list_getIndex(pList, (void *)value3);
     EXPECT_EQ(ret >= 0, true);
 
-    /* free list */
+    /* free list_t */
     free_list(pList);
 }
 
-SKYPAT_F(list, at)
+SKYPAT_F(list_t, at)
 {
-    list pList = new_list(free);
+    list_t pList = new_list(free);
 
     int index = -1;
     int32_t *at_value;
@@ -86,7 +86,7 @@ SKYPAT_F(list, at)
     /* test at */
     list_push_back(pList, value1);
     EXPECT_EQ(pList->size, 1);
-    index = wasmvm_list_getIndex(pList, (void *)value1);    // get index of value1 in list
+    index = wasmvm_list_getIndex(pList, (void *)value1);    // get index of value1 in list_t
     EXPECT_EQ(index >= 0, true);
     at_value = list_at(int32_t*, pList, index);
     EXPECT_EQ(pList->size, 1);
@@ -108,13 +108,13 @@ SKYPAT_F(list, at)
     EXPECT_EQ(pList->size, 3);
     EXPECT_EQ(*at_value, *value3);
 
-    /* free list */
+    /* free list_t */
     free_list(pList);
 }
 
-SKYPAT_F(list, remove_at)
+SKYPAT_F(list_t, remove_at)
 {
-    list pList = new_list(free);
+    list_t pList = new_list(free);
 
     int at_value;
 
@@ -145,6 +145,6 @@ SKYPAT_F(list, remove_at)
     EXPECT_EQ(at_value, 0);
     EXPECT_EQ(pList->size, 0);
 
-    /* free list */
+    /* free list_t */
     free_list(pList);
 }

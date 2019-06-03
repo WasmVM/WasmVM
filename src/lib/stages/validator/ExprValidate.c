@@ -10,7 +10,7 @@ static void clean(stack* opds, stack* ctrls)
     free_stack(ctrls);
 }
 
-int validate_Expr(list expr, Context* context)
+int validate_Expr(list_t expr, Context* context)
 {
     // Prepare
     stack* opds = new_stack(free); // ValueType

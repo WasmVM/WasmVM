@@ -2,7 +2,7 @@
 #define WASMVM_DATATYPES_LIST__DEF
 
 #include <stddef.h>
-#include <dataTypes/list.h>
+#include <dataTypes/list_t.h>
 
 typedef struct listNode_ listNode;
 

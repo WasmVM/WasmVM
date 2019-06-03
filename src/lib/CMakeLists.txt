@@ -22,7 +22,7 @@ add_library(wasmvm_core
     dataTypes/stack.c
     dataTypes/Value.c
     dataTypes/vector.c
-    dataTypes/list.c
+    dataTypes/list_t.c
     dataTypes/queue.c
     dataTypes/Label.c
     dataTypes/FuncType.c

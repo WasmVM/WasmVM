@@ -370,7 +370,7 @@ int parse_export_section(WasmModule *newModule, uint8_t **read_p, const uint8_t 
                     printf("%s: Unknown export type.\n", newModule->module_name);
                     return -1;
             }
-            // Push into export list
+            // Push into export list_t
             newModule->exports->push_back(newModule->exports, new_WasmExport(name, descType, getLeb128_u32(read_p, end_p)));
         }
     }
