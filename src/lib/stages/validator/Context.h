@@ -21,7 +21,7 @@ typedef struct {
     vector* returns; // ValueType
 } Context;
 
-ctrl_frame* new_ctrl_frame(stack* opds);
+ctrl_frame* new_ctrl_frame(stack_p opds);
 void free_ctrl_frame(ctrl_frame* frame);
 Context* new_Context(WasmModule* module, WasmFunc* func);
 void free_Context(Context* context);

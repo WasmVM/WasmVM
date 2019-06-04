@@ -32,7 +32,7 @@ SKYPAT_F(Runtime_nop, regular)
     // 5 4 3 2 1 0
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
-    EXPECT_EQ(stack->entries->size, 4);
+    EXPECT_EQ(stack_size(stack->entries), 4);
 
     // 5 4 3 1
     pop_Value(stack,&check1);
@@ -41,7 +41,7 @@ SKYPAT_F(Runtime_nop, regular)
     // 5 4 3
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
-    EXPECT_EQ(stack->entries->size, 1);
+    EXPECT_EQ(stack_size(stack->entries), 1);
 
     // 5
     pop_Value(stack,&check2);

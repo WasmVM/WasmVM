@@ -6,11 +6,10 @@
 
 #include <stdio.h>
 
-static int pop_opd(stack* opds, stack* ctrls, ValueType** operand)
+static int pop_opd(stack_p opds, stack_p ctrls, ValueType** operand)
 {
-    ctrl_frame* frame = NULL;
-    ctrls->top(ctrls, (void**)&frame);
-    if(opds->size == frame->height) {
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    if(stack_size(opds) == frame->height) {
         if(frame->unreachable) {
             *operand = (ValueType*) malloc(sizeof(ValueType));
             **operand = Value_Unspecified;
@@ -19,11 +18,11 @@ static int pop_opd(stack* opds, stack* ctrls, ValueType** operand)
             return -1;
         }
     }
-    opds->pop(opds, (void**)operand);
+    *operand = stack_pop(ValueType*, opds);
     return 0;
 }
 
-static int pop_opd_expect(stack* opds, stack* ctrls, ValueType** operand, ValueType expect)
+static int pop_opd_expect(stack_p opds, stack_p ctrls, ValueType** operand, ValueType expect)
 {
     ValueType* actual = NULL;
     if(pop_opd(opds, ctrls, &actual)) {
@@ -41,26 +40,26 @@ static int pop_opd_expect(stack* opds, stack* ctrls, ValueType** operand, ValueT
     return 0;
 }
 
-static ctrl_frame* ctrl_at(stack* ctrls, size_t index)
+static ctrl_frame* ctrl_at(stack_p ctrls, size_t index)
 {
-    if(ctrls->size <= index) {
+    if(stack_size(ctrls) <= index) {
         return NULL;
     }
-    stackNode* cursor = ctrls->head;
+    stack_iterator cursor = stack_head(ctrls);
     for(size_t i = 0; i < index; ++i) {
-        cursor = cursor->next;
+        cursor = stack_iterator_next(cursor);
     }
-    return (ctrl_frame*) cursor->data;
+    return stack_iterator_get(ctrl_frame*, cursor);
 }
 
-int validate_Instr_const(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_const(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType* type = (ValueType*) malloc(sizeof(ValueType));
     *type = instr->constant.type;
-    opds->push(opds, type);
+    stack_push(opds, type);
     return 0;
 }
-int validate_Instr_unop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_unop(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType expect;
     switch(instr->parent.opcode) {
@@ -99,10 +98,10 @@ int validate_Instr_unop(WasmNumericInstr* instr, Context* context, stack* opds, 
     if(pop_opd_expect(opds, ctrls, &operand, expect)) {
         return -2;
     }
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_binop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_binop(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType expect;
     switch(instr->parent.opcode) {
@@ -169,11 +168,11 @@ int validate_Instr_binop(WasmNumericInstr* instr, Context* context, stack* opds,
     if(pop_opd_expect(opds, ctrls, &operand2, expect)) {
         return -3;
     }
-    opds->push(opds, operand1);
+    stack_push(opds, operand1);
     free(operand2);
     return 0;
 }
-int validate_Instr_testop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_testop(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType expect;
     switch(instr->parent.opcode) {
@@ -191,10 +190,10 @@ int validate_Instr_testop(WasmNumericInstr* instr, Context* context, stack* opds
         return -2;
     }
     *operand = Value_i32;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_relop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_relop(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType expect;
     switch(instr->parent.opcode) {
@@ -250,11 +249,11 @@ int validate_Instr_relop(WasmNumericInstr* instr, Context* context, stack* opds,
         return -3;
     }
     *operand1 = Value_i32;
-    opds->push(opds, operand1);
+    stack_push(opds, operand1);
     free(operand2);
     return 0;
 }
-int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType expect;
     ValueType result;
@@ -340,10 +339,10 @@ int validate_Instr_cvtop(WasmNumericInstr* instr, Context* context, stack* opds,
         return -2;
     }
     *operand = result;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_drop(WasmParametricInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_drop(WasmParametricInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType* operand = NULL;
     if(pop_opd(opds, ctrls, &operand)) {
@@ -352,7 +351,7 @@ int validate_Instr_drop(WasmParametricInstr* instr, Context* context, stack* opd
     free(operand);
     return 0;
 }
-int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType* condition = NULL;
     if(pop_opd_expect(opds, ctrls, &condition, Value_i32)) {
@@ -369,12 +368,12 @@ int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack* o
         free(operand1);
         return -3;
     }
-    opds->push(opds, operand1);
+    stack_push(opds, operand1);
     free(operand2);
     free(condition);
     return 0;
 }
-int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(instr->index >= context->locals->length) {
         return -1;
@@ -382,10 +381,10 @@ int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack* 
     ValueType* local = (ValueType*)context->locals->at(context->locals, instr->index);
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
     *operand = *local;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(instr->index >= context->locals->length) {
         return -1;
@@ -397,7 +396,7 @@ int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack* 
     free(operand);
     return 0;
 }
-int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(instr->index >= context->locals->length) {
         return -1;
@@ -406,10 +405,10 @@ int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack* 
     if(pop_opd(opds, ctrls, &operand)) {
         return -2;
     }
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(instr->index >= context->module->globals->length) {
         return -1;
@@ -417,10 +416,10 @@ int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack*
     WasmGlobal* global = (WasmGlobal*)context->module->globals->at(context->module->globals, instr->index);
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
     *operand = global->valType;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(instr->index >= context->module->globals->length) {
         return -1;
@@ -436,7 +435,7 @@ int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack*
     free(operand);
     return 0;
 }
-int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
@@ -471,10 +470,10 @@ int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack* opds, s
         return -4;
     }
     *operand = resultType;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
@@ -518,10 +517,10 @@ int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack* opds, 
         return -4;
     }
     *operand = resultType;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
@@ -563,7 +562,7 @@ int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack* opds, 
     free(address);
     return 0;
 }
-int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
@@ -609,17 +608,17 @@ int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack* opds,
     free(address);
     return 0;
 }
-int validate_Instr_memory_size(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_memory_size(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
     }
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
     *operand = Value_i32;
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_memory_grow(WasmMemoryInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_memory_grow(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     if(context->module->mems->length < 1) {
         return -1;
@@ -628,38 +627,38 @@ int validate_Instr_memory_grow(WasmMemoryInstr* instr, Context* context, stack* 
     if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
         return -2;
     }
-    opds->push(opds, operand);
+    stack_push(opds, operand);
     return 0;
 }
-int validate_Instr_nop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_nop(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     return 0;
 }
-int validate_Instr_unreachable(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_unreachable(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     // TODO: unreachable
     return 0;
 }
-int validate_Instr_block(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_block(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame(opds);
     for(size_t i = 0; i < instr->resultTypes->length; ++i) {
         frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
     return 0;
 }
-int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame(opds);
     for(size_t i = 0; i < instr->resultTypes->length; ++i) {
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
     return 0;
 }
-int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_if(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ValueType* operand = NULL;
     if(pop_opd_expect(opds, ctrls, &operand, Value_i32)) {
@@ -670,14 +669,14 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack* opds, st
         frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
         frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
     }
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
     free(operand);
     return 0;
 }
-int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_end(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    ctrl_frame* frame = NULL;
-    if(ctrls->top(ctrls, (void**)&frame)) {
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    if(!frame) {
         return -1;
     }
     for(size_t i = frame->end_types->length; i > 0; --i) {
@@ -686,28 +685,28 @@ int validate_Instr_end(WasmControlInstr* instr, Context* context, stack* opds, s
         ValueType* endType = frame->end_types->at(frame->end_types, index);
         if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
             free(operand);
-            ctrls->pop(ctrls, (void**)&frame);
+            frame = stack_pop(ctrl_frame*, ctrls);
             free_ctrl_frame(frame);
             return -2;
         }
         free(operand);
     }
-    if(opds->size != frame->label_types->length) {
+    if(stack_size(opds) != frame->label_types->length) {
         return -3;
     }
     for(size_t i = 0; i < frame->end_types->length; ++i) {
         ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
         *operand = *((ValueType*)frame->end_types->at(frame->end_types, i));
-        opds->push(opds, operand);
+        stack_push(opds, operand);
     }
-    ctrls->pop(ctrls, (void**)&frame);
+    frame = stack_pop(ctrl_frame*, ctrls);
     free_ctrl_frame(frame);
     return 0;
 }
-int validate_Instr_else(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_else(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    ctrl_frame* frame = NULL;
-    if(ctrls->top(ctrls, (void**)&frame)) {
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    if(!frame) {
         return -1;
     }
     for(size_t i = frame->end_types->length; i > 0; --i) {
@@ -716,18 +715,18 @@ int validate_Instr_else(WasmControlInstr* instr, Context* context, stack* opds, 
         ValueType* endType = frame->end_types->at(frame->end_types, index);
         if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
             free(operand);
-            ctrls->pop(ctrls, (void**)&frame);
+            frame = stack_pop(ctrl_frame*, ctrls);
             free_ctrl_frame(frame);
             return -2;
         }
         free(operand);
     }
-    if(opds->size != frame->label_types->length) {
+    if(stack_size(opds) != frame->label_types->length) {
         return -3;
     }
     return 0;
 }
-int validate_Instr_br(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_br(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
     ctrl_frame* frame = ctrl_at(ctrls, index);
@@ -743,11 +742,11 @@ int validate_Instr_br(WasmControlInstr* instr, Context* context, stack* opds, st
         }
         free(operand);
     }
-    ctrls->top(ctrls, (void**)&frame);
+    frame = stack_top(ctrl_frame*, ctrls);
     frame->unreachable = 1;
     return 0;
 }
-int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
     ctrl_frame* frame = ctrl_at(ctrls, index);
@@ -759,26 +758,25 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack* opds,
         return -2;
     }
     free(condition);
-    stack* operandCache = new_stack(free);
+    stack_p operandCache = new_stack_p(free);
     for(size_t i = frame->label_types->length; i > 0; --i) {
         ValueType* operand = NULL;
         ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
         if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
             free(operand);
-            free_stack(operandCache);
+            free_stack_p(operandCache);
             return -3;
         }
-        operandCache->push(operandCache, operand);
+        stack_push(operandCache, operand);
     }
-    for(ValueType* operand = NULL; operandCache->size > 0; operand = NULL) {
-        operandCache->pop(operandCache, (void**)&operand);
-        opds->push(opds, operand);
+    for(ValueType* operand = NULL; stack_size(operandCache) > 0; operand = NULL) {
+        operand = stack_pop(ValueType*, operandCache);
+        stack_push(opds, operand);
     }
-    ctrls->top(ctrls, (void**)&frame);
-    free_stack(operandCache);
+    free_stack_p(operandCache);
     return 0;
 }
-int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, instr->indices->length - 1);
     ctrl_frame* frame = ctrl_at(ctrls, index);
@@ -787,7 +785,7 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
     }
     for(size_t i = 0; i < instr->indices->length - 1; ++i) {
         uint32_t index_n = *(uint32_t*)instr->indices->at(instr->indices, i);
-        if(ctrls->size <= index_n) {
+        if(stack_size(ctrls) <= index_n) {
             return -2;
         }
         ctrl_frame* frame_n = ctrl_at(ctrls, index_n);
@@ -815,15 +813,15 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack* op
         }
         free(operand);
     }
-    ctrls->top(ctrls, (void**)&frame);
+    frame = stack_top(ctrl_frame*, ctrls);
     frame->unreachable = 1;
     return 0;
 }
-int validate_Instr_return(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_return(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     return 0; // Expression not inside func was evaluated
 }
-int validate_Instr_call(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_call(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
     vector* funcs = context->module->funcs;
@@ -845,11 +843,11 @@ int validate_Instr_call(WasmControlInstr* instr, Context* context, stack* opds, 
     for(uint32_t i = 0; i < type->results->length; ++i) {
         ValueType* result = (ValueType*)malloc(sizeof(ValueType));
         *result = *(ValueType*)type->results->at(type->results, i);
-        opds->push(opds, result);
+        stack_push(opds, result);
     }
     return 0;
 }
-int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stack* opds, stack* ctrls)
+int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     vector* tables = context->module->tables;
     if(tables->length <= 0) {
@@ -881,7 +879,7 @@ int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stac
     for(uint32_t i = 0; i < type->results->length; ++i) {
         ValueType* result = (ValueType*)malloc(sizeof(ValueType));
         *result = *(ValueType*)type->results->at(type->results, i);
-        opds->push(opds, result);
+        stack_push(opds, result);
     }
     return 0;
 }

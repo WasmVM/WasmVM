@@ -12,7 +12,7 @@ static void addRequest(struct Loader_* loader, LoaderRequest* request)
 {
     // Check whether loaded or not
     _Bool loaded = 0;
-    for(list_iterator it = list_head(loader->loadedList); it != NULL; it = list_next(it)) {
+    for(list_iterator it = list_head(loader->loadedList); it != NULL; it = list_iterator_next(it)) {
         if(!strcmp(request->moduleName, list_iterator_get(char*, it))) {
             loaded = 1;
             break;
@@ -45,12 +45,11 @@ static void* run_Loader(Loader* loader)
                 return result;
             }
         }
-        loader->decodedStack->push(loader->decodedStack, request);
+        stack_push(loader->decodedStack, request);
     }
     // Run instanciator
-    while(loader->decodedStack->size > 0 && !loader->parent.isTerminated) {
-        LoaderRequest* request = NULL;
-        loader->decodedStack->pop(loader->decodedStack, (void**)&request);
+    while(stack_size(loader->decodedStack) > 0 && !loader->parent.isTerminated) {
+        LoaderRequest* request = stack_pop(LoaderRequest*, loader->decodedStack);
         Stage* stage = queue_pop(Stage*, request->parent.stages);
         *result = stage->run(stage);
         request->parent.free((Request*)request);
@@ -91,7 +90,7 @@ Loader* new_Loader()
     newLoader->parent.isTerminated = 0;
     newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list_p(free);
-    newLoader->decodedStack = new_stack((void (*)(void*))freeRequest);
+    newLoader->decodedStack = new_stack_p((void (*)(void*))freeRequest);
     newLoader->requests = new_queue_p(freeRequest);
     return newLoader;
 }
@@ -99,7 +98,7 @@ Loader* new_Loader()
 void free_Loader(Loader* loader)
 {
     free_list_p(loader->loadedList);
-    free_stack(loader->decodedStack);
+    free_stack_p(loader->decodedStack);
     free_queue_p(loader->requests);
     free(loader);
 }

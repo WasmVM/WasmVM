@@ -4,19 +4,19 @@
 #include <dataTypes/stack_p.h>
 #include <Opcodes.h>
 
-static void clean(stack* opds, stack* ctrls)
+static void clean(stack_p opds, stack_p ctrls)
 {
-    free_stack(opds);
-    free_stack(ctrls);
+    free_stack_p(opds);
+    free_stack_p(ctrls);
 }
 
 int validate_Expr(list_p expr, Context* context)
 {
     // Prepare
-    stack* opds = new_stack(free); // ValueType
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame); // ctrl_frame
+    stack_p opds = new_stack_p(free); // ValueType
+    stack_p ctrls = new_stack_p(free_ctrl_frame); // ctrl_frame
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, (void*)frame);
+    stack_push(ctrls, frame);
     for(size_t i = 0; i < context->returns->length; ++i) {
         frame->end_types->push_back(frame->end_types, context->returns->at(context->returns, i));
     }
@@ -267,13 +267,12 @@ int validate_Expr(list_p expr, Context* context)
         }
     }
     // Check remaining operands
-    if(opds->size != context->returns->length) {
+    if(stack_size(opds) != context->returns->length) {
         clean(opds, ctrls);
         return -2;
     }
     for(size_t i = 0; i < context->returns->length; ++i) {
-        ValueType* val = NULL;
-        opds->pop(opds, (void*)&val);
+        ValueType* val = stack_pop(ValueType*, opds);
         ValueType* ret = (ValueType*)context->returns->at(context->returns, i);
         if(*val != *ret) {
             clean(opds, ctrls);

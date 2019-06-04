@@ -6,7 +6,7 @@ void free_stack_p(stack_p thisstack)
 {
     if (thisstack->freeElem) {
         while (thisstack->head != NULL) {
-            stackNode* node = thisstack->head;
+            stackNode node = thisstack->head;
             thisstack->head = node->next;
             thisstack->freeElem(node->data);
             free(node);
@@ -42,7 +42,7 @@ void stack_push_(stack_p thisstack, void* valuePtr)
 void* stack_pop_(stack_p thisstack)
 {
     if (thisstack->size) {
-        stackNode* node = thisstack->head;
+        stackNode node = thisstack->head;
         thisstack->head = node->next;
         void* dataPtr = node->data;
         free(node);
@@ -53,11 +53,26 @@ void* stack_pop_(stack_p thisstack)
     }
 }
 
-void* stack_pop_(stack_p thisstack);
+void* stack_top_(stack_p thisstack)
 {
     if (thisstack->size) {
         return thisstack->head->data;
     } else {
         return NULL;
     }
+}
+
+stack_iterator stack_head(stack_p thisstack)
+{
+    return thisstack->head;
+}
+
+stack_iterator stack_iterator_next(stack_iterator it)
+{
+    return it->next;
+}
+
+void* stack_iterator_get_(stack_iterator it)
+{
+    return it->data;
 }

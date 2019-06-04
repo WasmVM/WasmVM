@@ -12,7 +12,7 @@ list_iterator list_head(list_p thisList)
     return thisList->head;
 }
 
-list_iterator list_next(list_iterator it)
+list_iterator list_iterator_next(list_iterator it)
 {
     return it->next;
 }

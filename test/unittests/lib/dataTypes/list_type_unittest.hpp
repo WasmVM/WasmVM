@@ -12,8 +12,8 @@ extern "C" {
 
 #define wasmvm_list_foreach(node_name, list_p)                \
         for (list_iterator node_name = list_head(list_p);     \
-             node_name != NULL;                             \
-             node_name = list_next(node_name))
+             list_iterator_get(void*, node_name) != NULL;     \
+             node_name = list_iterator_next(node_name))
 
 #define wasmvm_list_new_object(type, name, init_value)  \
         type * name = (type *)malloc(sizeof(type));     \

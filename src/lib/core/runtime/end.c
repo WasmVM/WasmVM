@@ -16,11 +16,11 @@ int runtime_end(Stack *theStack, Store* store)
     }
     if(theStack->curLabel == NULL) {
         FuncType type = ((FuncInst*)store->funcs->at(store->funcs, label_get_funcAddr(label)))->type;
-        stack* valStack = new_stack(NULL);
+        stack_p valStack = new_stack_p(NULL);
         for(uint32_t i = 0; i < type->results->length; ++i) {
             Value* retValue = NULL;
             pop_Value(theStack, &retValue);
-            valStack->push(valStack, retValue);
+            stack_push(valStack, retValue);
         }
         Frame frame = NULL;
         if(pop_Frame(theStack, &frame)) {
@@ -28,11 +28,10 @@ int runtime_end(Stack *theStack, Store* store)
         }
         for(uint32_t i = 0; i < type->results->length; ++i) {
             ValueType* resultType = (ValueType*)type->results->at(type->results, i);
-            Value* retValue = NULL;
-            valStack->pop(valStack, (void**)&retValue);
+            Value* retValue = stack_pop(Value*, valStack);
             push_Value(theStack, retValue);
         }
-        free_stack(valStack);
+        free_stack_p(valStack);
         free_Frame(frame);
     }
     if(theStack->curLabel) {

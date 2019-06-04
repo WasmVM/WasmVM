@@ -606,22 +606,21 @@ static void* exec_Core(void* corePtr)
                 pthread_exit(result);
             }
 
-            stack* valStack = new_stack(NULL);
+            stack_p valStack = new_stack_p(NULL);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 Value* retValue = NULL;
                 pop_Value(core->stack, &retValue);
-                valStack->push(valStack, retValue);
+                stack_push(valStack, retValue);
             }
 
             Frame frame = NULL;
             pop_Frame(core->stack, &frame);
             for(uint32_t i = 0; i < func->type->results->length; ++i) {
                 ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
-                Value* retValue = NULL;
-                valStack->pop(valStack, (void**)&retValue);
+                Value* retValue = stack_pop(Value*, valStack);
                 push_Value(core->stack, retValue);
             }
-            free_stack(valStack);
+            free_stack_p(valStack);
             free_Label(label);
             free_Frame(frame);
             continue;

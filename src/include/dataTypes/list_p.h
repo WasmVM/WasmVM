@@ -9,7 +9,7 @@ typedef struct listNode_ * list_iterator;
 void free_list_p(list_p thisList);
 int list_removeAt(list_p thisList, size_t index);
 list_iterator list_head(list_p thisList);
-list_iterator list_next(list_iterator it);
+list_iterator list_iterator_next(list_iterator it);
 size_t list_size(list_p thisList);
 
 list_p new_list_p_(void (*freeElem)(void* elem));

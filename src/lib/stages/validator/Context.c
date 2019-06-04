@@ -31,13 +31,13 @@ void free_Context(Context* context)
     free(context);
 }
 
-ctrl_frame* new_ctrl_frame(stack* opds)
+ctrl_frame* new_ctrl_frame(stack_p opds)
 {
     ctrl_frame* frame = (ctrl_frame*) malloc(sizeof(ctrl_frame));
     frame->unreachable = 0;
     frame->label_types = new_vector(sizeof(ValueType), NULL);
     frame->end_types = new_vector(sizeof(ValueType), NULL);
-    frame->height = opds->size;
+    frame->height = stack_size(opds);
     return frame;
 }
 

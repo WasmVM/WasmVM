@@ -6,12 +6,11 @@
 
 int memory_grow(Stack* stack, MemInst* memory)
 {
-    Value *value = NULL;
     const uint32_t pageSize = 64 * 1024;
     uint32_t sz = memory->data->length / pageSize;
 
     // check stacktop value type i32
-    stack->entries->top(stack->entries, (void**)&value);
+    Value *value = stack_top(Value*, stack->entries);
     if(value->type != Value_i32) {
         fprintf(stderr, "memory grow by error value type!\n");
         return -1;

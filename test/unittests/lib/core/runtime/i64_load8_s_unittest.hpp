@@ -32,18 +32,17 @@ SKYPAT_F(runtime_i64_load8_u, regular)
     }
     for(uint8_t lop = 0; lop < dataSize; lop++) {
         // Set load location
-        stack->entries->push(stack->entries, new_i32Value(lop * sizeof(int64_t)));
+        stack_push(stack->entries, new_i32Value(lop * sizeof(int64_t)));
         // Run
         runtime_i64_load8_s(stack, memory, offset, 0);
         // Check
-        Value *check = NULL;
-        stack->entries->pop(stack->entries, (void**) &check);
+        Value *check = stack_pop(Value*, stack->entries);
         EXPECT_EQ(check->value.i64, (int8_t) data[lop]);
         // Clean
         free_Value(check);
     }
     // error check
-    stack->entries->push(stack->entries, new_i32Value(65540));
+    stack_push(stack->entries, new_i32Value(65540));
     int ret = runtime_i64_load8_s(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
     // clean datas

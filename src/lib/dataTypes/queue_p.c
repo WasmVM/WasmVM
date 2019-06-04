@@ -61,7 +61,7 @@ void* queue_pop_(queue_p thisQueue)
     }
 }
 
-void* queue_pop_(queue_p thisQueue)
+void* queue_top_(queue_p thisQueue)
 {
     if (thisQueue->size) {
         return thisQueue->head->data;

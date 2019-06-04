@@ -128,7 +128,7 @@ SKYPAT_F(queue_p, top)
     int32_t *top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 3);                     // check size
-    top_ans = queue_pop(int32_t*, pQueue);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value1);               // test top value
     EXPECT_EQ(pQueue->size, 3);                     // check size
 
@@ -137,7 +137,7 @@ SKYPAT_F(queue_p, top)
     top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 2);
-    top_ans = queue_pop(int32_t*, pQueue);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value2);
     EXPECT_EQ(pQueue->size, 2);
 
@@ -146,7 +146,7 @@ SKYPAT_F(queue_p, top)
     top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 1);
-    top_ans = queue_pop(int32_t*, pQueue);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value3);
     EXPECT_EQ(pQueue->size, 1);
 
@@ -155,7 +155,7 @@ SKYPAT_F(queue_p, top)
     top_ans = NULL;
 
     /* error check */
-    top_ans = queue_pop(int32_t*, pQueue);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(top_ans, NULL);
 
     /* free value */

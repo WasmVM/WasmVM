@@ -5,7 +5,7 @@
 int runtime_select(Stack* stack)
 {
     Value *value1, *value2, *value3;
-    unsigned int check_size = stack->entries->size;
+    unsigned int check_size = stack_size(stack->entries);
     if(check_size < 3) return -1;
     pop_Value(stack,&value3);
     pop_Value(stack,&value2);
