@@ -6,8 +6,8 @@
 #include <stdlib.h>
 #include <Opcodes.h>
 #include <core/Runtime.h>
-#include <dataTypes/list_t.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/list_p.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame_.h>

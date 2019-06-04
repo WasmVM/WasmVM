@@ -6,7 +6,7 @@ extern "C" {
 #include <stdlib.h>
 #include <Allocates.h>
 #include <dataTypes/vector.h>
-#include <dataTypes/list_t.h>
+#include <dataTypes/list_p.h>
 #include <dataTypes/Value.h>
 #include <Opcodes.h>
 #include <structures/instrs/Control.h>
@@ -39,7 +39,7 @@ SKYPAT_F(allocate_instructions, control)
     uint32_t* index2 = (uint32_t*) malloc(sizeof(uint32_t));
     *index2 = 4;
     instr->indices->push_back(instr->indices, index2);
-    list_t body = new_list_t((void(*)(void*))free_WasmControlInstr);
+    list_p body = new_list_p((void(*)(void*))free_WasmControlInstr);
     list_push_back(body, instr);
 
     // Test
@@ -62,7 +62,7 @@ SKYPAT_F(allocate_instructions, parametric)
     // Prepare
     WasmParametricInstr* instr = new_WasmParametricInstr();
     instr->parent.opcode = Op_drop;
-    list_t body = new_list_t((void(*)(void*))free_WasmParametricInstr);
+    list_p body = new_list_p((void(*)(void*))free_WasmParametricInstr);
     list_push_back(body, instr);
 
     // Test
@@ -79,7 +79,7 @@ SKYPAT_F(allocate_instructions, memory)
     // Prepare
     WasmMemoryInstr* instr = new_WasmMemoryInstr(16, 87);
     instr->parent.opcode = Op_i32_store;
-    list_t body = new_list_t((void(*)(void*))free_WasmMemoryInstr);
+    list_p body = new_list_p((void(*)(void*))free_WasmMemoryInstr);
     list_push_back(body, instr);
 
     // Test
@@ -101,7 +101,7 @@ SKYPAT_F(allocate_instructions, numeric)
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 45;
-    list_t body = new_list_t((void(*)(void*))free_WasmNumericInstr);
+    list_p body = new_list_p((void(*)(void*))free_WasmNumericInstr);
     list_push_back(body, instr);
 
     // Test

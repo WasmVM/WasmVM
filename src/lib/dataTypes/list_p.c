@@ -1,4 +1,4 @@
-#include "list_t_.h"
+#include "list_p_.h"
 
 #include <stdlib.h>
 
@@ -7,7 +7,7 @@ void* list_iterator_get_(list_iterator it)
     return it->data;
 }
 
-list_iterator list_head(list_t thisList)
+list_iterator list_head(list_p thisList)
 {
     return thisList->head;
 }
@@ -17,38 +17,38 @@ list_iterator list_next(list_iterator it)
     return it->next;
 }
 
-size_t list_size(list_t thisList)
+size_t list_size(list_p thisList)
 {
     return thisList->size;
 }
 
-void list_push_back_(list_t thislist_t, void* valuePtr)
+void list_push_back_(list_p thislist_p, void* valuePtr)
 {
     listNode* newNode = (listNode*)malloc(sizeof(listNode));
     newNode->data = valuePtr;
     newNode->next = NULL;
-    if(thislist_t->tail != NULL) {
-        thislist_t->tail->next = newNode;
+    if(thislist_p->tail != NULL) {
+        thislist_p->tail->next = newNode;
     } else {
-        thislist_t->head = newNode;
+        thislist_p->head = newNode;
     }
-    thislist_t->tail = newNode;
-    ++thislist_t->size;
+    thislist_p->tail = newNode;
+    ++thislist_p->size;
 }
 
-void* list_at_(list_t thislist_t, size_t index)
+void* list_at_(list_p thislist_p, size_t index)
 {
-    if(index >= thislist_t->size) {
+    if(index >= thislist_p->size) {
         return NULL;
     }
-    listNode* cur = thislist_t->head;
+    listNode* cur = thislist_p->head;
     for(size_t i = 0; i < index; ++i) {
         cur = cur->next;
     }
     return cur->data;
 }
 
-int list_removeAt(list_t thisList, size_t index)
+int list_removeAt(list_p thisList, size_t index)
 {
     if(index >= thisList->size) {
         return -1;
@@ -71,9 +71,9 @@ int list_removeAt(list_t thisList, size_t index)
     return 0;
 }
 
-list_t new_list_t_(void (*freeElem)(void* elem))
+list_p new_list_p_(void (*freeElem)(void* elem))
 {
-    list_t newList = (list_t) malloc(sizeof(struct list_t_));
+    list_p newList = (list_p) malloc(sizeof(struct list_p_));
     newList->head = NULL;
     newList->tail = NULL;
     newList->size = 0;
@@ -81,7 +81,7 @@ list_t new_list_t_(void (*freeElem)(void* elem))
     return newList;
 }
 
-void free_list_t(list_t thislist)
+void free_list_p(list_p thislist)
 {
     if(thislist->freeElem) {
         listNode* cur = thislist->head;

@@ -1,14 +1,14 @@
-#include <dataTypes/queue_t_.h>
+#include <dataTypes/queue_p_.h>
 
 #include <stdlib.h>
 
-void free_queue_t(queue_t thisQueue)
+void free_queue_p(queue_p thisQueue)
 {
     if(thisQueue->freeElem) {
-        queue_tNode cur = thisQueue->head;
+        queueNode cur = thisQueue->head;
         while(cur != NULL) {
             thisQueue->freeElem(cur->data);
-            queue_tNode tmp = cur;
+            queueNode tmp = cur;
             cur = cur->next;
             free(tmp);
         }
@@ -16,23 +16,23 @@ void free_queue_t(queue_t thisQueue)
     free(thisQueue);
 }
 
-size_t queue_size(queue_t thisQueue)
+size_t queue_size(queue_p thisQueue)
 {
     return thisQueue->size;
 }
 
-queue_t new_queue_t_(void (*freeElem)(void* elem))
+queue_p new_queue_p_(void (*freeElem)(void* elem))
 {
-    queue_t newQueue = (queue_t) malloc(sizeof(struct queue_t_));
+    queue_p newQueue = (queue_p) malloc(sizeof(struct queue_p_));
     newQueue->head = NULL;
     newQueue->tail = NULL;
     newQueue->size = 0;
     newQueue->freeElem = freeElem;
     return newQueue;
 }
-void queue_push_(queue_t thisQueue, void* valuePtr)
+void queue_push_(queue_p thisQueue, void* valuePtr)
 {
-    queue_tNode newNode = (queue_tNode)malloc(sizeof(struct queue_tNode_));
+    queueNode newNode = (queueNode)malloc(sizeof(struct queueNode_));
     newNode->data = valuePtr;
     newNode->next = NULL;
     if(thisQueue->tail != NULL) {
@@ -44,10 +44,10 @@ void queue_push_(queue_t thisQueue, void* valuePtr)
     ++thisQueue->size;
 }
 
-void* queue_pop_(queue_t thisQueue)
+void* queue_pop_(queue_p thisQueue)
 {
     if (thisQueue->size) {
-        queue_tNode node = thisQueue->head;
+        queueNode node = thisQueue->head;
         thisQueue->head = node->next;
         void* dataPtr = node->data;
         free(node);
@@ -61,7 +61,7 @@ void* queue_pop_(queue_t thisQueue)
     }
 }
 
-void* queue_top_(queue_t thisQueue)
+void* queue_pop_(queue_p thisQueue)
 {
     if (thisQueue->size) {
         return thisQueue->head->data;

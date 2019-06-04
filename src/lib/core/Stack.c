@@ -1,5 +1,5 @@
 #include <core/Stack.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>

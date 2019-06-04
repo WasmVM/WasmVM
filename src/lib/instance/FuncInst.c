@@ -11,7 +11,7 @@ FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
     instance->type = type;
     instance->locals = new_vector(sizeof(ValueType), NULL);
     instance->module = module;
-    instance->code = new_list_t(free_InstrInst);
+    instance->code = new_list_p(free_InstrInst);
     instance->hostcode = NULL;
     return instance;
 }
@@ -19,7 +19,7 @@ FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
 void clean_FuncInst(FuncInst* funcInst)
 {
     free_vector(funcInst->locals);
-    free_list_t(funcInst->code);
+    free_list_p(funcInst->code);
 }
 
 void free_FuncInst(FuncInst* funcInst)

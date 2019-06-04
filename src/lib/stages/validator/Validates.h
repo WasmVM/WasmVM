@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 #include <dataTypes/FuncType.h>
-#include <dataTypes/list_t.h>
+#include <dataTypes/list_p.h>
 #include <dataTypes/vector.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <structures/WasmModule.h>
 #include <structures/WasmFunc.h>
 #include <structures/WasmTable.h>
@@ -27,7 +27,7 @@
 int validate_Module(WasmModule* module);
 int validate_FunctionType(FuncType funcType);
 int validate_Func(WasmFunc* func, WasmModule* module);
-int validate_Expr(list_t expr, Context* context);
+int validate_Expr(list_p expr, Context* context);
 int validate_Table(WasmTable* table);
 int validate_Memory(WasmMemory* memory);
 int validate_Global(WasmGlobal* global);

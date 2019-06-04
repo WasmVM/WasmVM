@@ -53,7 +53,7 @@ SKYPAT_F(Loader, create_delete)
     EXPECT_EQ(loader->decodedStack->head, NULL);
     EXPECT_EQ(loader->decodedStack->size, 0);
     EXPECT_EQ(queue_size(loader->requests), 0);
-    EXPECT_EQ(queue_top(LoaderRequest*, loader->requests), NULL);
+    EXPECT_EQ(queue_pop(LoaderRequest*, loader->requests), NULL);
 
     free_Loader(loader);
 }
@@ -67,7 +67,7 @@ SKYPAT_F(Loader, add_request)
     // Check
     loader->addRequest(loader, request);
     EXPECT_EQ(queue_size(loader->requests), 1);
-    EXPECT_EQ(queue_top(LoaderRequest*, loader->requests), request);
+    EXPECT_EQ(queue_pop(LoaderRequest*, loader->requests), request);
 
     // Clean
     free_Loader(loader);

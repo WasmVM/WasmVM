@@ -1,7 +1,7 @@
 #include "Validates.h"
 
 #include <stdlib.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <Opcodes.h>
 
 static void clean(stack* opds, stack* ctrls)
@@ -10,7 +10,7 @@ static void clean(stack* opds, stack* ctrls)
     free_stack(ctrls);
 }
 
-int validate_Expr(list_t expr, Context* context)
+int validate_Expr(list_p expr, Context* context)
 {
     // Prepare
     stack* opds = new_stack(free); // ValueType

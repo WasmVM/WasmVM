@@ -2,7 +2,7 @@
 #define WASMVM_DATATYPES_LIST__DEF
 
 #include <stddef.h>
-#include <dataTypes/list_t.h>
+#include <dataTypes/list_p.h>
 
 typedef struct listNode_ listNode;
 
@@ -11,7 +11,7 @@ struct listNode_ {
     struct listNode_* next;
 };
 
-struct list_t_ {
+struct list_p_ {
     listNode* head;
     listNode* tail;
     size_t size;

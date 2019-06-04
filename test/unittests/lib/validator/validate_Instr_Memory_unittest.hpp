@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/FuncType.h>
 #include <structures/instrs/Memory.h>
 #include <structures/WasmMemory.h>

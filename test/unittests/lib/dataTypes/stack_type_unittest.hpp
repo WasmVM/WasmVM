@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <stdlib.h>
 }
 #undef _Bool

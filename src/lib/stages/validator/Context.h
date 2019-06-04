@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/vector.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <structures/WasmModule.h>
 #include <structures/WasmFunc.h>
 

@@ -1,7 +1,7 @@
 #include <core/Runtime.h>
 #include <stdlib.h>
 #include <core/Store.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/FuncType.h>

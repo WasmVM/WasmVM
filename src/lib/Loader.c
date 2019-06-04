@@ -90,16 +90,16 @@ Loader* new_Loader()
     newLoader->parent.join = join_Loader;
     newLoader->parent.isTerminated = 0;
     newLoader->addRequest = addRequest;
-    newLoader->loadedList = new_list_t(free);
+    newLoader->loadedList = new_list_p(free);
     newLoader->decodedStack = new_stack((void (*)(void*))freeRequest);
-    newLoader->requests = new_queue_t(freeRequest);
+    newLoader->requests = new_queue_p(freeRequest);
     return newLoader;
 }
 
 void free_Loader(Loader* loader)
 {
-    free_list_t(loader->loadedList);
+    free_list_p(loader->loadedList);
     free_stack(loader->decodedStack);
-    free_queue_t(loader->requests);
+    free_queue_p(loader->requests);
     free(loader);
 }

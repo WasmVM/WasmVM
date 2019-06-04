@@ -1,6 +1,6 @@
 #include "Validates.h"
 
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <Opcodes.h>
 #include <stdlib.h>
 
