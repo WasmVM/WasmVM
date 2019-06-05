@@ -11,8 +11,8 @@ SKYPAT_F(Runtime_i64_eq, regular)
 {
     // prepare
     Stack* stack = new_Stack();
-    Value *value1 = new_i64Value(10L << 32);
-    Value *value2 = new_i64Value(10L << 32);
+    Value *value1 = new_i64Value(10LL);
+    Value *value2 = new_i64Value(10LL);
     push_Value(stack, value1);
     push_Value(stack, value2);
 

@@ -30,19 +30,19 @@ SKYPAT_F(Runtime_i64_lt_u, regular)
     Stack* stack = new_Stack();
 
     // case 1: 20 < 3
-    i64_lt_u_check(stack, 20L << 32, 3L << 32, 0);
+    i64_lt_u_check(stack, 20LL, 3LL, 0);
 
     // case 2: (-20) < 3
-    i64_lt_u_check(stack, -20L << 32, 3L << 32, 0);
+    i64_lt_u_check(stack, -20LL, 3LL, 0);
 
     // case 3: 20 < (-3)
-    i64_lt_u_check(stack, 20L << 32, -3L << 32, 1);
+    i64_lt_u_check(stack, 20LL, -3LL, 1);
 
     // case 4: (-20) < (-3)
-    i64_lt_u_check(stack, -20L << 32, -3L << 32, 1);
+    i64_lt_u_check(stack, -20LL, -3LL, 1);
 
     // case 5: (-20) < (-20)
-    i64_lt_u_check(stack, -20L << 32, -20L << 32, 0);
+    i64_lt_u_check(stack, -20LL, -20LL, 0);
 
     // clean
     free_Stack(stack);

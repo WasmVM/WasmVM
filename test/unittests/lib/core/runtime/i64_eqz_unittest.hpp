@@ -28,10 +28,10 @@ SKYPAT_F(Runtime_i64_eqz, regular)
     Stack* stack = new_Stack();
 
     // case 1: 10
-    i64_eqz_check(stack, 10L << 32, 0);
+    i64_eqz_check(stack, 10LL, 0);
 
     // case 2: -10
-    i64_eqz_check(stack, -10L << 32, 0);
+    i64_eqz_check(stack, -10LL, 0);
 
     // case 3: 0
     i64_eqz_check(stack, 0, 1);

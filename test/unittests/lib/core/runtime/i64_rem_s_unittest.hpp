@@ -31,16 +31,16 @@ SKYPAT_F(Runtime_i64_rem_s, regular)
     Stack* stack = new_Stack();
 
     // case 1: 20 << 32 % 3
-    i64_rem_s_check(stack, 20L << 32, 3, 2);
+    i64_rem_s_check(stack, 20LL, 3, 2);
 
     // case 2: (-20 << 32) % 3
-    i64_rem_s_check(stack, -20L << 32, 3, -2);
+    i64_rem_s_check(stack, -20LL, 3, -2);
 
     // case 3: 20 << 32 % (-3)
-    i64_rem_s_check(stack, 20L << 32, -3, 2);
+    i64_rem_s_check(stack, 20LL, -3, 2);
 
     // case 4: 15 << 32 % 1
-    i64_rem_s_check(stack, 15L << 32, 1, 0);
+    i64_rem_s_check(stack, 15LL, 1, 0);
 
     // clean
     free_Stack(stack);
