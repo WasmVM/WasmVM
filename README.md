@@ -17,6 +17,11 @@
 * 支援 C11 及標準函式庫的 C 編譯器
 
 ### 開發者建置
+
+#### VSCode 搭配 Docker
+
+請參考 [使用 VSCode 搭配 Docker 開發 WasmVM](docs/vscode-docker.md)
+
 #### Ubuntu/Debian
 ```shell
 $ sudo apt-get update
