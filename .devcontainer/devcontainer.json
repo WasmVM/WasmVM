@@ -1,0 +1,9 @@
+{
+	"name": "WasmVM",
+	"dockerFile": "../docker/Dockerfile.vscode.develop",
+	"extensions": [
+		"ms-vscode.cpptools",
+		"twxs.cmake",
+		"vector-of-bool.cmake-tools"
+	]
+}
