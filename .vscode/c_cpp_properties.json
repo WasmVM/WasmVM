@@ -1,0 +1,20 @@
+{
+    "configurations": [
+        {
+            "name": "WasmVM",
+            "includePath": [
+                "${workspaceFolder}/src/include",
+                "${workspaceFolder}/src/lib",
+                "${workspaceFolder}/test/unittests",
+                "${workspaceFolder}/src/lib/stages/decoder",
+                "${workspaceFolder}/src/lib/stages/validator",
+                "${workspaceFolder}/src/lib/stages/instanciator"
+            ],
+            "forcedInclude": [],
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "configurationProvider": "vector-of-bool.cmake-tools"
+        }
+    ],
+    "version": 4
+}
