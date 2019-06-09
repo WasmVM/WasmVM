@@ -2,16 +2,16 @@
 #define WASMVM_INSTANCE_CONTROLINSTRINST_DEF
 
 #include <stdint.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <dataTypes/Value.h>
 #include <instance/InstrInst.h>
 
 typedef struct {
     InstrInst parent;
-    vector* resultTypes; // ValueType
+    vector_p resultTypes; // ValueType
     uint32_t elseAddr;
     uint32_t endAddr;
-    vector* indices; // uint32_t
+    vector_p indices; // uint32_t
 } ControlInstrInst;
 
 ControlInstrInst* new_ControlInstrInst();

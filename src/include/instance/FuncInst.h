@@ -1,14 +1,14 @@
 #ifndef WASMVM_INSTANCE_FUNCINST_DEF
 #define WASMVM_INSTANCE_FUNCINST_DEF
 
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <dataTypes/list_p.h>
 #include <dataTypes/FuncType.h>
 #include <instance/ModuleInst.h>
 
 typedef struct {
     FuncType type;
-    vector* locals;    // ValueType
+    vector_p locals;    // ValueType
     ModuleInst* module;
     list_p code;    // InstrInst
     // intro of hostcode https://webassembly.github.io/spec/core/exec/runtime.html#function-instances

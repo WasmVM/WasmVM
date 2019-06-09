@@ -18,7 +18,7 @@ int runtime_i64_load8_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_t
         return -1;
     }
 
-    uint8_t *data = (uint8_t *) memory->data->data + ea;
+    uint8_t *data = vector_data(uint8_t*, memory->data) + ea;
     push_Value(stack, new_i64Value(*data));
     free(value1);
 

@@ -5,14 +5,14 @@
 MemInst* new_MemInst()
 {
     MemInst* newMemInst = (MemInst*) malloc(sizeof(MemInst));
-    newMemInst->data = new_vector(sizeof(char), NULL);
+    newMemInst->data = new_vector_p(sizeof(char), NULL);
     newMemInst->max = 0;
     return newMemInst;
 }
 
 void clean_MemInst(MemInst* memInst)
 {
-    free_vector(memInst->data);
+    free_vector_p(memInst->data);
 }
 
 void free_MemInst(MemInst* memInst)

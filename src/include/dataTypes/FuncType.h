@@ -1,11 +1,11 @@
 #ifndef WASMVM_DATATYPES_FUNCTYPE_DEF
 #define WASMVM_DATATYPES_FUNCTYPE_DEF
 
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct FuncType_ {
-    vector* params;     // ValueType
-    vector* results;    // ValueType
+    vector_p params;     // ValueType
+    vector_p results;    // ValueType
 } * FuncType;
 
 FuncType new_FuncType();

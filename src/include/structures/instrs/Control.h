@@ -3,14 +3,14 @@
 
 #include <stdint.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <structures/instrs/WasmInstr.h>
 
 typedef struct _wasm_control_instr {
     WasmInstr   parent;
-    vector*     resultTypes;    // ValueType
-    vector*     instrs;         // WasmInstr
-    vector*     indices;        // uint32_t
+    vector_p     resultTypes;    // ValueType
+    vector_p     instrs;         // WasmInstr
+    vector_p     indices;        // uint32_t
 } WasmControlInstr;
 
 WasmControlInstr* new_WasmControlInstr();

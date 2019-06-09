@@ -11,7 +11,7 @@ extern "C" {
 #include <structures/WasmElem.h>
 #include <structures/WasmData.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <instance/ModuleInst.h>
 #include <instance/FuncInst.h>
 #include <instance/ExportInst.h>

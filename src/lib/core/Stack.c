@@ -88,9 +88,9 @@ int pop_Label(Stack* thisStack, Label* label)
     }
     // Save results
     stack_p results = new_stack_p(NULL);
-    vector* resultTypes = label_get_resultTypes(thisStack->curLabel);
+    vector_p resultTypes = label_get_resultTypes(thisStack->curLabel);
     if(resultTypes) {
-        for(uint32_t i = 0; i < resultTypes->length; ++i) {
+        for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
             Value* result = NULL;
             if(pop_Value(thisStack, &result)) {
                 return -3;
@@ -114,8 +114,8 @@ int pop_Label(Stack* thisStack, Label* label)
     }
     // Restore results
     if(resultTypes) {
-        for(uint32_t i = 0; i < resultTypes->length; ++i) {
-            ValueType* type = (ValueType*)resultTypes->at(resultTypes, i);
+        for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
+            ValueType* type = vector_at(ValueType*, resultTypes, i);
             Value* result = stack_pop(Value*, results);
             if(result->type != *type) {
                 free(result);

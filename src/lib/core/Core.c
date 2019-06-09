@@ -114,7 +114,7 @@ static int run_variable_instr(Stack* stack, VariableInstrInst* instr, uint8_t op
 
 static int run_memory_instr(Stack* stack, Store* store, ModuleInst* module, MemoryInstrInst* instr, uint8_t opcode)
 {
-    MemInst* memory = (MemInst*)store->mems->at(store->mems, *(uint32_t*)module->memaddrs->at(module->memaddrs, 0));
+    MemInst* memory = vector_at(MemInst*, store->mems, *vector_at(uint32_t*, module->memaddrs, 0));
     int result = 0;
     switch (opcode) {
         case Op_i32_load:
@@ -597,7 +597,7 @@ static void* exec_Core(void* corePtr)
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
-        FuncInst* func = (FuncInst*) core->executor->store->funcs->at(core->executor->store->funcs, label_get_funcAddr(core->stack->curLabel));
+        FuncInst* func = vector_at(FuncInst*, core->executor->store->funcs, label_get_funcAddr(core->stack->curLabel));
         if(label_get_instrIndex(core->stack->curLabel) >= list_size(func->code)) {
             Label label = NULL;
             if(pop_Label(core->stack, &label)) {
@@ -607,7 +607,7 @@ static void* exec_Core(void* corePtr)
             }
 
             stack_p valStack = new_stack_p(NULL);
-            for(uint32_t i = 0; i < func->type->results->length; ++i) {
+            for(uint32_t i = 0; i < vector_size(func->type->results); ++i) {
                 Value* retValue = NULL;
                 pop_Value(core->stack, &retValue);
                 stack_push(valStack, retValue);
@@ -615,8 +615,8 @@ static void* exec_Core(void* corePtr)
 
             Frame frame = NULL;
             pop_Frame(core->stack, &frame);
-            for(uint32_t i = 0; i < func->type->results->length; ++i) {
-                ValueType* resultType = (ValueType*)func->type->results->at(func->type->results, i);
+            for(uint32_t i = 0; i < vector_size(func->type->results); ++i) {
+                ValueType* resultType = vector_at(ValueType*, func->type->results, i);
                 Value* retValue = stack_pop(Value*, valStack);
                 push_Value(core->stack, retValue);
             }
@@ -830,23 +830,23 @@ static int run_Core(Core* core)
     atomic_fetch_add(&(core->executor->runningCores), 1);
     core->stack = new_Stack();
     // Get function instance
-    FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
+    FuncInst* startFunc = vector_at(FuncInst*, core->executor->store->funcs, core->startFuncAddr);
     // Set frame
     Frame frame = new_Frame(startFunc->module);
     // Set local values of start function
-    for(uint32_t i = 0; i < startFunc->locals->length; ++i) {
-        switch (*(ValueType*)startFunc->locals->at(startFunc->locals, i)) {
+    for(uint32_t i = 0; i < vector_size(startFunc->locals); ++i) {
+        switch (*vector_at(ValueType*, startFunc->locals, i)) {
             case Value_i32:
-                frame->locals->push_back(frame->locals, new_i32Value(0));
+                vector_push_back(frame->locals, new_i32Value(0));
                 break;
             case Value_i64:
-                frame->locals->push_back(frame->locals, new_i64Value(0));
+                vector_push_back(frame->locals, new_i64Value(0));
                 break;
             case Value_f32:
-                frame->locals->push_back(frame->locals, new_f32Value(0));
+                vector_push_back(frame->locals, new_f32Value(0));
                 break;
             case Value_f64:
-                frame->locals->push_back(frame->locals, new_f64Value(0));
+                vector_push_back(frame->locals, new_f64Value(0));
                 break;
             default:
                 break;

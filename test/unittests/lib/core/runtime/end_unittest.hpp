@@ -10,7 +10,7 @@ extern "C" {
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/FuncType.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <instance/FuncInst.h>
 #include <instance/ModuleInst.h>
 #include <instance/ControlInstrInst.h>
@@ -69,7 +69,7 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
     Label label1 = new_Label(0, 1, 4);
     push_Label(stack, label1);
     Label label2 = new_Label(0, 2, 3);
-    label_set_resultTypes(label2, new_vector(sizeof(ValueType), NULL));
+    label_set_resultTypes(label2, new_vector_p(sizeof(ValueType), NULL));
     ValueType result1 = Value_i32;
     label_get_resultTypes(label2)->push_back(label_get_resultTypes(label2), (void*)&result1);
     push_Label(stack, label2);

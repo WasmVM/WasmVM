@@ -276,19 +276,19 @@ WasmControlInstr* parseControlInstr(uint8_t opcode, uint8_t **read_p, const uint
                     break;
                 case TYPE_i32:
                     resultType = Value_i32;
-                    instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    vector_push_back(instr->resultTypes, &resultType);
                     break;
                 case TYPE_i64:
                     resultType = Value_i64;
-                    instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    vector_push_back(instr->resultTypes, &resultType);
                     break;
                 case TYPE_f32:
                     resultType = Value_f32;
-                    instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    vector_push_back(instr->resultTypes, &resultType);
                     break;
                 case TYPE_f64:
                     resultType = Value_f64;
-                    instr->resultTypes->push_back(instr->resultTypes, &resultType);
+                    vector_push_back(instr->resultTypes, &resultType);
                     break;
                 default:
                     free_WasmControlInstr(instr);
@@ -300,21 +300,21 @@ WasmControlInstr* parseControlInstr(uint8_t opcode, uint8_t **read_p, const uint
         case Op_br_if:
         case Op_call: {
             uint32_t index = getLeb128_u32(read_p, end_p);
-            instr->indices->push_back(instr->indices, &index);
+            vector_push_back(instr->indices, &index);
         }
         break;
         case Op_br_table: {
             for(uint32_t targetNum = getLeb128_u32(read_p, end_p); targetNum > 0; --targetNum) {
                 uint32_t index = getLeb128_u32(read_p, end_p);
-                instr->indices->push_back(instr->indices, &index);
+                vector_push_back(instr->indices, &index);
             }
             uint32_t defaultIndex = getLeb128_u32(read_p, end_p);
-            instr->indices->push_back(instr->indices, &defaultIndex);
+            vector_push_back(instr->indices, &defaultIndex);
         }
         break;
         case Op_call_indirect: {
             uint32_t index = getLeb128_u32(read_p, end_p);
-            instr->indices->push_back(instr->indices, &index);
+            vector_push_back(instr->indices, &index);
             if(*((*read_p)++) != 0x00) {
                 free_WasmControlInstr(instr);
                 return NULL;

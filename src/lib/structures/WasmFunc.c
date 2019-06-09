@@ -6,7 +6,7 @@ WasmFunc* new_WasmFunc()
 {
     WasmFunc* newWasmFunc = (WasmFunc*) malloc(sizeof(WasmFunc));
     // vectors
-    newWasmFunc->locals = new_vector(sizeof(ValueType), NULL);
+    newWasmFunc->locals = new_vector_p(sizeof(ValueType), NULL);
     newWasmFunc->body = new_list_p(free_WasmInstr);
 
     return newWasmFunc;
@@ -15,7 +15,7 @@ WasmFunc* new_WasmFunc()
 void clean_WasmFunc(WasmFunc* thisWasmFunc)
 {
     if(thisWasmFunc) {
-        free_vector(thisWasmFunc->locals);
+        free_vector_p(thisWasmFunc->locals);
         free_list_p(thisWasmFunc->body);
     }
 }

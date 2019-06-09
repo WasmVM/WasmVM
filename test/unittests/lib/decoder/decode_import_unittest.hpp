@@ -8,7 +8,7 @@ extern "C" {
 #include <Loader.h>
 #include <Executor.h>
 #include <core/Store.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <instance/ModuleInst.h>
 #include <structures/WasmImport.h>
 #include <structures/WasmModule.h>

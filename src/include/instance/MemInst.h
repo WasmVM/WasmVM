@@ -2,10 +2,10 @@
 #define WASMVM_INSTANCE_MEMINST_DEF
 
 #include <stdint.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct MemInst_ {
-    vector* data; // char
+    vector_p data; // char
     uint32_t max;
 } MemInst;
 

@@ -26,7 +26,7 @@ int runtime_i64_store8(Stack* stack, MemInst* memory, uint32_t offset, uint32_t 
     }
 
     // store data to memory
-    dataPointer = (int8_t *) memory->data->data + ea;
+    dataPointer = vector_data(int8_t*, memory->data) + ea;
     *dataPointer = (int8_t) value2->value.i64;
 
     // free object

@@ -6,7 +6,7 @@
 #include <pthread.h>
 #include <core/Store.h>
 #include <instance/ModuleInst.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef enum {
     Executor_Stop,
@@ -19,8 +19,8 @@ typedef struct Executor_ {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
     Store* store;
-    vector* modules; // ModuleInst
-    vector* cores; // Core
+    vector_p modules; // ModuleInst
+    vector_p cores; // Core
     ExecutorStatus status;
     int (*run)(struct Executor_* executor);
     int (*stop)(struct Executor_* executor);

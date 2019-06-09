@@ -6,7 +6,7 @@
 
 struct Frame_ {
     Entry parent;
-    vector* locals;       // Value
+    vector_p locals;       // Value
     ModuleInst* moduleInst;
 };
 

@@ -4,7 +4,7 @@
 #include <structures/WasmModule.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <Loader.h>
 #include <Executor.h>
 #include <core/Store.h>

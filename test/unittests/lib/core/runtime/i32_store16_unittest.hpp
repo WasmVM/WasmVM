@@ -4,7 +4,7 @@
 extern "C" {
 #include <dataTypes/Value.h>
 #include <core/Runtime.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

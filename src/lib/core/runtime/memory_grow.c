@@ -7,7 +7,7 @@
 int memory_grow(Stack* stack, MemInst* memory)
 {
     const uint32_t pageSize = 64 * 1024;
-    uint32_t sz = memory->data->length / pageSize;
+    uint32_t sz = vector_size(memory->data) / pageSize;
 
     // check stacktop value type i32
     Value *value = stack_top(Value*, stack->entries);
@@ -22,11 +22,11 @@ int memory_grow(Stack* stack, MemInst* memory)
     // check memory max of pages and grow memory
     int32_t n = value->value.i32;
     if(n + sz <= memory->max) {
-        memory->data->resize(memory->data, (n + sz) * pageSize);
+        vector_resize(memory->data, (n + sz) * pageSize);
     }
 
     // check result
-    if(memory->data->length == sz * pageSize || memory->data == NULL) {
+    if(vector_size(memory->data) == sz * pageSize || memory->data == NULL) {
         push_Value(stack, new_i32Value(-1));
     } else {
         push_Value(stack, new_i32Value(sz));

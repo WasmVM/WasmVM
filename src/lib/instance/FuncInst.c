@@ -9,7 +9,7 @@ FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
 {
     FuncInst* instance = (FuncInst*) malloc(sizeof(FuncInst));
     instance->type = type;
-    instance->locals = new_vector(sizeof(ValueType), NULL);
+    instance->locals = new_vector_p(sizeof(ValueType), NULL);
     instance->module = module;
     instance->code = new_list_p(free_InstrInst);
     instance->hostcode = NULL;
@@ -18,7 +18,7 @@ FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
 
 void clean_FuncInst(FuncInst* funcInst)
 {
-    free_vector(funcInst->locals);
+    free_vector_p(funcInst->locals);
     free_list_p(funcInst->code);
 }
 

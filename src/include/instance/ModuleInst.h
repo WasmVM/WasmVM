@@ -1,17 +1,17 @@
 #ifndef WASMVM_INSTANCE_MODULEINST_DEF
 #define WASMVM_INSTANCE_MODULEINST_DEF
 
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct ModuleInst_ {
     char* name;
-    vector* types;       // FuncType
-    // funcaddrs is static index of vector* funcs in Store
-    vector* funcaddrs;   // uint32_t
-    vector* tableaddrs;  // uint32_t
-    vector* memaddrs;    // uint32_t
-    vector* globaladdrs; // uint32_t
-    vector* exports;     // ExportInst
+    vector_p types;       // FuncType
+    // funcaddrs is static index of vector_p funcs in Store
+    vector_p funcaddrs;   // uint32_t
+    vector_p tableaddrs;  // uint32_t
+    vector_p memaddrs;    // uint32_t
+    vector_p globaladdrs; // uint32_t
+    vector_p exports;     // ExportInst
 } ModuleInst;
 
 ModuleInst* new_ModuleInst(char* name);

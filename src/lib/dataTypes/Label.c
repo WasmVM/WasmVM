@@ -42,11 +42,11 @@ void label_set_endInstr(Label label, uint32_t endInstr)
 {
     label->endInstr = endInstr;
 }
-vector* label_get_resultTypes(Label label)
+vector_p label_get_resultTypes(Label label)
 {
     return label->resultTypes;
 }
-void label_set_resultTypes(Label label, vector* resultTypes)
+void label_set_resultTypes(Label label, vector_p resultTypes)
 {
     label->resultTypes = resultTypes;
 }

@@ -4,7 +4,7 @@
 #include <Request.h>
 #include <core/Store.h>
 #include <Executor.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <Component.h>
 
 typedef struct LoaderRequest_ {

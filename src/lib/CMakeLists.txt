@@ -21,7 +21,7 @@ add_library(wasmvm_core
     instance/VariableInstrInst.c
     dataTypes/stack_p.c
     dataTypes/Value.c
-    dataTypes/vector.c
+    dataTypes/vector_p.c
     dataTypes/list_p.c
     dataTypes/queue_p.c
     dataTypes/Label.c

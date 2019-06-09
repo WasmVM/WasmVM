@@ -2,7 +2,7 @@
 #define WASMVM_CORE_RUNTIME_DEF
 
 #include <stdint.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <instance/MemInst.h>
 #include <core/Stack.h>
 #include <core/Store.h>

@@ -7,7 +7,7 @@
 #include <instance/ModuleInst.h>
 #include <core/Store.h>
 #include <Executor.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct {
     Stage parent;

@@ -6,14 +6,14 @@
 TableInst* new_TableInst()
 {
     TableInst* newTableInst = (TableInst*)malloc(sizeof(TableInst));
-    newTableInst->elem = new_vector(sizeof(uint32_t), NULL);
+    newTableInst->elem = new_vector_p(sizeof(uint32_t), NULL);
     newTableInst->max = 0;
     return newTableInst;
 }
 
 void clean_TableInst(TableInst* tableInst)
 {
-    free_vector(tableInst->elem);
+    free_vector_p(tableInst->elem);
 }
 
 void free_TableInst(TableInst* tableInst)

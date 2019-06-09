@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <Allocates.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <dataTypes/list_p.h>
 #include <dataTypes/Value.h>
 #include <Opcodes.h>

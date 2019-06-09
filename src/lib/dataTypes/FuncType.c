@@ -6,8 +6,8 @@
 FuncType new_FuncType()
 {
     FuncType newFuncType = (FuncType)malloc(sizeof(struct FuncType_));
-    newFuncType->params = new_vector(sizeof(ValueType), NULL);
-    newFuncType->results = new_vector(sizeof(ValueType), NULL);
+    newFuncType->params = new_vector_p(sizeof(ValueType), NULL);
+    newFuncType->results = new_vector_p(sizeof(ValueType), NULL);
     return newFuncType;
 }
 
@@ -18,6 +18,6 @@ void free_FuncType(FuncType funcType)
 }
 void clean_FuncType(FuncType funcType)
 {
-    free_vector(funcType->params);
-    free_vector(funcType->results);
+    free_vector_p(funcType->params);
+    free_vector_p(funcType->results);
 }

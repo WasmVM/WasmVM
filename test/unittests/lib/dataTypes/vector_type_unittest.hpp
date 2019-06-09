@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <stdlib.h>
 }
 #undef _Bool
@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(vector, create_delete)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     EXPECT_EQ(newVector->data, NULL);
@@ -18,13 +18,13 @@ SKYPAT_F(vector, create_delete)
     EXPECT_EQ(newVector->unitSize, sizeof(int));
     EXPECT_EQ(newVector->capacity, 0);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }
 
 SKYPAT_F(vector, push_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -40,13 +40,13 @@ SKYPAT_F(vector, push_back)
     EXPECT_EQ(newVector->length, 3);
     EXPECT_EQ(newVector->capacity, 4);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }
 
 SKYPAT_F(vector, pop_back)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -76,13 +76,13 @@ SKYPAT_F(vector, pop_back)
     free(check2);
     free(check3);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }
 
 SKYPAT_F(vector, shrink)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -99,13 +99,13 @@ SKYPAT_F(vector, shrink)
     newVector->shrink(newVector);
     EXPECT_EQ(newVector->capacity, 4);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }
 
 SKYPAT_F(vector, at)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     int data1 = 5;
@@ -121,18 +121,18 @@ SKYPAT_F(vector, at)
     int *check3 = (int*) newVector->at(newVector, 2);
     EXPECT_EQ(*check3, 13);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }
 
 SKYPAT_F(vector, resize)
 {
     // Prepare
-    vector* newVector = new_vector(sizeof(int), NULL);
+    vector_p newVector = new_vector_p(sizeof(int), NULL);
 
     // Check
     newVector->resize(newVector, 50);
     EXPECT_EQ(newVector->length, 50);
     EXPECT_EQ(newVector->capacity, 50);
 
-    free_vector(newVector);
+    free_vector_p(newVector);
 }

@@ -375,10 +375,10 @@ int validate_Instr_select(WasmParametricInstr* instr, Context* context, stack_p 
 }
 int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(instr->index >= context->locals->length) {
+    if(instr->index >= vector_size(context->locals)) {
         return -1;
     }
-    ValueType* local = (ValueType*)context->locals->at(context->locals, instr->index);
+    ValueType* local = vector_at(ValueType*, context->locals, instr->index);
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
     *operand = *local;
     stack_push(opds, operand);
@@ -386,7 +386,7 @@ int validate_Instr_get_local(WasmVariableInstr* instr, Context* context, stack_p
 }
 int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(instr->index >= context->locals->length) {
+    if(instr->index >= vector_size(context->locals)) {
         return -1;
     }
     ValueType* operand = NULL;
@@ -398,7 +398,7 @@ int validate_Instr_set_local(WasmVariableInstr* instr, Context* context, stack_p
 }
 int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(instr->index >= context->locals->length) {
+    if(instr->index >= vector_size(context->locals)) {
         return -1;
     }
     ValueType* operand = NULL;
@@ -410,10 +410,10 @@ int validate_Instr_tee_local(WasmVariableInstr* instr, Context* context, stack_p
 }
 int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(instr->index >= context->module->globals->length) {
+    if(instr->index >= vector_size(context->module->globals)) {
         return -1;
     }
-    WasmGlobal* global = (WasmGlobal*)context->module->globals->at(context->module->globals, instr->index);
+    WasmGlobal* global = vector_at(WasmGlobal*, context->module->globals, instr->index);
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
     *operand = global->valType;
     stack_push(opds, operand);
@@ -421,10 +421,10 @@ int validate_Instr_get_global(WasmVariableInstr* instr, Context* context, stack_
 }
 int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(instr->index >= context->module->globals->length) {
+    if(instr->index >= vector_size(context->module->globals)) {
         return -1;
     }
-    WasmGlobal* global = (WasmGlobal*)context->module->globals->at(context->module->globals, instr->index);
+    WasmGlobal* global = vector_at(WasmGlobal*, context->module->globals, instr->index);
     if(!global->mut) {
         return -2;
     }
@@ -437,7 +437,7 @@ int validate_Instr_set_global(WasmVariableInstr* instr, Context* context, stack_
 }
 int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     uint32_t maxAlign = 0;
@@ -475,7 +475,7 @@ int validate_Instr_load(WasmMemoryInstr* instr, Context* context, stack_p opds, 
 }
 int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     uint32_t maxAlign = 0;
@@ -522,7 +522,7 @@ int validate_Instr_loadN(WasmMemoryInstr* instr, Context* context, stack_p opds,
 }
 int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     uint32_t maxAlign = 0;
@@ -564,7 +564,7 @@ int validate_Instr_store(WasmMemoryInstr* instr, Context* context, stack_p opds,
 }
 int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     uint32_t maxAlign = 0;
@@ -610,7 +610,7 @@ int validate_Instr_storeN(WasmMemoryInstr* instr, Context* context, stack_p opds
 }
 int validate_Instr_memory_size(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
@@ -620,7 +620,7 @@ int validate_Instr_memory_size(WasmMemoryInstr* instr, Context* context, stack_p
 }
 int validate_Instr_memory_grow(WasmMemoryInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    if(context->module->mems->length < 1) {
+    if(vector_size(context->module->mems) < 1) {
         return -1;
     }
     ValueType* operand = NULL;
@@ -642,9 +642,9 @@ int validate_Instr_unreachable(WasmControlInstr* instr, Context* context, stack_
 int validate_Instr_block(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame(opds);
-    for(size_t i = 0; i < instr->resultTypes->length; ++i) {
-        frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
-        frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
+    for(size_t i = 0; i < vector_size(instr->resultTypes); ++i) {
+        vector_push_back(frame->label_types, vector_at(ValueType*, instr->resultTypes, i));
+        vector_push_back(frame->end_types, vector_at(ValueType*, instr->resultTypes, i));
     }
     stack_push(ctrls, frame);
     return 0;
@@ -652,8 +652,8 @@ int validate_Instr_block(WasmControlInstr* instr, Context* context, stack_p opds
 int validate_Instr_loop(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
     ctrl_frame* frame = new_ctrl_frame(opds);
-    for(size_t i = 0; i < instr->resultTypes->length; ++i) {
-        frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
+    for(size_t i = 0; i < vector_size(instr->resultTypes); ++i) {
+        vector_push_back(frame->end_types, vector_at(ValueType*, instr->resultTypes, i));
     }
     stack_push(ctrls, frame);
     return 0;
@@ -665,9 +665,9 @@ int validate_Instr_if(WasmControlInstr* instr, Context* context, stack_p opds, s
         return -1;
     }
     ctrl_frame* frame = new_ctrl_frame(opds);
-    for(size_t i = 0; i < instr->resultTypes->length; ++i) {
-        frame->label_types->push_back(frame->label_types, instr->resultTypes->at(instr->resultTypes, i));
-        frame->end_types->push_back(frame->end_types, instr->resultTypes->at(instr->resultTypes, i));
+    for(size_t i = 0; i < vector_size(instr->resultTypes); ++i) {
+        vector_push_back(frame->label_types, vector_at(ValueType*, instr->resultTypes, i));
+        vector_push_back(frame->end_types, vector_at(ValueType*, instr->resultTypes, i));
     }
     stack_push(ctrls, frame);
     free(operand);
@@ -679,10 +679,10 @@ int validate_Instr_end(WasmControlInstr* instr, Context* context, stack_p opds, 
     if(!frame) {
         return -1;
     }
-    for(size_t i = frame->end_types->length; i > 0; --i) {
+    for(size_t i = vector_size(frame->end_types); i > 0; --i) {
         size_t index = i - 1;
         ValueType* operand = NULL;
-        ValueType* endType = frame->end_types->at(frame->end_types, index);
+        ValueType* endType = vector_at(ValueType*, frame->end_types, index);
         if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
             free(operand);
             frame = stack_pop(ctrl_frame*, ctrls);
@@ -691,12 +691,12 @@ int validate_Instr_end(WasmControlInstr* instr, Context* context, stack_p opds, 
         }
         free(operand);
     }
-    if(stack_size(opds) != frame->label_types->length) {
+    if(stack_size(opds) != vector_size(frame->label_types)) {
         return -3;
     }
-    for(size_t i = 0; i < frame->end_types->length; ++i) {
+    for(size_t i = 0; i < vector_size(frame->end_types); ++i) {
         ValueType* operand = (ValueType*) malloc(sizeof(ValueType));
-        *operand = *((ValueType*)frame->end_types->at(frame->end_types, i));
+        *operand = *(vector_at(ValueType*, frame->end_types, i));
         stack_push(opds, operand);
     }
     frame = stack_pop(ctrl_frame*, ctrls);
@@ -709,10 +709,10 @@ int validate_Instr_else(WasmControlInstr* instr, Context* context, stack_p opds,
     if(!frame) {
         return -1;
     }
-    for(size_t i = frame->end_types->length; i > 0; --i) {
+    for(size_t i = vector_size(frame->end_types); i > 0; --i) {
         size_t index = i - 1;
         ValueType* operand = NULL;
-        ValueType* endType = frame->end_types->at(frame->end_types, index);
+        ValueType* endType = vector_at(ValueType*, frame->end_types, index);
         if(pop_opd_expect(opds, ctrls, &operand, *endType)) {
             free(operand);
             frame = stack_pop(ctrl_frame*, ctrls);
@@ -721,21 +721,21 @@ int validate_Instr_else(WasmControlInstr* instr, Context* context, stack_p opds,
         }
         free(operand);
     }
-    if(stack_size(opds) != frame->label_types->length) {
+    if(stack_size(opds) != vector_size(frame->label_types)) {
         return -3;
     }
     return 0;
 }
 int validate_Instr_br(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    uint32_t index = *vector_at(uint32_t*, instr->indices, 0);
     ctrl_frame* frame = ctrl_at(ctrls, index);
     if(frame == NULL) {
         return -1;
     }
-    for(size_t i = frame->label_types->length; i > 0; --i) {
+    for(size_t i = vector_size(frame->label_types); i > 0; --i) {
         ValueType* operand = NULL;
-        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        ValueType* expect = vector_at(ValueType*, frame->label_types, i - 1);
         if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
             free(operand);
             return -2;
@@ -748,7 +748,7 @@ int validate_Instr_br(WasmControlInstr* instr, Context* context, stack_p opds, s
 }
 int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
+    uint32_t index = *vector_at(uint32_t*, instr->indices, 0);
     ctrl_frame* frame = ctrl_at(ctrls, index);
     if(frame == NULL) {
         return -1;
@@ -759,9 +759,9 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack_p opds
     }
     free(condition);
     stack_p operandCache = new_stack_p(free);
-    for(size_t i = frame->label_types->length; i > 0; --i) {
+    for(size_t i = vector_size(frame->label_types); i > 0; --i) {
         ValueType* operand = NULL;
-        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        ValueType* expect = vector_at(ValueType*, frame->label_types, i - 1);
         if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
             free(operand);
             free_stack_p(operandCache);
@@ -778,22 +778,22 @@ int validate_Instr_br_if(WasmControlInstr* instr, Context* context, stack_p opds
 }
 int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, instr->indices->length - 1);
+    uint32_t index = *vector_at(uint32_t*, instr->indices, vector_size(instr->indices) - 1);
     ctrl_frame* frame = ctrl_at(ctrls, index);
     if(frame == NULL) {
         return -1;
     }
-    for(size_t i = 0; i < instr->indices->length - 1; ++i) {
-        uint32_t index_n = *(uint32_t*)instr->indices->at(instr->indices, i);
+    for(size_t i = 0; i < vector_size(instr->indices) - 1; ++i) {
+        uint32_t index_n = *vector_at(uint32_t*, instr->indices, i);
         if(stack_size(ctrls) <= index_n) {
             return -2;
         }
         ctrl_frame* frame_n = ctrl_at(ctrls, index_n);
-        if(frame->label_types->length != frame_n->label_types->length) {
+        if(vector_size(frame->label_types) != vector_size(frame_n->label_types)) {
             return -3;
         }
-        for(size_t j = frame->label_types->length; j > 0; --j) {
-            if(*(ValueType*)frame->label_types->at(frame->label_types, j - 1) != *(ValueType*)frame_n->label_types->at(frame_n->label_types, j - 1)) {
+        for(size_t j = vector_size(frame->label_types); j > 0; --j) {
+            if(*vector_at(ValueType*, frame->label_types, j - 1) != *vector_at(ValueType*, frame_n->label_types, j - 1)) {
                 return -4;
             }
         }
@@ -804,9 +804,9 @@ int validate_Instr_br_table(WasmControlInstr* instr, Context* context, stack_p o
         return -5;
     }
     free(condition);
-    for(size_t i = frame->label_types->length; i > 0; --i) {
+    for(size_t i = vector_size(frame->label_types); i > 0; --i) {
         ValueType* operand = NULL;
-        ValueType* expect = (ValueType*)frame->label_types->at(frame->label_types, i - 1);
+        ValueType* expect = vector_at(ValueType*, frame->label_types, i - 1);
         if(pop_opd_expect(opds, ctrls, &operand, *expect)) {
             free(operand);
             return -6;
@@ -823,46 +823,46 @@ int validate_Instr_return(WasmControlInstr* instr, Context* context, stack_p opd
 }
 int validate_Instr_call(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
-    vector* funcs = context->module->funcs;
-    if(index >= funcs->length) {
+    uint32_t index = *vector_at(uint32_t*, instr->indices, 0);
+    vector_p funcs = context->module->funcs;
+    if(index >= vector_size(funcs)) {
         return -1;
     }
-    WasmFunc* func = (WasmFunc*)context->module->funcs->at(context->module->funcs, index);
+    WasmFunc* func = vector_at(WasmFunc*, context->module->funcs, index);
     // Parameter
-    FuncType type = (FuncType)context->module->types->at(context->module->types, func->type);
-    for(uint32_t i = type->params->length; i > 0; --i) {
+    FuncType type = vector_at(FuncType, context->module->types, func->type);
+    for(uint32_t i = vector_size(type->params); i > 0; --i) {
         ValueType* param = NULL;
-        if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {
+        if(pop_opd_expect(opds, ctrls, &param, *vector_at(ValueType*, type->params, i - 1))) {
             free(param);
             return -2;
         }
         free(param);
     }
     // Push results
-    for(uint32_t i = 0; i < type->results->length; ++i) {
+    for(uint32_t i = 0; i < vector_size(type->results); ++i) {
         ValueType* result = (ValueType*)malloc(sizeof(ValueType));
-        *result = *(ValueType*)type->results->at(type->results, i);
+        *result = *vector_at(ValueType*, type->results, i);
         stack_push(opds, result);
     }
     return 0;
 }
 int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stack_p opds, stack_p ctrls)
 {
-    vector* tables = context->module->tables;
-    if(tables->length <= 0) {
+    vector_p tables = context->module->tables;
+    if(vector_size(tables) <= 0) {
         return -1;
     }
-    vector* types = context->module->types;
-    uint32_t index = *(uint32_t*)instr->indices->at(instr->indices, 0);
-    if(index >= types->length) {
+    vector_p types = context->module->types;
+    uint32_t index = *vector_at(uint32_t*, instr->indices, 0);
+    if(index >= vector_size(types)) {
         return -2;
     }
     // Func parameter
-    FuncType type = (FuncType)types->at(types, index);
-    for(uint32_t i = type->params->length; i > 0; --i) {
+    FuncType type = vector_at(FuncType, types, index);
+    for(uint32_t i = vector_size(type->params); i > 0; --i) {
         ValueType* param = NULL;
-        if(pop_opd_expect(opds, ctrls, &param, *(ValueType*)type->params->at(type->params, i - 1))) {
+        if(pop_opd_expect(opds, ctrls, &param, *vector_at(ValueType*, type->params, i - 1))) {
             free(param);
             return -3;
         }
@@ -876,9 +876,9 @@ int validate_Instr_call_indirect(WasmControlInstr* instr, Context* context, stac
     }
     free(operand);
     // Push results
-    for(uint32_t i = 0; i < type->results->length; ++i) {
+    for(uint32_t i = 0; i < vector_size(type->results); ++i) {
         ValueType* result = (ValueType*)malloc(sizeof(ValueType));
-        *result = *(ValueType*)type->results->at(type->results, i);
+        *result = *vector_at(ValueType*, type->results, i);
         stack_push(opds, result);
     }
     return 0;

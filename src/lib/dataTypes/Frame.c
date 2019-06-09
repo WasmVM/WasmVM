@@ -8,14 +8,14 @@ Frame new_Frame(ModuleInst* moduleInst)
 {
     Frame frame = (Frame) malloc(sizeof(struct Frame_));
     frame->parent.entryType = Entry_Frame;
-    frame->locals = new_vector(sizeof(Value), NULL);
+    frame->locals = new_vector_p(sizeof(Value), NULL);
     frame->moduleInst = moduleInst;
     return frame;
 }
 
 void clean_Frame(Frame frame)
 {
-    free_vector(frame->locals);
+    free_vector_p(frame->locals);
 }
 
 void free_Frame(Frame frame)
@@ -29,7 +29,7 @@ ModuleInst* frame_get_module(Frame frame)
     return frame->moduleInst;
 }
 
-vector* frame_get_locals(Frame frame)
+vector_p frame_get_locals(Frame frame)
 {
     return frame->locals;
 }

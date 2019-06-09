@@ -17,8 +17,8 @@ int validate_Expr(list_p expr, Context* context)
     stack_p ctrls = new_stack_p(free_ctrl_frame); // ctrl_frame
     ctrl_frame* frame = new_ctrl_frame(opds);
     stack_push(ctrls, frame);
-    for(size_t i = 0; i < context->returns->length; ++i) {
-        frame->end_types->push_back(frame->end_types, context->returns->at(context->returns, i));
+    for(size_t i = 0; i < vector_size(context->returns); ++i) {
+        vector_push_back(frame->end_types, vector_at(ValueType*, context->returns, i));
     }
     // Validate
     for(size_t i = 0; i < list_size(expr); ++i) {
@@ -267,13 +267,13 @@ int validate_Expr(list_p expr, Context* context)
         }
     }
     // Check remaining operands
-    if(stack_size(opds) != context->returns->length) {
+    if(stack_size(opds) != vector_size(context->returns)) {
         clean(opds, ctrls);
         return -2;
     }
-    for(size_t i = 0; i < context->returns->length; ++i) {
+    for(size_t i = 0; i < vector_size(context->returns); ++i) {
         ValueType* val = stack_pop(ValueType*, opds);
-        ValueType* ret = (ValueType*)context->returns->at(context->returns, i);
+        ValueType* ret = vector_at(ValueType*, context->returns, i);
         if(*val != *ret) {
             clean(opds, ctrls);
             return -3;

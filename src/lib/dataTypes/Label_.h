@@ -4,7 +4,7 @@
 #include <dataTypes/Label.h>
 #include <stdint.h>
 #include <dataTypes/Entry.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 struct Label_ {
     Entry parent;
@@ -12,7 +12,7 @@ struct Label_ {
     uint32_t instrIndex;
     uint32_t contInstr;
     uint32_t endInstr;
-    vector* resultTypes; // ValueType
+    vector_p resultTypes; // ValueType
 };
 
 #endif
