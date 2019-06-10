@@ -1,7 +1,7 @@
 FROM ubuntu:cosmic
 
 RUN apt update \
-    && apt install -y gcc g++ cmake automake libtool binutils git vim zsh curl locales gdb astyle libskypat-dev \
+    && apt install -y gcc g++ cmake automake libtool binutils git vim zsh ninja-build curl locales gdb astyle libskypat-dev \
     && rm -rf /var/lib/apt/lists/*
 
 RUN locale-gen "en_US.UTF-8"
