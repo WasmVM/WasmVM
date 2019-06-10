@@ -11,7 +11,7 @@ int runtime_i64_load8_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t
     Value *value1 = stack_pop(Value*, stack->entries);
     uint32_t ea = (uint32_t) value1->value.u32 + offset;
 
-    if (ea + (8 / 8) >= memory->max * 65536) {
+    if (ea + (8 / 8) > vector_size(memory->data)) {
         fprintf(stderr, "over the memory range! \n");
         free(value1);
         return -1;

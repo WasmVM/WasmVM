@@ -12,7 +12,7 @@ int runtime_i32_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t al
 
     pop_Value(stack,&value1);
     uint32_t ea = (uint32_t)value1->value.i32 + offset;
-    if(ea + (32 / 8) >= vector_size(memory->data)) {
+    if(ea + (32 / 8) > vector_size(memory->data)) {
         fprintf(stderr, "over the memory range! \n");
         free(value1);
         return -1;

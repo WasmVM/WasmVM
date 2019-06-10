@@ -25,12 +25,12 @@ SKYPAT_F(runtime_i32_load_32, regular)
 
     // insert offset data to vector
     for(uint32_t lop = 0; lop < offset; lop++) {
-        vector_push_back(memory->data, (void*) &zero);
+        vector_push_back(memory->data, &zero);
     }
 
     // insert data to vector
     for(uint32_t lop = 0; lop < byteLen; lop++) {
-        vector_push_back(memory->data, (void*) (bytePtr + lop));
+        vector_push_back(memory->data, (bytePtr + lop));
     }
 
     for(uint32_t lop = 0; lop < 5; lop++) {
