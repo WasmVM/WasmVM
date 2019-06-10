@@ -1,4 +1,4 @@
-#include <core/Core.h>
+#include <core/Core_.h>
 
 #include <stdio.h>
 #include <stdint.h>
@@ -37,15 +37,13 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
             // TODO:
             break;
         case Op_loop:
-            // TODO:
-            break;
+            return runtime_loop(stack, instr);
         case Op_if:
             return runtime_if(stack, instr);
         case Op_else:
             return runtime_else(stack);
         case Op_end:
             return runtime_end(stack, store);
-            break;
         case Op_br:
             // TODO:
             break;
@@ -188,10 +186,10 @@ static int run_memory_instr(Stack* stack, Store* store, ModuleInst* module, Memo
             result = runtime_i64_store32(stack, memory, instr->offset, instr->align);
             break;
         case Op_memory_size:
-            // TODO:
+            result = runtime_memory_size(stack, memory);
             break;
         case Op_memory_grow:
-            // TODO:
+            result = runtime_memory_grow(stack, memory);
             break;
         default:
             break;
@@ -594,7 +592,7 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
 
 static void* exec_Core(void* corePtr)
 {
-    Core* core = (Core*) corePtr;
+    Core core = (Core) corePtr;
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
     while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
@@ -822,7 +820,31 @@ static void* exec_Core(void* corePtr)
     pthread_exit(result);
 }
 
-static int run_Core(Core* core)
+Core new_Core(Executor executor, ModuleInst* module, uint32_t startFuncAddr)
+{
+    Core core = (Core) malloc(sizeof(struct Core_));
+    core->executor = executor;
+    core->stack = NULL;
+    core->startFuncAddr = startFuncAddr;
+    core->status = Core_Stop;
+    core->module = module;
+    return core;
+}
+
+void clean_Core(Core core)
+{
+    if(core->status != Core_Stop) {
+        core_stop(core);
+    }
+}
+
+void free_Core(Core core)
+{
+    clean_Core(core);
+    free(core);
+}
+
+int core_run(Core core)
 {
     if(core->status != Core_Stop) {
         return -1;
@@ -861,19 +883,7 @@ static int run_Core(Core* core)
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
-static int stop_core(Core* core)
-{
-    core->status = Core_Stop;
-    int* resultPtr = NULL;
-    pthread_join(core->thread, (void**)&resultPtr);
-    int result = (resultPtr) ? *resultPtr : 0;
-    free(resultPtr);
-    free_Stack(core->stack);
-    core->stack = NULL;
-    return result;
-}
-
-static int pause_core(Core* core)
+int core_pause(Core core)
 {
     core->status = Core_Paused;
     int* resultPtr = NULL;
@@ -883,37 +893,21 @@ static int pause_core(Core* core)
     return result;
 }
 
-static int resume_core(Core* core)
+int core_resume(Core core)
 {
     core->status = Core_Running;
     atomic_fetch_add(&(core->executor->runningCores), 1);
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
-Core* new_Core(Executor executor, ModuleInst* module, uint32_t startFuncAddr)
+int core_stop(Core core)
 {
-    Core *core = (Core *) malloc(sizeof(Core));
-    core->executor = executor;
-    core->stack = NULL;
-    core->startFuncAddr = startFuncAddr;
     core->status = Core_Stop;
-    core->module = module;
-    core->run = run_Core;
-    core->stop = stop_core;
-    core->pause = pause_core;
-    core->resume = resume_core;
-    return core;
-}
-
-void clean_Core(Core *core)
-{
-    if(core->status != Core_Stop) {
-        core->stop(core);
-    }
-}
-
-void free_Core(Core* core)
-{
-    clean_Core(core);
-    free(core);
+    int* resultPtr = NULL;
+    pthread_join(core->thread, (void**)&resultPtr);
+    int result = (resultPtr) ? *resultPtr : 0;
+    free(resultPtr);
+    free_Stack(core->stack);
+    core->stack = NULL;
+    return result;
 }

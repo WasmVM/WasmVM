@@ -6,7 +6,7 @@ extern "C" {
 #include <string.h>
 #include <Opcodes.h>
 #include <Executor.h>
-#include <core/Core.h>
+#include <core/Core_.h>
 #include <dataTypes/vector_p.h>
 #include <dataTypes/list_p.h>
 #include <instance/ModuleInst.h>
@@ -42,7 +42,7 @@ SKYPAT_F(Core, create_delete)
     vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
-    Core* core = new_Core(executor, module, 0);
+    Core core = new_Core(executor, module, 0);
     EXPECT_EQ(core->stack, NULL);
     EXPECT_EQ(core->executor, executor);
     EXPECT_EQ(core->startFuncAddr, 0);
@@ -85,9 +85,9 @@ SKYPAT_F(Core, run_stop)
     vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
-    Core* core = new_Core(executor, module, 0);
-    EXPECT_EQ(core->run(core), 0);
-    EXPECT_EQ(core->stop(core), 0);
+    Core core = new_Core(executor, module, 0);
+    EXPECT_EQ(core_run(core), 0);
+    EXPECT_EQ(core_stop(core), 0);
 
     // Clean
     free_Core(core);
@@ -131,7 +131,7 @@ SKYPAT_F(Core, resume)
     vector_push_back(executor_get_store(executor)->funcs, func);
 
 
-    Core* core = new_Core(executor, module, 0);
+    Core core = new_Core(executor, module, 0);
     core->stack = new_Stack();
     FuncInst* startFunc = vector_at(FuncInst*, executor_get_store(core->executor)->funcs, core->startFuncAddr);
     Frame frame = new_Frame(startFunc->module);
@@ -141,8 +141,8 @@ SKYPAT_F(Core, resume)
     push_Label(core->stack, label);
 
     // Check
-    EXPECT_EQ(core->resume(core), 0);
-    core->stop(core);
+    EXPECT_EQ(core_resume(core), 0);
+    core_stop(core);
 
     // Clean
     free_Core(core);

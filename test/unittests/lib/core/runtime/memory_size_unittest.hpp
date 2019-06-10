@@ -21,7 +21,7 @@ SKYPAT_F(memory_size, regular)
     vector_resize(memory->data, pageSize);
 
     // testing
-    memory_size(stack, memory);
+    runtime_memory_size(stack, memory);
 
     // checking
     Value *check = NULL;
@@ -32,7 +32,7 @@ SKYPAT_F(memory_size, regular)
     vector_resize(memory->data, pageSize * 2);
 
     // testing
-    memory_size(stack, memory);
+    runtime_memory_size(stack, memory);
 
     // checking
     Value *check2 = NULL;
