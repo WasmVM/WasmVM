@@ -18,7 +18,7 @@ SKYPAT_F(memory_size, regular)
     uint64_t pageSize = 64 * 1024;
 
     // realloc 1 page to memory instance
-    memory->data->resize(memory->data, pageSize);
+    vector_resize(memory->data, pageSize);
 
     // testing
     memory_size(stack, memory);
@@ -29,7 +29,7 @@ SKYPAT_F(memory_size, regular)
     EXPECT_EQ(check->value.i32, 1);
 
     // realloc 1 page to memory instance
-    memory->data->resize(memory->data, pageSize * 2);
+    vector_resize(memory->data, pageSize * 2);
 
     // testing
     memory_size(stack, memory);

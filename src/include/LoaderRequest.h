@@ -12,7 +12,7 @@ typedef struct LoaderRequest_ {
     char* moduleName;
 } LoaderRequest;
 
-LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor* executor);
+LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor executor);
 void free_LoaderRequest(LoaderRequest* request);
 
 #endif

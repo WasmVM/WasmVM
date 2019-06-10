@@ -16,7 +16,7 @@ SKYPAT_F(LoaderRequest, new)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
 
     LoaderRequest* request = new_LoaderRequest("TestModule", (Component*)loader, executor);
 

@@ -10,10 +10,10 @@
 typedef struct _decoder {
     Stage       parent;         // inherit from Stage
     Loader*     loader;
-    Executor*   executor;
+    Executor   executor;
 } Decoder;
 
-Decoder* new_Decoder(Component* loader, Executor* executor); // pass Loader pointer to Decoder constructor
+Decoder* new_Decoder(Component* loader, Executor executor); // pass Loader pointer to Decoder constructor
 void free_Decoder(Decoder* decoder);
 
 #endif

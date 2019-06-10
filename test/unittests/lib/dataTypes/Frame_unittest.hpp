@@ -18,8 +18,8 @@ SKYPAT_F(Frame, create_delete)
     Frame frame = new_Frame(module);
 
     // Check
-    EXPECT_EQ(frame->locals->length, 0);
-    EXPECT_EQ(frame->locals->data, NULL);
+    EXPECT_EQ(vector_size(frame->locals), 0);
+    EXPECT_EQ(vector_data(uint8_t*, frame->locals), NULL);
     EXPECT_EQ(frame->moduleInst, module);
 
     free_Frame(frame);

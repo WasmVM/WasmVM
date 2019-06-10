@@ -20,10 +20,10 @@ SKYPAT_F(validate_Func, valid)
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
@@ -56,7 +56,7 @@ SKYPAT_F(validate_Func, type_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;

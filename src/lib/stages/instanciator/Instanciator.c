@@ -129,7 +129,7 @@ static int runInstanciator(Instanciator* instanciator)
         for(size_t i = 0; i < vector_size(module->imports); ++i) {
             WasmImport* import = vector_at(WasmImport*, module->imports, i);
             ExportInst* matched = NULL;
-            int matchResult = matchExport(module, import, instanciator->executor->modules, instanciator->executor->store, &matched);
+            int matchResult = matchExport(module, import, executor_get_modules(instanciator->executor), executor_get_store(instanciator->executor), &matched);
             if(matchResult) {
                 return matchResult;
             }
@@ -137,12 +137,12 @@ static int runInstanciator(Instanciator* instanciator)
         }
     }
     // Allocate moduleInst
-    ModuleInst* moduleInst = allocate_Module(module, instanciator->executor->store, exportInsts, vector_size(module->imports));
+    ModuleInst* moduleInst = allocate_Module(module, executor_get_store(instanciator->executor), exportInsts, vector_size(module->imports));
     free(exportInsts);
     // Elems
     for(size_t i = 0; i < vector_size(module->elems); ++i) {
         WasmElem* elem = vector_at(WasmElem*, module->elems, i);
-        TableInst* tableInst = vector_at(TableInst*, instanciator->executor->store->tables, *vector_at(uint32_t*, moduleInst->tableaddrs, elem->table));
+        TableInst* tableInst = vector_at(TableInst*, executor_get_store(instanciator->executor)->tables, *vector_at(uint32_t*, moduleInst->tableaddrs, elem->table));
         if(elem->offset.value.i32 + vector_size(elem->init) > vector_size(tableInst->elem)) {
             return -8;
         }
@@ -155,20 +155,20 @@ static int runInstanciator(Instanciator* instanciator)
     // Datas
     for(size_t i = 0; i < vector_size(module->datas); ++i) {
         WasmData* data = vector_at(WasmData*, module->datas, i);
-        MemInst* memInst = vector_at(MemInst*, instanciator->executor->store->mems, *vector_at(uint32_t*, moduleInst->memaddrs, data->data));
+        MemInst* memInst = vector_at(MemInst*, executor_get_store(instanciator->executor)->mems, *vector_at(uint32_t*, moduleInst->memaddrs, data->data));
         if(data->offset.value.i32 + vector_size(data->init) > vector_size(memInst->data)) {
             return -9;
         }
         memcpy(vector_data(char*, memInst->data) + data->offset.value.i32, vector_data(void*, data->init), sizeof(char) * vector_size(data->init));
     }
     // Start
-    instanciator->executor->addModule(instanciator->executor, moduleInst, module->start);
+    executor_addModule(instanciator->executor, moduleInst, module->start);
     // Free WasmModule
     free_WasmModule(module);
     return 0;
 }
 
-Instanciator* new_Instanciator(WasmModule* module, Executor* executor)
+Instanciator* new_Instanciator(WasmModule* module, Executor executor)
 {
     Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
     instanciator->parent.input = module;

@@ -83,6 +83,9 @@ list_p new_list_p_(void (*freeElem)(void* elem))
 
 void free_list_p(list_p thislist)
 {
+    if(thislist == NULL) {
+        return;
+    }
     if(thislist->freeElem) {
         listNode* cur = thislist->head;
         while(cur != NULL) {

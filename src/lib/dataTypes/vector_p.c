@@ -6,6 +6,9 @@
 
 void free_vector_p(vector_p vectorPtr)
 {
+    if(vectorPtr == NULL) {
+        return;
+    }
     if(vectorPtr->cleanFunc) {
         for(uint32_t i = vectorPtr->length; i > 0; --i) {
             vectorPtr->cleanFunc((void*)((char*)vectorPtr->data + (i - 1) * vectorPtr->unitSize));

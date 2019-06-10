@@ -16,18 +16,18 @@ SKYPAT_F(ModuleInst, create_delete)
 
     // Check
     EXPECT_EQ(strcmp(moduleInst->name, "test"), 0);
-    EXPECT_EQ(moduleInst->types->length, 0);
-    EXPECT_EQ(moduleInst->types->data, NULL);
-    EXPECT_EQ(moduleInst->funcaddrs->length, 0);
-    EXPECT_EQ(moduleInst->funcaddrs->data, NULL);
-    EXPECT_EQ(moduleInst->memaddrs->length, 0);
-    EXPECT_EQ(moduleInst->memaddrs->data, NULL);
-    EXPECT_EQ(moduleInst->tableaddrs->length, 0);
-    EXPECT_EQ(moduleInst->tableaddrs->data, NULL);
-    EXPECT_EQ(moduleInst->globaladdrs->length, 0);
-    EXPECT_EQ(moduleInst->globaladdrs->data, NULL);
-    EXPECT_EQ(moduleInst->exports->length, 0);
-    EXPECT_EQ(moduleInst->exports->data, NULL);
+    EXPECT_EQ(vector_size(moduleInst->types), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->types), NULL);
+    EXPECT_EQ(vector_size(moduleInst->funcaddrs), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->funcaddrs), NULL);
+    EXPECT_EQ(vector_size(moduleInst->memaddrs), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->memaddrs), NULL);
+    EXPECT_EQ(vector_size(moduleInst->tableaddrs), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->tableaddrs), NULL);
+    EXPECT_EQ(vector_size(moduleInst->globaladdrs), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->globaladdrs), NULL);
+    EXPECT_EQ(vector_size(moduleInst->exports), 0);
+    EXPECT_EQ(vector_data(uint8_t*, moduleInst->exports), NULL);
 
     free_ModuleInst(moduleInst);
 }

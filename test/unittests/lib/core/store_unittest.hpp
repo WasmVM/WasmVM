@@ -13,14 +13,14 @@ SKYPAT_F(Store, create_delete)
     Store* store = new_Store();
 
     // Check
-    EXPECT_EQ(store->funcs->length, 0);
-    EXPECT_EQ(store->funcs->data, NULL);
-    EXPECT_EQ(store->tables->length, 0);
-    EXPECT_EQ(store->tables->data, NULL);
-    EXPECT_EQ(store->mems->length, 0);
-    EXPECT_EQ(store->mems->data, NULL);
-    EXPECT_EQ(store->globals->length, 0);
-    EXPECT_EQ(store->globals->data, NULL);
+    EXPECT_EQ(vector_size(store->funcs), 0);
+    EXPECT_EQ(vector_data(uint8_t*, store->funcs), NULL);
+    EXPECT_EQ(vector_size(store->tables), 0);
+    EXPECT_EQ(vector_data(uint8_t*, store->tables), NULL);
+    EXPECT_EQ(vector_size(store->mems), 0);
+    EXPECT_EQ(vector_data(uint8_t*, store->mems), NULL);
+    EXPECT_EQ(vector_size(store->globals), 0);
+    EXPECT_EQ(vector_data(uint8_t*, store->globals), NULL);
 
     free_Store(store);
 }

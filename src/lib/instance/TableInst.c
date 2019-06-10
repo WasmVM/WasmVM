@@ -6,7 +6,7 @@
 TableInst* new_TableInst()
 {
     TableInst* newTableInst = (TableInst*)malloc(sizeof(TableInst));
-    newTableInst->elem = new_vector_p(sizeof(uint32_t), NULL);
+    newTableInst->elem = new_vector_p(uint32_t, NULL);
     newTableInst->max = 0;
     return newTableInst;
 }

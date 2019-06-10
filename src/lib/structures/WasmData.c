@@ -5,7 +5,7 @@
 WasmData* new_WasmData()
 {
     WasmData* newWasmData = (WasmData*) malloc(sizeof(WasmData));
-    newWasmData->init = new_vector_p(sizeof(char), NULL);
+    newWasmData->init = new_vector_p(char, NULL);
 
     return newWasmData;
 }

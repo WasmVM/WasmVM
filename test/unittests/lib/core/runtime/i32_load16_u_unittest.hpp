@@ -21,10 +21,10 @@ SKYPAT_F(runtime_i32_load16_u, regular)
     uint8_t zero = 0;
 
     for(int32_t lop = 0; lop < offset; lop++) {
-        memory->data->push_back(memory->data, (const void *)&zero);
+        vector_push_back(memory->data, (const void *)&zero);
     }
     for(int32_t lop = 0; lop < byteLen; lop++) {
-        memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
+        vector_push_back(memory->data, (const void *)(bytePtr + lop));
     }
     for(uint8_t lop = 0; lop < data_size; lop++) {
         // Set load location

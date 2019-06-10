@@ -30,7 +30,7 @@ SKYPAT_F(Runtime_f64_store, regular)
 
     // init memory
     for(uint32_t lop = 0; lop < memlength + offset; lop++) {
-        memory->data->push_back(memory->data, (void*) &zero);
+        vector_push_back(memory->data, &zero);
     }
 
     // test store
@@ -41,7 +41,7 @@ SKYPAT_F(Runtime_f64_store, regular)
         int ret = runtime_f64_store(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
 
-        double *d = (double *) ((int8_t *) memory->data->data + lop * sizeof(double) + offset);
+        double *d = (double *) ( vector_data(int8_t *, memory->data) + lop * sizeof(double) + offset);
         EXPECT_EQ(*d, data[lop]);
     }
 

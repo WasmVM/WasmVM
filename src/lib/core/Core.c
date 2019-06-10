@@ -5,6 +5,7 @@
 #include <stdatomic.h>
 #include <stdlib.h>
 #include <Opcodes.h>
+#include <Executor_.h>
 #include <core/Runtime.h>
 #include <dataTypes/list_p.h>
 #include <dataTypes/stack_p.h>
@@ -889,7 +890,7 @@ static int resume_core(Core* core)
     return pthread_create(&core->thread, NULL, exec_Core, (void*)core);
 }
 
-Core* new_Core(Executor *executor, ModuleInst* module, uint32_t startFuncAddr)
+Core* new_Core(Executor executor, ModuleInst* module, uint32_t startFuncAddr)
 {
     Core *core = (Core *) malloc(sizeof(Core));
     core->executor = executor;

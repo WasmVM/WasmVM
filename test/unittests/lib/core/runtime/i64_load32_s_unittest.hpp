@@ -27,10 +27,10 @@ SKYPAT_F(runtime_i64_load16_s, regular)
 
     // initialize memory instance
     for (uint32_t lop = 0; lop < offset; ++lop) {
-        memory->data->push_back(memory->data, (const void *)&zero);
+        vector_push_back(memory->data, &zero);
     }
     for (uint32_t lop = 0; lop < byteLength; ++lop) {
-        memory->data->push_back(memory->data, (const void *)(bytePtr + lop));
+        vector_push_back(memory->data, (bytePtr + lop));
     }
 
     // start testing (set memory location -> run load function -> check -> clean)

@@ -12,10 +12,10 @@ SKYPAT_F(FuncType, create_delete)
     FuncType funcType = new_FuncType();
 
     // Check
-    EXPECT_EQ(funcType->params->length, 0);
-    EXPECT_EQ(funcType->params->data, NULL);
-    EXPECT_EQ(funcType->results->length, 0);
-    EXPECT_EQ(funcType->results->data, NULL);
+    EXPECT_EQ(vector_size(funcType->params), 0);
+    EXPECT_EQ(vector_data(uint8_t*,funcType->params), NULL);
+    EXPECT_EQ(vector_size(funcType->results), 0);
+    EXPECT_EQ(vector_data(uint8_t*,funcType->results), NULL);
 
     free_FuncType(funcType);
 }

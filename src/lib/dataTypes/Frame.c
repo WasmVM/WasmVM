@@ -8,7 +8,7 @@ Frame new_Frame(ModuleInst* moduleInst)
 {
     Frame frame = (Frame) malloc(sizeof(struct Frame_));
     frame->parent.entryType = Entry_Frame;
-    frame->locals = new_vector_p(sizeof(Value), NULL);
+    frame->locals = new_vector_p(Value, NULL);
     frame->moduleInst = moduleInst;
     return frame;
 }

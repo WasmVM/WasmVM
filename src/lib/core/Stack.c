@@ -66,7 +66,7 @@ void push_Value(Stack* thisStack, Value* value)
             printf("Push value i32 %d\n", value->value.i32);
             break;
         case Value_i64:
-            printf("Push value i64 %lld\n", value->value.i64);
+            printf("Push value i64 %ld\n", value->value.i64);
             break;
         case Value_f32:
             printf("Push value f32 %f\n", value->value.f32);
@@ -212,7 +212,7 @@ int pop_Value(Stack* thisStack, Value** value)
                 printf("Pop value i32 %d\n", (*value)->value.i32);
                 break;
             case Value_i64:
-                printf("Pop value i64 %lld\n", (*value)->value.i64);
+                printf("Pop value i64 %ld\n", (*value)->value.i64);
                 break;
             case Value_f32:
                 printf("Pop value f32 %f\n", (*value)->value.f32);

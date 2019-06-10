@@ -137,7 +137,7 @@ int parse_type_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *e
     return 0;
 }
 
-int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor* executor)
+int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor executor)
 {
     if(skip_to_section(2, read_p, end_p) == 2) {
         for(uint32_t importNum = getLeb128_u32(read_p, end_p); importNum > 0; --importNum) {

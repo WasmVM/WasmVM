@@ -15,12 +15,12 @@ SKYPAT_F(Validate_FuncType, valid)
     // Prepare
     FuncType funcType = new_FuncType();
     ValueType type1 = Value_i32, type2 = Value_i64;
-    funcType->params->push_back(funcType->params, (void*)&type1);
-    funcType->params->push_back(funcType->params, (void*)&type2);
+    vector_push_back(funcType->params, (void*)&type1);
+    vector_push_back(funcType->params, (void*)&type2);
 
     // Check
     EXPECT_EQ(validate_FunctionType(funcType), 0);
-    funcType->results->push_back(funcType->results, (void*)&type1);
+    vector_push_back(funcType->results, (void*)&type1);
     EXPECT_EQ(validate_FunctionType(funcType), 0);
 
     free_FuncType(funcType);

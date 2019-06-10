@@ -9,12 +9,12 @@ ModuleInst* new_ModuleInst(char* name)
 {
     ModuleInst* newModuleInst = (ModuleInst*) malloc(sizeof(ModuleInst));
     newModuleInst->name = name;
-    newModuleInst->types = new_vector_p(sizeof(struct FuncType_), (void(*)(void*))clean_FuncType);
-    newModuleInst->funcaddrs = new_vector_p(sizeof(uint32_t), NULL);
-    newModuleInst->tableaddrs = new_vector_p(sizeof(uint32_t), NULL);
-    newModuleInst->memaddrs = new_vector_p(sizeof(uint32_t), NULL);
-    newModuleInst->globaladdrs = new_vector_p(sizeof(uint32_t), NULL);
-    newModuleInst->exports = new_vector_p(sizeof(ExportInst), (void(*)(void*))(clean_ExportInst));
+    newModuleInst->types = new_vector_p(struct FuncType_, (void(*)(void*))clean_FuncType);
+    newModuleInst->funcaddrs = new_vector_p(uint32_t, NULL);
+    newModuleInst->tableaddrs = new_vector_p(uint32_t, NULL);
+    newModuleInst->memaddrs = new_vector_p(uint32_t, NULL);
+    newModuleInst->globaladdrs = new_vector_p(uint32_t, NULL);
+    newModuleInst->exports = new_vector_p(ExportInst, (void(*)(void*))(clean_ExportInst));
     return newModuleInst;
 }
 

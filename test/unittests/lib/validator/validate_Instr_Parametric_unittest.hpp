@@ -29,7 +29,7 @@ SKYPAT_F(Validate_Instr_drop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -60,7 +60,7 @@ SKYPAT_F(Validate_Instr_drop, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -87,7 +87,7 @@ SKYPAT_F(Validate_Instr_select, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -127,7 +127,7 @@ SKYPAT_F(Validate_Instr_select, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);

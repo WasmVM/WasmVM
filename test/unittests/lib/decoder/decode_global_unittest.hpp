@@ -16,11 +16,11 @@ SKYPAT_F(decode_global, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x06\x07\x01\x7f\x00\x41\xfb\x00\x0b";
     EXPECT_EQ(parse_global_section(module, &testBin, testBin + 8), 0);
-    EXPECT_EQ(module->globals->length, 1);
-    EXPECT_FALSE(((WasmGlobal*)module->globals->at(module->globals, 0))->mut);
-    EXPECT_EQ(((WasmGlobal*)module->globals->at(module->globals, 0))->valType, Value_i32);
-    EXPECT_EQ(((WasmGlobal*)module->globals->at(module->globals, 0))->init.type, Value_i32);
-    EXPECT_EQ(((WasmGlobal*)module->globals->at(module->globals, 0))->init.value.i32, 123);
+    EXPECT_EQ(vector_size(module->globals), 1);
+    EXPECT_FALSE((vector_at(WasmGlobal*, module->globals, 0))->mut);
+    EXPECT_EQ((vector_at(WasmGlobal*, module->globals, 0))->valType, Value_i32);
+    EXPECT_EQ((vector_at(WasmGlobal*, module->globals, 0))->init.type, Value_i32);
+    EXPECT_EQ((vector_at(WasmGlobal*, module->globals, 0))->init.value.i32, 123);
     free_WasmModule(module);
 }
 

@@ -16,7 +16,7 @@ typedef enum {
 typedef struct Core_ {
     CoreStatus status;
     pthread_t thread;
-    Executor* executor;
+    Executor executor;
     Stack *stack; // Core's private Stack
     ModuleInst* module;
     uint32_t startFuncAddr;
@@ -26,7 +26,7 @@ typedef struct Core_ {
     int (*stop)(struct Core_* core);
 } Core;
 
-Core* new_Core(Executor* executor, ModuleInst* module, uint32_t startFuncAddr);
+Core* new_Core(Executor executor, ModuleInst* module, uint32_t startFuncAddr);
 void clean_Core(Core *core);
 void free_Core(Core *core);
 

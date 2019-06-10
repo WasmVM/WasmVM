@@ -7,9 +7,9 @@ WasmControlInstr* new_WasmControlInstr()
     WasmControlInstr* newInstr = (WasmControlInstr*)malloc(sizeof(WasmControlInstr));
     newInstr->parent.free = (void(*)(WasmInstr*)) free_WasmControlInstr;
     newInstr->parent.clean = (void(*)(WasmInstr*)) clean_WasmControlInstr;
-    newInstr->resultTypes = new_vector_p(sizeof(ValueType), NULL);
-    newInstr->instrs = new_vector_p(sizeof(ValueType), NULL);
-    newInstr->indices = new_vector_p(sizeof(ValueType), NULL);
+    newInstr->resultTypes = new_vector_p(ValueType, NULL);
+    newInstr->instrs = new_vector_p(ValueType, NULL);
+    newInstr->indices = new_vector_p(ValueType, NULL);
     return newInstr;
 }
 

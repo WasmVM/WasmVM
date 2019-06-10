@@ -24,9 +24,9 @@ SKYPAT_F(allocate_table, valid)
 
     // Test
     uint32_t address = allocate_Table(table, store);
-    TableInst* tableInst = (TableInst*)store->tables->at(store->tables, address);
+    TableInst* tableInst = vector_at(TableInst*, store->tables, address);
     EXPECT_EQ(tableInst->max, 20);
-    EXPECT_EQ(tableInst->elem->length, 10);
+    EXPECT_EQ(vector_size(tableInst->elem), 10);
 
     // Clean
     free_Store(store);

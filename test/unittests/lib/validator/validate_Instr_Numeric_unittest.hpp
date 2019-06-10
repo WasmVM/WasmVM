@@ -86,7 +86,7 @@ SKYPAT_F(Validate_Instr_const, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -141,7 +141,7 @@ SKYPAT_F(validate_Instr_unop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -209,7 +209,7 @@ SKYPAT_F(validate_Instr_unop, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -236,7 +236,7 @@ SKYPAT_F(validate_Instr_binop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -352,7 +352,7 @@ SKYPAT_F(validate_Instr_binop, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -383,7 +383,7 @@ SKYPAT_F(validate_Instr_testop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -427,7 +427,7 @@ SKYPAT_F(validate_Instr_testop, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -457,7 +457,7 @@ SKYPAT_F(validate_Instr_relop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -549,7 +549,7 @@ SKYPAT_F(validate_Instr_relop, no_enough_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
@@ -580,7 +580,7 @@ SKYPAT_F(validate_Instr_cvtop, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     stack_p opds = new_stack_p(free);
     stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);

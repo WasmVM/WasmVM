@@ -22,13 +22,13 @@ SKYPAT_F(validate_Module, valid)
     WasmModule* module = new_WasmModule(NULL);
 
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     WasmGlobal* global = (WasmGlobal*) malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     WasmExport* export1 = (WasmExport*) malloc(sizeof(WasmExport));
     export1->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export1->name, "test1");
@@ -52,25 +52,25 @@ SKYPAT_F(validate_Module, start_function_not_exist)
     WasmModule* module = new_WasmModule(NULL);
 
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     module->start = 1;
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     WasmGlobal* global = (WasmGlobal*) malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     WasmExport* export1 = (WasmExport*) malloc(sizeof(WasmExport));
     export1->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export1->name, "test1");
     export1->descType = Desc_Func;
     export1->descIdx = 0;
-    module->exports->push_back(module->exports, export1);
+    vector_push_back(module->exports, export1);
     WasmExport* export2 = (WasmExport*) malloc(sizeof(WasmExport));
     export2->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export2->name, "test2");
     export2->descType = Desc_Global;
     export2->descIdx = 0;
-    module->exports->push_back(module->exports, export2);
+    vector_push_back(module->exports, export2);
 
     // Check
     EXPECT_EQ(validate_Module(module), -1);
@@ -84,30 +84,30 @@ SKYPAT_F(validate_Module, start_function_not_void)
     WasmModule* module = new_WasmModule(NULL);
 
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     WasmGlobal* global = (WasmGlobal*) malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     WasmExport* export1 = (WasmExport*) malloc(sizeof(WasmExport));
     export1->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export1->name, "test1");
     export1->descType = Desc_Func;
     export1->descIdx = 0;
-    module->exports->push_back(module->exports, export1);
+    vector_push_back(module->exports, export1);
     WasmExport* export2 = (WasmExport*) malloc(sizeof(WasmExport));
     export2->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export2->name, "test2");
     export2->descType = Desc_Global;
     export2->descIdx = 0;
-    module->exports->push_back(module->exports, export2);
+    vector_push_back(module->exports, export2);
 
     // Check
     ValueType* value = (ValueType*)malloc(sizeof(ValueType));
     *value = Value_i32;
-    type->results->push_back(type->results, value);
+    vector_push_back(type->results, value);
     EXPECT_EQ(validate_Module(module), -2);
 
     free_WasmModule(module);
@@ -119,25 +119,25 @@ SKYPAT_F(validate_Module, export_name_not_unique)
     WasmModule* module = new_WasmModule(NULL);
 
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     module->start = 0;
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     WasmGlobal* global = (WasmGlobal*) malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     WasmExport* export1 = (WasmExport*) malloc(sizeof(WasmExport));
     export1->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export1->name, "test1");
     export1->descType = Desc_Func;
     export1->descIdx = 0;
-    module->exports->push_back(module->exports, export1);
+    vector_push_back(module->exports, export1);
     WasmExport* export2 = (WasmExport*) malloc(sizeof(WasmExport));
     export2->name = (char*) malloc(sizeof(char) * 6);
     strcpy(export2->name, "test1");
     export2->descType = Desc_Global;
     export2->descIdx = 0;
-    module->exports->push_back(module->exports, export2);
+    vector_push_back(module->exports, export2);
 
     // Check
     EXPECT_EQ(validate_Module(module), -3);

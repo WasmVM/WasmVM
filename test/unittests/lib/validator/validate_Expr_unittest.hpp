@@ -25,7 +25,7 @@ SKYPAT_F(validate_Expr, valid)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     list_p exprs = new_list_p((void(*)(void*))free_WasmInstr);
 
@@ -63,7 +63,7 @@ SKYPAT_F(validate_Expr, no_such_instruction)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     list_p exprs = new_list_p((void(*)(void*))free_WasmInstr);
 
@@ -87,7 +87,7 @@ SKYPAT_F(validate_Expr, remain_operand)
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     list_p exprs = new_list_p((void(*)(void*))free_WasmInstr);
 
@@ -124,8 +124,8 @@ SKYPAT_F(validate_Expr, wrong_type_of_result)
     FuncType type = new_FuncType();
     ValueType* result = (ValueType*) malloc(sizeof(ValueType));
     *result = Value_i64;
-    type->results->push_back(type->results, result);
-    module->types->push_back(module->types, type);
+    vector_push_back(type->results, result);
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
     list_p exprs = new_list_p((void(*)(void*))free_WasmInstr);
 

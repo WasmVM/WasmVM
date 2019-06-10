@@ -4,6 +4,9 @@
 
 void free_queue_p(queue_p thisQueue)
 {
+    if(thisQueue == NULL) {
+        return;
+    }
     if(thisQueue->freeElem) {
         queueNode cur = thisQueue->head;
         while(cur != NULL) {

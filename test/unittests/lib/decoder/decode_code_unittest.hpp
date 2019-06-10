@@ -17,13 +17,13 @@ extern "C" {
 SKYPAT_F(decode_code, valid)
 {
     WasmModule* module = new_WasmModule((char*)"Test");
-    module->funcs->push_back(module->funcs, new_WasmFunc());
+    vector_push_back(module->funcs, new_WasmFunc());
     uint8_t* testBin = (uint8_t*) "\x0a\x0d\x01\x0b\x02\x01\x7f\x01\x7d\x20\x00\x20\x01\x6a\x0b";
     EXPECT_EQ(parse_code_section(module, &testBin, testBin + 14), 0);
-    WasmFunc* func = (WasmFunc*)module->funcs->at(module->funcs, 0);
-    EXPECT_EQ(func->locals->length, 2);
-    EXPECT_EQ(*((ValueType*)func->locals->at(func->locals, 0)), Value_i32);
-    EXPECT_EQ(*((ValueType*)func->locals->at(func->locals, 1)), Value_f32);
+    WasmFunc* func = vector_at(WasmFunc*, module->funcs, 0);
+    EXPECT_EQ(vector_size(func->locals), 2);
+    EXPECT_EQ(*(vector_at(ValueType*, func->locals, 0)), Value_i32);
+    EXPECT_EQ(*(vector_at(ValueType*, func->locals, 1)), Value_f32);
     EXPECT_EQ(list_size(func->body), 3);
     WasmVariableInstr* get_local = list_at(WasmVariableInstr*, func->body, 0);
     EXPECT_EQ(get_local->parent.opcode, Op_get_local);

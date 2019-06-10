@@ -5,6 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
+#include <dataTypes/vector_p.h>
 #include <dataTypes/FuncType.h>
 #include <structures/WasmImport.h>
 #include <Validates.h>
@@ -17,7 +18,7 @@ SKYPAT_F(Validate_Import, valid_func)
     WasmImport* import = (WasmImport*)malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
     FuncType funcType = new_FuncType();
-    module->types->push_back(module->types, funcType);
+    vector_push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 0;
 
@@ -34,7 +35,7 @@ SKYPAT_F(Validate_Import, func_type_not_defined)
     WasmImport* import = (WasmImport*) malloc(sizeof(WasmImport));
     WasmModule* module = new_WasmModule(NULL);
     FuncType funcType = new_FuncType();
-    module->types->push_back(module->types, funcType);
+    vector_push_back(module->types, funcType);
     import->descType = Desc_Func;
     import->desc.typeidx = 1;
 

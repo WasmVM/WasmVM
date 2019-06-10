@@ -4,6 +4,9 @@
 
 void free_stack_p(stack_p thisstack)
 {
+    if(thisstack == NULL) {
+        return;
+    }
     if (thisstack->freeElem) {
         while (thisstack->head != NULL) {
             stackNode node = thisstack->head;

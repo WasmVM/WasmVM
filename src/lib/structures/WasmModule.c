@@ -13,15 +13,15 @@ WasmModule* new_WasmModule(char* module_name)
     } else {
         newModule->module_name = NULL;
     }
-    newModule->types = new_vector_p(sizeof(struct FuncType_), (void(*)(void*))clean_FuncType);
-    newModule->funcs = new_vector_p(sizeof(WasmFunc), (void(*)(void*))clean_WasmFunc);
-    newModule->tables = new_vector_p(sizeof(WasmTable), NULL);
-    newModule->mems = new_vector_p(sizeof(WasmMemory), NULL);
-    newModule->globals = new_vector_p(sizeof(WasmGlobal), NULL);
-    newModule->elems = new_vector_p(sizeof(WasmElem), (void(*)(void*))clean_WasmElem);
-    newModule->datas = new_vector_p(sizeof(WasmData), (void(*)(void*))clean_WasmData);
-    newModule->imports = new_vector_p(sizeof(WasmImport), (void(*)(void*))clean_WasmImport);
-    newModule->exports = new_vector_p(sizeof(WasmExport), (void(*)(void*))clean_WasmExport);
+    newModule->types = new_vector_p(struct FuncType_, (void(*)(void*))clean_FuncType);
+    newModule->funcs = new_vector_p(WasmFunc, (void(*)(void*))clean_WasmFunc);
+    newModule->tables = new_vector_p(WasmTable, NULL);
+    newModule->mems = new_vector_p(WasmMemory, NULL);
+    newModule->globals = new_vector_p(WasmGlobal, NULL);
+    newModule->elems = new_vector_p(WasmElem, (void(*)(void*))clean_WasmElem);
+    newModule->datas = new_vector_p(WasmData, (void(*)(void*))clean_WasmData);
+    newModule->imports = new_vector_p(WasmImport, (void(*)(void*))clean_WasmImport);
+    newModule->exports = new_vector_p(WasmExport, (void(*)(void*))clean_WasmExport);
     return newModule;
 }
 

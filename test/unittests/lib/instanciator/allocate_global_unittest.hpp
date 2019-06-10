@@ -27,7 +27,7 @@ SKYPAT_F(allocate_global, valid)
 
     // Test
     uint32_t address = allocate_Global(global, store);
-    GlobalInst* globalInst = (GlobalInst*)store->globals->at(store->globals, address);
+    GlobalInst* globalInst = vector_at(GlobalInst*, store->globals, address);
     EXPECT_EQ(globalInst->mut, 1);
     EXPECT_EQ(globalInst->value.parent.entryType, Entry_Value);
     EXPECT_EQ(globalInst->value.type, Value_i32);

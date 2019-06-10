@@ -10,8 +10,8 @@ extern "C" {
 #include <core/Store.h>
 #include <dataTypes/vector_p.h>
 #include <instance/ModuleInst.h>
-#include <mock/MockLoaderRequest.h>
-#include <mock/MockStage.h>
+#include <util/MockLoaderRequest.h>
+#include <util/MockStage.h>
 }
 #undef _Bool
 
@@ -23,21 +23,21 @@ typedef struct {
 static int mock_activate_run(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %lu\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
     return 0;
 }
 
 static int mock_activate_halt(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %lu\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
     return 2;
 }
 
 static int mock_activate_terminate(Stage* stage)
 {
     MockInput* mockInput = (MockInput*)stage->input;
-    sprintf((char*)stage->output, "Requests %lu, Decoded: %d\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
+    sprintf((char*)stage->output, "Requests %lu, Decoded: %lu\n", queue_size(mockInput->loader->requests), stack_size(mockInput->loader->decodedStack));
     mockInput->loader->parent.terminate((Component*)mockInput->loader);
     return 0;
 }
@@ -62,7 +62,7 @@ SKYPAT_F(Loader, add_request)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, executor);
     // Check
     loader->addRequest(loader, request);
@@ -78,7 +78,7 @@ SKYPAT_F(Loader, activate)
 {
     // Prepare
     Loader* loader = new_Loader();
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
 
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");

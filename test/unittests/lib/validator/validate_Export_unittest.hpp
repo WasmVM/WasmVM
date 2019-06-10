@@ -5,6 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
+#include <dataTypes/vector_p.h>
 #include <dataTypes/DescType.h>
 #include <structures/WasmExport.h>
 #include <structures/WasmFunc.h>
@@ -21,7 +22,7 @@ SKYPAT_F(Validate_Export, valid_func)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     wasmExport->descType = Desc_Func;
     wasmExport->descIdx = 0;
 
@@ -38,7 +39,7 @@ SKYPAT_F(Validate_Export, func_not_defined)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
     wasmExport->descType = Desc_Func;
     wasmExport->descIdx = 1;
 
@@ -55,7 +56,7 @@ SKYPAT_F(Validate_Export, valid_table)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    module->tables->push_back(module->tables, table);
+    vector_push_back(module->tables, table);
     wasmExport->descType = Desc_Table;
     wasmExport->descIdx = 0;
 
@@ -72,7 +73,7 @@ SKYPAT_F(Validate_Export, table_not_defined)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
-    module->tables->push_back(module->tables, table);
+    vector_push_back(module->tables, table);
     wasmExport->descType = Desc_Table;
     wasmExport->descIdx = 1;
 
@@ -89,7 +90,7 @@ SKYPAT_F(Validate_Export, valid_memory)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmMemory* memory = (WasmMemory*)malloc(sizeof(WasmMemory));
-    module->mems->push_back(module->mems, memory);
+    vector_push_back(module->mems, memory);
     wasmExport->descType = Desc_Mem;
     wasmExport->descIdx = 0;
 
@@ -106,7 +107,7 @@ SKYPAT_F(Validate_Export, momory_not_defined)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmMemory* memory = (WasmMemory*)malloc(sizeof(WasmMemory));
-    module->mems->push_back(module->mems, memory);
+    vector_push_back(module->mems, memory);
     wasmExport->descType = Desc_Mem;
     wasmExport->descIdx = 1;
 
@@ -123,7 +124,7 @@ SKYPAT_F(Validate_Export, valid_global)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmGlobal* global = (WasmGlobal*)malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     wasmExport->descType = Desc_Global;
     wasmExport->descIdx = 0;
 
@@ -140,7 +141,7 @@ SKYPAT_F(Validate_Export, global_not_defined)
     WasmExport* wasmExport = (WasmExport*)malloc(sizeof(WasmExport));
     WasmModule* module = new_WasmModule(NULL);
     WasmGlobal* global = (WasmGlobal*)malloc(sizeof(WasmGlobal));
-    module->globals->push_back(module->globals, global);
+    vector_push_back(module->globals, global);
     wasmExport->descType = Desc_Global;
     wasmExport->descIdx = 1;
 

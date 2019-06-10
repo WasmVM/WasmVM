@@ -26,9 +26,9 @@ SKYPAT_F(Runtime_control_end, valid_single_layer)
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType type = new_FuncType();
     ValueType result1 = Value_i32;
-    type->results->push_back(type->results, (void*)&result1);
-    module->types->push_back(module->types, (void*)type);
-    store->funcs->push_back(store->funcs, new_FuncInst(module, type));
+    vector_push_back(type->results, &result1);
+    vector_push_back(module->types, type);
+    vector_push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
     push_Frame(stack, new_Frame(module));
@@ -60,8 +60,8 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, (void*)type);
-    store->funcs->push_back(store->funcs, new_FuncInst(module, type));
+    vector_push_back(module->types, type);
+    vector_push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
     Frame frame = new_Frame(module);
@@ -69,9 +69,9 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
     Label label1 = new_Label(0, 1, 4);
     push_Label(stack, label1);
     Label label2 = new_Label(0, 2, 3);
-    label_set_resultTypes(label2, new_vector_p(sizeof(ValueType), NULL));
+    label_set_resultTypes(label2, new_vector_p(ValueType, NULL));
     ValueType result1 = Value_i32;
-    label_get_resultTypes(label2)->push_back(label_get_resultTypes(label2), (void*)&result1);
+    vector_push_back(label_get_resultTypes(label2), &result1);
     push_Label(stack, label2);
     push_Value(stack, new_i32Value(4));
 
@@ -102,8 +102,8 @@ SKYPAT_F(Runtime_control_end, no_label)
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, (void*)type);
-    store->funcs->push_back(store->funcs, new_FuncInst(module, type));
+    vector_push_back(module->types, type);
+    vector_push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
     Frame frame = new_Frame(module);
@@ -125,8 +125,8 @@ SKYPAT_F(Runtime_control_end, no_frame)
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType type = new_FuncType();
-    module->types->push_back(module->types, (void*)type);
-    store->funcs->push_back(store->funcs, new_FuncInst(module, type));
+    vector_push_back(module->types, type);
+    vector_push_back(store->funcs, new_FuncInst(module, type));
 
     // Label
     Label label = new_Label(0, 2, 4);

@@ -16,8 +16,8 @@ SKYPAT_F(decode_function, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x03\x03\x02\x0a\x03";
     EXPECT_EQ(parse_func_section(module, &testBin, testBin + 4), 0);
-    EXPECT_EQ(module->funcs->length, 2);
-    EXPECT_EQ(((WasmFunc*)module->funcs->at(module->funcs, 0))->type, 10);
-    EXPECT_EQ(((WasmFunc*)module->funcs->at(module->funcs, 1))->type, 3);
+    EXPECT_EQ(vector_size(module->funcs), 2);
+    EXPECT_EQ((vector_at(WasmFunc*, module->funcs, 0))->type, 10);
+    EXPECT_EQ((vector_at(WasmFunc*, module->funcs, 1))->type, 3);
     free_WasmModule(module);
 }

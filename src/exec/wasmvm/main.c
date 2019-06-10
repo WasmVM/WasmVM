@@ -19,7 +19,7 @@ int main(int argc, char const *argv[])
     }
     // Components
     Loader* loader = new_Loader();
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     // Request
     LoaderRequest* request = new_LoaderRequest(argv[1], (Component*)loader, executor);
     loader->addRequest(loader, request);
@@ -34,8 +34,8 @@ int main(int argc, char const *argv[])
         return -1;
     }
     // Run Executor
-    if((result = executor->run(executor)) == 0) {
-        result = executor->join(executor);
+    if((result = executor_run(executor)) == 0) {
+        result = executor_join(executor);
     }
     // Clean
     free_Loader(loader);

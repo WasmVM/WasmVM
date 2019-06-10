@@ -11,9 +11,9 @@
 
 typedef struct {
     Stage parent;
-    Executor* executor;
+    Executor executor;
 } Instanciator;
 
-Instanciator* new_Instanciator(WasmModule* module, Executor* executor);
+Instanciator* new_Instanciator(WasmModule* module, Executor executor);
 
 #endif

@@ -7,6 +7,8 @@ extern "C" {
 #include <Opcodes.h>
 #include <Executor.h>
 #include <core/Core.h>
+#include <dataTypes/vector_p.h>
+#include <dataTypes/list_p.h>
 #include <instance/ModuleInst.h>
 #include <instance/FuncInst.h>
 #include <instance/NumericInstrInst.h>
@@ -20,14 +22,14 @@ extern "C" {
 SKYPAT_F(Core, create_delete)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType funcType = new_FuncType();
-    module->types->push_back(module->types, funcType);
+    vector_push_back(module->types, funcType);
     uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
+    vector_push_back(module->funcaddrs, &funcAddr);
     FuncInst* func = new_FuncInst(module, funcType);
     NumericInstrInst* instr1 = new_NumericInstrInst();
     instr1->parent.opcode = Op_i32_const;
@@ -36,8 +38,8 @@ SKYPAT_F(Core, create_delete)
     instr1->constant.value.i32 = 5;
     list_push_back(func->code, instr1);
     ValueType localType1 = Value_i32;
-    func->locals->push_back(func->locals, &localType1);
-    executor->store->funcs->push_back(executor->store->funcs, func);
+    vector_push_back(func->locals, &localType1);
+    vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
     Core* core = new_Core(executor, module, 0);
@@ -48,22 +50,20 @@ SKYPAT_F(Core, create_delete)
     EXPECT_EQ(core->module, module);
 
     // Clean
-    free_Core(core);
     free_Executor(executor);
-    free_ModuleInst(module);
 }
 
 SKYPAT_F(Core, run_stop)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType funcType = new_FuncType();
-    module->types->push_back(module->types, funcType);
+    vector_push_back(module->types, funcType);
     uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
+    vector_push_back(module->funcaddrs, &funcAddr);
     FuncInst* func = new_FuncInst(module, funcType);
     NumericInstrInst* instr1 = new_NumericInstrInst();
     instr1->parent.opcode = Op_i32_const;
@@ -81,8 +81,8 @@ SKYPAT_F(Core, run_stop)
     instr3->parent.opcode = Op_i32_add;
     list_push_back(func->code, instr3);
     ValueType localType1 = Value_i32;
-    func->locals->push_back(func->locals, &localType1);
-    executor->store->funcs->push_back(executor->store->funcs, func);
+    vector_push_back(func->locals, &localType1);
+    vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
     Core* core = new_Core(executor, module, 0);
@@ -98,18 +98,18 @@ SKYPAT_F(Core, run_stop)
 SKYPAT_F(Core, resume)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* module = new_ModuleInst(moduleName);
     FuncType funcType = new_FuncType();
     ValueType result1 = Value_i32;
-    funcType->results->push_back(funcType->results, &result1);
+    vector_push_back(funcType->results, &result1);
     ValueType result2 = Value_i32;
-    funcType->results->push_back(funcType->results, &result2);
-    module->types->push_back(module->types, funcType);
+    vector_push_back(funcType->results, &result2);
+    vector_push_back(module->types, funcType);
     uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
+    vector_push_back(module->funcaddrs, &funcAddr);
     FuncInst* func = new_FuncInst(module, funcType);
     NumericInstrInst* instr1 = new_NumericInstrInst();
     instr1->parent.opcode = Op_i32_const;
@@ -127,13 +127,13 @@ SKYPAT_F(Core, resume)
     instr3->parent.opcode = Op_i32_add;
     list_push_back(func->code, instr3);
     ValueType localType1 = Value_i32;
-    func->locals->push_back(func->locals, &localType1);
-    executor->store->funcs->push_back(executor->store->funcs, func);
+    vector_push_back(func->locals, &localType1);
+    vector_push_back(executor_get_store(executor)->funcs, func);
 
 
     Core* core = new_Core(executor, module, 0);
     core->stack = new_Stack();
-    FuncInst* startFunc = (FuncInst*)core->executor->store->funcs->at(core->executor->store->funcs, core->startFuncAddr);
+    FuncInst* startFunc = vector_at(FuncInst*, executor_get_store(core->executor)->funcs, core->startFuncAddr);
     Frame frame = new_Frame(startFunc->module);
     push_Frame(core->stack, frame);
     Label label = new_Label(core->startFuncAddr, 0, list_size(startFunc->code));
