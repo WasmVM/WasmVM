@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/FuncType.h>
 #include <structures/instrs/Numeric.h>
 #include <structures/WasmFunc.h>
@@ -16,71 +16,67 @@ extern "C" {
 }
 #undef _Bool
 
-static void test_unop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType expect)
+static void test_unop(stack_p opds, Context* context, stack_p ctrls, WasmNumericInstr* instr, ValueType expect)
 {
     ValueType* value = (ValueType*) malloc(sizeof(ValueType));
-    opds->push(opds, value);
+    stack_push(opds, value);
     *value = expect;
     EXPECT_EQ(validate_Instr_unop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* result = NULL;
-    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* result = stack_pop(ValueType*, opds);
     EXPECT_EQ(*result, expect);
     free(result);
 }
 
-static void test_binop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType expect)
+static void test_binop(stack_p opds, Context* context, stack_p ctrls, WasmNumericInstr* instr, ValueType expect)
 {
     ValueType* value1 = (ValueType*) malloc(sizeof(ValueType));
     *value1 = expect;
-    opds->push(opds, value1);
+    stack_push(opds, value1);
     ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
     *value2 = expect;
-    opds->push(opds, value2);
+    stack_push(opds, value2);
 
     EXPECT_EQ(validate_Instr_binop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* result = NULL;
-    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* result = stack_pop(ValueType*, opds);
     EXPECT_EQ(*result, expect);
     free(result);
 }
 
-static void test_cvtop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType expect, ValueType result)
+static void test_cvtop(stack_p opds, Context* context, stack_p ctrls, WasmNumericInstr* instr, ValueType expect, ValueType result)
 {
     ValueType* value = (ValueType*) malloc(sizeof(ValueType));
     *value = expect;
-    opds->push(opds, value);
+    stack_push(opds, value);
 
     EXPECT_EQ(validate_Instr_cvtop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* resultVal = NULL;
-    opds->pop(opds, (void**) &resultVal);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* resultVal = stack_pop(ValueType*, opds);
     EXPECT_EQ(*resultVal, result);
     free(resultVal);
 }
 
-static void test_relop(stack* opds, Context* context, stack* ctrls, WasmNumericInstr* instr, ValueType input)
+static void test_relop(stack_p opds, Context* context, stack_p ctrls, WasmNumericInstr* instr, ValueType input)
 {
     ValueType* value1 = (ValueType*) malloc(sizeof(ValueType));
     *value1 = input;
-    opds->push(opds, value1);
+    stack_push(opds, value1);
     ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
     *value2 = input;
-    opds->push(opds, value2);
+    stack_push(opds, value2);
 
     EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* result = NULL;
-    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* result = stack_pop(ValueType*, opds);
     EXPECT_EQ(*result, Value_i32);
     free(result);
 }
 
-static void clean(stack* opds, stack* ctrls)
+static void clean(stack_p opds, stack_p ctrls)
 {
-    free_stack(opds);
-    free_stack(ctrls);
+    free_stack_p(opds);
+    free_stack_p(ctrls);
 }
 
 SKYPAT_F(Validate_Instr_const, valid)
@@ -89,13 +85,13 @@ SKYPAT_F(Validate_Instr_const, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
@@ -105,30 +101,29 @@ SKYPAT_F(Validate_Instr_const, valid)
 
     // Check
     EXPECT_EQ(validate_Instr_const(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* value = NULL;
-    opds->pop(opds, (void**) &value);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* value = stack_pop(ValueType*, opds);
     EXPECT_EQ(*value, Value_i32);
     free(value);
 
     instr->constant.type = Value_f32;
     EXPECT_EQ(validate_Instr_const(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    opds->pop(opds, (void**) &value);
+    EXPECT_EQ(stack_size(opds), 1);
+    value = stack_pop(ValueType*, opds);
     EXPECT_EQ(*value, Value_f32);
     free(value);
 
     instr->constant.type = Value_i64;
     EXPECT_EQ(validate_Instr_const(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    opds->pop(opds, (void**) &value);
+    EXPECT_EQ(stack_size(opds), 1);
+    value = stack_pop(ValueType*, opds);
     EXPECT_EQ(*value, Value_i64);
     free(value);
 
     instr->constant.type = Value_f64;
     EXPECT_EQ(validate_Instr_const(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    opds->pop(opds, (void**) &value);
+    EXPECT_EQ(stack_size(opds), 1);
+    value = stack_pop(ValueType*, opds);
     EXPECT_EQ(*value, Value_f64);
     free(value);
 
@@ -145,13 +140,13 @@ SKYPAT_F(validate_Instr_unop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -213,13 +208,13 @@ SKYPAT_F(validate_Instr_unop, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -240,13 +235,13 @@ SKYPAT_F(validate_Instr_binop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -356,13 +351,13 @@ SKYPAT_F(validate_Instr_binop, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -371,7 +366,7 @@ SKYPAT_F(validate_Instr_binop, no_enough_operand)
     EXPECT_EQ(validate_Instr_binop(instr, context, opds, ctrls), -2);
     ValueType* value = (ValueType*) malloc(sizeof(ValueType));
     *value = Value_i32;
-    opds->push(opds, value);
+    stack_push(opds, value);
     EXPECT_EQ(validate_Instr_binop(instr, context, opds, ctrls), -3);
 
     // Clean
@@ -387,36 +382,34 @@ SKYPAT_F(validate_Instr_testop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
     // Check
     ValueType* value1 = (ValueType*) malloc(sizeof(ValueType));
-    opds->push(opds, value1);
+    stack_push(opds, value1);
     *value1 = Value_i32;
     instr->parent.opcode = Op_i32_eqz;
     EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    ValueType* result = NULL;
-    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(stack_size(opds), 1);
+    ValueType* result = stack_pop(ValueType*, opds);
     EXPECT_EQ(*result, Value_i32);
     free(result);
 
     ValueType* value2 = (ValueType*) malloc(sizeof(ValueType));
-    opds->push(opds, value2);
+    stack_push(opds, value2);
     *value2 = Value_i64;
     instr->parent.opcode = Op_i64_eqz;
     EXPECT_EQ(validate_Instr_testop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(opds->size, 1);
-    result = NULL;
-    opds->pop(opds, (void**) &result);
+    EXPECT_EQ(stack_size(opds), 1);
+    result = stack_pop(ValueType*, opds);
     EXPECT_EQ(*result, Value_i32);
     free(result);
 
@@ -433,13 +426,13 @@ SKYPAT_F(validate_Instr_testop, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -463,13 +456,13 @@ SKYPAT_F(validate_Instr_relop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -555,13 +548,13 @@ SKYPAT_F(validate_Instr_relop, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 
@@ -570,7 +563,7 @@ SKYPAT_F(validate_Instr_relop, no_enough_operand)
     EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), -2);
     ValueType* value = (ValueType*) malloc(sizeof(ValueType));
     *value = Value_i32;
-    opds->push(opds, value);
+    stack_push(opds, value);
     EXPECT_EQ(validate_Instr_relop(instr, context, opds, ctrls), -3);
 
     // Clean
@@ -586,13 +579,13 @@ SKYPAT_F(validate_Instr_cvtop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void(*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void(*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
 

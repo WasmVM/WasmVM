@@ -9,19 +9,19 @@
 Store* new_Store()
 {
     Store* newStore = (Store*) malloc(sizeof(Store));
-    newStore->funcs = new_vector(sizeof(FuncInst), (void(*)(void*))clean_FuncInst);
-    newStore->tables = new_vector(sizeof(TableInst), (void(*)(void*))clean_TableInst);
-    newStore->mems = new_vector(sizeof(MemInst), (void(*)(void*))clean_MemInst);
-    newStore->globals = new_vector(sizeof(GlobalInst), NULL);
+    newStore->funcs = new_vector_p(FuncInst, clean_FuncInst);
+    newStore->tables = new_vector_p(TableInst, clean_TableInst);
+    newStore->mems = new_vector_p(MemInst, clean_MemInst);
+    newStore->globals = new_vector_p(GlobalInst, NULL);
     return newStore;
 }
 
 void clean_Store(Store* thisStore)
 {
-    free_vector(thisStore->funcs);
-    free_vector(thisStore->tables);
-    free_vector(thisStore->mems);
-    free_vector(thisStore->globals);
+    free_vector_p(thisStore->funcs);
+    free_vector_p(thisStore->tables);
+    free_vector_p(thisStore->mems);
+    free_vector_p(thisStore->globals);
 }
 
 void free_Store(Store* thisStore)

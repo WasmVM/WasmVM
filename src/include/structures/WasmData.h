@@ -3,12 +3,12 @@
 
 #include <stdint.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct _wasm_data {
     uint32_t    data;
     Value       offset;
-    vector*     init;       // char
+    vector_p     init;       // char
 } WasmData;
 
 WasmData* new_WasmData();

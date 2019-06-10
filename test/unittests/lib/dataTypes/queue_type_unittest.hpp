@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <dataTypes/queue.h>
+#include <dataTypes/queue_p_.h>
 #include <stdlib.h>
 #include <stddef.h>
 #include <stdint.h>
@@ -10,23 +10,20 @@ extern "C" {
 }
 #undef _Bool
 
-SKYPAT_F(queue, create_delete)
+SKYPAT_F(queue_p, create_delete)
 {
-    queue *pQueue = new_queue(free);
+    queue_p pQueue = new_queue_p(free);
 
-    /* test queue */
     EXPECT_EQ(pQueue->head, NULL);
     EXPECT_EQ(pQueue->size, 0);
 
-    /* free object */
-    free_queue(pQueue);
+    free_queue_p(pQueue);
 }
 
-SKYPAT_F(queue, push)
+SKYPAT_F(queue_p, push)
 {
-    queue *pQueue = new_queue(free);
+    queue_p pQueue = new_queue_p(free);
 
-    /* test push method */
     int32_t *value1 = (int32_t *)malloc(sizeof(uint32_t));
     *value1 = 1023;
     int32_t *value2 = (int32_t *)malloc(sizeof(uint32_t));
@@ -34,18 +31,18 @@ SKYPAT_F(queue, push)
     int32_t *value3 = (int32_t *)malloc(sizeof(uint32_t));
     *value3 = -100;
 
-    pQueue->push(pQueue, value1);
+    queue_push(pQueue, value1);
     EXPECT_EQ(pQueue->size, 1);
     EXPECT_EQ(pQueue->head->data, value1);
     EXPECT_EQ(*(int32_t *)pQueue->head->data, 1023);
 
-    pQueue->push(pQueue, value2);
+    queue_push(pQueue, value2);
     EXPECT_EQ(pQueue->size, 2);
     EXPECT_EQ(pQueue->head->data, value1);
     EXPECT_EQ(pQueue->head->next->data, value2);
     EXPECT_EQ(*(int32_t *)pQueue->head->next->data, -123);
 
-    pQueue->push(pQueue, value3);
+    queue_push(pQueue, value3);
     EXPECT_EQ(pQueue->size, 3);
     EXPECT_EQ(pQueue->head->data, value1);
     EXPECT_EQ(pQueue->head->next->data, value2);
@@ -53,13 +50,13 @@ SKYPAT_F(queue, push)
     EXPECT_EQ(*(int32_t *)pQueue->head->next->next->data, -100);
 
     /* free object */
-    free_queue(pQueue);
+    free_queue_p(pQueue);
 }
 
-SKYPAT_F(queue, pop)
+SKYPAT_F(queue_p, pop)
 {
     int test = 0;
-    queue *pQueue = new_queue(free);
+    queue_p pQueue = new_queue_p(free);
 
     /* push data */
     int32_t *pop_value1 = (int32_t *)malloc(sizeof(int32_t));
@@ -69,20 +66,18 @@ SKYPAT_F(queue, pop)
     int32_t *pop_value3 = (int32_t *)malloc(sizeof(int32_t));
     *pop_value3 = -100;
 
-    pQueue->push(pQueue, pop_value1);
-    pQueue->push(pQueue, pop_value2);
-    pQueue->push(pQueue, pop_value3);
+    queue_push(pQueue, pop_value1);
+    queue_push(pQueue, pop_value2);
+    queue_push(pQueue, pop_value3);
 
     /* test pop data */
-    int ret = 0;
     int32_t *pop_ans = NULL;
 
     EXPECT_EQ(pQueue->head->data, pop_value1);
     EXPECT_EQ(pQueue->tail->data, pop_value3);
     EXPECT_EQ(pQueue->size, 3);
 
-    ret = pQueue->pop(pQueue, (void **)&pop_ans);
-    EXPECT_EQ(ret, 0);
+    pop_ans = queue_pop(int32_t*, pQueue);
     EXPECT_EQ(*pop_ans, *pop_value1);
     EXPECT_EQ(pQueue->head->data, pop_value2);
     EXPECT_EQ(pQueue->tail->data, pop_value3);
@@ -90,8 +85,7 @@ SKYPAT_F(queue, pop)
     free(pop_ans);
     pop_ans = NULL;
 
-    ret = pQueue->pop(pQueue, (void **)&pop_ans);
-    EXPECT_EQ(ret, 0);
+    pop_ans = queue_pop(int32_t*, pQueue);
     EXPECT_EQ(*pop_ans, *pop_value2);
     EXPECT_EQ(pQueue->head->data, pop_value3);
     EXPECT_EQ(pQueue->tail->data, pop_value3);
@@ -99,25 +93,24 @@ SKYPAT_F(queue, pop)
     free(pop_ans);
     pop_ans = NULL;
 
-    ret = pQueue->pop(pQueue, (void **)&pop_ans);
-    EXPECT_EQ(ret, 0);
+    pop_ans = queue_pop(int32_t*, pQueue);
     EXPECT_EQ(*pop_ans, *pop_value3);
     EXPECT_EQ(pQueue->size, 0);
     free(pop_ans);
     pop_ans = NULL;
 
     /* error check */
-    ret = pQueue->pop(pQueue, (void **)&pop_ans);
-    EXPECT_EQ(ret != 0, true);
+    pop_ans = queue_pop(int32_t*, pQueue);
+    EXPECT_EQ(pop_ans, NULL);
 
     /* free object */
-    free_queue(pQueue);
+    free_queue_p(pQueue);
 }
 
-SKYPAT_F(queue, top)
+SKYPAT_F(queue_p, top)
 {
     int test = 0;
-    queue *pQueue = new_queue(free);
+    queue_p pQueue = new_queue_p(free);
 
     /* push data */
     int32_t *top_value1 = (int32_t *)malloc(sizeof(int32_t));
@@ -127,48 +120,44 @@ SKYPAT_F(queue, top)
     int32_t *top_value3 = (int32_t *)malloc(sizeof(int32_t));
     *top_value3 = -100;
 
-    pQueue->push(pQueue, top_value1);
-    pQueue->push(pQueue, top_value2);
-    pQueue->push(pQueue, top_value3);
+    queue_push(pQueue, top_value1);
+    queue_push(pQueue, top_value2);
+    queue_push(pQueue, top_value3);
 
     /* test top method */
-    int ret = 0;
     int32_t *top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 3);                     // check size
-    ret = pQueue->top(pQueue, (void **)&top_ans);   // top data
-    EXPECT_EQ(ret, 0);                              // test return code
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value1);               // test top value
     EXPECT_EQ(pQueue->size, 3);                     // check size
 
-    pQueue->pop(pQueue, (void **)&top_ans);
+    top_ans = queue_pop(int32_t*, pQueue);
     free(top_ans);
     top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 2);
-    ret = pQueue->top(pQueue, (void **)&top_ans);
-    EXPECT_EQ(ret, 0);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value2);
     EXPECT_EQ(pQueue->size, 2);
 
-    pQueue->pop(pQueue, (void **)&top_ans);
+    top_ans = queue_pop(int32_t*, pQueue);
     free(top_ans);
     top_ans = NULL;
 
     EXPECT_EQ(pQueue->size, 1);
-    ret = pQueue->top(pQueue, (void **)&top_ans);
-    EXPECT_EQ(ret, 0);
+    top_ans = queue_top(int32_t*, pQueue);
     EXPECT_EQ(*top_ans, *top_value3);
     EXPECT_EQ(pQueue->size, 1);
 
-    pQueue->pop(pQueue, (void **)&top_ans);
+    top_ans = queue_pop(int32_t*, pQueue);
     free(top_ans);
     top_ans = NULL;
 
     /* error check */
-    ret = pQueue->top(pQueue, (void **)&top_ans);
-    EXPECT_EQ(ret != 0, true);
+    top_ans = queue_top(int32_t*, pQueue);
+    EXPECT_EQ(top_ans, NULL);
 
     /* free value */
-    free_queue(pQueue);
+    free_queue_p(pQueue);
 }

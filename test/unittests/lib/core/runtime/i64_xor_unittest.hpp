@@ -11,7 +11,7 @@ SKYPAT_F(Runtime_i64_xor, regular)
 {
     // prepare
     Stack* stack = new_Stack();
-    Value *val1 = new_i64Value(4L << 32), *val2 = new_i64Value(5L << 32);
+    Value *val1 = new_i64Value(4LL), *val2 = new_i64Value(5LL);
     push_Value(stack, val1);
     push_Value(stack, val2);
 
@@ -21,7 +21,7 @@ SKYPAT_F(Runtime_i64_xor, regular)
     // check
     Value *check = NULL;
     pop_Value(stack,&check);
-    EXPECT_EQ(check->value.i64, 1L << 32);
+    EXPECT_EQ(check->value.i64, 1LL);
 
     // clean
     free_Value(check);

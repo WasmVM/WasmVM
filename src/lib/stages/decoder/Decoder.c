@@ -89,7 +89,7 @@ static int run(Decoder* decoder)
     return 0;
 }
 
-Decoder* new_Decoder(Component* loader, Executor* executor)
+Decoder* new_Decoder(Component* loader, Executor executor)
 {
     Decoder* newDecoder = (Decoder*) malloc(sizeof(Decoder));
     /* Attributes */

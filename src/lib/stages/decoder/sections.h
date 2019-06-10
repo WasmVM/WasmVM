@@ -4,7 +4,7 @@
 #include <structures/WasmModule.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <Loader.h>
 #include <Executor.h>
 #include <core/Store.h>
@@ -26,7 +26,7 @@
 
 int parse_magic_version(WasmModule *module, uint8_t **read_p);
 int parse_type_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
-int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor* executor);
+int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader* loader, Executor executor);
 int parse_func_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 int parse_memory_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);

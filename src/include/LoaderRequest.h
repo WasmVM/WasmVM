@@ -4,7 +4,7 @@
 #include <Request.h>
 #include <core/Store.h>
 #include <Executor.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <Component.h>
 
 typedef struct LoaderRequest_ {
@@ -12,7 +12,7 @@ typedef struct LoaderRequest_ {
     char* moduleName;
 } LoaderRequest;
 
-LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor* executor);
+LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor executor);
 void free_LoaderRequest(LoaderRequest* request);
 
 #endif

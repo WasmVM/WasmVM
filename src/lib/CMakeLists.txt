@@ -19,11 +19,11 @@ add_library(wasmvm_core
     instance/NumericInstrInst.c
     instance/ParametricInstrInst.c
     instance/VariableInstrInst.c
-    dataTypes/stack.c
+    dataTypes/stack_p.c
     dataTypes/Value.c
-    dataTypes/vector.c
-    dataTypes/list.c
-    dataTypes/queue.c
+    dataTypes/vector_p.c
+    dataTypes/list_p.c
+    dataTypes/queue_p.c
     dataTypes/Label.c
     dataTypes/FuncType.c
     dataTypes/Frame.c

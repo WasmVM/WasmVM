@@ -7,13 +7,13 @@
 #include <instance/ModuleInst.h>
 #include <core/Store.h>
 #include <Executor.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct {
     Stage parent;
-    Executor* executor;
+    Executor executor;
 } Instanciator;
 
-Instanciator* new_Instanciator(WasmModule* module, Executor* executor);
+Instanciator* new_Instanciator(WasmModule* module, Executor executor);
 
 #endif

@@ -16,10 +16,10 @@ SKYPAT_F(decode_export, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x07\x0b\x01\x07TestExp\x00\x08";
     EXPECT_EQ(parse_export_section(module, &testBin, testBin + 12), 0);
-    EXPECT_EQ(module->exports->length, 1);
-    EXPECT_FALSE(strcmp(((WasmExport*)module->exports->at(module->exports, 0))->name, "TestExp"));
-    EXPECT_EQ(((WasmExport*)module->exports->at(module->exports, 0))->descType, Desc_Func);
-    EXPECT_EQ(((WasmExport*)module->exports->at(module->exports, 0))->descIdx, 8);
+    EXPECT_EQ(vector_size(module->exports), 1);
+    EXPECT_FALSE(strcmp((vector_at(WasmExport*, module->exports, 0))->name, "TestExp"));
+    EXPECT_EQ((vector_at(WasmExport*, module->exports, 0))->descType, Desc_Func);
+    EXPECT_EQ((vector_at(WasmExport*, module->exports, 0))->descIdx, 8);
     free_WasmModule(module);
 }
 

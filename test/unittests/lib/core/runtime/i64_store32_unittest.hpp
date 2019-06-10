@@ -4,7 +4,7 @@
 extern "C" {
 #include <dataTypes/Value.h>
 #include <core/Runtime.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -24,7 +24,7 @@ SKYPAT_F(Runtime_i64_store32, regular)
 
     // init memory
     for(uint32_t lop = 0; lop < memlength + offset; lop++) {
-        memory->data->push_back(memory->data, (void*) &zero);
+        vector_push_back(memory->data, &zero);
     }
 
     // test store
@@ -35,7 +35,7 @@ SKYPAT_F(Runtime_i64_store32, regular)
         int ret = runtime_i64_store32(stack, memory, offset, 0);
         EXPECT_EQ(ret, 0);
 
-        int32_t *d = (int32_t *)((int8_t *)memory->data->data + lop * sizeof(int64_t) + offset);
+        int32_t *d = (int32_t *)(vector_data(int8_t*, memory->data) + lop * sizeof(int64_t) + offset);
         EXPECT_EQ(*d, (int32_t)(lop + 1));
     }
 

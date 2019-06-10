@@ -18,7 +18,7 @@ int runtime_i64_store8(Stack* stack, MemInst* memory, uint32_t offset, uint32_t 
 
     // check memory range
     ea = (uint32_t) value1->value.u32 + offset;
-    if(ea + (8 / 8) >= memory->max * 65536) {
+    if(ea + (8 / 8) > vector_size(memory->data)) {
         fprintf(stderr, "over the memory range! \n");
         free_Value(value1);
         free_Value(value2);
@@ -26,7 +26,7 @@ int runtime_i64_store8(Stack* stack, MemInst* memory, uint32_t offset, uint32_t 
     }
 
     // store data to memory
-    dataPointer = (int8_t *) memory->data->data + ea;
+    dataPointer = vector_data(int8_t*, memory->data) + ea;
     *dataPointer = (int8_t) value2->value.i64;
 
     // free object

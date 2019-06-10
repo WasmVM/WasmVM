@@ -12,8 +12,8 @@ SKYPAT_F(TableInst, create_delete)
     TableInst* tableInst = new_TableInst();
 
     // Check
-    EXPECT_EQ(tableInst->elem->length, 0);
-    EXPECT_EQ(tableInst->elem->data, NULL);
+    EXPECT_EQ(vector_size(tableInst->elem), 0);
+    EXPECT_EQ(vector_data(uint8_t*, tableInst->elem), NULL);
     EXPECT_EQ(tableInst->max, 0);
 
     free_TableInst(tableInst);

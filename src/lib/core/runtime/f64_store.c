@@ -18,7 +18,7 @@ int runtime_f64_store(Stack* stack, MemInst* memory, uint32_t offset, uint32_t a
 
     // check memory range
     ea = (uint32_t) value1->value.u32 + offset;
-    if (ea + (64 / 8) >= memory->max * 65536) {
+    if (ea + (64 / 8) > vector_size(memory->data)) {
         fprintf(stderr, "over the memory range! \n");
         free_Value(value1);
         free_Value(value2);
@@ -26,7 +26,7 @@ int runtime_f64_store(Stack* stack, MemInst* memory, uint32_t offset, uint32_t a
     }
 
     // store data to memory
-    dataPointer = (double *) ((uint8_t *) memory->data->data + ea);
+    dataPointer = (double*)(vector_data(uint8_t*, memory->data) + ea);
     *dataPointer = value2->value.f64;
 
     // free object

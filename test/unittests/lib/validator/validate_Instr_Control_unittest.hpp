@@ -5,7 +5,8 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/vector_p.h>
+#include <dataTypes/stack_p.h>
 #include <dataTypes/FuncType.h>
 #include <structures/instrs/Control.h>
 #include <structures/WasmFunc.h>
@@ -17,10 +18,10 @@ extern "C" {
 }
 #undef _Bool
 
-static void clean(stack* opds, stack* ctrls)
+static void clean(stack_p opds, stack_p ctrls)
 {
-    free_stack(opds);
-    free_stack(ctrls);
+    free_stack_p(opds);
+    free_stack_p(ctrls);
 }
 
 SKYPAT_F(Validate_Instr_nop, valid)
@@ -29,13 +30,13 @@ SKYPAT_F(Validate_Instr_nop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_nop;
@@ -57,33 +58,32 @@ SKYPAT_F(Validate_Instr_block, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_block;
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
-    instr->resultTypes->push_back(instr->resultTypes, resType1);
+    vector_push_back(instr->resultTypes, resType1);
     ValueType* resType2 = (ValueType*)malloc(sizeof(ValueType));
     *resType2 = Value_i64;
-    instr->resultTypes->push_back(instr->resultTypes, resType2);
+    vector_push_back(instr->resultTypes, resType2);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_block(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(ctrls->size, 2);
-    ctrl_frame* frame = NULL;
-    ctrls->top(ctrls, (void**)&frame);
-    EXPECT_EQ(frame->label_types->length, 2);
-    EXPECT_EQ(frame->end_types->length, 2);
+    EXPECT_EQ(stack_size(ctrls), 2);
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    EXPECT_EQ(vector_size(frame->label_types), 2);
+    EXPECT_EQ(vector_size(frame->end_types), 2);
 
     // Clean
     free(resType2);
@@ -101,33 +101,32 @@ SKYPAT_F(Validate_Instr_loop, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_loop;
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
-    instr->resultTypes->push_back(instr->resultTypes, resType1);
+    vector_push_back(instr->resultTypes, resType1);
     ValueType* resType2 = (ValueType*)malloc(sizeof(ValueType));
     *resType2 = Value_i64;
-    instr->resultTypes->push_back(instr->resultTypes, resType2);
+    vector_push_back(instr->resultTypes, resType2);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_loop(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(ctrls->size, 2);
-    ctrl_frame* frame = NULL;
-    ctrls->top(ctrls, (void**)&frame);
-    EXPECT_EQ(frame->label_types->length, 0);
-    EXPECT_EQ(frame->end_types->length, 2);
+    EXPECT_EQ(stack_size(ctrls), 2);
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    EXPECT_EQ(vector_size(frame->label_types), 0);
+    EXPECT_EQ(vector_size(frame->end_types), 2);
 
     // Clean
     free(resType2);
@@ -145,21 +144,21 @@ SKYPAT_F(Validate_Instr_if, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_if;
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
-    instr->resultTypes->push_back(instr->resultTypes, resType1);
+    vector_push_back(instr->resultTypes, resType1);
     ValueType* resType2 = (ValueType*)malloc(sizeof(ValueType));
     *resType2 = Value_i64;
-    instr->resultTypes->push_back(instr->resultTypes, resType2);
+    vector_push_back(instr->resultTypes, resType2);
 
     // Check
     EXPECT_EQ(validate_Instr_if(instr, context, opds, ctrls), -1);
@@ -180,28 +179,28 @@ SKYPAT_F(Validate_Instr_if, wrong_type_of_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_if;
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
-    instr->resultTypes->push_back(instr->resultTypes, resType1);
+    vector_push_back(instr->resultTypes, resType1);
     ValueType* resType2 = (ValueType*)malloc(sizeof(ValueType));
     *resType2 = Value_i64;
-    instr->resultTypes->push_back(instr->resultTypes, resType2);
+    vector_push_back(instr->resultTypes, resType2);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_f32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_if(instr, context, opds, ctrls), -1);
@@ -222,33 +221,32 @@ SKYPAT_F(Validate_Instr_if, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_if;
     ValueType* resType1 = (ValueType*)malloc(sizeof(ValueType));
     *resType1 = Value_i32;
-    instr->resultTypes->push_back(instr->resultTypes, resType1);
+    vector_push_back(instr->resultTypes, resType1);
     ValueType* resType2 = (ValueType*)malloc(sizeof(ValueType));
     *resType2 = Value_i64;
-    instr->resultTypes->push_back(instr->resultTypes, resType2);
+    vector_push_back(instr->resultTypes, resType2);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_if(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(ctrls->size, 2);
-    ctrl_frame* frame = NULL;
-    ctrls->top(ctrls, (void**)&frame);
-    EXPECT_EQ(frame->label_types->length, 2);
-    EXPECT_EQ(frame->end_types->length, 2);
+    EXPECT_EQ(stack_size(ctrls), 2);
+    ctrl_frame* frame = stack_top(ctrl_frame*, ctrls);
+    EXPECT_EQ(vector_size(frame->label_types), 2);
+    EXPECT_EQ(vector_size(frame->end_types), 2);
 
     // Clean
     free(resType2);
@@ -266,34 +264,34 @@ SKYPAT_F(Validate_Instr_end, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
+    vector_push_back(frame->end_types, endType1);
     ValueType* endType2 = (ValueType*)malloc(sizeof(ValueType));
     *endType2 = Value_f32;
-    frame->end_types->push_back(frame->end_types, endType2);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType2);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_end;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_f32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(ctrls->size, 0);
-    EXPECT_EQ(opds->size, 2);
+    EXPECT_EQ(stack_size(ctrls), 0);
+    EXPECT_EQ(stack_size(opds), 2);
 
     // Clean
     free(endType2);
@@ -311,21 +309,21 @@ SKYPAT_F(Validate_Instr_end, no_frame_to_end)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_end;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_f32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), -1);
@@ -344,26 +342,26 @@ SKYPAT_F(Validate_Instr_end, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
+    vector_push_back(frame->end_types, endType1);
     ValueType* endType2 = (ValueType*)malloc(sizeof(ValueType));
     *endType2 = Value_f32;
-    frame->end_types->push_back(frame->end_types, endType2);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType2);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_end;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), -2);
@@ -384,26 +382,26 @@ SKYPAT_F(Validate_Instr_end, too_much_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType1);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_end;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), -3);
@@ -423,34 +421,34 @@ SKYPAT_F(Validate_Instr_else, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
+    vector_push_back(frame->end_types, endType1);
     ValueType* endType2 = (ValueType*)malloc(sizeof(ValueType));
     *endType2 = Value_f32;
-    frame->end_types->push_back(frame->end_types, endType2);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType2);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_else;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_f32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_else(instr, context, opds, ctrls), 0);
-    EXPECT_EQ(ctrls->size, 1);
-    EXPECT_EQ(opds->size, 0);
+    EXPECT_EQ(stack_size(ctrls), 1);
+    EXPECT_EQ(stack_size(opds), 0);
 
     // Clean
     free(endType2);
@@ -468,21 +466,21 @@ SKYPAT_F(Validate_Instr_else, no_frame_to_end)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_else;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_f32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_else(instr, context, opds, ctrls), -1);
@@ -501,26 +499,26 @@ SKYPAT_F(Validate_Instr_else, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
+    vector_push_back(frame->end_types, endType1);
     ValueType* endType2 = (ValueType*)malloc(sizeof(ValueType));
     *endType2 = Value_f32;
-    frame->end_types->push_back(frame->end_types, endType2);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType2);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_else;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_else(instr, context, opds, ctrls), -2);
@@ -541,26 +539,26 @@ SKYPAT_F(Validate_Instr_else, too_much_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
     ctrl_frame* frame = new_ctrl_frame(opds);
     ValueType* endType1 = (ValueType*)malloc(sizeof(ValueType));
     *endType1 = Value_i32;
-    frame->end_types->push_back(frame->end_types, endType1);
-    ctrls->push(ctrls, frame);
+    vector_push_back(frame->end_types, endType1);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_else;
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_end(instr, context, opds, ctrls), -3);
@@ -580,34 +578,34 @@ SKYPAT_F(Validate_Instr_br, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
     *labelType1 = Value_i32;
-    frame->label_types->push_back(frame->label_types, labelType1);
-    frame->end_types->push_back(frame->end_types, labelType1);
+    vector_push_back(frame->label_types, labelType1);
+    vector_push_back(frame->end_types, labelType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br(instr, context, opds, ctrls), 0);
     EXPECT_TRUE(frame->unreachable);
-    EXPECT_EQ(opds->size, 0);
+    EXPECT_EQ(stack_size(opds), 0);
 
     // Clean
     free(labelType1);
@@ -625,29 +623,29 @@ SKYPAT_F(Validate_Instr_br, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
     *labelType1 = Value_i32;
-    frame->label_types->push_back(frame->label_types, labelType1);
-    frame->end_types->push_back(frame->end_types, labelType1);
+    vector_push_back(frame->label_types, labelType1);
+    vector_push_back(frame->end_types, labelType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br(instr, context, opds, ctrls), -1);
@@ -668,25 +666,25 @@ SKYPAT_F(Validate_Instr_br, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
     *labelType1 = Value_i32;
-    frame->label_types->push_back(frame->label_types, labelType1);
-    frame->end_types->push_back(frame->end_types, labelType1);
+    vector_push_back(frame->label_types, labelType1);
+    vector_push_back(frame->end_types, labelType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br(instr, context, opds, ctrls), -2);
@@ -707,37 +705,37 @@ SKYPAT_F(Validate_Instr_br_if, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
     *labelType1 = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType1);
-    frame->end_types->push_back(frame->end_types, labelType1);
+    vector_push_back(frame->label_types, labelType1);
+    vector_push_back(frame->end_types, labelType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), 0);
     EXPECT_FALSE(frame->unreachable);
-    EXPECT_EQ(opds->size, 1);
+    EXPECT_EQ(stack_size(opds), 1);
 
     // Clean
     free(labelType1);
@@ -755,24 +753,24 @@ SKYPAT_F(Validate_Instr_br_if, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -1);
@@ -792,20 +790,20 @@ SKYPAT_F(validate_Instr_br_if, no_condition_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     // Check
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -2);
@@ -825,29 +823,29 @@ SKYPAT_F(Validate_Instr_br_if, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_if;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     ValueType* labelType1 = (ValueType*)malloc(sizeof(ValueType));
     *labelType1 = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType1);
-    frame->end_types->push_back(frame->end_types, labelType1);
+    vector_push_back(frame->label_types, labelType1);
+    vector_push_back(frame->end_types, labelType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br_if(instr, context, opds, ctrls), -3);
@@ -868,46 +866,46 @@ SKYPAT_F(validate_Instr_br_table, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), 0);
@@ -929,46 +927,46 @@ SKYPAT_F(validate_Instr_br_table, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 5;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -1);
@@ -989,46 +987,46 @@ SKYPAT_F(validate_Instr_br_table, index_in_table_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 5;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -2);
@@ -1049,49 +1047,49 @@ SKYPAT_F(validate_Instr_br_table, other_frame_no_enough_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     *labelType = Value_f64;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -3);
@@ -1112,46 +1110,46 @@ SKYPAT_F(validate_Instr_br_table, other_frame_wrong_type_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f64;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
     ValueType* opdType2 = (ValueType*)malloc(sizeof(ValueType));
     *opdType2 = Value_i32;
-    opds->push(opds, opdType2);
+    stack_push(opds, opdType2);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -4);
@@ -1172,43 +1170,43 @@ SKYPAT_F(validate_Instr_br_table, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_f32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -5);
@@ -1229,43 +1227,43 @@ SKYPAT_F(validate_Instr_br_table, no_enough_label)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame);
+    stack_push(ctrls, frame);
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_br_table;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* labelType = (ValueType*)malloc(sizeof(ValueType));
     *labelType = Value_f32;
-    frame->label_types->push_back(frame->label_types, labelType);
-    frame->end_types->push_back(frame->end_types, labelType);
+    vector_push_back(frame->label_types, labelType);
+    vector_push_back(frame->end_types, labelType);
     ctrl_frame* frame1 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame1);
+    stack_push(ctrls, frame1);
     *labelType = Value_f32;
-    frame1->label_types->push_back(frame1->label_types, labelType);
-    frame1->end_types->push_back(frame1->end_types, labelType);
+    vector_push_back(frame1->label_types, labelType);
+    vector_push_back(frame1->end_types, labelType);
     ctrl_frame* frame2 = new_ctrl_frame(opds);
-    ctrls->push(ctrls, frame2);
+    stack_push(ctrls, frame2);
     *labelType = Value_f32;
-    frame2->label_types->push_back(frame2->label_types, labelType);
-    frame2->end_types->push_back(frame2->end_types, labelType);
+    vector_push_back(frame2->label_types, labelType);
+    vector_push_back(frame2->end_types, labelType);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_br_table(instr, context, opds, ctrls), -6);
@@ -1286,12 +1284,12 @@ SKYPAT_F(validate_Instr_return, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_return;
@@ -1312,22 +1310,22 @@ SKYPAT_F(validate_Instr_call, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func1);
     WasmFunc* func2 = new_WasmFunc();
     func2->type = 0;
-    module->funcs->push_back(module->funcs, func2);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func2);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     // Check
     EXPECT_EQ(validate_Instr_call(instr, context, opds, ctrls), 0);
@@ -1346,22 +1344,22 @@ SKYPAT_F(validate_Instr_call, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func1);
     WasmFunc* func2 = new_WasmFunc();
     func2->type = 0;
-    module->funcs->push_back(module->funcs, func2);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func2);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     // Check
     EXPECT_EQ(validate_Instr_call(instr, context, opds, ctrls), -1);
@@ -1380,27 +1378,27 @@ SKYPAT_F(validate_Instr_call_indirect, valid)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func1);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;
     table->max = 1;
-    module->tables->push_back(module->tables, table);
+    vector_push_back(module->tables, table);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call_indirect;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), 0);
@@ -1419,23 +1417,23 @@ SKYPAT_F(validate_Instr_call_indirect, no_table)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func1);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call_indirect;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -1);
@@ -1454,27 +1452,27 @@ SKYPAT_F(validate_Instr_call_indirect, index_out_of_range)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func1);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;
     table->max = 1;
-    module->tables->push_back(module->tables, table);
+    vector_push_back(module->tables, table);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call_indirect;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     ValueType* opdType1 = (ValueType*)malloc(sizeof(ValueType));
     *opdType1 = Value_i32;
-    opds->push(opds, opdType1);
+    stack_push(opds, opdType1);
 
     // Check
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -2);
@@ -1493,23 +1491,23 @@ SKYPAT_F(validate_Instr_call_indirect, no_enough_operand)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func1 = new_WasmFunc();
     func1->type = 0;
-    module->funcs->push_back(module->funcs, func1);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    vector_push_back(module->funcs, func1);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->min = 0;
     table->max = 1;
-    module->tables->push_back(module->tables, table);
+    vector_push_back(module->tables, table);
     Context* context = new_Context(module, func1);
-    stack* opds = new_stack(free);
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame);
-    ctrls->push(ctrls, new_ctrl_frame(opds));
+    stack_p opds = new_stack_p(free);
+    stack_p ctrls = new_stack_p((void (*)(void*))free_ctrl_frame);
+    stack_push(ctrls, new_ctrl_frame(opds));
 
     WasmControlInstr* instr = new_WasmControlInstr();
     instr->parent.opcode = Op_call_indirect;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    instr->indices->push_back(instr->indices, index);
+    vector_push_back(instr->indices, index);
 
     // Check
     EXPECT_EQ(validate_Instr_call_indirect(instr, context, opds, ctrls), -4);

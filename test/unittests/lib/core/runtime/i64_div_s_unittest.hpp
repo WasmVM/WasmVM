@@ -12,7 +12,7 @@ SKYPAT_F(Runtime_i64_div_s, regular)
 {
     // prepare
     Stack* stack = new_Stack();
-    Value *value1 = new_i64Value(21L << 32); //Dividend
+    Value *value1 = new_i64Value(21LL); //Dividend
     Value *value2 = new_i64Value(-3L); //Divisor
     push_Value(stack, value1);
     push_Value(stack, value2);
@@ -23,7 +23,7 @@ SKYPAT_F(Runtime_i64_div_s, regular)
     // check
     Value *check = NULL;
     pop_Value(stack,&check);
-    EXPECT_EQ(check->value.i64, -7L << 32);
+    EXPECT_EQ(check->value.i64, -7LL);
 
     // clean
     free_Value(check);

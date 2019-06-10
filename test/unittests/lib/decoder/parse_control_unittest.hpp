@@ -20,9 +20,9 @@ SKYPAT_F(decoder_parse_control, valid_no_immediate)
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 0))->opcode, Op_unreachable);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 1))->opcode, Op_nop);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 2))->opcode, Op_return);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 0))->opcode, Op_unreachable);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 1))->opcode, Op_nop);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 2))->opcode, Op_return);
     free_WasmFunc(func);
 }
 
@@ -31,27 +31,27 @@ SKYPAT_F(decoder_parse_control, valid_block)
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x02\x40\x0b";
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
-    WasmControlInstr* instr = (WasmControlInstr*)func->body->at(func->body, 0);
+    WasmControlInstr* instr = list_at(WasmControlInstr*, func->body, 0);
     EXPECT_EQ(instr->parent.opcode, Op_block);
-    EXPECT_EQ(instr->resultTypes->length, 0);
+    EXPECT_EQ(vector_size(instr->resultTypes), 0);
     free_WasmFunc(func);
 
     func = new_WasmFunc();
     testBin = (uint8_t*) "\x03\x7f\x0b";
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
-    instr = (WasmControlInstr*)func->body->at(func->body, 0);
+    instr = list_at(WasmControlInstr*, func->body, 0);
     EXPECT_EQ(instr->parent.opcode, Op_loop);
-    EXPECT_EQ(instr->resultTypes->length, 1);
-    EXPECT_EQ(*((ValueType*)instr->resultTypes->at(instr->resultTypes, 0)), Value_i32);
+    EXPECT_EQ(vector_size(instr->resultTypes), 1);
+    EXPECT_EQ(*(vector_at(ValueType*, instr->resultTypes, 0)), Value_i32);
     free_WasmFunc(func);
 
     func = new_WasmFunc();
     testBin = (uint8_t*) "\x04\x7e\x0b";
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 2), 0);
-    instr = (WasmControlInstr*)func->body->at(func->body, 0);
+    instr = list_at(WasmControlInstr*, func->body, 0);
     EXPECT_EQ(instr->parent.opcode, Op_if);
-    EXPECT_EQ(instr->resultTypes->length, 1);
-    EXPECT_EQ(*((ValueType*)instr->resultTypes->at(instr->resultTypes, 0)), Value_i64);
+    EXPECT_EQ(vector_size(instr->resultTypes), 1);
+    EXPECT_EQ(*(vector_at(ValueType*, instr->resultTypes, 0)), Value_i64);
     free_WasmFunc(func);
 }
 
@@ -62,18 +62,18 @@ SKYPAT_F(decoder_parse_control, valid_br_br_if_call)
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 5), 0);
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 5), 0);
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 5), 0);
-    WasmControlInstr* instr = (WasmControlInstr*)func->body->at(func->body, 0);
+    WasmControlInstr* instr = list_at(WasmControlInstr*, func->body, 0);
     EXPECT_EQ(instr->parent.opcode, Op_br);
-    EXPECT_EQ(instr->indices->length, 1);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 0)), 1);
-    instr = (WasmControlInstr*)func->body->at(func->body, 1);
+    EXPECT_EQ(vector_size(instr->indices), 1);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 0)), 1);
+    instr = list_at(WasmControlInstr*, func->body, 1);
     EXPECT_EQ(instr->parent.opcode, Op_br_if);
-    EXPECT_EQ(instr->indices->length, 1);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 0)), 2);
-    instr = (WasmControlInstr*)func->body->at(func->body, 2);
+    EXPECT_EQ(vector_size(instr->indices), 1);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 0)), 2);
+    instr = list_at(WasmControlInstr*, func->body, 2);
     EXPECT_EQ(instr->parent.opcode, Op_call);
-    EXPECT_EQ(instr->indices->length, 1);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 0)), 3);
+    EXPECT_EQ(vector_size(instr->indices), 1);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 0)), 3);
     free_WasmFunc(func);
 }
 
@@ -82,13 +82,13 @@ SKYPAT_F(decoder_parse_control, valid_br_table)
     WasmFunc* func = new_WasmFunc();
     uint8_t* testBin = (uint8_t*) "\x0e\x03\x03\x02\x0a\x0e";
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 5), 0);
-    WasmControlInstr* instr = (WasmControlInstr*)func->body->at(func->body, 0);
+    WasmControlInstr* instr = list_at(WasmControlInstr*, func->body, 0);
     EXPECT_EQ(instr->parent.opcode, Op_br_table);
-    EXPECT_EQ(instr->indices->length, 4);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 0)), 3);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 1)), 2);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 2)), 10);
-    EXPECT_EQ(*((uint32_t*)instr->indices->at(instr->indices, 3)), 14);
+    EXPECT_EQ(vector_size(instr->indices), 4);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 0)), 3);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 1)), 2);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 2)), 10);
+    EXPECT_EQ(*(vector_at(uint32_t*, instr->indices, 3)), 14);
     free_WasmFunc(func);
 }
 

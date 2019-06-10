@@ -16,12 +16,12 @@ SKYPAT_F(decode_data, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x0b\x08\x01\x00\x41\x00\x0b\x02hi";
     EXPECT_EQ(parse_data_section(module, &testBin, testBin + 9), 0);
-    EXPECT_EQ(module->datas->length, 1);
-    WasmData* data = (WasmData*)module->datas->at(module->datas, 0);
+    EXPECT_EQ(vector_size(module->datas), 1);
+    WasmData* data = vector_at(WasmData*, module->datas, 0);
     EXPECT_EQ(data->data, 0);
     EXPECT_EQ(data->offset.type, Value_i32);
     EXPECT_EQ(data->offset.value.i32, 0);
-    EXPECT_FALSE(strncmp((char*)data->init->data, "hi", 2));
+    EXPECT_FALSE(strncmp(vector_data(char*, data->init), "hi", 2));
     free_WasmModule(module);
 }
 

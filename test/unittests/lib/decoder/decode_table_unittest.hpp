@@ -16,10 +16,10 @@ SKYPAT_F(decode_table, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x04\x05\x01\x70\x01\x03\x05";
     EXPECT_EQ(parse_table_section(module, &testBin, testBin + 6), 0);
-    EXPECT_EQ(module->tables->length, 1);
-    EXPECT_EQ(((WasmTable*)module->tables->at(module->tables, 0))->elemType, TYPE_Table_anyfunc);
-    EXPECT_EQ(((WasmTable*)module->tables->at(module->tables, 0))->min, 3);
-    EXPECT_EQ(((WasmTable*)module->tables->at(module->tables, 0))->max, 5);
+    EXPECT_EQ(vector_size(module->tables), 1);
+    EXPECT_EQ((vector_at(WasmTable*, module->tables, 0))->elemType, TYPE_Table_anyfunc);
+    EXPECT_EQ((vector_at(WasmTable*, module->tables, 0))->min, 3);
+    EXPECT_EQ((vector_at(WasmTable*, module->tables, 0))->max, 5);
     free_WasmModule(module);
 }
 

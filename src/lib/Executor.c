@@ -1,15 +1,15 @@
-#include <Executor.h>
+#include "Executor_.h"
 #include <core/Core.h>
 
 #include <stdlib.h>
 
-static int run_Executor(Executor* executor)
+int executor_run(Executor executor)
 {
     if(executor->status != Executor_Stop) {
         return -1;
     }
-    for(uint32_t i = 0; i < executor->cores->length; ++i) {
-        Core* core = (Core*) executor->cores->at(executor->cores, i);
+    for(uint32_t i = 0; i < vector_size(executor->cores); ++i) {
+        Core* core = vector_at(Core*, executor->cores, i);
         int res = core->run(core);
         if(res) {
             return res;
@@ -18,15 +18,14 @@ static int run_Executor(Executor* executor)
     executor->status = Executor_Running;
     return 0;
 }
-
-static int stop_Executor(Executor* executor)
+int executor_stop(Executor executor)
 {
     if(executor->status != Executor_Running) {
         return -1;
     }
     executor->status = Executor_Terminated;
-    for(uint32_t i = 0; i < executor->cores->length; ++i) {
-        Core* core = (Core*) executor->cores->at(executor->cores, i);
+    for(uint32_t i = 0; i < vector_size(executor->cores); ++i) {
+        Core* core = vector_at(Core*, executor->cores, i);
         int res = core->stop(core);
         if(res) {
             return res;
@@ -36,7 +35,7 @@ static int stop_Executor(Executor* executor)
     return 0;
 }
 
-static int join_Executor(Executor* executor)
+int executor_join(Executor executor)
 {
     if(executor->status != Executor_Running) {
         return 0;
@@ -49,41 +48,45 @@ static int join_Executor(Executor* executor)
     executor->status = Executor_Stop;
     return 0;
 }
-
-static int addModule_Executor(Executor* executor, ModuleInst* module, uint32_t startFuncIndex)
+int executor_addModule(Executor executor, ModuleInst* module, uint32_t startFuncIndex)
 {
     if(executor->status == Executor_Terminated) {
         return -1;
     }
-    executor->modules->push_back(executor->modules, module);
-    Core* core = new_Core(executor, module, *(uint32_t*)module->funcaddrs->at(module->funcaddrs, startFuncIndex));
-    executor->cores->push_back(executor->cores, (void*) core);
+    vector_push_back(executor->modules, module);
+    Core* core = new_Core(executor, module, *vector_at(uint32_t*, module->funcaddrs, startFuncIndex));
+    vector_push_back(executor->cores, core);
     if(executor->status == Executor_Running) {
         return core->run(core);
     }
     return 0;
 }
 
-Executor* new_Executor()
+vector_p executor_get_modules(Executor executor)
 {
-    Executor* executor = (Executor*) malloc(sizeof(Executor));
+    return executor->modules;
+}
+Store* executor_get_store(Executor executor)
+{
+    return executor->store;
+}
+
+Executor new_Executor()
+{
+    Executor executor = (Executor) malloc(sizeof(struct Executor_));
     atomic_init(&(executor->runningCores), 0);
     pthread_mutex_init(&(executor->mutex), NULL);
     pthread_cond_init(&(executor->cond), NULL);
     executor->status = Executor_Stop;
-    executor->run = run_Executor;
-    executor->stop = stop_Executor;
-    executor->join = join_Executor;
-    executor->cores = new_vector(sizeof(Core), (void(*)(void*))clean_Core);
-    executor->modules = new_vector(sizeof(ModuleInst), (void(*)(void*))clean_ModuleInst);
+    executor->cores = new_vector_p(Core, clean_Core);
+    executor->modules = new_vector_p(ModuleInst, clean_ModuleInst);
     executor->store = new_Store();
-    executor->addModule = addModule_Executor;
     return executor;
 }
-void free_Executor(Executor* executor)
+void free_Executor(Executor executor)
 {
-    free_vector(executor->cores);
-    free_vector(executor->modules);
+    free_vector_p(executor->cores);
+    free_vector_p(executor->modules);
     free_Store(executor->store);
     free(executor);
 }

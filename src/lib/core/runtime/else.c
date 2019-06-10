@@ -6,6 +6,6 @@
 
 int runtime_else(Stack *stack)
 {
-    stack->curLabel->instrIndex = stack->curLabel->contInstr;
+    label_set_instrIndex(stack->curLabel, label_get_contInstr(stack->curLabel));
     return 0;
 }

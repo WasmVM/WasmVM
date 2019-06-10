@@ -18,8 +18,8 @@ SKYPAT_F(decoder_parse_parametric, valid)
     uint8_t* testBin = (uint8_t*) "\x1A\x1B";
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 1), 0);
     EXPECT_EQ(parseInstr(func, &testBin, testBin + 1), 0);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 0))->opcode, Op_drop);
-    EXPECT_EQ(((WasmInstr*)func->body->at(func->body, 1))->opcode, Op_select);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 0))->opcode, Op_drop);
+    EXPECT_EQ((list_at(WasmInstr*, func->body, 1))->opcode, Op_select);
     free_WasmFunc(func);
 }
 

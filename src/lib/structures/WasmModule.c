@@ -13,15 +13,15 @@ WasmModule* new_WasmModule(char* module_name)
     } else {
         newModule->module_name = NULL;
     }
-    newModule->types = new_vector(sizeof(FuncType), (void(*)(void*))clean_FuncType);
-    newModule->funcs = new_vector(sizeof(WasmFunc), (void(*)(void*))clean_WasmFunc);
-    newModule->tables = new_vector(sizeof(WasmTable), NULL);
-    newModule->mems = new_vector(sizeof(WasmMemory), NULL);
-    newModule->globals = new_vector(sizeof(WasmGlobal), NULL);
-    newModule->elems = new_vector(sizeof(WasmElem), (void(*)(void*))clean_WasmElem);
-    newModule->datas = new_vector(sizeof(WasmData), (void(*)(void*))clean_WasmData);
-    newModule->imports = new_vector(sizeof(WasmImport), (void(*)(void*))clean_WasmImport);
-    newModule->exports = new_vector(sizeof(WasmExport), (void(*)(void*))clean_WasmExport);
+    newModule->types = new_vector_p(struct FuncType_, (void(*)(void*))clean_FuncType);
+    newModule->funcs = new_vector_p(WasmFunc, (void(*)(void*))clean_WasmFunc);
+    newModule->tables = new_vector_p(WasmTable, NULL);
+    newModule->mems = new_vector_p(WasmMemory, NULL);
+    newModule->globals = new_vector_p(WasmGlobal, NULL);
+    newModule->elems = new_vector_p(WasmElem, (void(*)(void*))clean_WasmElem);
+    newModule->datas = new_vector_p(WasmData, (void(*)(void*))clean_WasmData);
+    newModule->imports = new_vector_p(WasmImport, (void(*)(void*))clean_WasmImport);
+    newModule->exports = new_vector_p(WasmExport, (void(*)(void*))clean_WasmExport);
     return newModule;
 }
 
@@ -29,15 +29,15 @@ void clean_WasmModule(WasmModule* module)
 {
     if(module) {
         free(module->module_name);
-        free_vector(module->types);
-        free_vector(module->funcs);
-        free_vector(module->tables);
-        free_vector(module->mems);
-        free_vector(module->globals);
-        free_vector(module->elems);
-        free_vector(module->datas);
-        free_vector(module->imports);
-        free_vector(module->exports);
+        free_vector_p(module->types);
+        free_vector_p(module->funcs);
+        free_vector_p(module->tables);
+        free_vector_p(module->mems);
+        free_vector_p(module->globals);
+        free_vector_p(module->elems);
+        free_vector_p(module->datas);
+        free_vector_p(module->imports);
+        free_vector_p(module->exports);
     }
 }
 

@@ -13,12 +13,12 @@ SKYPAT_F(Runtime_i64_const, regular)
     Stack* stack = new_Stack();
 
     // Run
-    runtime_i64_const(stack, 10L << 32);
+    runtime_i64_const(stack, 10LL);
 
     // Check
     Value *check = NULL;
     pop_Value(stack,&check);
-    EXPECT_EQ(check->value.i64, 10L << 32);
+    EXPECT_EQ(check->value.i64, 10LL);
 
     // Clean
     free_Value(check);

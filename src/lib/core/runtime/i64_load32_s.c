@@ -11,13 +11,13 @@ int runtime_i64_load32_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_
 
     uint32_t ea = value1->value.i32 + offset;
 
-    if (ea + (64 / 8) >= memory->max * 65536) {
+    if (ea + (64 / 8) > vector_size(memory->data)) {
         fprintf(stderr, "over the memory range!\n");
         free(value1);
         return -1;
     }
 
-    int32_t *data = (int32_t*)((uint8_t*)memory->data->data + ea);
+    int32_t *data = (int32_t*)(vector_data(uint8_t*, memory->data) + ea);
 
     push_Value(stack, new_i64Value((int64_t)*data));
 

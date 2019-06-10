@@ -5,25 +5,24 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <stdatomic.h>
 #include <Executor.h>
 #include <dataTypes/FuncType.h>
 #include <instance/ModuleInst.h>
 #include <instance/FuncInst.h>
+#include "../util/ExecutorHelper.h"
 }
 #undef _Bool
 
 SKYPAT_F(Executor, create_delete)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
 
     // Check
-    EXPECT_EQ(atomic_load(executor->runningCores), 0);
-    EXPECT_EQ(executor->status, Executor_Stop);
-    EXPECT_EQ(executor->cores->length, 0);
-    EXPECT_EQ(executor->modules->length, 0);
-    EXPECT_NE(executor->store, NULL);
+    EXPECT_EQ(executor_get_runningCores(executor), 0);
+    EXPECT_EQ(vector_size(executor_get_cores(executor)), 0);
+    EXPECT_EQ(vector_size(executor_get_modules(executor)), 0);
+    EXPECT_NE(executor_get_store(executor->store), NULL);
 
     free_Executor(executor);
 }
@@ -31,20 +30,20 @@ SKYPAT_F(Executor, create_delete)
 SKYPAT_F(Executor, add_module)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
     uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncType* type = new_FuncType();
+    vector_push_back(module->funcaddrs, &funcAddr);
+    FuncType type = new_FuncType();
     FuncInst* func = new_FuncInst(module, type);
-    module->types->push_back(module->types, type);
-    executor->store->funcs->push_back(executor->store->funcs, func);
+    vector_push_back(module->types, type);
+    vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
-    EXPECT_EQ(executor->addModule(executor, module, 0), 0);
-    EXPECT_EQ(executor->cores->length, 1);
+    EXPECT_EQ(executor_addModule(executor, module, 0), 0);
+    EXPECT_EQ(vector_size(executor->cores), 1);
 
     free_Executor(executor);
 }
@@ -52,19 +51,19 @@ SKYPAT_F(Executor, add_module)
 SKYPAT_F(Executor, add_module_terminated)
 {
     // Prepare
-    Executor* executor = new_Executor();
+    Executor executor = new_Executor();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
     uint32_t funcAddr = 0;
-    module->funcaddrs->push_back(module->funcaddrs, &funcAddr);
-    FuncType* type = new_FuncType();
+    vector_push_back(module->funcaddrs, &funcAddr);
+    FuncType type = new_FuncType();
     FuncInst* func = new_FuncInst(module, type);
-    module->types->push_back(module->types, type);
-    executor->store->funcs->push_back(executor->store->funcs, func);
+    vector_push_back(module->types, type);
+    vector_push_back(executor_get_store(executor)->funcs, func);
 
     // Check
-    EXPECT_EQ(executor->addModule(executor, module, 0), -1);
+    EXPECT_EQ(executor_addModule(executor, module, 0), -1);
 
     free_Executor(executor);
 }

@@ -1,28 +1,28 @@
 #include "Validates.h"
 
 #include <stdlib.h>
-#include <dataTypes/stack.h>
+#include <dataTypes/stack_p.h>
 #include <Opcodes.h>
 
-static void clean(stack* opds, stack* ctrls)
+static void clean(stack_p opds, stack_p ctrls)
 {
-    free_stack(opds);
-    free_stack(ctrls);
+    free_stack_p(opds);
+    free_stack_p(ctrls);
 }
 
-int validate_Expr(list* expr, Context* context)
+int validate_Expr(list_p expr, Context* context)
 {
     // Prepare
-    stack* opds = new_stack(free); // ValueType
-    stack* ctrls = new_stack((void (*)(void*))free_ctrl_frame); // ctrl_frame
+    stack_p opds = new_stack_p(free); // ValueType
+    stack_p ctrls = new_stack_p(free_ctrl_frame); // ctrl_frame
     ctrl_frame* frame = new_ctrl_frame(opds);
-    ctrls->push(ctrls, (void*)frame);
-    for(size_t i = 0; i < context->returns->length; ++i) {
-        frame->end_types->push_back(frame->end_types, context->returns->at(context->returns, i));
+    stack_push(ctrls, frame);
+    for(size_t i = 0; i < vector_size(context->returns); ++i) {
+        vector_push_back(frame->end_types, vector_at(ValueType*, context->returns, i));
     }
     // Validate
-    for(size_t i = 0; i < expr->size; ++i) {
-        WasmInstr* instr = (WasmInstr*)expr->at(expr, i);
+    for(size_t i = 0; i < list_size(expr); ++i) {
+        WasmInstr* instr = list_at(WasmInstr*, expr, i);
         int result = 0;
         switch (instr->opcode) {
             case Op_unreachable:
@@ -267,14 +267,13 @@ int validate_Expr(list* expr, Context* context)
         }
     }
     // Check remaining operands
-    if(opds->size != context->returns->length) {
+    if(stack_size(opds) != vector_size(context->returns)) {
         clean(opds, ctrls);
         return -2;
     }
-    for(size_t i = 0; i < context->returns->length; ++i) {
-        ValueType* val = NULL;
-        opds->pop(opds, (void*)&val);
-        ValueType* ret = (ValueType*)context->returns->at(context->returns, i);
+    for(size_t i = 0; i < vector_size(context->returns); ++i) {
+        ValueType* val = stack_pop(ValueType*, opds);
+        ValueType* ret = vector_at(ValueType*, context->returns, i);
         if(*val != *ret) {
             clean(opds, ctrls);
             return -3;

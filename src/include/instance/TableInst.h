@@ -2,10 +2,10 @@
 #define WASMVM_INSTANCE_TABLEINST_DEF
 
 #include <stdint.h>
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct {
-    vector* elem; // uint32_t
+    vector_p elem; // uint32_t
     uint32_t max;
 } TableInst;
 

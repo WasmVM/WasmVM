@@ -1,13 +1,13 @@
 #ifndef WASMVM_CORE_STORE_DEF
 #define WASMVM_CORE_STORE_DEF
 
-#include <dataTypes/vector.h>
+#include <dataTypes/vector_p.h>
 
 typedef struct {
-    vector *funcs;      // FuncInst
-    vector *tables;     // TableInst
-    vector *mems;       // MemInst
-    vector *globals;    // GlobalInst
+    vector_p funcs;      // FuncInst
+    vector_p tables;     // TableInst
+    vector_p mems;       // MemInst
+    vector_p globals;    // GlobalInst
 } Store;
 
 Store* new_Store();

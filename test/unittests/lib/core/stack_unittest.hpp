@@ -18,8 +18,8 @@ SKYPAT_F(Stack, create_delete)
     Stack* stack = new_Stack();
 
     // Check
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
 
     free_Stack(stack);
 }
@@ -31,14 +31,13 @@ SKYPAT_F(Stack, push_Label)
     push_Label(stack, new_Label(0, 1, 2));
 
     // Check
-    EXPECT_EQ(stack->entries->size, 1);
-    EXPECT_NE(stack->entries->head, NULL);
-    Label* result = NULL;
-    stack->entries->top(stack->entries, (void**)&result);
+    EXPECT_EQ(stack_size(stack->entries), 1);
+    EXPECT_NE(stack_head(stack->entries), NULL);
+    Label result = stack_top(Label, stack->entries);
     EXPECT_EQ(stack->curLabel, result);
-    EXPECT_EQ(result->funcAddr, 0);
-    EXPECT_EQ(result->instrIndex, 1);
-    EXPECT_EQ(result->contInstr, 2);
+    EXPECT_EQ(label_get_funcAddr(result), 0);
+    EXPECT_EQ(label_get_instrIndex(result), 1);
+    EXPECT_EQ(label_get_contInstr(result), 2);
 
     free_Stack(stack);
 }
@@ -53,10 +52,9 @@ SKYPAT_F(Stack, push_Frame)
     push_Frame(stack, new_Frame(module));
 
     // Check
-    EXPECT_EQ(stack->entries->size, 1);
-    EXPECT_NE(stack->entries->head, NULL);
-    Frame result = NULL;
-    stack->entries->top(stack->entries, (void**)&result);
+    EXPECT_EQ(stack_size(stack->entries), 1);
+    EXPECT_NE(stack_head(stack->entries), NULL);
+    Frame result = stack_top(Frame, stack->entries);
     EXPECT_EQ(stack->curLabel, NULL);
     EXPECT_EQ(stack->curFrame, result);
 
@@ -70,10 +68,9 @@ SKYPAT_F(Stack, push_Value)
     push_Value(stack, new_i32Value(2));
 
     // Check
-    EXPECT_EQ(stack->entries->size, 1);
-    EXPECT_NE(stack->entries->head, NULL);
-    Value* result = NULL;
-    stack->entries->top(stack->entries, (void**)&result);
+    EXPECT_EQ(stack_size(stack->entries), 1);
+    EXPECT_NE(stack_head(stack->entries), NULL);
+    Value* result = stack_top(Value*, stack->entries);
     EXPECT_EQ(stack->curLabel, NULL);
     EXPECT_EQ(stack->curFrame, NULL);
     EXPECT_EQ(result->value.i32, 2);
@@ -88,13 +85,13 @@ SKYPAT_F(Stack, pop_Label_valid)
     push_Label(stack, new_Label(0, 1, 2));
 
     // Check
-    Label* result = NULL;
+    Label result = NULL;
     EXPECT_EQ(pop_Label(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
-    EXPECT_EQ(result->funcAddr, 0);
-    EXPECT_EQ(result->instrIndex, 1);
-    EXPECT_EQ(result->contInstr, 2);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
+    EXPECT_EQ(label_get_funcAddr(result), 0);
+    EXPECT_EQ(label_get_instrIndex(result), 1);
+    EXPECT_EQ(label_get_contInstr(result), 2);
     free_Label(result);
 
     result = NULL;
@@ -104,23 +101,23 @@ SKYPAT_F(Stack, pop_Label_valid)
     push_Value(stack, new_i32Value(20));
 
     EXPECT_EQ(pop_Label(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 2);
-    EXPECT_NE(stack->entries->head, NULL);
-    EXPECT_EQ(stack->curLabel->funcAddr, 0);
-    EXPECT_EQ(stack->curLabel->instrIndex, 5);
-    EXPECT_EQ(stack->curLabel->contInstr, 6);
-    EXPECT_EQ(result->funcAddr, 0);
-    EXPECT_EQ(result->instrIndex, 3);
-    EXPECT_EQ(result->contInstr, 4);
+    EXPECT_EQ(stack_size(stack->entries), 2);
+    EXPECT_NE(stack_head(stack->entries), NULL);
+    EXPECT_EQ(label_get_funcAddr(stack->curLabel), 0);
+    EXPECT_EQ(label_get_instrIndex(stack->curLabel), 5);
+    EXPECT_EQ(label_get_contInstr(stack->curLabel), 6);
+    EXPECT_EQ(label_get_funcAddr(result), 0);
+    EXPECT_EQ(label_get_instrIndex(result), 3);
+    EXPECT_EQ(label_get_contInstr(result), 4);
     free_Label(result);
 
     EXPECT_EQ(pop_Label(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
-    EXPECT_EQ(result->funcAddr, 0);
-    EXPECT_EQ(result->instrIndex, 5);
-    EXPECT_EQ(result->contInstr, 6);
+    EXPECT_EQ(label_get_funcAddr(result), 0);
+    EXPECT_EQ(label_get_instrIndex(result), 5);
+    EXPECT_EQ(label_get_contInstr(result), 6);
 
     free_Label(result);
     free_Stack(stack);
@@ -132,7 +129,7 @@ SKYPAT_F(Stack, pop_Label_not_exist_curLabel)
     Stack* stack = new_Stack();
 
     // Check
-    Label* result = NULL;
+    Label result = NULL;
     EXPECT_EQ(pop_Label(stack, &result), -1);
 
     free_Stack(stack);
@@ -150,14 +147,14 @@ SKYPAT_F(Stack, pop_Frame_valid)
     // Check
     Frame result = NULL;
     EXPECT_EQ(pop_Frame(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
     EXPECT_EQ(stack->curFrame, NULL);
     free_Frame(result);
 
     result = NULL;
-    Label* label1 = new_Label(0, 1, 2);
+    Label label1 = new_Label(0, 1, 2);
     Frame frame1 = new_Frame(module);
     push_Frame(stack, frame1);
     push_Label(stack, label1);
@@ -167,15 +164,15 @@ SKYPAT_F(Stack, pop_Frame_valid)
     push_Value(stack, new_i32Value(20));
 
     EXPECT_EQ(pop_Frame(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 3);
-    EXPECT_NE(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 3);
+    EXPECT_NE(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, label1);
     EXPECT_EQ(stack->curFrame, frame1);
     free_Frame(result);
 
     EXPECT_EQ(pop_Frame(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
     EXPECT_EQ(stack->curFrame, NULL);
     free_Frame(result);
@@ -205,8 +202,8 @@ SKYPAT_F(Stack, pop_Value_valid)
     // Check
     Value* result = NULL;
     EXPECT_EQ(pop_Value(stack, &result), 0);
-    EXPECT_EQ(stack->entries->size, 0);
-    EXPECT_EQ(stack->entries->head, NULL);
+    EXPECT_EQ(stack_size(stack->entries), 0);
+    EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
     EXPECT_EQ(stack->curFrame, NULL);
     EXPECT_EQ(result->value.i32, 3);
@@ -222,7 +219,7 @@ SKYPAT_F(Stack, pop_Value_not_exist)
 
     // Check
     Value* result = NULL;
-    EXPECT_EQ(pop_Value(stack, &result), -1);
+    EXPECT_EQ(pop_Value(stack, &result), -2);
     EXPECT_EQ(result, NULL);
 
     free_Stack(stack);

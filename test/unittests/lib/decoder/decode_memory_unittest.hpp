@@ -16,9 +16,9 @@ SKYPAT_F(decode_memory, valid)
     WasmModule* module = new_WasmModule((char*)"Test");
     uint8_t* testBin = (uint8_t*) "\x05\x04\x01\x01\x03\x05";
     EXPECT_EQ(parse_memory_section(module, &testBin, testBin + 5), 0);
-    EXPECT_EQ(module->mems->length, 1);
-    EXPECT_EQ(((WasmMemory*)module->mems->at(module->mems, 0))->min, 3);
-    EXPECT_EQ(((WasmMemory*)module->mems->at(module->mems, 0))->max, 5);
+    EXPECT_EQ(vector_size(module->mems), 1);
+    EXPECT_EQ((vector_at(WasmMemory*, module->mems, 0))->min, 3);
+    EXPECT_EQ((vector_at(WasmMemory*, module->mems, 0))->max, 5);
     free_WasmModule(module);
 }
 

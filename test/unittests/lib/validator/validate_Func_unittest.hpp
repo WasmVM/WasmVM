@@ -19,30 +19,30 @@ SKYPAT_F(validate_Func, valid)
 {
     // Prepare
     WasmModule* module = new_WasmModule(NULL);
-    FuncType* type = new_FuncType();
-    module->types->push_back(module->types, type);
+    FuncType type = new_FuncType();
+    vector_push_back(module->types, type);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
-    func->body->push_back(func->body, dropInstr);
+    list_push_back(func->body, dropInstr);
 
     // Check
     EXPECT_EQ(validate_Func(func, module), 0);
@@ -56,26 +56,26 @@ SKYPAT_F(validate_Func, type_not_exist)
     WasmModule* module = new_WasmModule(NULL);
     WasmFunc* func = new_WasmFunc();
     func->type = 0;
-    module->funcs->push_back(module->funcs, func);
+    vector_push_back(module->funcs, func);
 
     WasmNumericInstr* instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 3;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_const;
     instr->constant.parent.entryType = Entry_Value;
     instr->constant.type = Value_i32;
     instr->constant.value.i32 = 5;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     instr = new_WasmNumericInstr();
     instr->parent.opcode = Op_i32_add;
-    func->body->push_back(func->body, instr);
+    list_push_back(func->body, instr);
     WasmParametricInstr* dropInstr = new_WasmParametricInstr();
     dropInstr->parent.opcode = Op_drop;
-    func->body->push_back(func->body, dropInstr);
+    list_push_back(func->body, dropInstr);
 
     // Check
     EXPECT_EQ(validate_Func(func, module), -1);

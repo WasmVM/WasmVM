@@ -5,6 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <dataTypes/Value.h>
+#include <dataTypes/vector_p.h>
 #include <structures/WasmElem.h>
 #include <structures/WasmFunc.h>
 #include <structures/WasmTable.h>
@@ -21,15 +22,15 @@ SKYPAT_F(Validate_Elem, valid)
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
     WasmFunc* func1 = new_WasmFunc();
     WasmFunc* func2 = new_WasmFunc();
-    module->tables->push_back(module->tables, table);
-    module->funcs->push_back(module->funcs, func1);
-    module->funcs->push_back(module->funcs, func2);
+    vector_push_back(module->tables, table);
+    vector_push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func2);
     elem->offset.parent.entryType = Entry_Value;
     elem->offset.type = Value_i32;
     elem->offset.value.i32 = 0;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 1;
-    elem->init->push_back(elem->init, index);
+    vector_push_back(elem->init, index);
 
     // Check
     EXPECT_EQ(validate_Elem(elem, module), 0);
@@ -47,15 +48,15 @@ SKYPAT_F(Validate_Elem, func_index_out_of_range)
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
     WasmFunc* func1 = new_WasmFunc();
     WasmFunc* func2 = new_WasmFunc();
-    module->tables->push_back(module->tables, table);
-    module->funcs->push_back(module->funcs, func1);
-    module->funcs->push_back(module->funcs, func2);
+    vector_push_back(module->tables, table);
+    vector_push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func2);
     elem->offset.parent.entryType = Entry_Value;
     elem->offset.type = Value_i32;
     elem->offset.value.i32 = 0;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 2;
-    elem->init->push_back(elem->init, index);
+    vector_push_back(elem->init, index);
 
     // Check
     EXPECT_NE(validate_Elem(elem, module), 0);
@@ -74,16 +75,16 @@ SKYPAT_F(Validate_Elem, table_index_out_of_range)
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
     WasmFunc* func1 = new_WasmFunc();
     WasmFunc* func2 = new_WasmFunc();
-    module->tables->push_back(module->tables, table);
-    module->funcs->push_back(module->funcs, func1);
-    module->funcs->push_back(module->funcs, func2);
+    vector_push_back(module->tables, table);
+    vector_push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func2);
     elem->table = 1;
     elem->offset.parent.entryType = Entry_Value;
     elem->offset.type = Value_i32;
     elem->offset.value.i32 = 0;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    elem->init->push_back(elem->init, index);
+    vector_push_back(elem->init, index);
 
     // Check
     EXPECT_NE(validate_Elem(elem, module), 0);
@@ -101,15 +102,15 @@ SKYPAT_F(Validate_Elem, expr_not_i32)
     WasmTable* table = (WasmTable*)malloc(sizeof(WasmTable));
     WasmFunc* func1 = new_WasmFunc();
     WasmFunc* func2 = new_WasmFunc();
-    module->tables->push_back(module->tables, table);
-    module->funcs->push_back(module->funcs, func1);
-    module->funcs->push_back(module->funcs, func2);
+    vector_push_back(module->tables, table);
+    vector_push_back(module->funcs, func1);
+    vector_push_back(module->funcs, func2);
     elem->offset.parent.entryType = Entry_Value;
     elem->offset.type = Value_f32;
     elem->offset.value.i32 = 0;
     uint32_t* index = (uint32_t*) malloc(sizeof(uint32_t));
     *index = 0;
-    elem->init->push_back(elem->init, index);
+    vector_push_back(elem->init, index);
 
     // Check
     EXPECT_NE(validate_Elem(elem, module), 0);

@@ -21,21 +21,21 @@ static void* getOutput(Instanciator* instanciator)
 {
     return instanciator->parent.output;
 }
-static int matchFunc(FuncType* importType, FuncType* exportType)
+static int matchFunc(FuncType importType, FuncType exportType)
 {
-    if(importType->params->length != exportType->params->length) {
+    if(vector_size(importType->params) != vector_size(exportType->params)) {
         return -1;
     }
-    for(size_t i = 0; i < importType->params->length; ++i) {
-        if(*(ValueType*)importType->params->at(importType->params, i) != *(ValueType*)exportType->params->at(exportType->params, i)) {
+    for(size_t i = 0; i < vector_size(importType->params); ++i) {
+        if(*vector_at(ValueType*, importType->params, i) != *vector_at(ValueType*, exportType->params, i)) {
             return -2;
         }
     }
-    if(importType->results->length != exportType->results->length) {
+    if(vector_size(importType->results) != vector_size(exportType->results)) {
         return -3;
     }
-    for(size_t i = 0; i < importType->results->length; ++i) {
-        if(*(ValueType*)importType->results->at(importType->results, i) != *(ValueType*)exportType->results->at(exportType->results, i)) {
+    for(size_t i = 0; i < vector_size(importType->results); ++i) {
+        if(*vector_at(ValueType*, importType->results, i) != *vector_at(ValueType*, exportType->results, i)) {
             return -4;
         }
     }
@@ -53,7 +53,7 @@ static int matchGlobal(WasmImport* import, GlobalInst* globalInst)
 }
 static int matchMemory(WasmImport* import, MemInst* memInst)
 {
-    if((memInst->data->length >> 16) < import->desc.limits.min) {
+    if((vector_size(memInst->data) >> 16) < import->desc.limits.min) {
         return -1;
     }
     if(import->desc.limits.max != 0 && (memInst->max == 0 || memInst->max > import->desc.limits.max)) {
@@ -63,7 +63,7 @@ static int matchMemory(WasmImport* import, MemInst* memInst)
 }
 static int matchTable(WasmImport* import, TableInst* tableInst)
 {
-    if(tableInst->elem->length < import->desc.limits.min) {
+    if(vector_size(tableInst->elem) < import->desc.limits.min) {
         return -1;
     }
     if(import->desc.limits.max != 0 && (tableInst->max == 0 || tableInst->max > import->desc.limits.max)) {
@@ -71,11 +71,11 @@ static int matchTable(WasmImport* import, TableInst* tableInst)
     }
     return 0;
 }
-static int matchExport(WasmModule* module, WasmImport* import, vector* moduleInsts, Store* store, ExportInst** matched)
+static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleInsts, Store* store, ExportInst** matched)
 {
     ModuleInst* moduleInst = NULL;
-    for(size_t i = 0; i < moduleInsts->length; ++i) {
-        ModuleInst* curInst = moduleInsts->at(moduleInsts, i);
+    for(size_t i = 0; i < vector_size(moduleInsts); ++i) {
+        ModuleInst* curInst = vector_at(ModuleInst*, moduleInsts, i);
         if(!strcmp(curInst->name, import->module)) {
             moduleInst = curInst;
             break;
@@ -85,30 +85,27 @@ static int matchExport(WasmModule* module, WasmImport* import, vector* moduleIns
         *matched = NULL;
         return -1;
     }
-    for(size_t i = 0; i < moduleInst->exports->length; ++i) {
-        ExportInst* export = moduleInst->exports->at(moduleInst->exports, i);
+    for(size_t i = 0; i < vector_size(moduleInst->exports); ++i) {
+        ExportInst* export = vector_at(ExportInst*, moduleInst->exports, i);
         if(!strcmp(export->name, import->name)) {
             switch (import->descType) {
                 case Desc_Func:
-                    if(matchFunc(
-                                (FuncType*)module->types->at(module->types, import->desc.typeidx),
-                                ((FuncInst*)store->funcs->at(store->funcs, export->valueAddr))->type
-                            )) {
+                    if(matchFunc(vector_at(FuncType, module->types, import->desc.typeidx), (vector_at(FuncInst*, store->funcs, export->valueAddr))->type)) {
                         return -2;
                     }
                     break;
                 case Desc_Global:
-                    if(matchGlobal(import, (GlobalInst*)store->globals->at(store->globals, export->valueAddr))) {
+                    if(matchGlobal(import, vector_at(GlobalInst*, store->globals, export->valueAddr))) {
                         return -3;
                     }
                     break;
                 case Desc_Mem:
-                    if(matchMemory(import, (MemInst*)store->mems->at(store->mems, export->valueAddr))) {
+                    if(matchMemory(import, vector_at(MemInst*, store->mems, export->valueAddr))) {
                         return -4;
                     }
                     break;
                 case Desc_Table:
-                    if(matchTable(import, (TableInst*)store->tables->at(store->tables, export->valueAddr))) {
+                    if(matchTable(import, vector_at(TableInst*, store->tables, export->valueAddr))) {
                         return -5;
                     }
                     break;
@@ -126,13 +123,13 @@ static int runInstanciator(Instanciator* instanciator)
 {
     WasmModule* module = instanciator->parent.input;
     ExportInst** exportInsts = NULL;
-    if(module->imports->length > 0) {
-        exportInsts = (ExportInst**) malloc(sizeof(ExportInst*) * module->imports->length);
+    if(vector_size(module->imports) > 0) {
+        exportInsts = (ExportInst**) malloc(sizeof(ExportInst*) * vector_size(module->imports));
         // Match import with exports
-        for(size_t i = 0; i < module->imports->length; ++i) {
-            WasmImport* import = module->imports->at(module->imports, i);
+        for(size_t i = 0; i < vector_size(module->imports); ++i) {
+            WasmImport* import = vector_at(WasmImport*, module->imports, i);
             ExportInst* matched = NULL;
-            int matchResult = matchExport(module, import, instanciator->executor->modules, instanciator->executor->store, &matched);
+            int matchResult = matchExport(module, import, executor_get_modules(instanciator->executor), executor_get_store(instanciator->executor), &matched);
             if(matchResult) {
                 return matchResult;
             }
@@ -140,50 +137,38 @@ static int runInstanciator(Instanciator* instanciator)
         }
     }
     // Allocate moduleInst
-    ModuleInst* moduleInst = allocate_Module(module, instanciator->executor->store, exportInsts, module->imports->length);
+    ModuleInst* moduleInst = allocate_Module(module, executor_get_store(instanciator->executor), exportInsts, vector_size(module->imports));
     free(exportInsts);
     // Elems
-    for(size_t i = 0; i < module->elems->length; ++i) {
-        WasmElem* elem = (WasmElem*)module->elems->at(module->elems, i);
-        TableInst* tableInst = (TableInst*)instanciator->executor->store->tables->at(
-                                   instanciator->executor->store->tables,
-                                   *(uint32_t*)moduleInst->tableaddrs->at(
-                                       moduleInst->tableaddrs,
-                                       elem->table
-                                   )
-                               );
-        if(elem->offset.value.i32 + elem->init->length > tableInst->elem->length) {
+    for(size_t i = 0; i < vector_size(module->elems); ++i) {
+        WasmElem* elem = vector_at(WasmElem*, module->elems, i);
+        TableInst* tableInst = vector_at(TableInst*, executor_get_store(instanciator->executor)->tables, *vector_at(uint32_t*, moduleInst->tableaddrs, elem->table));
+        if(elem->offset.value.i32 + vector_size(elem->init) > vector_size(tableInst->elem)) {
             return -8;
         }
-        for(size_t j = 0; j < elem->init->length; ++j) {
-            uint32_t* address = (uint32_t*)moduleInst->funcaddrs->at(moduleInst->funcaddrs, *(uint32_t*)elem->init->at(elem->init, j));
-            uint32_t* element = (uint32_t*)tableInst->elem->at(tableInst->elem, elem->offset.value.i32 + j);
+        for(size_t j = 0; j < vector_size(elem->init); ++j) {
+            uint32_t* address = vector_at(uint32_t*, moduleInst->funcaddrs, *vector_at(uint32_t*, elem->init, j));
+            uint32_t* element = vector_at(uint32_t*, tableInst->elem, elem->offset.value.i32 + j);
             *element = *address;
         }
     }
     // Datas
-    for(size_t i = 0; i < module->datas->length; ++i) {
-        WasmData* data = (WasmData*)module->datas->at(module->datas, i);
-        MemInst* memInst = (MemInst*)instanciator->executor->store->mems->at(
-                               instanciator->executor->store->mems,
-                               *(uint32_t*)moduleInst->memaddrs->at(
-                                   moduleInst->memaddrs,
-                                   data->data
-                               )
-                           );
-        if(data->offset.value.i32 + data->init->length > memInst->data->length) {
+    for(size_t i = 0; i < vector_size(module->datas); ++i) {
+        WasmData* data = vector_at(WasmData*, module->datas, i);
+        MemInst* memInst = vector_at(MemInst*, executor_get_store(instanciator->executor)->mems, *vector_at(uint32_t*, moduleInst->memaddrs, data->data));
+        if(data->offset.value.i32 + vector_size(data->init) > vector_size(memInst->data)) {
             return -9;
         }
-        memcpy(((char*)memInst->data->data) + data->offset.value.i32, data->init->data, sizeof(char) * data->init->length);
+        memcpy(vector_data(char*, memInst->data) + data->offset.value.i32, vector_data(void*, data->init), sizeof(char) * vector_size(data->init));
     }
     // Start
-    instanciator->executor->addModule(instanciator->executor, moduleInst, module->start);
+    executor_addModule(instanciator->executor, moduleInst, module->start);
     // Free WasmModule
     free_WasmModule(module);
     return 0;
 }
 
-Instanciator* new_Instanciator(WasmModule* module, Executor* executor)
+Instanciator* new_Instanciator(WasmModule* module, Executor executor)
 {
     Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
     instanciator->parent.input = module;
