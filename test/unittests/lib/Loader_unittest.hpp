@@ -53,7 +53,7 @@ SKYPAT_F(Loader, create_delete)
     EXPECT_EQ(stack_head(loader->decodedStack), NULL);
     EXPECT_EQ(stack_size(loader->decodedStack), 0);
     EXPECT_EQ(queue_size(loader->requests), 0);
-    EXPECT_EQ(queue_pop(LoaderRequest*, loader->requests), NULL);
+    EXPECT_EQ(queue_pop(LoaderRequest, loader->requests), NULL);
 
     free_Loader(loader);
 }
@@ -63,11 +63,11 @@ SKYPAT_F(Loader, add_request)
     // Prepare
     Loader loader = new_Loader();
     Executor executor = new_Executor();
-    LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, executor);
+    LoaderRequest request = new_LoaderRequest("Test", loader, executor);
     // Check
     loader_addRequest(loader, request);
     EXPECT_EQ(queue_size(loader->requests), 1);
-    EXPECT_EQ(queue_pop(LoaderRequest*, loader->requests), request);
+    EXPECT_EQ(queue_pop(LoaderRequest, loader->requests), request);
 
     // Clean
     free_Loader(loader);
@@ -83,7 +83,7 @@ SKYPAT_F(Loader, activate)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
+    LoaderRequest request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
@@ -96,7 +96,7 @@ SKYPAT_F(Loader, activate)
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
+    LoaderRequest request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
@@ -132,7 +132,7 @@ SKYPAT_F(Loader, activate_loaded)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
+    LoaderRequest request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
@@ -145,7 +145,7 @@ SKYPAT_F(Loader, activate_loaded)
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test1");
     mockInput2->loader = loader;
-    LoaderRequest* request2 = new_MockLoaderRequest("Request1");
+    LoaderRequest request2 = new_MockLoaderRequest("Request1");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
@@ -180,7 +180,7 @@ SKYPAT_F(Loader, activate_halt)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
+    LoaderRequest request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
@@ -193,7 +193,7 @@ SKYPAT_F(Loader, activate_halt)
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
+    LoaderRequest request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);
@@ -228,7 +228,7 @@ SKYPAT_F(Loader, terminate)
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
-    LoaderRequest* request1 = new_MockLoaderRequest("Request1");
+    LoaderRequest request1 = new_MockLoaderRequest("Request1");
     char result1[100], result2[100];
     memset(result1, '\0', sizeof(char) * 100);
     memset(result2, '\0', sizeof(char) * 100);
@@ -241,7 +241,7 @@ SKYPAT_F(Loader, terminate)
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
     mockInput2->loader = loader;
-    LoaderRequest* request2 = new_MockLoaderRequest("Request2");
+    LoaderRequest request2 = new_MockLoaderRequest("Request2");
     char result3[100], result4[100];
     memset(result3, '\0', sizeof(char) * 100);
     memset(result4, '\0', sizeof(char) * 100);

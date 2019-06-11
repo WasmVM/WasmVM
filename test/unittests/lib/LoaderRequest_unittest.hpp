@@ -18,7 +18,7 @@ SKYPAT_F(LoaderRequest, new)
     Loader loader = new_Loader();
     Executor executor = new_Executor();
 
-    LoaderRequest* request = new_LoaderRequest("TestModule", (Component*)loader, executor);
+    LoaderRequest request = new_LoaderRequest("TestModule", loader, executor);
 
     // Check
     EXPECT_FALSE(strcmp(request->moduleName, "TestModule"));

@@ -7,9 +7,9 @@
 #include <Validator.h>
 #include <Instanciator.h>
 
-LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor executor)
+LoaderRequest new_LoaderRequest_(const char* moduleName, Component* loader, Executor executor)
 {
-    LoaderRequest* request = (LoaderRequest*) malloc(sizeof(LoaderRequest));
+    LoaderRequest request = (LoaderRequest) malloc(sizeof(struct LoaderRequest_));
     request->parent.stages = new_queue_p(free);
     request->parent.free = (void(*)(Request*))free_LoaderRequest;
     request->moduleName = (char*) malloc(sizeof(char)*strlen(moduleName));
@@ -27,7 +27,7 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Exec
     return request;
 }
 
-void free_LoaderRequest(LoaderRequest* request)
+void free_LoaderRequest(LoaderRequest request)
 {
     free_queue_p(request->parent.stages);
     free(request);

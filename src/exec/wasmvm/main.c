@@ -21,7 +21,7 @@ int main(int argc, char const *argv[])
     Loader loader = new_Loader();
     Executor executor = new_Executor();
     // Request
-    LoaderRequest* request = new_LoaderRequest(argv[1], (Component*)loader, executor);
+    LoaderRequest request = new_LoaderRequest(argv[1], loader, executor);
     loader_addRequest(loader, request);
     // Run Loader
     loader_activate(loader);

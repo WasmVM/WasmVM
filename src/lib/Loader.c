@@ -8,7 +8,7 @@
 
 #include <Stage.h>
 
-void loader_addRequest(Loader loader, LoaderRequest* request)
+void loader_addRequest(Loader loader, LoaderRequest request)
 {
     // Check whether loaded or not
     _Bool loaded = 0;
@@ -34,7 +34,7 @@ static void* run_Loader(Loader loader)
     *result = 0;
     // Run requests
     while(queue_size(loader->requests) > 0 && !loader->parent.isTerminated) {
-        LoaderRequest* request = queue_pop(LoaderRequest*, loader->requests);
+        LoaderRequest request = queue_pop(LoaderRequest, loader->requests);
         // Run stages
         while(queue_size(request->parent.stages) > 1) {
             Stage* stage = queue_pop(Stage*, request->parent.stages);
@@ -49,7 +49,7 @@ static void* run_Loader(Loader loader)
     }
     // Run instanciator
     while(stack_size(loader->decodedStack) > 0 && !loader->parent.isTerminated) {
-        LoaderRequest* request = stack_pop(LoaderRequest*, loader->decodedStack);
+        LoaderRequest request = stack_pop(LoaderRequest, loader->decodedStack);
         Stage* stage = queue_pop(Stage*, request->parent.stages);
         *result = stage->run(stage);
         request->parent.free((Request*)request);
