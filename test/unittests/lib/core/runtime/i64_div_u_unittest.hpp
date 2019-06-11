@@ -11,7 +11,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_div_u, regular)
 {
     // prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *value1 = new_i64Value(20LL); //Dividend
     Value *value2 = new_i64Value(-3); //Divisor
     push_Value(stack, value1);

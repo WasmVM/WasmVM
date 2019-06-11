@@ -10,7 +10,7 @@ extern "C" {
 /*
  * This function applys runtime_i64_lt_s() unittest and check the result of runtime_i64_lt_s().
  */
-void i64_lt_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t expected)
+void i64_lt_s_check(Stack stack, int64_t value_1, int64_t value_2, int64_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i64Value(value_1);
@@ -27,7 +27,7 @@ void i64_lt_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t expe
 
 SKYPAT_F(Runtime_i64_lt_s, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 20 < 3
     i64_lt_s_check(stack, 20LL, 3LL, 0);

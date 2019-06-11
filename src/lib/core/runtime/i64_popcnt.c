@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <dataTypes/Value.h>
 
-int runtime_i64_popcnt(Stack* stack)
+int runtime_i64_popcnt(Stack stack)
 {
     Value *value1 = NULL;
     if( pop_Value(stack,&value1)) return -1;

@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-int runtime_i64_load8_u(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align)
+int runtime_i64_load8_u(Stack stack, MemInst* memory, uint32_t offset, uint32_t align)
 {
     Value *value1 = NULL;
     pop_Value(stack, &value1);

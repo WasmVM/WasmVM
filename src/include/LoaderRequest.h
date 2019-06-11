@@ -7,12 +7,16 @@
 #include <dataTypes/vector_p.h>
 #include <Component.h>
 
-typedef struct LoaderRequest_ {
+struct LoaderRequest_ {
     Request parent;
     char* moduleName;
-} LoaderRequest;
+};
 
-LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Executor executor);
-void free_LoaderRequest(LoaderRequest* request);
+typedef struct LoaderRequest_ * LoaderRequest;
+
+LoaderRequest new_LoaderRequest_(const char* moduleName, Component* loader, Executor executor);
+void free_LoaderRequest(LoaderRequest request);
+
+#define new_LoaderRequest(moduleName, loader, executor) new_LoaderRequest_(moduleName, (Component*)loader, executor)
 
 #endif

@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Store, create_delete)
 {
     // Prepare
-    Store* store = new_Store();
+    Store store = new_Store();
 
     // Check
     EXPECT_EQ(vector_size(store->funcs), 0);

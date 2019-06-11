@@ -11,7 +11,7 @@ extern "C" {
 SKYPAT_F(Runtime_f32_abs, negative)
 {
     // prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *val1 = new_f32Value(-3);
     push_Value(stack, val1);
 
@@ -31,7 +31,7 @@ SKYPAT_F(Runtime_f32_abs, negative)
 SKYPAT_F(Runtime_f32_abs, positive)
 {
     // prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *val1 = new_f32Value(8);
     push_Value(stack, val1);
 

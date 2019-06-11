@@ -6,9 +6,9 @@
 #include <instance/MemInst.h>
 #include <instance/GlobalInst.h>
 
-Store* new_Store()
+Store new_Store()
 {
-    Store* newStore = (Store*) malloc(sizeof(Store));
+    Store newStore = (Store) malloc(sizeof(struct Store_));
     newStore->funcs = new_vector_p(FuncInst, clean_FuncInst);
     newStore->tables = new_vector_p(TableInst, clean_TableInst);
     newStore->mems = new_vector_p(MemInst, clean_MemInst);
@@ -16,7 +16,7 @@ Store* new_Store()
     return newStore;
 }
 
-void clean_Store(Store* thisStore)
+void clean_Store(Store thisStore)
 {
     free_vector_p(thisStore->funcs);
     free_vector_p(thisStore->tables);
@@ -24,7 +24,7 @@ void clean_Store(Store* thisStore)
     free_vector_p(thisStore->globals);
 }
 
-void free_Store(Store* thisStore)
+void free_Store(Store thisStore)
 {
     clean_Store(thisStore);
     free(thisStore);

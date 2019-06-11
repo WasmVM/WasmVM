@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stddef.h>
 
-int runtime_i32_shl(Stack* stack)
+int runtime_i32_shl(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

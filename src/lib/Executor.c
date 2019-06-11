@@ -9,8 +9,8 @@ int executor_run(Executor executor)
         return -1;
     }
     for(uint32_t i = 0; i < vector_size(executor->cores); ++i) {
-        Core* core = vector_at(Core*, executor->cores, i);
-        int res = core->run(core);
+        Core core = vector_at(Core, executor->cores, i);
+        int res = core_run(core);
         if(res) {
             return res;
         }
@@ -25,8 +25,8 @@ int executor_stop(Executor executor)
     }
     executor->status = Executor_Terminated;
     for(uint32_t i = 0; i < vector_size(executor->cores); ++i) {
-        Core* core = vector_at(Core*, executor->cores, i);
-        int res = core->stop(core);
+        Core core = vector_at(Core, executor->cores, i);
+        int res = core_stop(core);
         if(res) {
             return res;
         }
@@ -54,10 +54,10 @@ int executor_addModule(Executor executor, ModuleInst* module, uint32_t startFunc
         return -1;
     }
     vector_push_back(executor->modules, module);
-    Core* core = new_Core(executor, module, *vector_at(uint32_t*, module->funcaddrs, startFuncIndex));
+    Core core = new_Core(executor, module, *vector_at(uint32_t*, module->funcaddrs, startFuncIndex));
     vector_push_back(executor->cores, core);
     if(executor->status == Executor_Running) {
-        return core->run(core);
+        return core_run(core);
     }
     return 0;
 }
@@ -66,7 +66,7 @@ vector_p executor_get_modules(Executor executor)
 {
     return executor->modules;
 }
-Store* executor_get_store(Executor executor)
+Store executor_get_store(Executor executor)
 {
     return executor->store;
 }

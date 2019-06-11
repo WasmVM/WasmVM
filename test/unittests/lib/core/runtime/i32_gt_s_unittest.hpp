@@ -10,7 +10,7 @@ extern "C" {
 /*
  * This function applys runtime_i32_gt_s() unittest and check the result of runtime_i32_gt_s().
  */
-void i32_gt_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expected)
+void i32_gt_s_check(Stack stack, int32_t value_1, int32_t value_2, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1);
@@ -27,7 +27,7 @@ void i32_gt_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expe
 
 SKYPAT_F(Runtime_i32_gt_s, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 20 > 3
     i32_gt_s_check(stack, 20, 3, 1);

@@ -13,9 +13,9 @@ void mock_request_free(Request* request)
     free(request);
 }
 
-LoaderRequest* new_MockLoaderRequest(const char* name)
+LoaderRequest new_MockLoaderRequest(const char* name)
 {
-    LoaderRequest* newRequest = (LoaderRequest*) malloc(sizeof(LoaderRequest));
+    LoaderRequest newRequest = (LoaderRequest) malloc(sizeof(LoaderRequest));
     newRequest->parent.stages = new_queue_p(free);
     newRequest->parent.free = mock_request_free;
     newRequest->moduleName = (char*) malloc(sizeof(char) * strlen(name));

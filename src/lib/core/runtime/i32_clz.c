@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 
-int runtime_i32_clz(Stack* stack)
+int runtime_i32_clz(Stack stack)
 {
     Value *value1 = NULL;
     int32_t num = 0;

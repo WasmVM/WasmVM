@@ -1,4 +1,4 @@
-#include <Instanciator.h>
+#include "Instanciator_.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -13,14 +13,6 @@
 #include <instance/TableInst.h>
 #include "Allocates.h"
 
-static void setInput(Instanciator* instanciator, void* input)
-{
-    instanciator->parent.input = input;
-}
-static void* getOutput(Instanciator* instanciator)
-{
-    return instanciator->parent.output;
-}
 static int matchFunc(FuncType importType, FuncType exportType)
 {
     if(vector_size(importType->params) != vector_size(exportType->params)) {
@@ -71,7 +63,7 @@ static int matchTable(WasmImport* import, TableInst* tableInst)
     }
     return 0;
 }
-static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleInsts, Store* store, ExportInst** matched)
+static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleInsts, Store store, ExportInst** matched)
 {
     ModuleInst* moduleInst = NULL;
     for(size_t i = 0; i < vector_size(moduleInsts); ++i) {
@@ -119,7 +111,7 @@ static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleIn
     }
     return -7;
 }
-static int runInstanciator(Instanciator* instanciator)
+static int runInstanciator(Instanciator instanciator)
 {
     WasmModule* module = instanciator->parent.input;
     ExportInst** exportInsts = NULL;
@@ -168,13 +160,11 @@ static int runInstanciator(Instanciator* instanciator)
     return 0;
 }
 
-Instanciator* new_Instanciator(WasmModule* module, Executor executor)
+Instanciator new_Instanciator(WasmModule* module, Executor executor)
 {
-    Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
+    Instanciator instanciator = (Instanciator) malloc(sizeof(struct Instanciator_));
     instanciator->parent.input = module;
     instanciator->parent.output = NULL;
-    instanciator->parent.setInput = (void(*)(Stage*, void*))setInput;
-    instanciator->parent.getOutput = (void*(*)(Stage*))getOutput;
     instanciator->parent.run = (int(*)(Stage*))runInstanciator;
     instanciator->executor = executor;
     return instanciator;

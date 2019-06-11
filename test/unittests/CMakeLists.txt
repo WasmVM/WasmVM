@@ -8,6 +8,7 @@ include_directories(
 
 add_library(wasmvm_unittest_util
     util/ExecutorHelper.c
+    util/StackHelper.c
 )
 
 function(add_unittest filepath prefix)

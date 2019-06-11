@@ -4,6 +4,8 @@
 	"extensions": [
 		"ms-vscode.cpptools",
 		"twxs.cmake",
-		"vector-of-bool.cmake-tools"
+		"vector-of-bool.cmake-tools",
+		"ukyo.wast",
+		"dtsvet.vscode-wasm"
 	]
 }

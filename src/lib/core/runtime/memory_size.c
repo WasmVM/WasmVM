@@ -3,7 +3,7 @@
 #include <dataTypes/vector_p.h>
 #include <stdint.h>
 
-int memory_size(Stack* stack, MemInst* memory)
+int runtime_memory_size(Stack stack, MemInst* memory)
 {
     size_t vec_length = vector_size(memory->data);
     uint32_t pageSize = 64 * 1024;

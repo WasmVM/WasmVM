@@ -4,12 +4,13 @@
 extern "C" {
 #include <core/Runtime.h>
 #include <dataTypes/Value.h>
+#include "../../../util/StackHelper.h"
 }
 #undef _Bool
 
 SKYPAT_F(Runtime_nop, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     int32_t check_value;
 
     Value *value_1 = new_i32Value(5);
@@ -32,7 +33,7 @@ SKYPAT_F(Runtime_nop, regular)
     // 5 4 3 2 1 0
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
-    EXPECT_EQ(stack_size(stack->entries), 4);
+    EXPECT_EQ(stack_get_size(stack), 4);
 
     // 5 4 3 1
     pop_Value(stack,&check1);
@@ -41,7 +42,7 @@ SKYPAT_F(Runtime_nop, regular)
     // 5 4 3
     check_value = runtime_select(stack);
     EXPECT_EQ(check_value,0);
-    EXPECT_EQ(stack_size(stack->entries), 1);
+    EXPECT_EQ(stack_get_size(stack), 1);
 
     // 5
     pop_Value(stack,&check2);
@@ -49,7 +50,7 @@ SKYPAT_F(Runtime_nop, regular)
 
     // empty
     check_value = runtime_select(stack);
-    EXPECT_EQ(check_value, -1);
+    EXPECT_EQ(check_value, -2);
 
     // clean
     free_Value(check1);

@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <dataTypes/Value.h>
 
-int runtime_i64_mul(Stack* stack)
+int runtime_i64_mul(Stack stack)
 {
     Value *value1 = NULL, *value2 = NULL;
     pop_Value(stack,&value2);

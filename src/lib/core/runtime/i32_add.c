@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 
-int runtime_i32_add(Stack* stack)
+int runtime_i32_add(Stack stack)
 {
     Value *value1 = NULL, *value2 = NULL;
     pop_Value(stack,&value2);

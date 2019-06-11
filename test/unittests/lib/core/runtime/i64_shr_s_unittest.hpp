@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_shr_s_positive, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *value1 = new_i64Value(104), *value2 = new_i64Value(2);
     push_Value(stack, value1);
     push_Value(stack, value2);
@@ -31,7 +31,7 @@ SKYPAT_F(Runtime_i64_shr_s_positive, regular)
 SKYPAT_F(Runtime_i64_shr_s_negative, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *value1 = new_i64Value(-24), *value2 = new_i64Value(2);
     push_Value(stack, value1);
     push_Value(stack, value2);

@@ -11,7 +11,7 @@ extern "C" {
  * This function applys runtime_i32_rem_s() unittest.
  * Check the result of runtime_i32_rem_s().
  */
-void i32_rem_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t expected)
+void i32_rem_s_check(Stack stack, int32_t value_1, int32_t value_2, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1); // dividend
@@ -28,7 +28,7 @@ void i32_rem_s_check(Stack* stack, int32_t value_1, int32_t value_2, int32_t exp
 
 SKYPAT_F(Runtime_i32_rem_s, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 20 % 3
     i32_rem_s_check(stack, 20, 3, 2);

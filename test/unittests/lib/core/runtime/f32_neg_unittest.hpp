@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_f32_neg, regular)
 {
     // prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *val1 = new_f32Value(5), *val2 = new_f32Value(-3);
     push_Value(stack, val1);
     push_Value(stack, val2);

@@ -3,6 +3,7 @@
 extern "C" {
 #include <dataTypes/Value.h>
 #include <core/Runtime.h>
+#include <core/Stack.h>
 #include <instance/MemInst.h>
 #include <string.h>
 #include <stdint.h>
@@ -12,7 +13,7 @@ extern "C" {
 SKYPAT_F(runtime_i64_load8_u, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int64_t data[] = { 0, 1, 4, 16, 64, 256, 518, 1040,
@@ -32,17 +33,18 @@ SKYPAT_F(runtime_i64_load8_u, regular)
     }
     for(uint8_t lop = 0; lop < dataSize; lop++) {
         // Set load location
-        stack_push(stack->entries, new_i32Value(lop * sizeof(int64_t)));
+        push_Value(stack, new_i32Value(lop * sizeof(int64_t)));
         // Run
         runtime_i64_load8_s(stack, memory, offset, 0);
         // Check
-        Value *check = stack_pop(Value*, stack->entries);
+        Value* check = NULL;
+        pop_Value(stack, &check);
         EXPECT_EQ(check->value.i64, (int8_t) data[lop]);
         // Clean
         free_Value(check);
     }
     // error check
-    stack_push(stack->entries, new_i32Value(65540));
+    push_Value(stack, new_i32Value(65540));
     int ret = runtime_i64_load8_s(stack, memory, offset, 0);
     EXPECT_EQ(ret, -1);
     // clean datas

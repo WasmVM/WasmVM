@@ -1,24 +1,15 @@
-#include "Decoder.h"
+#include "Decoder_.h"
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdint.h>
 #include <string.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
+#include <structures/WasmModule.h>
 #include "sections.h"
 
-static void setInput(Decoder* decoder, char* input)
-{
-    // store filename
-    decoder->parent.input = (void*) input;
-}
-
-static WasmModule* getOutput(Decoder* decoder)
-{
-    return decoder->parent.output;
-}
-
-static int run(Decoder* decoder)
+static int run(Decoder decoder)
 {
     // allocate WasmModule
     WasmModule* module = decoder->parent.output;
@@ -89,20 +80,20 @@ static int run(Decoder* decoder)
     return 0;
 }
 
-Decoder* new_Decoder(Component* loader, Executor executor)
+Decoder new_Decoder(Component* loader, Executor executor, WasmModule* output)
 {
-    Decoder* newDecoder = (Decoder*) malloc(sizeof(Decoder));
+    Decoder newDecoder = (Decoder) malloc(sizeof(struct Decoder_));
     /* Attributes */
-    newDecoder->loader = (Loader*)loader;
+    newDecoder->loader = (Loader)loader;
     newDecoder->executor = executor;
     /* Member function */
-    newDecoder->parent.setInput = (void(*)(Stage*, void*))setInput;
-    newDecoder->parent.getOutput = (void*(*)(Stage*))getOutput;
+    newDecoder->parent.input = NULL;
+    newDecoder->parent.output = (void*)output;
     newDecoder->parent.run = (int(*)(Stage*))run;
     return newDecoder;
 }
 
-void free_Decoder(Decoder* thisDecoder)
+void free_Decoder(Decoder thisDecoder)
 {
     free(thisDecoder->loader);
     free(thisDecoder);

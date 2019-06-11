@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_extend_s_i32, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *value1 = new_i32Value(-20);
     push_Value(stack, value1);
 

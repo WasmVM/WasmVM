@@ -17,6 +17,6 @@ int executor_join(Executor executor);
 int executor_addModule(Executor executor, ModuleInst* module, uint32_t startFuncIndex);
 
 vector_p executor_get_modules(Executor executor);
-Store* executor_get_store(Executor executor);
+Store executor_get_store(Executor executor);
 
 #endif

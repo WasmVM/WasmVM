@@ -16,7 +16,7 @@ struct Executor_ {
     atomic_int runningCores;
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-    Store* store;
+    Store store;
     vector_p modules; // ModuleInst
     vector_p cores; // Core
     enum ExecutorStatus_ status;

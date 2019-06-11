@@ -3,7 +3,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 
-int runtime_i32_rem_u(Stack* stack)
+int runtime_i32_rem_u(Stack stack)
 {
     Value *value1 = NULL, *value2 = NULL;
     pop_Value(stack,&value2); //Divisor

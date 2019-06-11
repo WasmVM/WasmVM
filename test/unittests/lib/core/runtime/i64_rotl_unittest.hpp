@@ -10,7 +10,7 @@ extern "C" {
 SKYPAT_F(Runtime_i64_rotl, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Value *value1 = new_i64Value(3L << 62), *value2 = new_i64Value(2);
     push_Value(stack, value1);
     push_Value(stack, value2);

@@ -10,7 +10,7 @@ extern "C" {
 /*
  * This function applys runtime_i64_eqz() unittest and check the result of runtime_i64_eqz().
  */
-void i64_eqz_check(Stack* stack, int64_t value_1, int64_t expected)
+void i64_eqz_check(Stack stack, int64_t value_1, int64_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i64Value(value_1);
@@ -25,7 +25,7 @@ void i64_eqz_check(Stack* stack, int64_t value_1, int64_t expected)
 
 SKYPAT_F(Runtime_i64_eqz, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 10
     i64_eqz_check(stack, 10LL, 0);

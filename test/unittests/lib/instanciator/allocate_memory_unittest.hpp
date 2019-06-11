@@ -15,7 +15,7 @@ extern "C" {
 SKYPAT_F(allocate_memory, valid)
 {
     // Prepare
-    Store* store = new_Store();
+    Store store = new_Store();
 
     WasmMemory* memory = (WasmMemory*) malloc(sizeof(WasmMemory));
     memory->min = 10;

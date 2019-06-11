@@ -12,7 +12,7 @@ extern "C" {
 SKYPAT_F(runtime_f32_load, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     MemInst* memory = new_MemInst();
     memory->max = 1;
     float data[] = {
