@@ -1,4 +1,4 @@
-#include <Instanciator.h>
+#include "Instanciator_.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -111,7 +111,7 @@ static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleIn
     }
     return -7;
 }
-static int runInstanciator(Instanciator* instanciator)
+static int runInstanciator(Instanciator instanciator)
 {
     WasmModule* module = instanciator->parent.input;
     ExportInst** exportInsts = NULL;
@@ -160,9 +160,9 @@ static int runInstanciator(Instanciator* instanciator)
     return 0;
 }
 
-Instanciator* new_Instanciator(WasmModule* module, Executor executor)
+Instanciator new_Instanciator(WasmModule* module, Executor executor)
 {
-    Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
+    Instanciator instanciator = (Instanciator) malloc(sizeof(struct Instanciator_));
     instanciator->parent.input = module;
     instanciator->parent.output = NULL;
     instanciator->parent.run = (int(*)(Stage*))runInstanciator;

@@ -22,7 +22,7 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Exec
     Validator* validator = new_Validator(module);
     queue_push(request->parent.stages, validator);
     // Instanciator
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     queue_push(request->parent.stages, instanciator);
     return request;
 }

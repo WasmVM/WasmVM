@@ -5,7 +5,7 @@ extern "C" {
 #include <stdint.h>
 #include <stdlib.h>
 #include <string.h>
-#include <Instanciator.h>
+#include <Instanciator_.h>
 #include <structures/WasmModule.h>
 #include <structures/WasmTable.h>
 #include <structures/WasmElem.h>
@@ -28,7 +28,7 @@ SKYPAT_F(Instanciator, valid)
     strcpy(name1, "test1");
     WasmModule* module1 = new_WasmModule(name1);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module1, executor);
+    Instanciator instanciator = new_Instanciator(module1, executor);
 
     FuncType type1 = new_FuncType();
     vector_push_back(module1->types, type1);
@@ -116,7 +116,7 @@ SKYPAT_F(Instanciator, no_imported_module)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
 
     // Test
     char* importModule = (char*) malloc(sizeof(char)*7);
@@ -140,7 +140,7 @@ SKYPAT_F(Instanciator, function_not_match)
     WasmModule* module = new_WasmModule(name);
     vector_push_back(module->types, new_FuncType());
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -184,7 +184,7 @@ SKYPAT_F(Instanciator, global_mut_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -228,7 +228,7 @@ SKYPAT_F(Instanciator, global_value_type_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -272,7 +272,7 @@ SKYPAT_F(Instanciator, memory_min_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -315,7 +315,7 @@ SKYPAT_F(Instanciator, memory_max_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -361,7 +361,7 @@ SKYPAT_F(Instanciator, table_min_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -404,7 +404,7 @@ SKYPAT_F(Instanciator, table_max_not_match)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
     char* importModule1 = (char*) malloc(sizeof(char)*7);
     strcpy(importModule1, "module");
 
@@ -450,7 +450,7 @@ SKYPAT_F(Instanciator, no_imported_name)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
 
     // Test
     char* importModule1 = (char*) malloc(sizeof(char)*7);
@@ -477,7 +477,7 @@ SKYPAT_F(Instanciator, elem_init_out_of_range)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
 
     WasmTable table;
     table.min = 3;
@@ -508,7 +508,7 @@ SKYPAT_F(Instanciator, data_init_out_of_range)
     strcpy(name, "test");
     WasmModule* module = new_WasmModule(name);
     Executor executor = new_Executor();
-    Instanciator* instanciator = new_Instanciator(module, executor);
+    Instanciator instanciator = new_Instanciator(module, executor);
 
     WasmMemory memory;
     memory.min = 5;
