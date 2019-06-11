@@ -13,14 +13,6 @@
 #include <instance/TableInst.h>
 #include "Allocates.h"
 
-static void setInput(Instanciator* instanciator, void* input)
-{
-    instanciator->parent.input = input;
-}
-static void* getOutput(Instanciator* instanciator)
-{
-    return instanciator->parent.output;
-}
 static int matchFunc(FuncType importType, FuncType exportType)
 {
     if(vector_size(importType->params) != vector_size(exportType->params)) {
@@ -173,8 +165,6 @@ Instanciator* new_Instanciator(WasmModule* module, Executor executor)
     Instanciator* instanciator = (Instanciator*) malloc(sizeof(Instanciator));
     instanciator->parent.input = module;
     instanciator->parent.output = NULL;
-    instanciator->parent.setInput = (void(*)(Stage*, void*))setInput;
-    instanciator->parent.getOutput = (void*(*)(Stage*))getOutput;
     instanciator->parent.run = (int(*)(Stage*))runInstanciator;
     instanciator->executor = executor;
     return instanciator;

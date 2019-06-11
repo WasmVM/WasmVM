@@ -16,9 +16,7 @@ LoaderRequest* new_LoaderRequest(const char* moduleName, Component* loader, Exec
     strcpy(request->moduleName, moduleName);
     WasmModule* module = new_WasmModule(request->moduleName);
     // Decoder
-    Decoder* decoder = new_Decoder(loader, executor);
-    decoder->parent.input = NULL;
-    decoder->parent.output = module;
+    Decoder decoder = new_Decoder(loader, executor, module);
     queue_push(request->parent.stages, decoder);
     // Validator
     Validator* validator = new_Validator(module);
