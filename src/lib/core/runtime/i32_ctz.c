@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int runtime_i32_ctz(Stack* stack)
+int runtime_i32_ctz(Stack stack)
 {
     Value *value1 = NULL;
     int32_t num = 0;

@@ -4,7 +4,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-int runtime_i32_shr_s(Stack* stack)
+int runtime_i32_shr_s(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

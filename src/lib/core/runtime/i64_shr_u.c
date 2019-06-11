@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 
-int runtime_i64_shr_u(Stack* stack)
+int runtime_i64_shr_u(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

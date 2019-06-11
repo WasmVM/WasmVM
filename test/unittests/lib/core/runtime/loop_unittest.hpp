@@ -11,7 +11,7 @@ extern "C" {
 
 SKYPAT_F(Runtime_control_if, valid)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // Label: {Entry, funcAddr, instrIndex, contInstr}
     Label currentLabel = new_Label(0, 1, 2);

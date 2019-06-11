@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdlib.h>
 
-int runtime_drop(Stack* stack)
+int runtime_drop(Stack stack)
 {
     Value *value = NULL;
     if(pop_Value(stack,&value)) return -1;

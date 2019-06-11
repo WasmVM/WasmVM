@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 
-int runtime_i32_xor(Stack* stack)
+int runtime_i32_xor(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 
-int runtime_i32_eqz(Stack* stack)
+int runtime_i32_eqz(Stack stack)
 {
     Value *value1 = NULL;
     pop_Value(stack,&value1);

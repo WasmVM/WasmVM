@@ -6,9 +6,10 @@
 #include <stdio.h>
 #include <stddef.h>
 
-int runtime_i64_load8_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align)
+int runtime_i64_load8_s(Stack stack, MemInst* memory, uint32_t offset, uint32_t align)
 {
-    Value *value1 = stack_pop(Value*, stack->entries);
+    Value* value1 = NULL;
+    pop_Value(stack, &value1);
     uint32_t ea = (uint32_t) value1->value.u32 + offset;
 
     if (ea + (8 / 8) > vector_size(memory->data)) {
@@ -18,7 +19,7 @@ int runtime_i64_load8_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t
     }
 
     int8_t *data = vector_data(int8_t*, memory->data) + ea;
-    stack_push(stack->entries, new_i64Value(*data));
+    push_Value(stack, new_i64Value(*data));
     free(value1);
 
     return 0;

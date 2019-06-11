@@ -1,4 +1,4 @@
-#include <core/Stack.h>
+#include <core/Stack_.h>
 #include <dataTypes/stack_p.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame_.h>
@@ -24,41 +24,41 @@ static void free_entries(void* entryPtr)
     }
 }
 
-Stack* new_Stack()
+Stack new_Stack()
 {
-    Stack* newStack = (Stack*) malloc(sizeof(Stack));
+    Stack newStack = (Stack) malloc(sizeof(Stack));
     newStack->entries = new_stack_p(free_entries);
     newStack->curLabel = NULL;
     newStack->curFrame = NULL;
     return newStack;
 }
-void free_Stack(Stack* thisStack)
+void free_Stack(Stack stack)
 {
-    if(thisStack) {
-        free_stack_p(thisStack->entries);
+    if(stack) {
+        free_stack_p(stack->entries);
     }
-    free(thisStack);
+    free(stack);
 }
-void push_Label(Stack* thisStack, Label label)
+void push_Label(Stack stack, Label label)
 {
-    thisStack->curLabel = label;
-    stack_push(thisStack->entries, label);
+    stack->curLabel = label;
+    stack_push(stack->entries, label);
 #ifndef NDEBUG
     printf("Push label of function %u\n", label_get_funcAddr(label));
 #endif
 }
 
-void push_Frame(Stack* thisStack, Frame frame)
+void push_Frame(Stack stack, Frame frame)
 {
-    thisStack->curFrame = frame;
-    thisStack->curLabel = NULL;
-    stack_push(thisStack->entries, frame);
+    stack->curFrame = frame;
+    stack->curLabel = NULL;
+    stack_push(stack->entries, frame);
 #ifndef NDEBUG
     printf("Push frame of module %s\n", frame->moduleInst->name);
 #endif
 }
 
-void push_Value(Stack* thisStack, Value* value)
+void push_Value(Stack stack, Value* value)
 {
 #ifndef NDEBUG
     switch (value->type) {
@@ -78,37 +78,37 @@ void push_Value(Stack* thisStack, Value* value)
             break;
     }
 #endif
-    stack_push(thisStack->entries, value);
+    stack_push(stack->entries, value);
 }
 
-int pop_Label(Stack* thisStack, Label* label)
+int pop_Label(Stack stack, Label* label)
 {
-    if(!thisStack->curLabel) {
+    if(!stack->curLabel) {
         return -1;
     }
     // Save results
     stack_p results = new_stack_p(NULL);
-    vector_p resultTypes = label_get_resultTypes(thisStack->curLabel);
+    vector_p resultTypes = label_get_resultTypes(stack->curLabel);
     if(resultTypes) {
         for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
             Value* result = NULL;
-            if(pop_Value(thisStack, &result)) {
+            if(pop_Value(stack, &result)) {
                 return -3;
             }
             stack_push(results, result);
         }
     }
     // Pop label
-    for(Entry* entry = stack_top(Entry*, thisStack->entries); entry != NULL; entry = stack_top(Entry*, thisStack->entries)) {
+    for(Entry* entry = stack_top(Entry*, stack->entries); entry != NULL; entry = stack_top(Entry*, stack->entries)) {
         if(entry->entryType == Entry_Label) {
-            *label = stack_pop(Label, thisStack->entries);
+            *label = stack_pop(Label, stack->entries);
             break;
         } else if(entry->entryType == Entry_Value) {
             Value* value = NULL;
-            pop_Value(thisStack, &value);
+            pop_Value(stack, &value);
             free_Value(value);
         } else {
-            thisStack->curLabel = NULL;
+            stack->curLabel = NULL;
             return -2;
         }
     }
@@ -121,25 +121,25 @@ int pop_Label(Stack* thisStack, Label* label)
                 free(result);
                 return -4;
             }
-            push_Value(thisStack, result);
+            push_Value(stack, result);
         }
     }
     free_stack_p(results);
     // Update curlabel
-    for(stack_iterator it = stack_head(thisStack->entries); it != NULL; it = stack_iterator_next(it)) {
+    for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_iterator_next(it)) {
         Entry* entry = stack_iterator_get(Entry*, it);
         switch (entry->entryType) {
             case Entry_Label:
 #ifndef NDEBUG
                 printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
-                thisStack->curLabel = (Label)entry;
+                stack->curLabel = (Label)entry;
                 return 0;
             case Entry_Frame:
 #ifndef NDEBUG
                 printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
-                thisStack->curLabel = NULL;
+                stack->curLabel = NULL;
                 return 0;
             default:
                 break;
@@ -148,64 +148,64 @@ int pop_Label(Stack* thisStack, Label* label)
 #ifndef NDEBUG
     printf("Pop label of function %u\n", label_get_funcAddr(*label));
 #endif
-    thisStack->curLabel = NULL;
+    stack->curLabel = NULL;
     return 0;
 }
 
-int pop_Frame(Stack* thisStack, Frame* framePtr)
+int pop_Frame(Stack stack, Frame* framePtr)
 {
-    if(!thisStack->curFrame) {
+    if(!stack->curFrame) {
         return -1;
     }
-    for(stack_iterator it = stack_head(thisStack->entries); it != NULL; it = stack_head(thisStack->entries)) {
+    for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_head(stack->entries)) {
         Entry* entry = stack_iterator_get(Entry*,it);
         if(entry->entryType == Entry_Frame) {
-            *framePtr = stack_pop(Frame, thisStack->entries);
+            *framePtr = stack_pop(Frame, stack->entries);
             break;
         } else if(entry->entryType == Entry_Value) {
             Value* value = NULL;
-            pop_Value(thisStack, &value);
+            pop_Value(stack, &value);
             free_Value(value);
         } else if(entry->entryType == Entry_Label) {
             Label label = NULL;
-            pop_Label(thisStack, &label);
+            pop_Label(stack, &label);
             free_Label(label);
         } else {
-            thisStack->curFrame = NULL;
+            stack->curFrame = NULL;
             return -2;
         }
     }
-    thisStack->curLabel = NULL;
-    for(stack_iterator it = stack_head(thisStack->entries); it != NULL; it = stack_iterator_next(it)) {
+    stack->curLabel = NULL;
+    for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_iterator_next(it)) {
         Entry* entry = stack_iterator_get(Entry*,it);
         switch (entry->entryType) {
             case Entry_Label:
-                if(!thisStack->curLabel) {
-                    thisStack->curLabel = (Label)entry;
+                if(!stack->curLabel) {
+                    stack->curLabel = (Label)entry;
                 }
                 break;
             case Entry_Frame:
 #ifndef NDEBUG
                 printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
 #endif
-                thisStack->curFrame = (Frame)entry;
+                stack->curFrame = (Frame)entry;
                 return 0;
             default:
                 break;
         }
     }
-    thisStack->curFrame = NULL;
+    stack->curFrame = NULL;
 #ifndef NDEBUG
     printf("Pop frame of module %s\n", (*framePtr)->moduleInst->name);
 #endif
     return 0;
 }
 
-int pop_Value(Stack* thisStack, Value** value)
+int pop_Value(Stack stack, Value** value)
 {
-    Entry* cur = stack_top(Entry*, thisStack->entries);
+    Entry* cur = stack_top(Entry*, stack->entries);
     if(cur && (cur->entryType == Entry_Value)) {
-        *value = stack_pop(Value*, thisStack->entries);
+        *value = stack_pop(Value*, stack->entries);
 #ifndef NDEBUG
         switch ((*value)->type) {
             case Value_i32:
@@ -230,4 +230,19 @@ int pop_Value(Stack* thisStack, Value** value)
         return -2;
     }
 
+}
+
+Label stack_cur_label(Stack stack)
+{
+    return stack->curLabel;
+}
+
+Frame stack_cur_frame(Stack stack)
+{
+    return stack->curFrame;
+}
+
+Entry* stack_top_entry(Stack stack)
+{
+    return stack_top(Entry*, stack->entries);
 }

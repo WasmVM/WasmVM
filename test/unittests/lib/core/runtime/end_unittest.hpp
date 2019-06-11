@@ -19,7 +19,7 @@ extern "C" {
 
 SKYPAT_F(Runtime_control_end, valid_single_layer)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Store* store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
@@ -39,8 +39,8 @@ SKYPAT_F(Runtime_control_end, valid_single_layer)
 
     // Check
     EXPECT_EQ(runtime_end(stack, store), 0);
-    EXPECT_EQ(stack->curLabel, NULL);
-    EXPECT_EQ(stack->curFrame, NULL);
+    EXPECT_EQ(stack_cur_label(stack), NULL);
+    EXPECT_EQ(stack_cur_frame(stack), NULL);
     Value* result = NULL;
     EXPECT_EQ(pop_Value(stack, &result), 0);
     EXPECT_EQ(result->type, Value_i32);
@@ -54,7 +54,7 @@ SKYPAT_F(Runtime_control_end, valid_single_layer)
 
 SKYPAT_F(Runtime_control_end, valid_cascated)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Store* store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
@@ -77,16 +77,16 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
 
     // Check
     EXPECT_EQ(runtime_end(stack, store), 0);
-    EXPECT_EQ(stack->curLabel, label1);
-    EXPECT_EQ(label_get_instrIndex(stack->curLabel), 3);
-    EXPECT_EQ(stack->curFrame, frame);
+    EXPECT_EQ(stack_cur_label(stack), label1);
+    EXPECT_EQ(label_get_instrIndex(stack_cur_label(stack)), 3);
+    EXPECT_EQ(stack_cur_frame(stack), frame);
     Value* result = NULL;
     EXPECT_EQ(pop_Value(stack, &result), 0);
     EXPECT_EQ(result->type, Value_i32);
     EXPECT_EQ(result->value.i32, 4);
     EXPECT_EQ(runtime_end(stack, store), 0);
-    EXPECT_EQ(stack->curLabel, NULL);
-    EXPECT_EQ(stack->curFrame, NULL);
+    EXPECT_EQ(stack_cur_label(stack), NULL);
+    EXPECT_EQ(stack_cur_frame(stack), NULL);
 
     // clean
     free_ModuleInst(module);
@@ -96,7 +96,7 @@ SKYPAT_F(Runtime_control_end, valid_cascated)
 
 SKYPAT_F(Runtime_control_end, no_label)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Store* store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
@@ -119,7 +119,7 @@ SKYPAT_F(Runtime_control_end, no_label)
 
 SKYPAT_F(Runtime_control_end, no_frame)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     Store* store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");

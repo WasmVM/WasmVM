@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 
-int runtime_f32_abs(Stack* stack)
+int runtime_f32_abs(Stack stack)
 {
     Value* value1 = NULL;
     pop_Value(stack, &value1);

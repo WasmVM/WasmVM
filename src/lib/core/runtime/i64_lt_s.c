@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stdlib.h>
 
-int runtime_i64_lt_s(Stack* stack)
+int runtime_i64_lt_s(Stack stack)
 {
     Value *value_1 = NULL, *value_2 = NULL;
     pop_Value(stack,&value_2);

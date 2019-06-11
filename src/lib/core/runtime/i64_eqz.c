@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stddef.h>
 
-int runtime_i64_eqz(Stack* stack)
+int runtime_i64_eqz(Stack stack)
 {
     Value *value1 = NULL;
     if(pop_Value(stack,&value1)) return -1;

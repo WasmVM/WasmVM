@@ -11,7 +11,7 @@ extern "C" {
  * This function applys runtime_i64_rem_s() unittest.
  * Check the result of runtime_i64_rem_s().
  */
-void i64_rem_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t expected)
+void i64_rem_s_check(Stack stack, int64_t value_1, int64_t value_2, int64_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i64Value(value_1); // dividend
@@ -28,7 +28,7 @@ void i64_rem_s_check(Stack* stack, int64_t value_1, int64_t value_2, int64_t exp
 
 SKYPAT_F(Runtime_i64_rem_s, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 20 << 32 % 3
     i64_rem_s_check(stack, 20LL, 3, 2);

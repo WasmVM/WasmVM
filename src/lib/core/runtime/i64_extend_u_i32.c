@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-int runtime_i64_extend_u_i32(Stack* stack)
+int runtime_i64_extend_u_i32(Stack stack)
 {
     Value *value1 = NULL;
     pop_Value(stack,&value1);

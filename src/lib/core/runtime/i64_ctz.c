@@ -2,7 +2,7 @@
 #include <dataTypes/Value.h>
 #include <stddef.h>
 
-int runtime_i64_ctz(Stack* stack)
+int runtime_i64_ctz(Stack stack)
 {
     Value *value1 = NULL;
     uint8_t count = 0;

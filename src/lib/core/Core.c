@@ -22,7 +22,7 @@
 #include <instance/MemoryInstrInst.h>
 #include <instance/NumericInstrInst.h>
 
-static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr, uint8_t opcode)
+static int run_control_instr(Stack stack, Store* store, ControlInstrInst* instr, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
@@ -31,7 +31,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
             break;
         case Op_nop:
             result = runtime_nop();
-            label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
+            label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
             break;
         case Op_block:
             // TODO:
@@ -68,7 +68,7 @@ static int run_control_instr(Stack* stack, Store* store, ControlInstrInst* instr
     return result;
 }
 
-static int run_parametric_instr(Stack* stack, uint8_t opcode)
+static int run_parametric_instr(Stack stack, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
@@ -81,11 +81,11 @@ static int run_parametric_instr(Stack* stack, uint8_t opcode)
         default:
             break;
     }
-    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
+    label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
     return result;
 }
 
-static int run_variable_instr(Stack* stack, VariableInstrInst* instr, uint8_t opcode)
+static int run_variable_instr(Stack stack, VariableInstrInst* instr, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
@@ -107,11 +107,11 @@ static int run_variable_instr(Stack* stack, VariableInstrInst* instr, uint8_t op
         default:
             break;
     }
-    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
+    label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
     return result;
 }
 
-static int run_memory_instr(Stack* stack, Store* store, ModuleInst* module, MemoryInstrInst* instr, uint8_t opcode)
+static int run_memory_instr(Stack stack, Store* store, ModuleInst* module, MemoryInstrInst* instr, uint8_t opcode)
 {
     MemInst* memory = vector_at(MemInst*, store->mems, *vector_at(uint32_t*, module->memaddrs, 0));
     int result = 0;
@@ -194,11 +194,11 @@ static int run_memory_instr(Stack* stack, Store* store, ModuleInst* module, Memo
         default:
             break;
     }
-    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
+    label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
     return result;
 }
 
-static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opcode)
+static int run_numeric_instr(Stack stack, NumericInstrInst* instr, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
@@ -586,7 +586,7 @@ static int run_numeric_instr(Stack* stack, NumericInstrInst* instr, uint8_t opco
         default:
             break;
     }
-    label_set_instrIndex(stack->curLabel, label_get_instrIndex(stack->curLabel) + 1);
+    label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
     return result;
 }
 
@@ -595,9 +595,9 @@ static void* exec_Core(void* corePtr)
     Core core = (Core) corePtr;
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
-    while (core->status == Core_Running && *result == 0 && core->stack->curFrame) {
-        FuncInst* func = vector_at(FuncInst*, core->executor->store->funcs, label_get_funcAddr(core->stack->curLabel));
-        if(label_get_instrIndex(core->stack->curLabel) >= list_size(func->code)) {
+    while (core->status == Core_Running && *result == 0 && stack_cur_frame(core->stack)) {
+        FuncInst* func = vector_at(FuncInst*, core->executor->store->funcs, label_get_funcAddr(stack_cur_label(core->stack)));
+        if(label_get_instrIndex(stack_cur_label(core->stack)) >= list_size(func->code)) {
             Label label = NULL;
             if(pop_Label(core->stack, &label)) {
                 core->status = Core_Stop;
@@ -624,7 +624,7 @@ static void* exec_Core(void* corePtr)
             free_Frame(frame);
             continue;
         }
-        InstrInst* instr = list_at(InstrInst*, func->code, label_get_instrIndex(core->stack->curLabel));
+        InstrInst* instr = list_at(InstrInst*, func->code, label_get_instrIndex(stack_cur_label(core->stack)));
         switch (instr->opcode) {
             case Op_unreachable:
             case Op_nop:

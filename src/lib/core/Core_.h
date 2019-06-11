@@ -15,7 +15,7 @@ struct Core_ {
     CoreStatus status;
     pthread_t thread;
     Executor executor;
-    Stack *stack; // Core's private Stack
+    Stack stack; // Core's private Stack
     ModuleInst* module;
     uint32_t startFuncAddr;
 };

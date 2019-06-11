@@ -10,7 +10,7 @@ extern "C" {
 /*
  * This function applys runtime_i32_eqz() unittest and check the result of runtime_i32_eqz().
  */
-void i32_eqz_check(Stack* stack, int32_t value_1, int32_t expected)
+void i32_eqz_check(Stack stack, int32_t value_1, int32_t expected)
 {
     Value *check = NULL;
     Value *_value_1 = new_i32Value(value_1);
@@ -25,7 +25,7 @@ void i32_eqz_check(Stack* stack, int32_t value_1, int32_t expected)
 
 SKYPAT_F(Runtime_i32_eqz, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // case 1: 10
     i32_eqz_check(stack, 10, 0);

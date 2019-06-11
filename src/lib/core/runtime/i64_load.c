@@ -6,7 +6,7 @@
 #include <stdio.h>
 #include <stddef.h>
 
-int runtime_i64_load(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align)
+int runtime_i64_load(Stack stack, MemInst* memory, uint32_t offset, uint32_t align)
 {
     Value *value1 = NULL;
 

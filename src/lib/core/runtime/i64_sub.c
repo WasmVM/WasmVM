@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-int runtime_i64_sub(Stack* stack)
+int runtime_i64_sub(Stack stack)
 {
     Value *value1 = NULL, *value2 = NULL;
     pop_Value(stack,&value2);

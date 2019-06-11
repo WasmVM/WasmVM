@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <stddef.h>
 
-int runtime_i32_rotr(Stack* stack)
+int runtime_i32_rotr(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

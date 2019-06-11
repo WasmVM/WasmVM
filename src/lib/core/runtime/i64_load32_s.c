@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int runtime_i64_load32_s(Stack* stack, MemInst* memory, uint32_t offset, uint32_t align)
+int runtime_i64_load32_s(Stack stack, MemInst* memory, uint32_t offset, uint32_t align)
 {
     Value *value1 = NULL;
     pop_Value(stack,&value1);

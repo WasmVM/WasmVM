@@ -9,7 +9,7 @@ extern "C" {
 
 SKYPAT_F(Runtime_drop, regular)
 {
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     int32_t check_value;
 
     // stack is not empty

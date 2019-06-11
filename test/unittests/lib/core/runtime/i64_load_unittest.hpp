@@ -11,7 +11,7 @@ extern "C" {
 SKYPAT_F(runtime_i64_load_16, regular)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     MemInst* memory = new_MemInst();
     memory->max = 1;
     int64_t data[] = { 0, 1, 4, 16, 64, 256, 518, 1040,

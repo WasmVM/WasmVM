@@ -4,7 +4,7 @@
 extern "C" {
 #include <string.h>
 #include <stdlib.h>
-#include <core/Stack.h>
+#include <core/Stack_.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Value.h>
@@ -15,7 +15,7 @@ extern "C" {
 SKYPAT_F(Stack, create_delete)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // Check
     EXPECT_EQ(stack_size(stack->entries), 0);
@@ -27,7 +27,7 @@ SKYPAT_F(Stack, create_delete)
 SKYPAT_F(Stack, push_Label)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     push_Label(stack, new_Label(0, 1, 2));
 
     // Check
@@ -45,7 +45,7 @@ SKYPAT_F(Stack, push_Label)
 SKYPAT_F(Stack, push_Frame)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
@@ -64,7 +64,7 @@ SKYPAT_F(Stack, push_Frame)
 SKYPAT_F(Stack, push_Value)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     push_Value(stack, new_i32Value(2));
 
     // Check
@@ -81,7 +81,7 @@ SKYPAT_F(Stack, push_Value)
 SKYPAT_F(Stack, pop_Label_valid)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     push_Label(stack, new_Label(0, 1, 2));
 
     // Check
@@ -126,7 +126,7 @@ SKYPAT_F(Stack, pop_Label_valid)
 SKYPAT_F(Stack, pop_Label_not_exist_curLabel)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // Check
     Label result = NULL;
@@ -138,7 +138,7 @@ SKYPAT_F(Stack, pop_Label_not_exist_curLabel)
 SKYPAT_F(Stack, pop_Frame_valid)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);
@@ -184,7 +184,7 @@ SKYPAT_F(Stack, pop_Frame_valid)
 SKYPAT_F(Stack, pop_Frame_not_exist_curFrame)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // Check
     Frame result = NULL;
@@ -196,7 +196,7 @@ SKYPAT_F(Stack, pop_Frame_not_exist_curFrame)
 SKYPAT_F(Stack, pop_Value_valid)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
     push_Value(stack, new_i32Value(3));
 
     // Check
@@ -215,7 +215,7 @@ SKYPAT_F(Stack, pop_Value_valid)
 SKYPAT_F(Stack, pop_Value_not_exist)
 {
     // Prepare
-    Stack* stack = new_Stack();
+    Stack stack = new_Stack();
 
     // Check
     Value* result = NULL;

@@ -12,7 +12,7 @@ extern "C" {
 SKYPAT_F(memory_size, regular)
 {
     MemInst *memory = new_MemInst();
-    Stack *stack = new_Stack();
+    Stack stack = new_Stack();
     memory->max = 3;
 
     uint64_t pageSize = 64 * 1024;

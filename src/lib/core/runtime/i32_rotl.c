@@ -4,7 +4,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-int runtime_i32_rotl(Stack* stack)
+int runtime_i32_rotl(Stack stack)
 {
     Value *value1 = NULL;
     Value *value2 = NULL;

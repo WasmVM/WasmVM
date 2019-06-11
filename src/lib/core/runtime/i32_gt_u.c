@@ -5,7 +5,7 @@
 /*
  * if value_1 > value_2, put 1 into stack, otherwise, put 0.
  */
-int runtime_i32_gt_u(Stack* stack)
+int runtime_i32_gt_u(Stack stack)
 {
     Value *value_1 = NULL, *value_2 = NULL;
     pop_Value(stack,&value_2);

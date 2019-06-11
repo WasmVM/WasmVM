@@ -4,13 +4,13 @@
 #include <stdio.h>
 #include <stddef.h>
 
-int runtime_memory_grow(Stack* stack, MemInst* memory)
+int runtime_memory_grow(Stack stack, MemInst* memory)
 {
     const uint32_t pageSize = 64 * 1024;
     uint32_t sz = vector_size(memory->data) / pageSize;
 
     // check stacktop value type i32
-    Value *value = stack_top(Value*, stack->entries);
+    Value *value = (Value*) stack_top_entry(stack);
     if(value->type != Value_i32) {
         fprintf(stderr, "memory grow by error value type!\n");
         return -1;
