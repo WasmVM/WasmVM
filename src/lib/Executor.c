@@ -66,7 +66,7 @@ vector_p executor_get_modules(Executor executor)
 {
     return executor->modules;
 }
-Store* executor_get_store(Executor executor)
+Store executor_get_store(Executor executor)
 {
     return executor->store;
 }

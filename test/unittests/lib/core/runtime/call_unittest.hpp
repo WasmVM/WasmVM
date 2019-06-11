@@ -20,7 +20,7 @@ extern "C" {
 SKYPAT_F(Runtime_control_if, regular)
 {
     Stack stack = new_Stack();
-    Store* store = new_Store();
+    Store store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "Test");
     ModuleInst* module = new_ModuleInst(moduleName);

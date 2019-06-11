@@ -22,7 +22,7 @@
 #include <instance/MemoryInstrInst.h>
 #include <instance/NumericInstrInst.h>
 
-static int run_control_instr(Stack stack, Store* store, ControlInstrInst* instr, uint8_t opcode)
+static int run_control_instr(Stack stack, Store store, ControlInstrInst* instr, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
@@ -111,7 +111,7 @@ static int run_variable_instr(Stack stack, VariableInstrInst* instr, uint8_t opc
     return result;
 }
 
-static int run_memory_instr(Stack stack, Store* store, ModuleInst* module, MemoryInstrInst* instr, uint8_t opcode)
+static int run_memory_instr(Stack stack, Store store, ModuleInst* module, MemoryInstrInst* instr, uint8_t opcode)
 {
     MemInst* memory = vector_at(MemInst*, store->mems, *vector_at(uint32_t*, module->memaddrs, 0));
     int result = 0;

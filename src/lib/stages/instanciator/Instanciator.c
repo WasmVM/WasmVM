@@ -71,7 +71,7 @@ static int matchTable(WasmImport* import, TableInst* tableInst)
     }
     return 0;
 }
-static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleInsts, Store* store, ExportInst** matched)
+static int matchExport(WasmModule* module, WasmImport* import, vector_p moduleInsts, Store store, ExportInst** matched)
 {
     ModuleInst* moduleInst = NULL;
     for(size_t i = 0; i < vector_size(moduleInsts); ++i) {

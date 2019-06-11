@@ -6,7 +6,7 @@
 #include <dataTypes/Label.h>
 #include <instance/FuncInst.h>
 
-int runtime_call(Stack stack, Store* store, ControlInstrInst *control)
+int runtime_call(Stack stack, Store store, ControlInstrInst *control)
 {
     Frame frame = new_Frame(stack_cur_frame(stack)->moduleInst);
     uint32_t address = *vector_at(uint32_t*, frame->moduleInst->funcaddrs, *vector_at(uint32_t*, control->indices, 0));

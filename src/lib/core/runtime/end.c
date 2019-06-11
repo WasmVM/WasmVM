@@ -8,7 +8,7 @@
 #include <dataTypes/Frame.h>
 #include <instance/FuncInst.h>
 
-int runtime_end(Stack stack, Store* store)
+int runtime_end(Stack stack, Store store)
 {
     Label label = NULL;
     if(pop_Label(stack, &label)) {

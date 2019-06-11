@@ -11,7 +11,7 @@
 #include <instance/ExportInst.h>
 #include <instance/ModuleInst.h>
 
-ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* exportInsts[], size_t exportCount)
+ModuleInst* allocate_Module(WasmModule* module, Store store, ExportInst* exportInsts[], size_t exportCount)
 {
     char* moduleName = (char*) malloc(sizeof(char) * (strlen(module->module_name) + 1));
     strcpy(moduleName, module->module_name);
@@ -92,7 +92,7 @@ ModuleInst* allocate_Module(WasmModule* module, Store* store, ExportInst* export
     }
     return moduleInst;
 }
-uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)
+uint32_t allocate_Function(WasmFunc* func, Store store, ModuleInst* moduleInst)
 {
     FuncInst* funcInst = new_FuncInst(moduleInst, vector_at(FuncType, moduleInst->types, func->type));
     for(size_t i = 0; i < vector_size(func->locals); ++i) {
@@ -107,7 +107,7 @@ uint32_t allocate_Function(WasmFunc* func, Store* store, ModuleInst* moduleInst)
     vector_push_back(store->funcs, funcInst);
     return address;
 }
-uint32_t allocate_Table(WasmTable* table, Store* store)
+uint32_t allocate_Table(WasmTable* table, Store store)
 {
     TableInst* tableInst = new_TableInst();
     vector_resize(tableInst->elem, table->min);
@@ -116,7 +116,7 @@ uint32_t allocate_Table(WasmTable* table, Store* store)
     vector_push_back(store->tables, tableInst);
     return address;
 }
-uint32_t allocate_Memory(WasmMemory* memory, Store* store)
+uint32_t allocate_Memory(WasmMemory* memory, Store store)
 {
     MemInst* memInst = new_MemInst();
     vector_resize(memInst->data, memory->min * 65536);
@@ -126,7 +126,7 @@ uint32_t allocate_Memory(WasmMemory* memory, Store* store)
     vector_push_back(store->mems, memInst);
     return address;
 }
-uint32_t allocate_Global(WasmGlobal* global, Store* store)
+uint32_t allocate_Global(WasmGlobal* global, Store store)
 {
     GlobalInst* globalInst = new_GlobalInst();
     globalInst->mut = global->mut;

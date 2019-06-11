@@ -24,7 +24,7 @@ extern "C" {
 SKYPAT_F(allocate_function, valid)
 {
     // Prepare
-    Store* store = new_Store();
+    Store store = new_Store();
     char* moduleName = (char*) malloc(sizeof(char) * 5);
     strcpy(moduleName, "test");
     ModuleInst* moduleInst = new_ModuleInst(moduleName);

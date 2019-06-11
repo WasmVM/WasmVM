@@ -15,7 +15,7 @@ extern "C" {
 SKYPAT_F(allocate_table, valid)
 {
     // Prepare
-    Store* store = new_Store();
+    Store store = new_Store();
 
     WasmTable* table = (WasmTable*) malloc(sizeof(WasmTable));
     table->elemType = 0;

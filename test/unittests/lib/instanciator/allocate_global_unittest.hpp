@@ -16,7 +16,7 @@ extern "C" {
 SKYPAT_F(allocate_global, valid)
 {
     // Prepare
-    Store* store = new_Store();
+    Store store = new_Store();
 
     WasmGlobal* global = (WasmGlobal*) malloc(sizeof(WasmGlobal));
     global->mut = 1;
