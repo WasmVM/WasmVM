@@ -84,7 +84,7 @@ Decoder new_Decoder(Component* loader, Executor executor, WasmModule* output)
 {
     Decoder newDecoder = (Decoder) malloc(sizeof(struct Decoder_));
     /* Attributes */
-    newDecoder->loader = (Loader*)loader;
+    newDecoder->loader = (Loader)loader;
     newDecoder->executor = executor;
     /* Member function */
     newDecoder->parent.input = NULL;

@@ -18,17 +18,17 @@ int main(int argc, char const *argv[])
         return -1;
     }
     // Components
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     Executor executor = new_Executor();
     // Request
     LoaderRequest* request = new_LoaderRequest(argv[1], (Component*)loader, executor);
-    loader->addRequest(loader, request);
+    loader_addRequest(loader, request);
     // Run Loader
-    loader->parent.activate((Component*)loader);
+    loader_activate(loader);
     // Join Loader
     int result = 0;
     int* resultPtr = &result;
-    if(loader->parent.join((Component*)loader, &resultPtr) || result) {
+    if(loader_join(loader, &resultPtr) || result) {
         free_Loader(loader);
         free_Executor(executor);
         return -1;

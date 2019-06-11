@@ -1,4 +1,4 @@
-#include <Loader.h>
+#include <Loader_.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -8,7 +8,7 @@
 
 #include <Stage.h>
 
-static void addRequest(struct Loader_* loader, LoaderRequest* request)
+void loader_addRequest(Loader loader, LoaderRequest* request)
 {
     // Check whether loaded or not
     _Bool loaded = 0;
@@ -28,7 +28,7 @@ static void addRequest(struct Loader_* loader, LoaderRequest* request)
     queue_push(loader->requests, request);
 }
 
-static void* run_Loader(Loader* loader)
+static void* run_Loader(Loader loader)
 {
     int* result = (int*) malloc(sizeof(int));
     *result = 0;
@@ -81,21 +81,30 @@ static void freeRequest(Request* request)
     request->free(request);
 }
 
-Loader* new_Loader()
+void loader_activate(Loader loader)
 {
-    Loader* newLoader = (Loader*)malloc(sizeof(Loader));
+    loader->parent.activate((Component*)loader);
+}
+
+int loader_join(Loader loader, int** resultPtr)
+{
+    return loader->parent.join((Component*)loader, resultPtr);
+}
+
+Loader new_Loader()
+{
+    Loader newLoader = (Loader)malloc(sizeof(struct Loader_));
     newLoader->parent.activate = activate_Loader;
     newLoader->parent.terminate = terminate_Loader;
     newLoader->parent.join = join_Loader;
     newLoader->parent.isTerminated = 0;
-    newLoader->addRequest = addRequest;
     newLoader->loadedList = new_list_p(free);
     newLoader->decodedStack = new_stack_p((void (*)(void*))freeRequest);
     newLoader->requests = new_queue_p(freeRequest);
     return newLoader;
 }
 
-void free_Loader(Loader* loader)
+void free_Loader(Loader loader)
 {
     free_list_p(loader->loadedList);
     free_stack_p(loader->decodedStack);

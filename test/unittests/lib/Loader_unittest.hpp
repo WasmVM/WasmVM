@@ -5,7 +5,7 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 #include <stdio.h>
-#include <Loader.h>
+#include <Loader_.h>
 #include <Executor.h>
 #include <core/Store.h>
 #include <dataTypes/vector_p.h>
@@ -17,7 +17,7 @@ extern "C" {
 
 typedef struct {
     char input[10];
-    Loader* loader;
+    Loader loader;
 } MockInput;
 
 static int mock_activate_run(Stage* stage)
@@ -45,7 +45,7 @@ static int mock_activate_terminate(Stage* stage)
 SKYPAT_F(Loader, create_delete)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
 
     // Check
     EXPECT_EQ(list_head(loader->loadedList), NULL);
@@ -61,11 +61,11 @@ SKYPAT_F(Loader, create_delete)
 SKYPAT_F(Loader, add_request)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     Executor executor = new_Executor();
     LoaderRequest* request = new_LoaderRequest("Test", (Component*)loader, executor);
     // Check
-    loader->addRequest(loader, request);
+    loader_addRequest(loader, request);
     EXPECT_EQ(queue_size(loader->requests), 1);
     EXPECT_EQ(queue_pop(LoaderRequest*, loader->requests), request);
 
@@ -77,7 +77,7 @@ SKYPAT_F(Loader, add_request)
 SKYPAT_F(Loader, activate)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     Executor executor = new_Executor();
 
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
@@ -91,7 +91,7 @@ SKYPAT_F(Loader, activate)
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
     queue_push(request1->parent.stages, stage1);
     queue_push(request1->parent.stages, stage2);
-    loader->addRequest(loader, request1);
+    loader_addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
@@ -104,7 +104,7 @@ SKYPAT_F(Loader, activate)
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
     queue_push(request2->parent.stages, stage3);
     queue_push(request2->parent.stages, stage4);
-    loader->addRequest(loader, request2);
+    loader_addRequest(loader, request2);
 
     // Check
     loader->parent.activate((Component*)loader);
@@ -128,7 +128,7 @@ SKYPAT_F(Loader, activate)
 SKYPAT_F(Loader, activate_loaded)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
@@ -140,7 +140,7 @@ SKYPAT_F(Loader, activate_loaded)
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
     queue_push(request1->parent.stages, stage1);
     queue_push(request1->parent.stages, stage2);
-    loader->addRequest(loader, request1);
+    loader_addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test1");
@@ -153,7 +153,7 @@ SKYPAT_F(Loader, activate_loaded)
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
     queue_push(request2->parent.stages, stage3);
     queue_push(request2->parent.stages, stage4);
-    loader->addRequest(loader, request2);
+    loader_addRequest(loader, request2);
 
     // Check
     loader->parent.activate((Component*)loader);
@@ -176,7 +176,7 @@ SKYPAT_F(Loader, activate_loaded)
 SKYPAT_F(Loader, activate_halt)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
@@ -188,7 +188,7 @@ SKYPAT_F(Loader, activate_halt)
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
     queue_push(request1->parent.stages, stage1);
     queue_push(request1->parent.stages, stage2);
-    loader->addRequest(loader, request1);
+    loader_addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
@@ -201,7 +201,7 @@ SKYPAT_F(Loader, activate_halt)
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_halt);
     queue_push(request2->parent.stages, stage3);
     queue_push(request2->parent.stages, stage4);
-    loader->addRequest(loader, request2);
+    loader_addRequest(loader, request2);
 
     // Check
     loader->parent.activate((Component*)loader);
@@ -224,7 +224,7 @@ SKYPAT_F(Loader, activate_halt)
 SKYPAT_F(Loader, terminate)
 {
     // Prepare
-    Loader* loader = new_Loader();
+    Loader loader = new_Loader();
     MockInput* mockInput1 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput1->input, "Test1");
     mockInput1->loader = loader;
@@ -236,7 +236,7 @@ SKYPAT_F(Loader, terminate)
     Stage* stage2 = new_MockStage((void*)mockInput1, (void*)result2, mock_activate_run);
     queue_push(request1->parent.stages, stage1);
     queue_push(request1->parent.stages, stage2);
-    loader->addRequest(loader, request1);
+    loader_addRequest(loader, request1);
 
     MockInput* mockInput2 = (MockInput*) malloc(sizeof(MockInput));
     strcpy(mockInput2->input, "Test2");
@@ -249,7 +249,7 @@ SKYPAT_F(Loader, terminate)
     Stage* stage4 = new_MockStage((void*)mockInput2, (void*)result4, mock_activate_run);
     queue_push(request2->parent.stages, stage3);
     queue_push(request2->parent.stages, stage4);
-    loader->addRequest(loader, request2);
+    loader_addRequest(loader, request2);
 
     // Check
     loader->parent.activate((Component*)loader);

@@ -7,7 +7,7 @@
 
 struct Decoder_ {
     Stage       parent;         // inherit from Stage
-    Loader*     loader;
+    Loader     loader;
     Executor   executor;
 };
 
