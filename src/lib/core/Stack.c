@@ -26,7 +26,7 @@ static void free_entries(void* entryPtr)
 
 Stack new_Stack()
 {
-    Stack newStack = (Stack) malloc(sizeof(Stack));
+    Stack newStack = (Stack) malloc(sizeof(struct Stack_));
     newStack->entries = new_stack_p(free_entries);
     newStack->curLabel = NULL;
     newStack->curFrame = NULL;
