@@ -1,5 +1,5 @@
 #include "Executor_.h"
-#include <core/Core.h>
+#include <core/Core_.h>
 
 #include <stdlib.h>
 
@@ -78,7 +78,7 @@ Executor new_Executor()
     pthread_mutex_init(&(executor->mutex), NULL);
     pthread_cond_init(&(executor->cond), NULL);
     executor->status = Executor_Stop;
-    executor->cores = new_vector_p(Core, clean_Core);
+    executor->cores = new_vector_p(struct Core_, clean_Core);
     executor->modules = new_vector_p(ModuleInst, clean_ModuleInst);
     executor->store = new_Store();
     return executor;
