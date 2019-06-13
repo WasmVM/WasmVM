@@ -43,4 +43,4 @@ jobs:
           sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && cmake -DCMAKE_BUILD_TYPE=Debug -DCMAKE_INSTALL_PREFIX=../install-cmake .." &&
           sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && make -j8 install" &&
           sudo docker exec -t wasmvm-ci /bin/bash -c "ldconfig" &&
-          sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && ctest -V"
+          sudo docker exec -t wasmvm-ci /bin/bash -c "cd ~/build-cmake && ctest"
