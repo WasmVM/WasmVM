@@ -1,6 +1,7 @@
 #ifndef WASMVM_CORE_STACK_DEF
 #define WASMVM_CORE_STACK_DEF
 
+#include <stdint.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Value.h>
@@ -19,5 +20,6 @@ int pop_Value(Stack stack, Value** value);
 Label stack_cur_label(Stack stack);
 Frame stack_cur_frame(Stack stack);
 Entry* stack_top_entry(Stack stack);
+Entry* stack_pop_entry(Stack stack);
 
 #endif

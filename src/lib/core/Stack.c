@@ -246,3 +246,8 @@ Entry* stack_top_entry(Stack stack)
 {
     return stack_top(Entry*, stack->entries);
 }
+
+Entry* stack_pop_entry(Stack stack)
+{
+    return stack_pop(Entry*, stack->entries);
+}
