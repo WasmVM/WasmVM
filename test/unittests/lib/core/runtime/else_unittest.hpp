@@ -25,7 +25,7 @@ SKYPAT_F(Runtime_control_if, regular)
     // Check
     Label result = NULL;
     runtime_else(stack);
-    pop_Label(stack, &result);
+    pop_Label(stack, &result, 1);
     // Expect label's instrIndex to be ControlInstrInst's endAddr.
     EXPECT_EQ(label_get_instrIndex(result), 4);
     // curLabel should be updated to the latest label's function address.

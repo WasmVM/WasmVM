@@ -13,13 +13,12 @@ void free_Stack(Stack stack);
 void push_Label(Stack stack, Label label);
 void push_Frame(Stack stack, Frame frame);
 void push_Value(Stack stack, Value* value);
-int pop_Label(Stack stack, Label* label);
+int pop_Label(Stack stack, Label* label, _Bool restoreValue);
 int pop_Frame(Stack stack, Frame* framePtr);
 int pop_Value(Stack stack, Value** value);
 
 Label stack_cur_label(Stack stack);
 Frame stack_cur_frame(Stack stack);
 Entry* stack_top_entry(Stack stack);
-Entry* stack_pop_entry(Stack stack);
 
 #endif

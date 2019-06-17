@@ -42,7 +42,7 @@ static void* run_Loader(Loader loader)
             free(stage);
             if(*result) {
                 request->parent.free((Request*)request);
-                return result;
+                pthread_exit(result);
             }
         }
         stack_push(loader->decodedStack, request);
@@ -55,15 +55,15 @@ static void* run_Loader(Loader loader)
         request->parent.free((Request*)request);
         free(stage);
         if(*result) {
-            return result;
+            pthread_exit(result);
         }
     }
-    return result;
+    pthread_exit(result);
 }
 
-static int activate_Loader(Component* component)
+static int activate_Loader(Loader loader)
 {
-    return pthread_create(&component->thread, NULL, (void* (*) (void*))run_Loader, (void*)component);
+    return pthread_create(&(loader->parent.thread), NULL, (void* (*) (void*))run_Loader, (void*)loader);
 }
 
 static void terminate_Loader(Component* component)
@@ -83,7 +83,8 @@ static void freeRequest(Request* request)
 
 void loader_activate(Loader loader)
 {
-    loader->parent.activate((Component*)loader);
+    int ret = loader->parent.activate((Component*)loader);
+    printf("%d\n", ret);
 }
 
 int loader_join(Loader loader, int** resultPtr)
@@ -94,7 +95,7 @@ int loader_join(Loader loader, int** resultPtr)
 Loader new_Loader()
 {
     Loader newLoader = (Loader)malloc(sizeof(struct Loader_));
-    newLoader->parent.activate = activate_Loader;
+    newLoader->parent.activate = (int(*)(Component*))activate_Loader;
     newLoader->parent.terminate = terminate_Loader;
     newLoader->parent.join = join_Loader;
     newLoader->parent.isTerminated = 0;

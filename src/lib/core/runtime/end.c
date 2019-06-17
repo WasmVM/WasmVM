@@ -11,7 +11,7 @@
 int runtime_end(Stack stack, Store store)
 {
     Label label = NULL;
-    if(pop_Label(stack, &label)) {
+    if(pop_Label(stack, &label, 1)) {
         return -1;
     }
     if(stack_cur_label(stack) == NULL) {

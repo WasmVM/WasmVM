@@ -81,21 +81,25 @@ void push_Value(Stack stack, Value* value)
     stack_push(stack->entries, value);
 }
 
-int pop_Label(Stack stack, Label* label)
+int pop_Label(Stack stack, Label* label, _Bool restoreValue)
 {
     if(!stack->curLabel) {
         return -1;
     }
-    // Save results
-    stack_p results = new_stack_p(NULL);
-    vector_p resultTypes = label_get_resultTypes(stack->curLabel);
-    if(resultTypes) {
-        for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
-            Value* result = NULL;
-            if(pop_Value(stack, &result)) {
-                return -3;
+    stack_p results = NULL;
+    vector_p resultTypes = NULL;
+    if(restoreValue) {
+        // Save results
+        results = new_stack_p(NULL);
+        resultTypes = label_get_resultTypes(stack->curLabel);
+        if(resultTypes) {
+            for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
+                Value* result = NULL;
+                if(pop_Value(stack, &result)) {
+                    return -3;
+                }
+                stack_push(results, result);
             }
-            stack_push(results, result);
         }
     }
     // Pop label
@@ -112,19 +116,22 @@ int pop_Label(Stack stack, Label* label)
             return -2;
         }
     }
+
     // Restore results
-    if(resultTypes) {
-        for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
-            ValueType* type = vector_at(ValueType*, resultTypes, i);
-            Value* result = stack_pop(Value*, results);
-            if(result->type != *type) {
-                free(result);
-                return -4;
+    if(restoreValue) {
+        if(resultTypes) {
+            for(uint32_t i = 0; i < vector_size(resultTypes); ++i) {
+                ValueType* type = vector_at(ValueType*, resultTypes, i);
+                Value* result = stack_pop(Value*, results);
+                if(result->type != *type) {
+                    free(result);
+                    return -4;
+                }
+                push_Value(stack, result);
             }
-            push_Value(stack, result);
         }
+        free_stack_p(results);
     }
-    free_stack_p(results);
     // Update curlabel
     for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_iterator_next(it)) {
         Entry* entry = stack_iterator_get(Entry*, it);
@@ -168,7 +175,7 @@ int pop_Frame(Stack stack, Frame* framePtr)
             free_Value(value);
         } else if(entry->entryType == Entry_Label) {
             Label label = NULL;
-            pop_Label(stack, &label);
+            pop_Label(stack, &label, 1);
             free_Label(label);
         } else {
             stack->curFrame = NULL;
@@ -245,9 +252,4 @@ Frame stack_cur_frame(Stack stack)
 Entry* stack_top_entry(Stack stack)
 {
     return stack_top(Entry*, stack->entries);
-}
-
-Entry* stack_pop_entry(Stack stack)
-{
-    return stack_pop(Entry*, stack->entries);
 }
