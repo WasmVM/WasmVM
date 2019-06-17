@@ -34,7 +34,7 @@ static int run_control_instr(Stack stack, Store store, ControlInstrInst* instr, 
             label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
             break;
         case Op_block:
-            // TODO:
+            return runtime_block(stack, instr);
             break;
         case Op_loop:
             return runtime_loop(stack, instr);
