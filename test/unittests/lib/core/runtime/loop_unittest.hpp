@@ -24,7 +24,7 @@ SKYPAT_F(Runtime_control_if, valid)
     // Check
     Label result = NULL;
     runtime_loop(stack, currentControl);
-    pop_Label(stack, &result);
+    pop_Label(stack, &result, 1);
     EXPECT_EQ(label_get_instrIndex(result), 2);
     EXPECT_EQ(label_get_funcAddr(result), 0);
     EXPECT_EQ(label_get_contInstr(result), 1);

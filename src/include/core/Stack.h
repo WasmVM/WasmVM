@@ -1,6 +1,7 @@
 #ifndef WASMVM_CORE_STACK_DEF
 #define WASMVM_CORE_STACK_DEF
 
+#include <stdint.h>
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Value.h>
@@ -12,7 +13,7 @@ void free_Stack(Stack stack);
 void push_Label(Stack stack, Label label);
 void push_Frame(Stack stack, Frame frame);
 void push_Value(Stack stack, Value* value);
-int pop_Label(Stack stack, Label* label);
+int pop_Label(Stack stack, Label* label, _Bool restoreValue);
 int pop_Frame(Stack stack, Frame* framePtr);
 int pop_Value(Stack stack, Value** value);
 

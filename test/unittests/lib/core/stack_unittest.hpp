@@ -86,7 +86,7 @@ SKYPAT_F(Stack, pop_Label_valid)
 
     // Check
     Label result = NULL;
-    EXPECT_EQ(pop_Label(stack, &result), 0);
+    EXPECT_EQ(pop_Label(stack, &result, 1), 0);
     EXPECT_EQ(stack_size(stack->entries), 0);
     EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(label_get_funcAddr(result), 0);
@@ -100,7 +100,7 @@ SKYPAT_F(Stack, pop_Label_valid)
     push_Label(stack, new_Label(0, 3, 4));
     push_Value(stack, new_i32Value(20));
 
-    EXPECT_EQ(pop_Label(stack, &result), 0);
+    EXPECT_EQ(pop_Label(stack, &result, 1), 0);
     EXPECT_EQ(stack_size(stack->entries), 2);
     EXPECT_NE(stack_head(stack->entries), NULL);
     EXPECT_EQ(label_get_funcAddr(stack->curLabel), 0);
@@ -111,7 +111,7 @@ SKYPAT_F(Stack, pop_Label_valid)
     EXPECT_EQ(label_get_contInstr(result), 4);
     free_Label(result);
 
-    EXPECT_EQ(pop_Label(stack, &result), 0);
+    EXPECT_EQ(pop_Label(stack, &result, 1), 0);
     EXPECT_EQ(stack_size(stack->entries), 0);
     EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
@@ -130,7 +130,7 @@ SKYPAT_F(Stack, pop_Label_not_exist_curLabel)
 
     // Check
     Label result = NULL;
-    EXPECT_EQ(pop_Label(stack, &result), -1);
+    EXPECT_EQ(pop_Label(stack, &result, 1), -1);
 
     free_Stack(stack);
 }

@@ -164,4 +164,5 @@ add_library(wasmvm_runtime OBJECT
 	loop.c
 	end.c
 	block.c
+	br.c
 )

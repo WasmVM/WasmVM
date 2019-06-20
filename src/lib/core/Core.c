@@ -45,8 +45,7 @@ static int run_control_instr(Stack stack, Store store, ControlInstrInst* instr, 
         case Op_end:
             return runtime_end(stack, store);
         case Op_br:
-            // TODO:
-            break;
+            return runtime_br(stack, instr);
         case Op_br_if:
             // TODO:
             break;
@@ -599,7 +598,7 @@ static void* exec_Core(void* corePtr)
         FuncInst* func = vector_at(FuncInst*, core->executor->store->funcs, label_get_funcAddr(stack_cur_label(core->stack)));
         if(label_get_instrIndex(stack_cur_label(core->stack)) >= list_size(func->code)) {
             Label label = NULL;
-            if(pop_Label(core->stack, &label)) {
+            if(pop_Label(core->stack, &label, 1)) {
                 core->status = Core_Stop;
                 *result = -1;
                 pthread_exit(result);

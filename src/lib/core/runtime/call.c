@@ -8,6 +8,9 @@
 
 int runtime_call(Stack stack, Store store, ControlInstrInst *control)
 {
+    if(stack_cur_label(stack)) {
+        label_set_instrIndex(stack_cur_label(stack), label_get_instrIndex(stack_cur_label(stack)) + 1);
+    }
     Frame frame = new_Frame(stack_cur_frame(stack)->moduleInst);
     uint32_t address = *vector_at(uint32_t*, frame->moduleInst->funcaddrs, *vector_at(uint32_t*, control->indices, 0));
     FuncInst* func = vector_at(FuncInst*, store->funcs, address);

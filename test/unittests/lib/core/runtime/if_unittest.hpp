@@ -26,7 +26,7 @@ SKYPAT_F(Runtime_control_if, regular)
     Label result = NULL;
     push_Value(stack, new_i32Value(0));
     runtime_if(stack, currentControl);
-    pop_Label(stack, &result);
+    pop_Label(stack, &result, 1);
     EXPECT_EQ(label_get_instrIndex(result), 4);
     EXPECT_EQ(label_get_funcAddr(result), 0);
     EXPECT_EQ(label_get_contInstr(result), 4);
@@ -34,7 +34,7 @@ SKYPAT_F(Runtime_control_if, regular)
 
     push_Value(stack, new_i32Value(1));
     runtime_if(stack, currentControl);
-    pop_Label(stack, &result);
+    pop_Label(stack, &result, 1);
     EXPECT_EQ(label_get_instrIndex(result), 2);
     EXPECT_EQ(label_get_funcAddr(result), 0);
     EXPECT_EQ(label_get_contInstr(result), 4);
