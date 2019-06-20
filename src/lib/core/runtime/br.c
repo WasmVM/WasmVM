@@ -33,10 +33,10 @@ int runtime_br(Stack stack, ControlInstrInst *control)
     // Set InstrIndex
     if(!stack_cur_label(stack)) {
         Frame frame = NULL;
-        if(pop_Frame(stack, &frame)) {
-            return -1;
+        pop_Frame(stack, &frame);
+        if(frame) {
+            free_Frame(frame);
         }
-        free_Frame(frame);
     } else {
         label_set_instrIndex(stack_cur_label(stack), label_get_endInstr(label) + 1);
     }
