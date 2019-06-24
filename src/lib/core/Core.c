@@ -596,30 +596,7 @@ static void* exec_Core(void* corePtr)
     while (core->status == Core_Running && *result == 0 && stack_cur_frame(core->stack)) {
         FuncInst* func = vector_at(FuncInst*, core->executor->store->funcs, label_get_funcAddr(stack_cur_label(core->stack)));
         if(label_get_instrIndex(stack_cur_label(core->stack)) >= list_size(func->code)) {
-            Label label = NULL;
-            if(pop_Label(core->stack, &label, 1)) {
-                core->status = Core_Stop;
-                *result = -1;
-                pthread_exit(result);
-            }
-
-            stack_p valStack = new_stack_p(NULL);
-            for(uint32_t i = 0; i < vector_size(func->type->results); ++i) {
-                Value* retValue = NULL;
-                pop_Value(core->stack, &retValue);
-                stack_push(valStack, retValue);
-            }
-
-            Frame frame = NULL;
-            pop_Frame(core->stack, &frame);
-            for(uint32_t i = 0; i < vector_size(func->type->results); ++i) {
-                ValueType* resultType = vector_at(ValueType*, func->type->results, i);
-                Value* retValue = stack_pop(Value*, valStack);
-                push_Value(core->stack, retValue);
-            }
-            free_stack_p(valStack);
-            free_Label(label);
-            free_Frame(frame);
+            runtime_return(core->stack, core->executor->store);
             continue;
         }
         InstrInst* instr = list_at(InstrInst*, func->code, label_get_instrIndex(stack_cur_label(core->stack)));

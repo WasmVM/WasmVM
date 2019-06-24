@@ -20,8 +20,10 @@ void clean_Frame(Frame frame)
 
 void free_Frame(Frame frame)
 {
-    clean_Frame(frame);
-    free(frame);
+    if(frame) {
+        clean_Frame(frame);
+        free(frame);
+    }
 }
 
 ModuleInst* frame_get_module(Frame frame)

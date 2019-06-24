@@ -159,11 +159,13 @@ int pop_Label(Stack stack, Label* label, _Bool restoreValue)
     return 0;
 }
 
-int pop_Frame(Stack stack, Frame* framePtr)
+int pop_Frame(Stack stack, Frame* framePtr, Label lastLabel)
 {
     if(!stack->curFrame) {
         return -1;
     }
+    stack_p values = new_stack_p(free_Value);
+    Label label = lastLabel;
     for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_head(stack->entries)) {
         Entry* entry = stack_iterator_get(Entry*,it);
         if(entry->entryType == Entry_Frame) {
@@ -172,16 +174,30 @@ int pop_Frame(Stack stack, Frame* framePtr)
         } else if(entry->entryType == Entry_Value) {
             Value* value = NULL;
             pop_Value(stack, &value);
-            free_Value(value);
+            stack_push(values, value);
         } else if(entry->entryType == Entry_Label) {
-            Label label = NULL;
-            pop_Label(stack, &label, 1);
-            free_Label(label);
+            if(label) {
+                free_Label(label);
+            }
+            pop_Label(stack, &label, 0);
         } else {
             stack->curFrame = NULL;
             return -2;
         }
     }
+    if(label && label_get_resultTypes(label)) {
+        size_t resultCount = vector_size(label_get_resultTypes(label));
+        for(stack_iterator it = stack_head(values); it != NULL; it = stack_head(values)) {
+            Value* retValue = stack_pop(Value*, values);
+            if(stack_size(values) > resultCount) {
+                free_Value(retValue);
+            } else {
+                push_Value(stack, retValue);
+            }
+        }
+    }
+    free_Label(label);
+    free_stack_p(values);
     stack->curLabel = NULL;
     for(stack_iterator it = stack_head(stack->entries); it != NULL; it = stack_iterator_next(it)) {
         Entry* entry = stack_iterator_get(Entry*,it);

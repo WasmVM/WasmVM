@@ -54,7 +54,7 @@ SKYPAT_F(Runtime_control_if, regular)
     EXPECT_EQ(vector_size(label_get_resultTypes(resultLabel)), 0);
     free_Label(resultLabel);
     Frame resultFrame = NULL;
-    EXPECT_EQ(pop_Frame(stack, &resultFrame), 0);
+    EXPECT_EQ(pop_Frame(stack, &resultFrame, NULL), 0);
     ModuleInst* resultModule = frame_get_module(resultFrame);
     EXPECT_EQ(resultModule, module);
     vector_p resultLocals = frame_get_locals(resultFrame);

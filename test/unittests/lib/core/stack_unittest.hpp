@@ -146,7 +146,7 @@ SKYPAT_F(Stack, pop_Frame_valid)
 
     // Check
     Frame result = NULL;
-    EXPECT_EQ(pop_Frame(stack, &result), 0);
+    EXPECT_EQ(pop_Frame(stack, &result, NULL), 0);
     EXPECT_EQ(stack_size(stack->entries), 0);
     EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
@@ -163,14 +163,14 @@ SKYPAT_F(Stack, pop_Frame_valid)
     push_Label(stack, new_Label(0, 3, 4));
     push_Value(stack, new_i32Value(20));
 
-    EXPECT_EQ(pop_Frame(stack, &result), 0);
+    EXPECT_EQ(pop_Frame(stack, &result, NULL), 0);
     EXPECT_EQ(stack_size(stack->entries), 3);
     EXPECT_NE(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, label1);
     EXPECT_EQ(stack->curFrame, frame1);
     free_Frame(result);
 
-    EXPECT_EQ(pop_Frame(stack, &result), 0);
+    EXPECT_EQ(pop_Frame(stack, &result, NULL), 0);
     EXPECT_EQ(stack_size(stack->entries), 0);
     EXPECT_EQ(stack_head(stack->entries), NULL);
     EXPECT_EQ(stack->curLabel, NULL);
@@ -188,7 +188,7 @@ SKYPAT_F(Stack, pop_Frame_not_exist_curFrame)
 
     // Check
     Frame result = NULL;
-    EXPECT_EQ(pop_Frame(stack, &result), -1);
+    EXPECT_EQ(pop_Frame(stack, &result, NULL), -1);
 
     free_Stack(stack);
 }
