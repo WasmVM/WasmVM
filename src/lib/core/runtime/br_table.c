@@ -5,11 +5,19 @@
 #include <dataTypes/stack_p.h>
 #include <dataTypes/Label.h>
 
-int runtime_br(Stack stack, ControlInstrInst *control)
+int runtime_br_table(Stack stack, ControlInstrInst *control)
 {
+    Value* operand = NULL;
+    if(pop_Value(stack, &operand)) {
+        return -1;
+    }
+    uint32_t index = operand->value.u32;
+    if(index >= vector_size(control->indices)) {
+        index = vector_size(control->indices) - 1;
+    }
     stack_p values = new_stack_p(NULL);
     Label label = NULL;
-    for(uint32_t i = *vector_at(uint32_t*, control->indices, 0) + 1; i > 0;) {
+    for(uint32_t i = *vector_at(uint32_t*, control->indices, index) + 1; i > 0;) {
         Entry* entry = stack_top_entry(stack);
         switch (entry->entryType) {
             case Entry_Value: {
