@@ -168,4 +168,5 @@ add_library(wasmvm_runtime OBJECT
 	br_if.c
 	br_table.c
 	return.c
+	call_indirect.c
 )
