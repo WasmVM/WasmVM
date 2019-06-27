@@ -67,6 +67,10 @@ add_runtime_unittest(i64_gt_u_unittest)
 add_runtime_unittest(i64_ge_u_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
 add_runtime_unittest(i64_extend_u_i32_unittest)
+add_runtime_unittest(i32_trunc_s_f32_unittest)
+add_runtime_unittest(i32_trunc_s_f64_unittest)
+add_runtime_unittest(i32_trunc_u_f32_unittest)
+add_runtime_unittest(i32_trunc_u_f64_unittest)
 
 # Memory Unittest
 add_runtime_unittest(memory_size_unittest)
