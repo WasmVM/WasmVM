@@ -1,6 +1,7 @@
 #include <core/Runtime.h>
 #include <stdlib.h>
 #include <core/Store.h>
+#include <core/Stack_.h>
 #include <dataTypes/stack_p.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
@@ -10,33 +11,20 @@
 
 int runtime_end(Stack stack, Store store)
 {
+    // Count label
     Label label = NULL;
     if(pop_Label(stack, &label, 1)) {
         return -1;
     }
     if(stack_cur_label(stack) == NULL) {
-        FuncType type = (vector_at(FuncInst*, store->funcs, label_get_funcAddr(label)))->type;
-        stack_p valStack = new_stack_p(NULL);
-        for(uint32_t i = 0; i < vector_size(type->results); ++i) {
-            Value* retValue = NULL;
-            pop_Value(stack, &retValue);
-            stack_push(valStack, retValue);
-        }
         Frame frame = NULL;
-        if(pop_Frame(stack, &frame)) {
+        if(pop_Frame(stack, &frame, label)) {
             return -2;
         }
-        for(uint32_t i = 0; i < vector_size(type->results); ++i) {
-            ValueType* resultType = vector_at(ValueType*, type->results, i);
-            Value* retValue = stack_pop(Value*, valStack);
-            push_Value(stack, retValue);
-        }
-        free_stack_p(valStack);
         free_Frame(frame);
-    }
-    if(stack_cur_label(stack)) {
+    } else {
         label_set_instrIndex(stack_cur_label(stack), label_get_contInstr(label));
+        free_Label(label);
     }
-    free_Label(label);
     return 0;
 }

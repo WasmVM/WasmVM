@@ -41,7 +41,7 @@ int runtime_br_table(Stack stack, ControlInstrInst *control)
     // Set InstrIndex
     if(!stack_cur_label(stack)) {
         Frame frame = NULL;
-        pop_Frame(stack, &frame);
+        pop_Frame(stack, &frame, NULL);
         if(frame) {
             free_Frame(frame);
         }

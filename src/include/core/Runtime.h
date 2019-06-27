@@ -180,4 +180,5 @@ int runtime_end(Stack stack, Store store);
 int runtime_br(Stack stack, ControlInstrInst *control);
 int runtime_br_if(Stack stack, ControlInstrInst *control);
 int runtime_br_table(Stack stack, ControlInstrInst *control);
+int runtime_return(Stack stack, Store store);
 #endif
