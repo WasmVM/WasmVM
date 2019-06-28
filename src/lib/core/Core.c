@@ -49,16 +49,14 @@ static int run_control_instr(Stack stack, Store store, ControlInstrInst* instr, 
         case Op_br_if:
             return runtime_br_if(stack, instr);
         case Op_br_table:
-            // TODO:
-            break;
+            return runtime_br_table(stack, instr);
         case Op_return:
             return runtime_return(stack, store);
         case Op_call:
             return runtime_call(stack, store, instr);
             break;
         case Op_call_indirect:
-            // TODO:
-            break;
+            return runtime_call_indirect(stack, store, instr);
         default:
             break;
     }
