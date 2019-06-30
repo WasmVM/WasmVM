@@ -108,6 +108,13 @@ add_runtime_unittest(f32_ge_unittest)
 add_runtime_unittest(f32_min_unittest)
 add_runtime_unittest(f32_max_unittest)
 
+add_runtime_unittest(f32_abs_unittest)
+add_runtime_unittest(f32_ceil_unittest)
+add_runtime_unittest(f32_floor_unittest)
+add_runtime_unittest(f32_nearest_unittest)
+add_runtime_unittest(f32_sqrt_unittest)
+add_runtime_unittest(f32_trunc_unittest)
+
 # Memory Unittest
 add_runtime_unittest(memory_size_unittest)
 add_runtime_unittest(memory_grow_unittest)
