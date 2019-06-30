@@ -96,6 +96,18 @@ add_runtime_unittest(f32_sub_unittest)
 add_runtime_unittest(f32_mul_unittest)
 add_runtime_unittest(f32_div_unittest)
 
+add_runtime_unittest(f32_neg_unittest)
+add_runtime_unittest(f32_abs_unittest)
+add_runtime_unittest(f32_copysign_unittest)
+add_runtime_unittest(f32_eq_unittest)
+add_runtime_unittest(f32_ne_unittest)
+add_runtime_unittest(f32_lt_unittest)
+add_runtime_unittest(f32_le_unittest)
+add_runtime_unittest(f32_gt_unittest)
+add_runtime_unittest(f32_ge_unittest)
+add_runtime_unittest(f32_min_unittest)
+add_runtime_unittest(f32_max_unittest)
+
 # Memory Unittest
 add_runtime_unittest(memory_size_unittest)
 add_runtime_unittest(memory_grow_unittest)
@@ -122,9 +134,6 @@ add_runtime_unittest(f32_load_unittest)
 add_runtime_unittest(f32_store_unittest)
 add_runtime_unittest(f64_load_unittest)
 add_runtime_unittest(f64_store_unittest)
-add_runtime_unittest(f32_neg_unittest)
-add_runtime_unittest(f32_abs_unittest)
-
 
 # Parmeric Unittest
 add_runtime_unittest(drop_unittest)

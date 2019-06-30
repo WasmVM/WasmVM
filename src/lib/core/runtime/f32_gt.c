@@ -8,7 +8,7 @@ int runtime_f32_gt(Stack stack)
     pop_Value(stack, &operand2);
     pop_Value(stack, &operand1);
 
-    push_Value(stack, new_f32Value(operand1->value.f32 >= operand2->value.f32));
+    push_Value(stack, new_f32Value(operand1->value.f32 > operand2->value.f32));
 
     free_Value(operand1);
     free_Value(operand2);
