@@ -63,8 +63,6 @@ make -j4
   
 ## 執行
 
-**目前尚未完成**
-
 1. 準備好以`.wasm`為副檔名的 WebAssembly 位元檔
   
     你可以使用 [wabt](https://github.com/WebAssembly/wabt) 或 [wat2wasm online](https://cdn.rawgit.com/WebAssembly/wabt/013802ca01035365e2459c70f0508481393ac075/demo/wast2wasm/) 將文字檔轉換成位元檔
@@ -72,7 +70,7 @@ make -j4
 2. 執行 Run
 
 ```shell
-./WasmVM 起始的檔案名稱
+./wasmvm 起始的檔案名稱
 ```
 
 其他需要的模組檔案會從和起始檔案相同的資料夾開始尋找
