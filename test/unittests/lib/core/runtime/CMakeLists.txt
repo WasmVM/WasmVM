@@ -85,6 +85,10 @@ add_runtime_unittest(f64_convert_u_i32_unittest)
 add_runtime_unittest(f64_convert_u_i64_unittest)
 add_runtime_unittest(f32_demote_f64_unittest)
 add_runtime_unittest(f64_promote_f32_unittest)
+add_runtime_unittest(i32_reinterpret_f32_unittest)
+add_runtime_unittest(f32_reinterpret_i32_unittest)
+add_runtime_unittest(i64_reinterpret_f64_unittest)
+add_runtime_unittest(f64_reinterpret_i64_unittest)
 
 # Memory Unittest
 add_runtime_unittest(memory_size_unittest)
