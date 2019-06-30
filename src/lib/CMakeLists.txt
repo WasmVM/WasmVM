@@ -56,6 +56,7 @@ add_library(wasmvm_core
 
 target_link_libraries(wasmvm_core
     ${CMAKE_THREAD_LIBS_INIT}
+    m
 )
 
 install(TARGETS wasmvm_core
