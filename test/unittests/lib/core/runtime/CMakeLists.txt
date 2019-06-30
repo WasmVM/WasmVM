@@ -34,7 +34,6 @@ add_runtime_unittest(i32_shl_unittest)
 add_runtime_unittest(i32_rotr_unittest)
 add_runtime_unittest(i32_rotl_unittest)
 add_runtime_unittest(i32_eqz_unittest)
-add_runtime_unittest(i32_wrap_i64_unittest)
 
 add_runtime_unittest(i64_const_unittest)
 add_runtime_unittest(i64_clz_unittest)
@@ -65,6 +64,8 @@ add_runtime_unittest(i64_gt_s_unittest)
 add_runtime_unittest(i64_ge_s_unittest)
 add_runtime_unittest(i64_gt_u_unittest)
 add_runtime_unittest(i64_ge_u_unittest)
+
+add_runtime_unittest(i32_wrap_i64_unittest)
 add_runtime_unittest(i64_extend_s_i32_unittest)
 add_runtime_unittest(i64_extend_u_i32_unittest)
 add_runtime_unittest(i32_trunc_s_f32_unittest)
@@ -89,6 +90,8 @@ add_runtime_unittest(i32_reinterpret_f32_unittest)
 add_runtime_unittest(f32_reinterpret_i32_unittest)
 add_runtime_unittest(i64_reinterpret_f64_unittest)
 add_runtime_unittest(f64_reinterpret_i64_unittest)
+
+add_runtime_unittest(f32_add_unittest)
 
 # Memory Unittest
 add_runtime_unittest(memory_size_unittest)
