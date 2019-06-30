@@ -169,6 +169,13 @@ int runtime_f64_store(Stack stack, MemInst* memory, uint32_t offset, uint32_t al
 int runtime_drop(Stack stack);
 int runtime_select(Stack stack);
 
+/*** Variable ***/
+int runtime_get_local(Stack stack, uint32_t index);
+int runtime_set_local(Stack stack, uint32_t index);
+int runtime_tee_local(Stack stack, uint32_t index);
+int runtime_get_global(Stack stack, Store store, uint32_t index);
+int runtime_set_global(Stack stack, Store store, uint32_t index);
+
 /*** Control ***/
 int runtime_nop();
 int runtime_if(Stack stack, ControlInstrInst *control);

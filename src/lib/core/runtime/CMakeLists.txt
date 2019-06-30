@@ -169,4 +169,10 @@ add_library(wasmvm_runtime OBJECT
 	br_table.c
 	return.c
 	call_indirect.c
+	# Variable
+	get_local.c
+	set_local.c
+	tee_local.c
+	get_global.c
+	set_global.c
 )

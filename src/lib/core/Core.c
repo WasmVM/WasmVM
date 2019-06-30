@@ -80,24 +80,24 @@ static int run_parametric_instr(Stack stack, uint8_t opcode)
     return result;
 }
 
-static int run_variable_instr(Stack stack, VariableInstrInst* instr, uint8_t opcode)
+static int run_variable_instr(Stack stack, Store store, VariableInstrInst* instr, uint8_t opcode)
 {
     int result = 0;
     switch (opcode) {
         case Op_get_local:
-            // TODO:
+            result = runtime_get_local(stack, instr->index);
             break;
         case Op_set_local:
-            // TODO:
+            result = runtime_set_local(stack, instr->index);
             break;
         case Op_tee_local:
-            // TODO:
+            result = runtime_tee_local(stack, instr->index);
             break;
         case Op_get_global:
-            // TODO:
+            result = runtime_get_global(stack, store, instr->index);
             break;
         case Op_set_global:
-            // TODO:
+            result = runtime_set_global(stack, store, instr->index);
             break;
         default:
             break;
@@ -622,7 +622,7 @@ static void* exec_Core(void* corePtr)
             case Op_tee_local:
             case Op_get_global:
             case Op_set_global:
-                *result = run_variable_instr(core->stack, (VariableInstrInst*)instr, instr->opcode);
+                *result = run_variable_instr(core->stack,core->executor->store, (VariableInstrInst*)instr, instr->opcode);
                 break;
             case Op_i32_load:
             case Op_i64_load:
