@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.11)
 project(WasmVM)
 set(PROJECT_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_C_STANDARD 11)
@@ -10,3 +10,4 @@ find_package(Threads REQUIRED)
 
 add_subdirectory(src)
 add_subdirectory(third_party)
+add_subdirectory(test)
