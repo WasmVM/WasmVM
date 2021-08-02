@@ -5,9 +5,9 @@ set(CMAKE_C_STANDARD 11)
 set(CMAKE_CXX_STANDARD 11)
 
 # pthread
-set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
-find_package(Threads REQUIRED)
+#set(CMAKE_THREAD_PREFER_PTHREAD TRUE)
+#find_package(Threads REQUIRED)
 
-add_subdirectory(src)
+#add_subdirectory(src)
 add_subdirectory(third_party)
-add_subdirectory(test)
+#add_subdirectory(test)

@@ -5,5 +5,6 @@ ExternalProject_add(wabt
   BINARY_DIR ${CMAKE_CURRENT_BINARY_DIR}/wabt
   GIT_PROGRESS TRUE
   GIT_SHALLOW TRUE
+  GIT_TAG main
   INSTALL_COMMAND cmake -E echo "Skipping install step."
 )

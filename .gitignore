@@ -2,15 +2,6 @@
 *.o
 build*/
 
-# ignore .vscode
-.vscode/
-
-# ignore config
-WasmVm.cfg 
-
-# ignore node module
-node_modules/
-
 # ignore dia temporary
 *.dia~
 
