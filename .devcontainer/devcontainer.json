@@ -4,9 +4,9 @@
 	"runArgs": ["--cap-add=SYS_PTRACE"],
 	"extensions": [
 		"ms-vscode.cpptools",
+		"ms-vscode.cmake-tools",
+		"ms-vscode.hexeditor",
 		"twxs.cmake",
-		"vector-of-bool.cmake-tools",
-		"ukyo.wast",
 		"dtsvet.vscode-wasm"
 	]
 }
