@@ -8,4 +8,8 @@ typedef unsigned long   u64_t;
 typedef float   f32_t;
 typedef double  f64_t;
 
+#include <stdlib.h>
+#define malloc_func malloc
+#define free_func free
+
 #endif
