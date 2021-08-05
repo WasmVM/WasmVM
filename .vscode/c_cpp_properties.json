@@ -12,7 +12,6 @@
             ],
             "forcedInclude": [],
             "cStandard": "c11",
-            "cppStandard": "c++17",
             "configurationProvider": "vector-of-bool.cmake-tools",
             "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }

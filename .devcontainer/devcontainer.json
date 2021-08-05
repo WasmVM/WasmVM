@@ -6,6 +6,7 @@
 		"ms-vscode.cpptools",
 		"ms-vscode.cmake-tools",
 		"ms-vscode.hexeditor",
+		"ms-python.python",
 		"twxs.cmake",
 		"dtsvet.vscode-wasm"
 	]

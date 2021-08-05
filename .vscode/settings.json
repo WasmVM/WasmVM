@@ -4,6 +4,5 @@
         "*.hpp": "cpp"
     },
     "terminal.integrated.cursorStyle": "line",
-    "terminal.integrated.enableBell": true,
-    "terminal.integrated.shell.linux": "/bin/zsh"
+    "terminal.integrated.enableBell": true
 }
