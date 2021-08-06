@@ -65,5 +65,6 @@
 # )
 
 add_library(WasmVM
+    decode/decode.c
     WasmVM.c
 )
