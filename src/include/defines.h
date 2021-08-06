@@ -7,7 +7,9 @@ typedef unsigned int    u32_t;
 typedef unsigned long   u64_t;
 typedef float   f32_t;
 typedef double  f64_t;
-typedef unsigned long size_t;
+
+typedef unsigned short  u16_t;
+typedef unsigned long   size_t;
 
 #include <stdlib.h>
 #define malloc_func malloc
