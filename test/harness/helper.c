@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char* load_file(const char* filename, long* size)
+char* load_file(const char* filename, size_t* size)
 {
     FILE* fin = NULL;
     // Open file

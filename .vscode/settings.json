@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "*.h": "c",
-        "*.hpp": "cpp"
-    },
-    "terminal.integrated.cursorStyle": "line",
-    "terminal.integrated.enableBell": true
-}
