@@ -3,12 +3,9 @@
         {
             "name": "WasmVM",
             "includePath": [
-                "${workspaceFolder}/src/include",
+                "${workspaceFolder}/src/include/**",
                 "${workspaceFolder}/src/lib",
-                "${workspaceFolder}/test/unittests",
-                "${workspaceFolder}/src/lib/stages/decoder",
-                "${workspaceFolder}/src/lib/stages/validator",
-                "${workspaceFolder}/src/lib/stages/instanciator"
+                "${workspaceFolder}/test/harness/**"
             ],
             "forcedInclude": [],
             "cStandard": "c11",

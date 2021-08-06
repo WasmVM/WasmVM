@@ -1,8 +1,12 @@
 #ifndef WASMVM_DEF
 #define WASMVM_DEF
 
+typedef struct module_t* wasm_module;
+
+int module_decode(char* data, wasm_module* module);
+void module_free(wasm_module module);
+
 // TODO: store_init()
-// TODO: module_decode()
 // TODO: module_validate()
 // TODO: module_instantiate()
 // TODO: module_imports()

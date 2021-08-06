@@ -15,11 +15,15 @@ macro(add_spec_test test_name)
     COMMAND test -f ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}.c
     DEPENDS spec_test_extract
   )
-  add_executable(${test_name}
+  add_executable(spec_${test_name}
     ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}.c
   )
-  target_link_libraries(${test_name}
+  target_link_libraries(spec_${test_name}
     harness
+    WasmVM
+  )
+  set_target_properties(spec_${test_name}
+    PROPERTIES OUTPUT_NAME spec/${test_name}/${test_name}
   )
 endmacro(add_spec_test)
 
