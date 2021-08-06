@@ -6,6 +6,7 @@
 
 #include <WasmVM.h>
 #include <defines.h>
+#include <error.h>
 #include <structures/WasmModule.h>
 
 int module_decode(const char* data, const size_t data_size, WasmModule** module)
@@ -19,5 +20,9 @@ int module_decode(const char* data, const size_t data_size, WasmModule** module)
     const char* cursor_p = data;
     const char* end_p = data + data_size - 1;
 
-    return 0;
+    // Magic number & version
+    if(parse_magic_version(module, &cursor_p)) {
+        return -1;
+    }
+    return ERROR_success;
 }

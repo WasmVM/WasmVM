@@ -6,6 +6,8 @@
 
 #include <error.h>
 
+int wasmvm_errno = 0;
+
 const char* wasmvm_strerror(int errnum)
 {
     switch (errnum) {

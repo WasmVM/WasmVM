@@ -66,5 +66,8 @@
 
 add_library(WasmVM
     decode/decode.c
+    decode/sections.c
+    decode/utils.c
+    error.c
     WasmVM.c
 )
