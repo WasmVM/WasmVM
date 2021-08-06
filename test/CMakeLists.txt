@@ -2,8 +2,9 @@ include_directories(${PROJECT_ROOT}/src/include)
 include_directories(${PROJECT_ROOT}/src/lib)
 
 add_custom_target(spec_test_extract
-  COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/extract_spec_tests.py ${CMAKE_CURRENT_BINARY_DIR}
+  COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/extract_spec_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR}/third_party/wabt/wast2json
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/
+  DEPENDS wabt
 )
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
