@@ -42,13 +42,13 @@ u64_t toLittle64(const u64_t val, _Bool force)
     }
 }
 
-u32_t getLeb128_u32(unsigned char **ptr, const unsigned char* max)
+u32_t getLeb128_u32(const byte_t **ptr, const byte_t* const end)
 {
     // uleb128 reference: https://en.wikipedia.org/wiki/LEB128
     u32_t ret = 0;
     // Maximum: 5 bytes
     for(int i=0; i<5; ++i) {
-        if(*ptr > max) {
+        if(*ptr > end) {
             wasmvm_errno = ERROR_len_out_of_bound;
             return -1;
         }
@@ -74,11 +74,11 @@ u32_t getLeb128_u32(unsigned char **ptr, const unsigned char* max)
     return toLittle32(ret, 0);
 }
 
-i32_t getLeb128_i32(unsigned char **ptr, const unsigned char* max)
+i32_t getLeb128_i32(const byte_t **ptr, const byte_t* const end)
 {
     i32_t ret = 0;
     for(int i=0; i < 5; ++i) {
-        if(*ptr > max) {
+        if(*ptr > end) {
             wasmvm_errno = ERROR_len_out_of_bound;
             return -1;
         }
@@ -117,11 +117,11 @@ i32_t getLeb128_i32(unsigned char **ptr, const unsigned char* max)
     return toLittle32(ret, 0);
 }
 
-i64_t getLeb128_i64(unsigned char **ptr, const unsigned char *max)
+i64_t getLeb128_i64(const byte_t **ptr, const byte_t * const end)
 {
     i64_t ret = 0;
     for(int i=0; i < 10; i++) {
-        if(*ptr > max) {
+        if(*ptr > end) {
             wasmvm_errno = ERROR_len_out_of_bound;
             return -1;
         }

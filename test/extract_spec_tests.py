@@ -12,7 +12,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
         f'/** module "{wasm_file}" */\n'
         '{  // Load module\n'
         '  size_t bin_size = 0;\n'
-        f'  char* bin_data = load_file("{wasm_file}", &bin_size);\n'
+        f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
         '  if(bin_data == NULL){\n'
         f'    fprintf(stderr, "error: cannot load module \'{wasm_file}\'\\n");\n'
         '    return -1;\n'

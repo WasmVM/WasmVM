@@ -3,6 +3,6 @@
 
 #include <defines.h>
 
-char* load_file(const char* filename, size_t* size);
+byte_t* load_file(const char* filename, size_t* size);
 
 #endif

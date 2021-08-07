@@ -10,4 +10,6 @@
 
 #define free_vector(V) free_func(V.data)
 
+#define vector_resize(V, T, NEW_SIZE) V.data = realloc_func(V.data, sizeof(T) * NEW_SIZE)
+
 #endif

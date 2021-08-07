@@ -9,7 +9,9 @@
 #include <error.h>
 #include <structures/WasmModule.h>
 
-int module_decode(const char* data, const size_t data_size, WasmModule** module)
+#include "sections.h"
+
+int module_decode(const byte_t* data, const size_t data_size, WasmModule** module)
 {
     // Allocate module memory
     if((*module = (WasmModule*)malloc_func(sizeof(WasmModule))) == NULL) {
@@ -17,12 +19,18 @@ int module_decode(const char* data, const size_t data_size, WasmModule** module)
     }
 
     // Cursor pointers
-    const char* cursor_p = data;
-    const char* end_p = data + data_size - 1;
+    const byte_t* cursor_p = data;
+    const byte_t* end_p = data + data_size - 1;
 
     // Magic number & version
-    if(parse_magic_version(module, &cursor_p)) {
+    if(parse_magic_version(&cursor_p)) {
         return -1;
     }
+
+    // Section 1: Type
+    if(parse_type_section(*module, &cursor_p, end_p) < 0) {
+        return -1;
+    }
+
     return ERROR_success;
 }
