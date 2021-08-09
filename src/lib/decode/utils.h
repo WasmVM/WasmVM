@@ -9,8 +9,8 @@ u16_t toLittle16(const u16_t val, _Bool force);
 u32_t toLittle32(const u32_t val, _Bool force);
 u64_t toLittle64(const u64_t val, _Bool force);
 
-u32_t getLeb128_u32(unsigned char **ptr, const unsigned char* max);
-i32_t getLeb128_i32(unsigned char **ptr, const unsigned char* max);
-i64_t getLeb128_i64(unsigned char **ptr, const unsigned char* max);
+u32_t getLeb128_u32(const byte_t **ptr, const byte_t* end);
+i32_t getLeb128_i32(const byte_t **ptr, const byte_t* end);
+i64_t getLeb128_i64(const byte_t **ptr, const byte_t* end);
 
 #endif

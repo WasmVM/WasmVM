@@ -2,10 +2,11 @@
 #define WASMVM_DEF
 
 #include <defines.h>
+#include <error.h>
 
 typedef struct module_t* wasm_module;
 
-int module_decode(const char* data, const size_t size, wasm_module* module);
+int module_decode(const byte_t* data, const size_t size, wasm_module* module);
 void module_free(wasm_module module);
 
 // TODO: store_init()

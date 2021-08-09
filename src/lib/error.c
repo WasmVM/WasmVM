@@ -6,7 +6,7 @@
 
 #include <error.h>
 
-int wasmvm_errno = 0;
+int wasmvm_errno = ERROR_success;
 
 const char* wasmvm_strerror(int errnum)
 {

@@ -18,8 +18,9 @@
 #define IMPORT_Mem 0x02
 #define IMPORT_Global 0x03
 
-int parse_magic_version(WasmModule *module, char **read_p);
-// int parse_type_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
+int skip_custom_section(const byte_t **read_p, const byte_t * const end_p);
+int parse_magic_version(const byte_t **read_p, const byte_t * const end_p);
+int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t * const end_p);
 // int parse_import_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p, Loader loader, Executor executor);
 // int parse_func_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 // int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
@@ -30,5 +31,7 @@ int parse_magic_version(WasmModule *module, char **read_p);
 // int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 // int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 // int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
+
+// TODO: name section
 
 #endif

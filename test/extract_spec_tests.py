@@ -10,22 +10,52 @@ def action_module(case_file: TextIO, command: dict) -> None:
     # Decode module
     case_file.write(
         f'/** module "{wasm_file}" */\n'
-        '{  // Load module\n'
+        '{\n'
         '  size_t bin_size = 0;\n'
-        f'  char* bin_data = load_file("{wasm_file}", &bin_size);\n'
+        f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
         '  if(bin_data == NULL){\n'
-        f'    fprintf(stderr, "error: cannot load module \'{wasm_file}\'\\n");\n'
+        f'    fprintf(stderr, "{wasm_file}: [Error] cannot load module\\n");\n'
         '    return -1;\n'
         '  }\n'
         '  wasm_module module = NULL;\n'
         '  if(module_decode(bin_data, bin_size, &module)){\n'
-        f'    fprintf(stderr, "error: cannot decode module \'{wasm_file}\'\\n");\n'
-        '    return -1;\n'
+        f'    fprintf(stderr, "{wasm_file}: [Failed] module should be able to decode\\n");\n'
+        '    result += 1;\n'
         '  }\n'
         '  module_free(module);\n'
         '}\n'
         '\n'
     )
+
+def action_assert_malformed(case_file: TextIO, command: dict) -> None:
+    if command["module_type"] == "binary":
+        # Get info
+        wasm_file = command["filename"]
+        expected_text = command["text"]
+        # Decode module
+        case_file.write(
+            f'/** assert_malformed module: {wasm_file} text: "{expected_text}"*/\n'
+            '{\n'
+            '  size_t bin_size = 0;\n'
+            f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
+            '  if(bin_data == NULL){\n'
+            f'    fprintf(stderr, "{wasm_file}: [Error] cannot load module\\n");\n'
+            '    return -1;\n'
+            '  }\n'
+            '  wasm_module module = NULL;\n'
+            '  if(module_decode(bin_data, bin_size, &module) == ERROR_success){\n'
+            f'    fprintf(stderr, "{wasm_file}: [Failed] should be malformed\\n");\n'
+            '    result += 1;\n'
+            '  }else{\n'
+            f'    if(strcmp(wasmvm_strerror(wasmvm_errno), "{expected_text}")){{\n'
+            f'      fprintf(stderr, "{wasm_file}: [Failed] expected message \'{expected_text}\', but got \'%s\'\\n", wasmvm_strerror(wasmvm_errno));\n'
+            '      result += 1;\n'
+            '    }\n'
+            '  }\n'
+            '  module_free(module);\n'
+            '}\n'
+            '\n'
+        )
 
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:
@@ -35,6 +65,7 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "#include <WasmVM.h>\n"
             "#include <helper.h>\n"
             "#include <stdio.h>\n"
+            "#include <string.h>\n"
             "\n"
             "int main(void){\n"
             "int result = 0;\n"
@@ -44,6 +75,8 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
         for command in case_json["commands"]:
             if command["type"] == "module":
                 action_module(case_file, command)
+            elif command["type"] == "assert_malformed":
+                action_assert_malformed(case_file, command)
 
         # Epilogue
         case_file.write(
