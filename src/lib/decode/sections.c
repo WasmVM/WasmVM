@@ -14,20 +14,20 @@
 #include "utils.h"
 // #include "parseInstr.h"
 
-// static int read_limits(WasmImport *import, uint8_t **ptr, const uint8_t *endAddr)
-// {
-//     if(**ptr == 0x01) {
-//         *ptr += 1;
-//         import->desc.limits.min = getLeb128_u32(ptr, endAddr);
-//         import->desc.limits.max = getLeb128_u32(ptr, endAddr);
-//     } else if(**ptr == 0x00) {
-//         *ptr += 1;
-//         import->desc.limits.min = getLeb128_u32(ptr, endAddr);
-//     } else {
-//         return -1;
-//     }
-//     return 0;
-// }
+static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p)
+{
+    if(**read_p == 0x01) {
+        *read_p += 1;
+        import->desc.limits.min = getLeb128_u32(read_p, end_p);
+        import->desc.limits.max = getLeb128_u32(read_p, end_p);
+    } else if(**read_p == 0x00) {
+        *read_p += 1;
+        import->desc.limits.min = getLeb128_u32(read_p, end_p);
+    } else {
+        return -1;
+    }
+    return 0;
+}
 
 int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
 {
@@ -153,95 +153,97 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
     return 0;
 }
 
-// int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
-// {
-//     if(**read_p == 2) {
-//         // Save original pointer
-//         const byte_t *origin_p = ++(*read_p);
-//         u32_t sectSize = getLeb128_u32(read_p, end_p);
-//         for(u32_t importIdx = 0; importIdx < importNum; ++importIdx) {
-//             WasmImport *newImport = (WasmImport*)malloc(sizeof(WasmImport));
-//             // Get Module Name length
-//             uint32_t depNameLen = getLeb128_u32(read_p, end_p);
-//             // Get Module Name
-//             char* depName = (char*) malloc(sizeof(char) * (depNameLen + 1));
-//             depName[depNameLen] = '\0';
-//             strncpy(depName, (char*)*read_p, depNameLen);
-//             *read_p += depNameLen;
-//             newImport->module = depName;
-//             // Get Name length
-//             uint32_t nameLen = getLeb128_u32(read_p, end_p);
-//             // Get name
-//             char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
-//             name[nameLen] = '\0';
-//             strncpy(name, (char*)*read_p, nameLen);
-//             *read_p += nameLen;
-//             newImport->name = name;
-//             // Load dependencies
-//             loader_addRequest(loader, new_LoaderRequest(newImport->module, (Component*)loader, executor));
-//             // import kind
-//             switch(*((*read_p)++)) {
-//                 case IMPORT_Func:
-//                     newImport->descType = Desc_Func;
-//                     newImport->desc.typeidx = getLeb128_u32(read_p, end_p);
-//                     break;
-//                 case IMPORT_Table:
-//                     if(*((*read_p)++) != TYPE_Table_anyfunc) {
-//                         return -2;
-//                     }
-//                     newImport->descType = Desc_Table;
-//                     if(read_limits(newImport, read_p, end_p)) {
-//                         return -3;
-//                     }
-//                     break;
-//                 case IMPORT_Mem:
-//                     newImport->descType = Desc_Mem;
-//                     if(read_limits(newImport, read_p, end_p)) {
-//                         return -4;
-//                     }
-//                     break;
-//                 case IMPORT_Global:
-//                     newImport->descType = Desc_Global;
-//                     switch (*((*read_p)++)) {
-//                         case TYPE_i32:
-//                             newImport->desc.global.valueType = Value_i32;
-//                             break;
-//                         case TYPE_i64:
-//                             newImport->desc.global.valueType = Value_i64;
-//                             break;
-//                         case TYPE_f32:
-//                             newImport->desc.global.valueType = Value_f32;
-//                             break;
-//                         case TYPE_f64:
-//                             newImport->desc.global.valueType = Value_f64;
-//                             break;
-//                         default:
-//                             return -5;
-//                     }
-//                     if((**read_p == 0x01) || (**read_p == 0x00)) {
-//                         newImport->desc.global.mut = **read_p;
-//                     } else {
-//                         return -6;
-//                     }
-//                     break;
-//                 default:
-//                     printf("%s: Unknown import type.\n", newModule->module_name);
-//                     return -1;
-//             }
-
-//             // push back into imports vector
-//             vector_push_back(newModule->imports, newImport);
-//         }
-
-//         // Check size
-//         i64_t offset = (i64_t)(*read_p - origin_p);
-//         if(offset != (sectSize + 1)) {
-//             wasmvm_errno = ERROR_sect_size_mis;
-//             return -1;
-//         }
-//     }
-//     return 0;
-// }
+int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    if(**read_p == 2) {
+        // Save original pointer
+        const byte_t *origin_p = ++(*read_p);
+        u32_t sectSize = getLeb128_u32(read_p, end_p);
+        // Allocate memory
+        u32_t importNum = getLeb128_u32(read_p, end_p);
+        module->imports.data = (WasmImport*)malloc_func(sizeof(WasmImport) * importNum);
+        module->imports.size = importNum;
+        // Get all imports
+        for(u32_t index = 0; index < importNum; ++index) {
+            WasmImport* import = module->imports.data + index;
+            // Get Module Name length
+            u32_t modNameLen = getLeb128_u32(read_p, end_p);
+            // Get Module Name
+            import->module = (char*) malloc_func(sizeof(char) * (modNameLen + 1));
+            import->module[modNameLen] = '\0';
+            memcpy_func(&(import->module), (const char*)*read_p, modNameLen);
+            *read_p += modNameLen;
+            // Get Name length
+            u32_t nameLen = getLeb128_u32(read_p, end_p);
+            // Get name
+            import->name = (char*) malloc_func(sizeof(char) * (nameLen + 1));
+            import->name[nameLen] = '\0';
+            memcpy_func(&(import->name), (const char*)*read_p, nameLen);
+            *read_p += nameLen;
+            // import kind
+            switch(*((*read_p)++)) {
+                case IMPORT_Func:
+                    import->descType = Desc_Func;
+                    import->desc.typeidx = getLeb128_u32(read_p, end_p);
+                    break;
+                case IMPORT_Table:
+                    if((*((*read_p)++) != REF_funcref) && (*((*read_p)++) != REF_externref)) {
+                        wasmvm_errno = ERROR_malform_import;
+                        return -1;
+                    }
+                    import->descType = Desc_Table;
+                    if(read_limits(import, read_p, end_p)) {
+                        wasmvm_errno = ERROR_malform_import;
+                        return -1;
+                    }
+                    break;
+                case IMPORT_Mem:
+                    import->descType = Desc_Mem;
+                    if(read_limits(import, read_p, end_p)) {
+                        wasmvm_errno = ERROR_malform_import;
+                        return -1;
+                    }
+                    break;
+                case IMPORT_Global:
+                    import->descType = Desc_Global;
+                    switch (*((*read_p)++)) {
+                        case TYPE_i32:
+                            import->desc.global.valueType = Value_i32;
+                            break;
+                        case TYPE_i64:
+                            import->desc.global.valueType = Value_i64;
+                            break;
+                        case TYPE_f32:
+                            import->desc.global.valueType = Value_f32;
+                            break;
+                        case TYPE_f64:
+                            import->desc.global.valueType = Value_f64;
+                            break;
+                        default:
+                            wasmvm_errno = ERROR_unknown_global;
+                            return -1;
+                    }
+                    if((**read_p == 0x01) || (**read_p == 0x00)) {
+                        import->desc.global.mut = **read_p;
+                    } else {
+                        wasmvm_errno = ERROR_unexpected_token;
+                        return -1;
+                    }
+                    break;
+                default:
+                    wasmvm_errno = ERROR_incomp_import;
+                    return -1;
+            }
+        }
+        // Check size
+        i64_t offset = (i64_t)(*read_p - origin_p);
+        if(offset != (sectSize + 1)) {
+            wasmvm_errno = ERROR_sect_size_mis;
+            return -1;
+        }
+    }
+    return 0;
+}
 
 // int parse_func_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {
