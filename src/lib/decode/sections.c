@@ -19,10 +19,19 @@ static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t *
     if(**read_p == 0x01) {
         *read_p += 1;
         import->desc.limits.min = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
         import->desc.limits.max = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
     } else if(**read_p == 0x00) {
         *read_p += 1;
         import->desc.limits.min = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
     } else {
         return -1;
     }
@@ -33,7 +42,11 @@ int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
 {
     if((*read_p < end_p) && (**read_p == 0x00)) {
         ++(*read_p);
-        *read_p += getLeb128_u32(read_p, end_p);
+        u32_t sect_size = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        *read_p += sect_size;
         // Check
         if(*read_p > end_p) {
             wasmvm_errno = ERROR_int_rep_too_long;
@@ -84,8 +97,14 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         // Save original pointer
         const byte_t *origin_p = ++(*read_p);
         u32_t sectSize = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
         // Allocate memory
         u32_t typeNum = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
         module->types.data = (FuncType*)malloc_func(sizeof(FuncType) * typeNum);
         module->types.size = typeNum;
         // Get all types
@@ -98,6 +117,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
             }
             // Params
             u32_t paramNum = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
             funcType->params.data = (ValueType*)malloc_func(sizeof(ValueType) * paramNum);
             funcType->params.size = paramNum;
             for(u32_t i = 0; i < paramNum; ++i, ++(*read_p)) {
@@ -121,6 +143,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
             }
             // Results
             u32_t resultNum = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
             funcType->results.data = (ValueType*)malloc_func(sizeof(ValueType) * resultNum);
             funcType->results.size = resultNum;
             for(u32_t i = 0; i < resultNum; ++i, ++(*read_p)) {
@@ -159,80 +184,100 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
         // Save original pointer
         const byte_t *origin_p = ++(*read_p);
         u32_t sectSize = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
         // Allocate memory
         u32_t importNum = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
         module->imports.data = (WasmImport*)malloc_func(sizeof(WasmImport) * importNum);
         module->imports.size = importNum;
         // Get all imports
         for(u32_t index = 0; index < importNum; ++index) {
-            WasmImport* import = module->imports.data + index;
-            // Get Module Name length
-            u32_t modNameLen = getLeb128_u32(read_p, end_p);
-            // Get Module Name
-            import->module = (char*) malloc_func(sizeof(char) * (modNameLen + 1));
-            import->module[modNameLen] = '\0';
-            memcpy_func(&(import->module), (const char*)*read_p, modNameLen);
-            *read_p += modNameLen;
-            // Get Name length
-            u32_t nameLen = getLeb128_u32(read_p, end_p);
-            // Get name
-            import->name = (char*) malloc_func(sizeof(char) * (nameLen + 1));
-            import->name[nameLen] = '\0';
-            memcpy_func(&(import->name), (const char*)*read_p, nameLen);
-            *read_p += nameLen;
-            // import kind
-            switch(*((*read_p)++)) {
-                case IMPORT_Func:
-                    import->descType = Desc_Func;
-                    import->desc.typeidx = getLeb128_u32(read_p, end_p);
-                    break;
-                case IMPORT_Table:
-                    if((*((*read_p)++) != REF_funcref) && (*((*read_p)++) != REF_externref)) {
-                        wasmvm_errno = ERROR_malform_import;
-                        return -1;
-                    }
-                    import->descType = Desc_Table;
-                    if(read_limits(import, read_p, end_p)) {
-                        wasmvm_errno = ERROR_malform_import;
-                        return -1;
-                    }
-                    break;
-                case IMPORT_Mem:
-                    import->descType = Desc_Mem;
-                    if(read_limits(import, read_p, end_p)) {
-                        wasmvm_errno = ERROR_malform_import;
-                        return -1;
-                    }
-                    break;
-                case IMPORT_Global:
-                    import->descType = Desc_Global;
-                    switch (*((*read_p)++)) {
-                        case TYPE_i32:
-                            import->desc.global.valueType = Value_i32;
-                            break;
-                        case TYPE_i64:
-                            import->desc.global.valueType = Value_i64;
-                            break;
-                        case TYPE_f32:
-                            import->desc.global.valueType = Value_f32;
-                            break;
-                        case TYPE_f64:
-                            import->desc.global.valueType = Value_f64;
-                            break;
-                        default:
-                            wasmvm_errno = ERROR_unknown_global;
-                            return -1;
-                    }
-                    if((**read_p == 0x01) || (**read_p == 0x00)) {
-                        import->desc.global.mut = **read_p;
-                    } else {
-                        wasmvm_errno = ERROR_unexpected_token;
-                        return -1;
-                    }
-                    break;
-                default:
-                    wasmvm_errno = ERROR_incomp_import;
+            if(read_p < end_p) {
+                WasmImport* import = module->imports.data + index;
+                // Get Module Name length
+                u32_t modNameLen = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
                     return -1;
+                }
+                // Get Module Name
+                import->module = (char*) malloc_func(sizeof(char) * (modNameLen + 1));
+                import->module[modNameLen] = '\0';
+                memcpy_func(&(import->module), (const char*)*read_p, modNameLen);
+                *read_p += modNameLen;
+                // Get Name length
+                u32_t nameLen = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                // Get name
+                import->name = (char*) malloc_func(sizeof(char) * (nameLen + 1));
+                import->name[nameLen] = '\0';
+                memcpy_func(&(import->name), (const char*)*read_p, nameLen);
+                *read_p += nameLen;
+                // import kind
+                switch(*((*read_p)++)) {
+                    case IMPORT_Func:
+                        import->descType = Desc_Func;
+                        import->desc.typeidx = getLeb128_u32(read_p, end_p);
+                        if(wasmvm_errno) {
+                            return -1;
+                        }
+                        break;
+                    case IMPORT_Table:
+                        if((*((*read_p)++) != REF_funcref) && (*((*read_p)++) != REF_externref)) {
+                            wasmvm_errno = ERROR_malform_import;
+                            return -1;
+                        }
+                        import->descType = Desc_Table;
+                        if(read_limits(import, read_p, end_p)) {
+                            wasmvm_errno = ERROR_malform_import;
+                            return -1;
+                        }
+                        break;
+                    case IMPORT_Mem:
+                        import->descType = Desc_Mem;
+                        if(read_limits(import, read_p, end_p)) {
+                            wasmvm_errno = ERROR_malform_import;
+                            return -1;
+                        }
+                        break;
+                    case IMPORT_Global:
+                        import->descType = Desc_Global;
+                        switch (*((*read_p)++)) {
+                            case TYPE_i32:
+                                import->desc.global.valueType = Value_i32;
+                                break;
+                            case TYPE_i64:
+                                import->desc.global.valueType = Value_i64;
+                                break;
+                            case TYPE_f32:
+                                import->desc.global.valueType = Value_f32;
+                                break;
+                            case TYPE_f64:
+                                import->desc.global.valueType = Value_f64;
+                                break;
+                            default:
+                                wasmvm_errno = ERROR_unknown_global;
+                                return -1;
+                        }
+                        if((**read_p == 0x01) || (**read_p == 0x00)) {
+                            import->desc.global.mut = **read_p;
+                        } else {
+                            wasmvm_errno = ERROR_unexpected_token;
+                            return -1;
+                        }
+                        break;
+                    default:
+                        wasmvm_errno = ERROR_incomp_import;
+                        return -1;
+                }
+            } else {
+                wasmvm_errno = ERROR_sect_size_mis;
+                return -1;
             }
         }
         // Check size

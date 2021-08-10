@@ -13,6 +13,7 @@
 
 int module_decode(const byte_t* data, const size_t data_size, WasmModule** module)
 {
+    wasmvm_errno = ERROR_success;
     // Allocate module memory
     if((*module = (WasmModule*)malloc_func(sizeof(WasmModule))) == NULL) {
         return -1;
