@@ -5,10 +5,10 @@
 #include <defines.h>
 #include <dataTypes/FuncType.h>
 #include <structures/WasmImport.h>
+#include <structures/WasmFunc.h>
 // #include <structures/WasmData.h>
 // #include <structures/WasmElem.h>
 // #include <structures/WasmExport.h>
-// #include <structures/WasmFunc.h>
 // #include <structures/WasmGlobal.h>
 // #include <structures/instrs/WasmInstr.h>
 // #include <structures/WasmMemory.h>
@@ -18,7 +18,7 @@ typedef struct module_t {
     // char*          modulename; // module_name: string, indicate name of module (aim to support import/export)
     vector_t(FuncType)   types;   // types:   Vector<FuncType>
     vector_t(WasmImport) imports; // imports: Vector<WasmImport>
-    // vector_p   funcs;      // funcs:   Vector<WasmFunc>
+    vector_t(WasmFunc)   funcs;   // funcs:   Vector<WasmFunc>
     // vector_p   tables;     // tables:  Vector<WasmTable>
     // vector_p   mems;       // mems:    Vector<WasmMemory>
     // vector_p   globals;    // globals: Vector<WasmGlobal>

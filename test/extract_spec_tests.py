@@ -19,7 +19,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '  }\n'
         '  wasm_module module = NULL;\n'
         '  if(module_decode(bin_data, bin_size, &module)){\n'
-        f'    fprintf(stderr, "{wasm_file}: [Failed] module should be able to decode\\n");\n'
+        f'    fprintf(stderr, "{wasm_file}: [Failed] failed decoding module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
         '    result += 1;\n'
         '  }\n'
         '  module_free(module);\n'
