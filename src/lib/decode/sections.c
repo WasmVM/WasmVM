@@ -282,7 +282,7 @@ int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *
     if(wasmvm_errno) {
         return -1;
     }
-    module->funcs.data = (WasmFunc*)malloc_func(sizeof(WasmImport) * funcNum);
+    module->funcs.data = (WasmFunc*)malloc_func(sizeof(WasmFunc) * funcNum);
     module->funcs.size = funcNum;
     // Get all funcs
     for(u32_t index = 0; index < funcNum; ++index) {
@@ -294,34 +294,51 @@ int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *
     SECTION_EPILOGUE
 }
 
-// int parse_table_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(4, read_p, end_p) == 4) {
-//         for(uint32_t tableNum = getLeb128_u32(read_p, end_p); tableNum > 0; --tableNum) {
-//             if(tableNum > 1) {
-//                 printf("%s: There's only one table allowed currently.\n", newModule->module_name);
-//                 return -1;
-//             }
+int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(4)
+    // Allocate memory
+    u32_t tableNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->tables.data = (WasmTable*)malloc_func(sizeof(WasmTable) * tableNum);
+    module->tables.size = tableNum;
+    // Get all tables
+    for(u32_t index = 0; index < tableNum; ++index) {
+        // Only one table supported
+        if(tableNum > 1) {
+            wasmvm_errno = ERROR_multi_table;
+            return -1;
+        }
 
-//             // create WasmTable instance
-//             WasmTable *newTable = (WasmTable*)malloc(sizeof(WasmTable));
-//             newTable->elemType = *((*read_p)++);
-//             if(newTable->elemType != TYPE_Table_anyfunc) {
-//                 printf("%s: Only anyfunc is allowed in table currently.\n", newModule->module_name);
-//                 return -2;
-//             }
-//             uint8_t flags = *((*read_p)++);
-//             newTable->min = getLeb128_u32(read_p, end_p);
-//             if(flags == 1) {
-//                 newTable->max = getLeb128_u32(read_p, end_p);
-//             }
-
-//             // Push into newModule
-//             vector_push_back(newModule->tables, newTable);
-//         }
-//     }
-//     return 0;
-// }
+        // Create WasmTable instance
+        byte_t refCode = *((*read_p)++);
+        if(refCode == REF_funcref) {
+            module->tables.data[index].refType = Ref_func;
+        } else if(refCode == REF_externref) {
+            module->tables.data[index].refType = Ref_extern;
+        } else {
+            wasmvm_errno = ERROR_unknown_table;
+            return -1;
+        }
+        byte_t flags = *((*read_p)++);
+        module->tables.data[index].min = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        if(flags == 1) {
+            module->tables.data[index].max = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+        } else {
+            module->tables.data[index].max = 0;
+        }
+    }
+    SECTION_EPILOGUE
+    return 0;
+}
 
 // int parse_memory_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {

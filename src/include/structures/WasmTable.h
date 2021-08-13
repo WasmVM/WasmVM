@@ -1,12 +1,13 @@
 #ifndef WASMVM_STRUCTURE_TABLE
 #define WASMVM_STRUCTURE_TABLE
 
-#include <stdint.h>
+#include <defines.h>
+#include <dataTypes/RefType.h>
 
-typedef struct _wasm_table {
-    uint32_t    min;
-    uint32_t    max;
-    uint32_t    elemType;
+typedef struct {
+    u32_t    min;
+    u32_t    max;
+    RefType  refType;
 } WasmTable;
 
 #endif
