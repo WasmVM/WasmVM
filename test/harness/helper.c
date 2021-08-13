@@ -22,7 +22,7 @@ byte_t* load_file(const char* filename, size_t* size)
         return NULL;
     }
     // Allocate data memory
-    char* data = malloc(*size);
+    byte_t* data = malloc(*size);
     if(data == NULL) {
         return NULL;
     }
