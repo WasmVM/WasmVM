@@ -23,9 +23,9 @@ typedef struct module_t {
     vector_t(WasmMemory) mems;    // mems:    Vector<WasmMemory>
     vector_t(WasmGlobal) globals; // globals: Vector<WasmGlobal>
     vector_t(WasmExport) exports; // exports: Vector<WasmExport>
+    u32_t   start;                // start:   u32_t
     // vector_p   elems;      // elems: Vector<WasmElem>
     // vector_p   datas;      // datas: Vector<WasmData>
-    u32_t   start;                  // start:   u32_t
 } WasmModule;
 
 // WasmModule* new_WasmModule(char* module_name);

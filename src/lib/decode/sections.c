@@ -482,7 +482,7 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
         // Get name
         char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
         name[nameLen] = '\0';
-        memcpy_func(&name, *read_p, nameLen);
+        memcpy_func(&name, (const char*)*read_p, nameLen);
         *read_p += nameLen;
 
         // Export type
@@ -513,13 +513,15 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
     SECTION_EPILOGUE
 }
 
-// int parse_start_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(8, read_p, end_p) == 8) {
-//         newModule->start = getLeb128_u32(read_p, end_p);
-//     }
-//     return 0;
-// }
+int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(8)
+    module->start = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    SECTION_EPILOGUE
+}
 
 // int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {

@@ -29,7 +29,7 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
 int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
-// int parse_start_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
+int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 // int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 // int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
 // int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p);
