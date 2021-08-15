@@ -3,10 +3,11 @@
 
 #include <dataTypes/Value.h>
 
-typedef struct _wasm_global {
+typedef struct {
     _Bool       mut;
     ValueType   valType;
     Value       init;
+    // TODO: global.get init
 } WasmGlobal;
 
 #endif

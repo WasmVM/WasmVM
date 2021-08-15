@@ -9,7 +9,7 @@
 #include <defines.h>
 #include <error.h>
 #include <dataTypes/vector_t.h>
-// #include <Opcodes.h>
+#include <Opcodes.h>
 
 #include "utils.h"
 // #include "parseInstr.h"
@@ -263,7 +263,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                     }
                     break;
                 default:
-                    wasmvm_errno = ERROR_incomp_import;
+                    wasmvm_errno = ERROR_malform_import;
                     return -1;
             }
         } else {
@@ -337,87 +337,130 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
         }
     }
     SECTION_EPILOGUE
-    return 0;
 }
 
-// int parse_memory_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(5, read_p, end_p) == 5) {
-//         for(uint32_t memNum = getLeb128_u32(read_p, end_p); memNum > 0; --memNum) {
-//             if(memNum > 1) {
-//                 printf("%s: There's only one memory allowed currently.\n", newModule->module_name);
-//                 return -1;
-//             }
+int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(5)
+    // Allocate memory
+    u32_t memNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->mems.data = (WasmMemory*)malloc_func(sizeof(WasmMemory) * memNum);
+    module->tables.size = memNum;
+    // Get all memories
+    for(u32_t index = 0; index < memNum; ++index) {
+        // Only one memory supported
+        if(memNum > 1) {
+            wasmvm_errno = ERROR_multi_mem;
+            return -1;
+        }
 
-//             WasmMemory *newMem = (WasmMemory*)malloc(sizeof(WasmMemory));
-//             uint8_t flags = *((*read_p)++);
-//             newMem->min = getLeb128_u32(read_p, end_p);
-//             if(flags == 1) {
-//                 newMem->max = getLeb128_u32(read_p, end_p);
-//             }
+        // Create WasmMemory instance
+        byte_t flags = *((*read_p)++);
+        module->mems.data[index].min = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        if(flags == 1) {
+            module->mems.data[index].max = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+        } else {
+            module->mems.data[index].max = 0;
+        }
+    }
+    SECTION_EPILOGUE
+}
 
-//             vector_push_back(newModule->mems, newMem);
-//         }
-//     }
-//     return 0;
-// }
-
-// int parse_global_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(6, read_p, end_p) == 6) {
-//         for(uint32_t globalNum = getLeb128_u32(read_p, end_p); globalNum > 0; --globalNum) {
-//             WasmGlobal *newGlobal = (WasmGlobal*)malloc(sizeof(WasmGlobal));
-//             switch(*((*read_p)++)) {
-//                 case TYPE_i32:
-//                     newGlobal->valType = Value_i32;
-//                     break;
-//                 case TYPE_i64:
-//                     newGlobal->valType = Value_i64;
-//                     break;
-//                 case TYPE_f32:
-//                     newGlobal->valType = Value_f32;
-//                     break;
-//                 case TYPE_f64:
-//                     newGlobal->valType = Value_f64;
-//                     break;
-//                 default:
-//                     printf("%s: Unknown global value type.\n", newModule->module_name);
-//                     return -1;
-//             }
-//             // Set mut
-//             newGlobal->mut = *((*read_p)++);
-//             // Set value
-//             switch(*((*read_p)++)) {
-//                 case Op_i32_const:
-//                     newGlobal->init.type = Value_i32;
-//                     newGlobal->init.value.i32 = (int32_t)getLeb128_i32(read_p, end_p);
-//                     break;
-//                 case Op_i64_const:
-//                     newGlobal->init.type = Value_i64;
-//                     newGlobal->init.value.i64 = (int64_t)getLeb128_i64(read_p, end_p);
-//                     break;
-//                 case Op_f32_const:
-//                     newGlobal->init.type = Value_f32;
-//                     newGlobal->init.value.u32 = toLittle32(*((uint32_t*)*read_p), 0);
-//                     *read_p += 4;
-//                     break;
-//                 case Op_f64_const:
-//                     newGlobal->init.type = Value_f64;
-//                     newGlobal->init.value.u64 = toLittle64(*((uint64_t*)*read_p), 0);
-//                     *read_p += 8;
-//                     break;
-//                 default:
-//                     printf("%s: Global must be initialized with a constant expression.\n", newModule->module_name);
-//                     return -2;
-//             }
-//             // Skip end
-//             *read_p += 1;
-//             // Push into newModule
-//             vector_push_back(newModule->globals,newGlobal);
-//         }
-//     }
-//     return 0;
-// }
+int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(6)
+    // Allocate memory
+    u32_t globalNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->globals.data = (WasmGlobal*)malloc_func(sizeof(WasmGlobal) * globalNum);
+    module->globals.size = globalNum;
+    // Get all globals
+    for(u32_t index = 0; index < globalNum; ++index) {
+        WasmGlobal* newGlobal = module->globals.data + index;
+        switch(*((*read_p)++)) {
+            case TYPE_i32:
+                newGlobal->valType = Value_i32;
+                break;
+            case TYPE_i64:
+                newGlobal->valType = Value_i64;
+                break;
+            case TYPE_f32:
+                newGlobal->valType = Value_f32;
+                break;
+            case TYPE_f64:
+                newGlobal->valType = Value_f64;
+                break;
+            case REF_funcref:
+                newGlobal->valType = Value_funcref;
+                break;
+            case REF_externref:
+                newGlobal->valType = Value_externref;
+                break;
+            default:
+                wasmvm_errno = ERROR_unknown_global;
+                return -1;
+        }
+        // Set mut
+        byte_t mut = *((*read_p)++);
+        if((mut != 0x00) && (mut != 0x01)) {
+            wasmvm_errno = ERROR_malform_mut;
+            return -1;
+        }
+        newGlobal->mut = mut;
+        // Set value
+        switch(*((*read_p)++)) {
+            case Op_i32_const:
+                newGlobal->init.type = Value_i32;
+                newGlobal->init.value.i32 = (i32_t)getLeb128_i32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                break;
+            case Op_i64_const:
+                newGlobal->init.type = Value_i64;
+                newGlobal->init.value.i64 = (i32_t)getLeb128_i64(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                break;
+            case Op_f32_const:
+                newGlobal->init.type = Value_f32;
+                newGlobal->init.value.u32 = toLittle32(*((u32_t*)*read_p), 0);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                *read_p += 4;
+                break;
+            case Op_f64_const:
+                newGlobal->init.type = Value_f64;
+                newGlobal->init.value.u64 = toLittle64(*((u64_t*)*read_p), 0);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                *read_p += 8;
+                break;
+            default:
+                wasmvm_errno = ERROR_req_const_expr;
+                return -1;
+        }
+        // Skip end
+        if(*((*read_p)++) != Op_end) {
+            wasmvm_errno = ERROR_unknown_global;
+        }
+    }
+    SECTION_EPILOGUE
+}
 
 // int parse_export_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {

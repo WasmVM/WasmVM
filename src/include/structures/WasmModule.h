@@ -7,12 +7,12 @@
 #include <structures/WasmImport.h>
 #include <structures/WasmFunc.h>
 #include <structures/WasmTable.h>
+#include <structures/WasmMemory.h>
+#include <structures/WasmGlobal.h>
 // #include <structures/WasmData.h>
 // #include <structures/WasmElem.h>
 // #include <structures/WasmExport.h>
-// #include <structures/WasmGlobal.h>
 // #include <structures/instrs/WasmInstr.h>
-// #include <structures/WasmMemory.h>
 
 typedef struct module_t {
     // char*          modulename; // module_name: string, indicate name of module (aim to support import/export)
@@ -20,8 +20,8 @@ typedef struct module_t {
     vector_t(WasmImport) imports; // imports: Vector<WasmImport>
     vector_t(WasmFunc)   funcs;   // funcs:   Vector<WasmFunc>
     vector_t(WasmTable)  tables;  // tables:  Vector<WasmTable>
-    // vector_p   mems;       // mems:    Vector<WasmMemory>
-    // vector_p   globals;    // globals: Vector<WasmGlobal>
+    vector_t(WasmMemory) mems;    // mems:    Vector<WasmMemory>
+    vector_t(WasmGlobal) globals; // globals: Vector<WasmGlobal>
     // vector_p   elems;      // elems: Vector<WasmElem>
     // vector_p   datas;      // datas: Vector<WasmData>
     u32_t   start;                  // start:   u32_t

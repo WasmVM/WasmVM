@@ -52,6 +52,30 @@ int module_decode(const byte_t* data, const size_t data_size, WasmModule** modul
         return -1;
     }
 
+    // Section 4: Table
+    if(skip_custom_section(&read_p, end_p)) {
+        return -1;
+    }
+    if(parse_table_section(*module, &read_p, end_p)) {
+        return -1;
+    }
+
+    // Section 5: Memory
+    if(skip_custom_section(&read_p, end_p)) {
+        return -1;
+    }
+    if(parse_memory_section(*module, &read_p, end_p)) {
+        return -1;
+    }
+
+    // Section 6: Global
+    if(skip_custom_section(&read_p, end_p)) {
+        return -1;
+    }
+    if(parse_global_section(*module, &read_p, end_p)) {
+        return -1;
+    }
+
     // Malformed section num
     if((read_p < end_p) && (*read_p >= 12)) {
         wasmvm_errno = ERROR_malform_sec_id;

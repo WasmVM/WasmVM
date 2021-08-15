@@ -1,11 +1,11 @@
 #ifndef WASMVM_STRUCTURE_MEMORY
 #define WASMVM_STRUCTURE_MEMORY
 
-#include <stdint.h>
+#include <defines.h>
 
-typedef struct _wasm_memory {
-    uint32_t    min;
-    uint32_t    max;
+typedef struct {
+    u32_t    min;
+    u32_t    max;
 } WasmMemory;
 
 #endif

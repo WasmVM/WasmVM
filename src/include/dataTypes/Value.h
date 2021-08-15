@@ -9,7 +9,9 @@ typedef enum {
     Value_i32,
     Value_i64,
     Value_f32,
-    Value_f64
+    Value_f64,
+    Value_funcref,
+    Value_externref,
 } ValueType;
 
 typedef struct {
@@ -22,6 +24,7 @@ typedef struct {
         u64_t u64;
         f32_t f32;
         f64_t f64;
+        void* ref;
     } value;
 } Value;
 
