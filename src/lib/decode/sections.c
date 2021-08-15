@@ -462,43 +462,56 @@ int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t
     SECTION_EPILOGUE
 }
 
-// int parse_export_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(7, read_p, end_p) == 7) {
-//         for(uint32_t exportNum = getLeb128_u32(read_p, end_p); exportNum > 0; --exportNum) {
-//             // Get name length
-//             uint32_t nameLen = getLeb128_u32(read_p, end_p);
-//             // Get name
-//             char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
-//             name[nameLen] = '\0';
-//             strncpy(name, (char*)*read_p, nameLen);
-//             *read_p += nameLen;
+int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(7)
+    // Allocate memory
+    u32_t exportNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->exports.data = (WasmExport*)malloc_func(sizeof(WasmExport) * exportNum);
+    module->exports.size = exportNum;
+    for(u32_t index = 0; index < exportNum; ++index) {
+        WasmExport* newExport = module->exports.data + index;
+        // Get name length
+        u32_t nameLen = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        // Get name
+        char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
+        name[nameLen] = '\0';
+        memcpy_func(&name, *read_p, nameLen);
+        *read_p += nameLen;
 
-//             // Export kind
-//             DescType descType = Desc_Unspecified;
-//             switch(*((*read_p)++)) {
-//                 case IMPORT_Func:
-//                     descType = Desc_Func;
-//                     break;
-//                 case IMPORT_Table:
-//                     descType = Desc_Table;
-//                     break;
-//                 case IMPORT_Mem:
-//                     descType = Desc_Mem;
-//                     break;
-//                 case IMPORT_Global:
-//                     descType = Desc_Global;
-//                     break;
-//                 default:
-//                     printf("%s: Unknown export type.\n", newModule->module_name);
-//                     return -1;
-//             }
-//             // Push into export list_p
-//             vector_push_back(newModule->exports, new_WasmExport(name, descType, getLeb128_u32(read_p, end_p)));
-//         }
-//     }
-//     return 0;
-// }
+        // Export type
+        newExport->descType = Desc_Unspecified;
+        switch(*((*read_p)++)) {
+            case IMPORT_Func:
+                newExport->descType = Desc_Func;
+                break;
+            case IMPORT_Table:
+                newExport->descType = Desc_Table;
+                break;
+            case IMPORT_Mem:
+                newExport->descType = Desc_Mem;
+                break;
+            case IMPORT_Global:
+                newExport->descType = Desc_Global;
+                break;
+            default:
+                wasmvm_errno = ERROR_type_mis;
+                return -1;
+        }
+        // Export index
+        newExport->descIdx = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+    }
+    SECTION_EPILOGUE
+}
 
 // int parse_start_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {
