@@ -10,8 +10,8 @@
 #include <structures/WasmMemory.h>
 #include <structures/WasmGlobal.h>
 #include <structures/WasmExport.h>
+#include <structures/WasmElem.h>
 // #include <structures/WasmData.h>
-// #include <structures/WasmElem.h>
 // #include <structures/instrs/WasmInstr.h>
 
 typedef struct module_t {
@@ -24,7 +24,7 @@ typedef struct module_t {
     vector_t(WasmGlobal) globals; // globals: Vector<WasmGlobal>
     vector_t(WasmExport) exports; // exports: Vector<WasmExport>
     u32_t   start;                // start:   u32_t
-    // vector_p   elems;      // elems: Vector<WasmElem>
+    vector_t(WasmElem)   elems;   // elems: Vector<WasmElem>
     // vector_p   datas;      // datas: Vector<WasmData>
 } WasmModule;
 

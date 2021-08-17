@@ -1,18 +1,31 @@
 #ifndef WASMVM_STRUCTURE_ELEM
 #define WASMVM_STRUCTURE_ELEM
 
-#include <stdint.h>
+#include <defines.h>
 #include <dataTypes/Value.h>
-#include <dataTypes/vector_p.h>
+#include <dataTypes/vector_t.h>
+#include <dataTypes/ConstExpr.h>
 
-typedef struct _wasm_elem {
-    uint32_t    table;
-    Value       offset;
-    vector_p     init;       // uint32_t
+typedef enum {
+    Elem_unspecified = 0,
+    Elem_passive,
+    Elem_active,
+    Elem_declarative,
+} ElemModeType;
+
+typedef struct {
+    ValueType           type;
+    vector_t(ConstExpr) init;
+    struct {
+        ElemModeType type;
+        u32_t        tableidx;
+        ConstExpr    offset;
+    } mode;
+
 } WasmElem;
 
-WasmElem* new_WasmElem();
-void clean_WasmElem(WasmElem *thisWasmElem);
-void free_WasmElem(WasmElem *thisWasmElem);
+// WasmElem* new_WasmElem();
+// void clean_WasmElem(WasmElem *thisWasmElem);
+// void free_WasmElem(WasmElem *thisWasmElem);
 
 #endif

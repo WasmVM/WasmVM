@@ -1,13 +1,12 @@
 #ifndef WASMVM_STRUCTURE_GLOBAL
 #define WASMVM_STRUCTURE_GLOBAL
 
-#include <dataTypes/Value.h>
+#include <dataTypes/ConstExpr.h>
 
 typedef struct {
     _Bool       mut;
     ValueType   valType;
-    Value       init;
-    // TODO: global.get init
+    ConstExpr   init;
 } WasmGlobal;
 
 #endif

@@ -56,6 +56,58 @@ static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t *
     return 0;
 }
 
+static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t * const end_p)
+{
+    switch(*((*read_p)++)) {
+        case Op_i32_const:
+            expr->type = Const_Value;
+            expr->value.type = Value_i32;
+            expr->value.value.i32 = (i32_t)getLeb128_i32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        case Op_i64_const:
+            expr->type = Const_Value;
+            expr->value.type = Value_i64;
+            expr->value.value.i64 = (i32_t)getLeb128_i64(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        case Op_f32_const:
+            expr->type = Const_Value;
+            expr->value.type = Value_f32;
+            expr->value.value.f32 = toLittle32(*((u32_t*)*read_p), 0);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            *read_p += 4;
+            break;
+        case Op_f64_const:
+            expr->type = Const_Value;
+            expr->value.type = Value_f64;
+            expr->value.value.f64 = toLittle64(*((u64_t*)*read_p), 0);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            *read_p += 8;
+            break;
+        case Op_get_global:
+            expr->type = Const_GlobalIndex;
+            expr->value.type = Value_i32;
+            expr->value.value.u32 = (u32_t)getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        default:
+            wasmvm_errno = ERROR_req_const_expr;
+            return -1;
+    }
+    return 0;
+}
+
 int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
 {
     SECTION_PROLOGUE(0)
@@ -419,40 +471,8 @@ int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t
         }
         newGlobal->mut = mut;
         // Set value
-        switch(*((*read_p)++)) {
-            case Op_i32_const:
-                newGlobal->init.type = Value_i32;
-                newGlobal->init.value.i32 = (i32_t)getLeb128_i32(read_p, end_p);
-                if(wasmvm_errno) {
-                    return -1;
-                }
-                break;
-            case Op_i64_const:
-                newGlobal->init.type = Value_i64;
-                newGlobal->init.value.i64 = (i32_t)getLeb128_i64(read_p, end_p);
-                if(wasmvm_errno) {
-                    return -1;
-                }
-                break;
-            case Op_f32_const:
-                newGlobal->init.type = Value_f32;
-                newGlobal->init.value.u32 = toLittle32(*((u32_t*)*read_p), 0);
-                if(wasmvm_errno) {
-                    return -1;
-                }
-                *read_p += 4;
-                break;
-            case Op_f64_const:
-                newGlobal->init.type = Value_f64;
-                newGlobal->init.value.u64 = toLittle64(*((u64_t*)*read_p), 0);
-                if(wasmvm_errno) {
-                    return -1;
-                }
-                *read_p += 8;
-                break;
-            default:
-                wasmvm_errno = ERROR_req_const_expr;
-                return -1;
+        if(parse_const_expr(&(newGlobal->init), read_p, end_p)) {
+            return -1;
         }
         // Skip end
         if(*((*read_p)++) != Op_end) {
@@ -523,38 +543,103 @@ int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t 
     SECTION_EPILOGUE
 }
 
-// int parse_element_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(9, read_p, end_p) == 9) {
-//         for(uint32_t elemNum = getLeb128_u32(read_p, end_p); elemNum > 0; --elemNum) {
-//             WasmElem *newElem = new_WasmElem();
-//             // Index
-//             newElem->table = getLeb128_u32(read_p, end_p);
-//             if(newElem->table) {
-//                 printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
-//                 return -1;
-//             }
-//             // Offset
-//             if(*((*read_p)++) == Op_i32_const) {
-//                 newElem->offset.type = Value_i32;
-//                 newElem->offset.value.i32 = getLeb128_i32(read_p, end_p);
-//             } else {
-//                 printf("%s: Element offset must be an i32.const expression.\n", newModule->module_name);
-//                 return -2;
-//             }
-//             // Skip end
-//             *read_p += 1;
-//             // Init
-//             for(uint32_t initNum = getLeb128_u32(read_p, end_p); initNum > 0; --initNum) {
-//                 uint32_t initIndex = getLeb128_u32(read_p, end_p);
-//                 vector_push_back(newElem->init, &initIndex);
-//             }
-//             // Push into newModule
-//             vector_push_back(newModule->elems, newElem);
-//         }
-//     }
-//     return 0;
-// }
+int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(9)
+    // Allocate memory
+    u32_t elemNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->elems.data = (WasmElem*)malloc_func(sizeof(WasmElem) * elemNum);
+    module->elems.size = elemNum;
+    // Get all elems
+    for(u32_t index = 0; index < elemNum; ++index) {
+        WasmElem *newElem = module->elems.data + index;
+        // Initial byte
+        byte_t initByte = *((*read_p)++);
+        // Mode
+        if(initByte & 0x01) {
+            if(initByte & 0x02) {
+                newElem->mode.type = Elem_declarative;
+            } else {
+                newElem->mode.type = Elem_passive;
+            }
+        } else {
+            newElem->mode.type = Elem_active;
+            if(initByte & 0x02) {
+                // Explicit table index
+                newElem->mode.tableidx = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+            } else {
+                newElem->type = Value_funcref;
+            }
+            // offset
+            if(parse_const_expr(&(newElem->mode.offset), read_p, end_p)) {
+                return -1;
+            }
+        }
+        // Init
+        if(initByte & 0x04) {
+            // Funcidx
+            if(initByte & 0x03) {
+                if(*((*read_p)++) != 0x00) {
+                    // Elemkind should be 0x00 now
+                    wasmvm_errno = ERROR_undefined_elem;
+                    return -1;
+                }
+                newElem->type = Value_funcref;
+            }
+            // Allocate vector
+            u32_t idxNum = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
+            newElem->init.size = idxNum;
+            // Get funcIdx
+            for(u32_t idx = 0; idx < idxNum; ++idx) {
+                newElem->init.data[idx].type = Const_Value;
+                newElem->init.data[idx].value.type = Value_i32;
+                newElem->init.data[idx].value.value.u32 = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+            }
+        } else {
+            // Expr
+            if(initByte & 0x03) {
+                switch (*((*read_p)++)) {
+                    case REF_funcref:
+                        newElem->type = Value_funcref;
+                        break;
+                    case REF_externref:
+                        newElem->type = Value_externref;
+                        break;
+                    default:
+                        wasmvm_errno = ERROR_undefined_elem;
+                        return -1;
+                }
+            }
+            // Allocate vector
+            u32_t idxNum = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
+            newElem->init.size = idxNum;
+            // Get expr
+            for(u32_t idx = 0; idx < idxNum; ++idx) {
+                if(parse_const_expr(newElem->init.data + idx, read_p, end_p)) {
+                    return -1;
+                }
+            }
+        }
+    }
+    SECTION_EPILOGUE
+}
 
 // int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {
