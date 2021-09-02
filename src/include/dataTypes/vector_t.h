@@ -4,8 +4,8 @@
 #include <defines.h>
 
 #define vector_t(T) struct { \
-    T* data; \
     unsigned int size; \
+    T* data; \
 }
 
 #define free_vector(V) free_func(V.data)
