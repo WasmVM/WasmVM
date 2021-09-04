@@ -93,7 +93,7 @@ static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t
             }
             *read_p += 8;
             break;
-        case Op_get_global:
+        case Op_global_get:
             expr->type = Const_GlobalIndex;
             expr->value.type = Value_i32;
             expr->value.value.u32 = (u32_t)getLeb128_u32(read_p, end_p);

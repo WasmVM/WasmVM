@@ -33,11 +33,13 @@
 #define Op_drop                 0x1A
 #define Op_select               0x1B
 
-#define Op_get_local            0x20
-#define Op_set_local            0x21
-#define Op_tee_local            0x22
-#define Op_get_global           0x23
-#define Op_set_global           0x24
+#define Op_local_get            0x20
+#define Op_local_set            0x21
+#define Op_local_tee            0x22
+#define Op_global_get           0x23
+#define Op_global_set           0x24
+#define Op_table_get            0x25
+#define Op_table_set            0x26
 
 #define Op_i32_load		        0x28
 #define Op_i64_load		        0x29
@@ -191,5 +193,29 @@
 #define Op_i64_reinterpret_f64	0xBD
 #define Op_f32_reinterpret_i32	0xBE
 #define Op_f64_reinterpret_i64	0xBF
+
+#define Op_ref_null             0xD0
+#define Op_ref_is_null          0xD1
+#define Op_ref_func             0xD2
+
+// Prefixed with 0xFC
+#define Op_i32_trunc_sat_f32_s  0x00
+#define Op_i32_trunc_sat_f32_u  0x01
+#define Op_i32_trunc_sat_f64_s  0x02
+#define Op_i32_trunc_sat_f64_u  0x03
+#define Op_i64_trunc_sat_f32_s  0x04
+#define Op_i64_trunc_sat_f32_u  0x05
+#define Op_i64_trunc_sat_f64_s  0x06
+#define Op_i64_trunc_sat_f64_u  0x07
+#define Op_memory_init          0x08
+#define Op_data_drop            0x09
+#define Op_memory_copy          0x0A
+#define Op_memory_fill          0x0B
+#define Op_table_init           0x0C
+#define Op_elem_drop            0x0D
+#define Op_table_copy           0x0E
+#define Op_table_grow           0x0F
+#define Op_table_size           0x10
+#define Op_table_fill           0x11
 
 #endif
