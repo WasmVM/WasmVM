@@ -12,7 +12,7 @@
 #include <Opcodes.h>
 
 #include "utils.h"
-// #include "parseInstr.h"
+#include "parseFuncBody.h"
 
 #define SECTION_PROLOGUE(ID)  \
     if((*read_p < end_p) && (**read_p == ID)) { \
@@ -641,53 +641,70 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
     SECTION_EPILOGUE
 }
 
-// int parse_code_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(10, read_p, end_p) == 10) {
-//         uint32_t codeNum = getLeb128_u32(read_p, end_p);
-//         if(codeNum != vector_size(newModule->funcs)) {
-//             printf("%s: Code count doesn't match function count.\n", newModule->module_name);
-//             return -1;
-//         }
-//         for(uint32_t i = 0; i < codeNum; ++i) {
-//             uint8_t* bodyEnd = *read_p + getLeb128_u32(read_p, end_p);
-//             WasmFunc *func = vector_at(WasmFunc*, newModule->funcs, i);
-//             // Locals
-//             for(uint32_t localCount = getLeb128_u32(read_p, end_p); localCount > 0; --localCount) {
-//                 uint32_t typeCount = getLeb128_u32(read_p, end_p);
-//                 ValueType newType;
-//                 switch(*((*read_p)++)) {
-//                     case TYPE_i32:
-//                         newType = Value_i32;
-//                         break;
-//                     case TYPE_i64:
-//                         newType = Value_i64;
-//                         break;
-//                     case TYPE_f32:
-//                         newType = Value_f32;
-//                         break;
-//                     case TYPE_f64:
-//                         newType = Value_f64;
-//                         break;
-//                     default:
-//                         printf("%s: Unknown local type.\n", newModule->module_name);
-//                         return -2;
-//                 }
-//                 while(typeCount-- > 0) {
-//                     vector_push_back(func->locals, &newType);
-//                 }
-//             }
-//             // Code
-//             while(*read_p != bodyEnd) {
-//                 if(parseInstr(func, read_p, end_p)) {
-//                     return -3;
-//                 }
-//             }
-//             (*read_p)++;
-//         }
-//     }
-//     return 0;
-// }
+int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(9)
+    // Allocate memory
+    u32_t codeNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    // Check if code size match func size
+    if(codeNum != module->funcs.size) {
+        wasmvm_errno = ERROR_inconsist_func;
+        return -1;
+    }
+    // Parse all codes
+    for(u32_t index = 0; index < codeNum; ++index) {
+        // code size
+        u32_t codeSize = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        const byte_t* bodyEnd = *read_p + codeSize;
+        WasmFunc *func = module->funcs.data + index;
+        func->locals.size = 0;
+        // Locals
+        u32_t localSize = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        for(u32_t localIdx = 0; localIdx < localSize; ++localIdx) {
+            // Type count
+            u32_t typeCount = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            ValueType type;
+            switch(*((*read_p)++)) {
+                case TYPE_i32:
+                    type = Value_i32;
+                    break;
+                case TYPE_i64:
+                    type = Value_i64;
+                    break;
+                case TYPE_f32:
+                    type = Value_f32;
+                    break;
+                case TYPE_f64:
+                    type = Value_f64;
+                    break;
+                default:
+                    wasmvm_errno = ERROR_unknown_type;
+                    return -1;
+            }
+            for(u32_t typeIdx = 0; typeIdx < typeCount; ++typeIdx) {
+                func->locals.data[func->locals.size + typeIdx] = type;
+            }
+            func->locals.size += typeCount;
+        }
+        // Body
+        if(parseFuncBody(func, read_p, bodyEnd)) {
+            return -1;
+        }
+    }
+    SECTION_EPILOGUE
+}
 
 // int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
 // {

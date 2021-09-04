@@ -68,6 +68,7 @@ add_library(WasmVM
     decode/decode.c
     decode/sections.c
     decode/utils.c
+    decode/parseFuncBody.c
     error.c
     defines.c
     WasmVM.c

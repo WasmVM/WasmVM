@@ -1,6 +1,20 @@
 #ifndef WASMVM_OPCODES_DEF
 #define WASMVM_OPCODES_DEF
 
+#define TYPE_i32 0x7F
+#define TYPE_i64 0x7E
+#define TYPE_f32 0x7D
+#define TYPE_f64 0x7C
+#define TYPE_Func 0x60
+
+#define IMPORT_Func 0x00
+#define IMPORT_Table 0x01
+#define IMPORT_Mem 0x02
+#define IMPORT_Global 0x03
+
+#define REF_funcref 0x70
+#define REF_externref 0x6F
+
 #define Op_unreachable          0x00
 #define Op_nop                  0x01
 #define Op_block                0x02
