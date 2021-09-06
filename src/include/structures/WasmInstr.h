@@ -6,7 +6,7 @@
 #include <dataTypes/vector_t.h>
 
 typedef struct {
-    u8_t opcode;
+    u16_t opcode;
     union {
         struct {
             Value value;

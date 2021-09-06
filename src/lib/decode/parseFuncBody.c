@@ -78,7 +78,7 @@ int parseControlInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **re
                 }
             }
             break;
-        case Op_call_indirect: {
+        case Op_call_indirect:
             // typeidx
             instr->imm.values.index = getLeb128_u32(read_p, end_p);
             if(wasmvm_errno) {
@@ -90,14 +90,148 @@ int parseControlInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **re
             if(wasmvm_errno) {
                 return -1;
             }
-        }
-        break;
+            break;
         default:
             break;
     }
     return 0;
 }
 
+int parseReferenceInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    // Allocate instruction
+    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
+    instrs->end = instrs->end->next;
+    instrs->end->next = NULL;
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    switch (opcode) {
+        case Op_ref_null:
+            switch (*((*read_p)++)) {
+                case REF_funcref:
+                    instr->imm.values.value.type = Value_funcref;
+                    break;
+                case REF_externref:
+                    instr->imm.values.value.type = Value_externref;
+                    break;
+                default:
+                    wasmvm_errno = ERROR_unexpected_token;
+                    return -1;
+            }
+            break;
+        case Op_ref_func:
+            instr->imm.values.index = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+int parseParametricInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    // Allocate instruction
+    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
+    instrs->end = instrs->end->next;
+    instrs->end->next = NULL;
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    if (opcode == Op_select_t) {
+        instr->imm.vec.size = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+        for(u32_t index = 0; index < instr->imm.vec.size; ++index) {
+            switch (*((*read_p)++)) {
+                case TYPE_i32:
+                    instr->imm.values.value.type = Value_i32;
+                    break;
+                case TYPE_i64:
+                    instr->imm.values.value.type = Value_i64;
+                    break;
+                case TYPE_f32:
+                    instr->imm.values.value.type = Value_f32;
+                    break;
+                case TYPE_f64:
+                    instr->imm.values.value.type = Value_f64;
+                    break;
+                case REF_funcref:
+                    instr->imm.values.value.type = Value_funcref;
+                    break;
+                case REF_externref:
+                    instr->imm.values.value.type = Value_externref;
+                    break;
+                default:
+                    wasmvm_errno = ERROR_unexpected_token;
+                    return -1;
+            }
+        }
+    }
+    return 0;
+}
+
+int parseVariableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    // Allocate instruction
+    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
+    instrs->end = instrs->end->next;
+    instrs->end->next = NULL;
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    switch (opcode) {
+        case Op_ref_null:
+            switch (*((*read_p)++)) {
+                case REF_funcref:
+                    instr->imm.values.value.type = Value_funcref;
+                    break;
+                case REF_externref:
+                    instr->imm.values.value.type = Value_externref;
+                    break;
+                default:
+                    wasmvm_errno = ERROR_unexpected_token;
+                    return -1;
+            }
+            break;
+        case Op_ref_func:
+            instr->imm.values.index = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        default:
+            break;
+    }
+    return 0;
+}
+
+int parseTableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    // Allocate instruction
+    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
+    instrs->end = instrs->end->next;
+    instrs->end->next = NULL;
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    instr->imm.values.index = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    if((opcode == Op_table_init) || (opcode == Op_table_copy)) {
+        instr->imm.values.value.type = Value_i32;
+        instr->imm.values.value.value.u32 = getLeb128_u32(read_p, end_p);
+        if(wasmvm_errno) {
+            return -1;
+        }
+    }
+    return 0;
+}
 
 int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end_p)
 {
@@ -108,7 +242,10 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
     instrs.end = NULL;
     // Parse instructions
     while(*read_p != end_p) {
-        byte_t opcode = *((*read_p)++);
+        u16_t opcode = *((*read_p)++);
+        if(opcode == 0xFC) {
+            opcode = (opcode << 8) | *((*read_p)++);
+        }
         switch (opcode) {
             case Op_nop:
             case Op_unreachable:
@@ -127,17 +264,41 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
                     return -1;
                 }
                 break;
-            //     case Op_drop:
-            //     case Op_select:
-            //         instr = (WasmInstr*)parseParametricInstr(opcode, read_p, end_p);
-            //         break;
-            //     case Op_get_local:
-            //     case Op_set_local:
-            //     case Op_tee_local:
-            //     case Op_get_global:
-            //     case Op_set_global:
-            //         instr = (WasmInstr*)parseVariableInstr(opcode, read_p, end_p);
-            //         break;
+            case Op_ref_null:
+            case Op_ref_is_null:
+            case Op_ref_func:
+                if(parseReferenceInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
+            case Op_drop:
+            case Op_select:
+            case Op_select_t:
+                if(parseParametricInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
+            case Op_local_get:
+            case Op_local_set:
+            case Op_local_tee:
+            case Op_global_get:
+            case Op_global_set:
+                if(parseVariableInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
+            case Op_table_set:
+            case Op_table_get:
+            case Op_table_init:
+            case Op_elem_drop:
+            case Op_table_copy:
+            case Op_table_grow:
+            case Op_table_size:
+            case Op_table_fill:
+                if(parseTableInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
             //     case Op_i32_load:
             //     case Op_i64_load:
             //     case Op_f32_load:
