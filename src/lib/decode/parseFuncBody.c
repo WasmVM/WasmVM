@@ -16,12 +16,17 @@ typedef struct {
     instr_node_t *head, *end;
 } instr_list_t;
 
-int parseControlInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
-{
-    // Allocate instruction
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
-    instrs->end = instrs->end->next;
+// Allocate instruction
+
+#define alloc_instr() \
+    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
+    instrs->end = instrs->end->next; \
     instrs->end->next = NULL;
+
+int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    alloc_instr()
+
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -97,12 +102,10 @@ int parseControlInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **re
     return 0;
 }
 
-int parseReferenceInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+int parseReferenceInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
-    // Allocate instruction
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
-    instrs->end = instrs->end->next;
-    instrs->end->next = NULL;
+    alloc_instr()
+
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -132,12 +135,10 @@ int parseReferenceInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **
     return 0;
 }
 
-int parseParametricInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+int parseParametricInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
-    // Allocate instruction
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
-    instrs->end = instrs->end->next;
-    instrs->end->next = NULL;
+    alloc_instr()
+
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -175,12 +176,10 @@ int parseParametricInstr(u8_t opcode, instr_list_t* const instrs, const byte_t *
     return 0;
 }
 
-int parseVariableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+int parseVariableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
-    // Allocate instruction
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
-    instrs->end = instrs->end->next;
-    instrs->end->next = NULL;
+    alloc_instr()
+
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -210,12 +209,10 @@ int parseVariableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **r
     return 0;
 }
 
-int parseTableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+int parseTableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
-    // Allocate instruction
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t));
-    instrs->end = instrs->end->next;
-    instrs->end->next = NULL;
+    alloc_instr()
+
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -229,6 +226,57 @@ int parseTableInstr(u8_t opcode, instr_list_t* const instrs, const byte_t **read
         if(wasmvm_errno) {
             return -1;
         }
+    }
+    return 0;
+}
+
+int parseMemoryInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    alloc_instr()
+
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    switch (opcode) {
+        case Op_memory_init:
+            instr->imm.values.index = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            if(*((*read_p)++) != 0x00) {
+                wasmvm_errno = ERROR_unexpected_token;
+                return -1;
+            }
+            break;
+        case Op_data_drop:
+            instr->imm.values.index = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
+        case Op_memory_copy:
+            if(*((*read_p)++) != 0x00) {
+                wasmvm_errno = ERROR_unexpected_token;
+                return -1;
+            }
+        case Op_memory_size:
+        case Op_memory_grow:
+        case Op_memory_fill:
+            if(*((*read_p)++) != 0x00) {
+                wasmvm_errno = ERROR_unexpected_token;
+                return -1;
+            }
+            break;
+        default:
+            instr->imm.memarg.align = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            instr->imm.memarg.offset = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            break;
     }
     return 0;
 }
@@ -299,33 +347,39 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
                     return -1;
                 }
                 break;
-            //     case Op_i32_load:
-            //     case Op_i64_load:
-            //     case Op_f32_load:
-            //     case Op_f64_load:
-            //     case Op_i32_load8_s:
-            //     case Op_i32_load8_u:
-            //     case Op_i32_load16_s:
-            //     case Op_i32_load16_u:
-            //     case Op_i64_load8_s:
-            //     case Op_i64_load8_u:
-            //     case Op_i64_load16_s:
-            //     case Op_i64_load16_u:
-            //     case Op_i64_load32_s:
-            //     case Op_i64_load32_u:
-            //     case Op_i32_store:
-            //     case Op_i64_store:
-            //     case Op_f32_store:
-            //     case Op_f64_store:
-            //     case Op_i32_store8:
-            //     case Op_i32_store16:
-            //     case Op_i64_store8:
-            //     case Op_i64_store16:
-            //     case Op_i64_store32:
-            //     case Op_memory_size:
-            //     case Op_memory_grow:
-            //         instr = (WasmInstr*)parseMemoryInstr(opcode, read_p, end_p);
-            //         break;
+            case Op_i32_load:
+            case Op_i64_load:
+            case Op_f32_load:
+            case Op_f64_load:
+            case Op_i32_load8_s:
+            case Op_i32_load8_u:
+            case Op_i32_load16_s:
+            case Op_i32_load16_u:
+            case Op_i64_load8_s:
+            case Op_i64_load8_u:
+            case Op_i64_load16_s:
+            case Op_i64_load16_u:
+            case Op_i64_load32_s:
+            case Op_i64_load32_u:
+            case Op_i32_store:
+            case Op_i64_store:
+            case Op_f32_store:
+            case Op_f64_store:
+            case Op_i32_store8:
+            case Op_i32_store16:
+            case Op_i64_store8:
+            case Op_i64_store16:
+            case Op_i64_store32:
+            case Op_memory_size:
+            case Op_memory_grow:
+            case Op_memory_init:
+            case Op_data_drop:
+            case Op_memory_copy:
+            case Op_memory_fill:
+                if(parseMemoryInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
             //     case Op_i32_const:
             //     case Op_i64_const:
             //     case Op_f32_const:
@@ -461,66 +515,3 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
     }
     return 0;
 }
-
-// WasmNumericInstr* parseNumericInstr(uint8_t opcode, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     WasmNumericInstr* instr = new_WasmNumericInstr();
-//     instr->parent.opcode = opcode;
-//     switch (opcode) {
-//         case Op_i32_const:
-//             instr->constant.type = Value_i32;
-//             instr->constant.value.i32 = getLeb128_i32(read_p, end_p);
-//             break;
-//         case Op_i64_const:
-//             instr->constant.type = Value_i64;
-//             instr->constant.value.i64 = getLeb128_i64(read_p, end_p);
-//             break;
-//         case Op_f32_const:
-//             instr->constant.type = Value_f32;
-//             instr->constant.value.i32 = toLittle32(*((uint32_t*)*read_p), 0);
-//             *read_p += 4;
-//             break;
-//         case Op_f64_const:
-//             instr->constant.type = Value_f64;
-//             instr->constant.value.i64 = toLittle64(*((uint32_t*)*read_p), 0);
-//             *read_p += 8;
-//             break;
-//         default:
-//             break;
-//     }
-//     return instr;
-// }
-// WasmParametricInstr* parseParametricInstr(uint8_t opcode, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     WasmParametricInstr* instr = new_WasmParametricInstr();
-//     instr->parent.opcode = opcode;
-//     return instr;
-// }
-// WasmVariableInstr* parseVariableInstr(uint8_t opcode, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     WasmVariableInstr* instr = new_WasmVariableInstr(getLeb128_u32(read_p, end_p));
-//     instr->parent.opcode = opcode;
-//     return instr;
-// }
-// WasmMemoryInstr* parseMemoryInstr(uint8_t opcode, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     WasmMemoryInstr* instr = NULL;
-//     switch (opcode) {
-//         case Op_memory_size:
-//         case Op_memory_grow:
-//             if(*((*read_p)++) != 0x00) {
-//                 return NULL;
-//             }
-//             instr = new_WasmMemoryInstr(0, 0);
-//             break;
-//         default: {
-//             uint32_t align = getLeb128_u32(read_p, end_p);
-//             uint32_t offset = getLeb128_u32(read_p, end_p);
-//             instr = new_WasmMemoryInstr(align, offset);
-//         }
-//         break;
-
-//     }
-//     instr->parent.opcode = opcode;
-//     return instr;
-// }
