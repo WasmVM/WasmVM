@@ -17,7 +17,6 @@ typedef struct {
 } instr_list_t;
 
 // Allocate instruction
-
 #define alloc_instr() \
     instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
     instrs->end = instrs->end->next; \
@@ -26,7 +25,6 @@ typedef struct {
 int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -105,7 +103,6 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
 int parseReferenceInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -138,7 +135,6 @@ int parseReferenceInstr(u16_t opcode, instr_list_t* const instrs, const byte_t *
 int parseParametricInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -179,7 +175,6 @@ int parseParametricInstr(u16_t opcode, instr_list_t* const instrs, const byte_t 
 int parseVariableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -212,7 +207,6 @@ int parseVariableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **
 int parseTableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -233,7 +227,6 @@ int parseTableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **rea
 int parseMemoryInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
-
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
@@ -276,6 +269,37 @@ int parseMemoryInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **re
             if(wasmvm_errno) {
                 return -1;
             }
+            break;
+    }
+    return 0;
+}
+
+int parseNumericInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
+{
+    alloc_instr()
+    // Fill instr
+    WasmInstr* instr = &instrs->end->data;
+    instr->opcode = opcode;
+    switch (opcode) {
+        case Op_i32_const:
+            instr->imm.values.value.type = Value_i32;
+            instr->imm.values.value.value.i32 = getLeb128_i32(read_p, end_p);
+            break;
+        case Op_i64_const:
+            instr->imm.values.value.type = Value_i64;
+            instr->imm.values.value.value.i64 = getLeb128_i64(read_p, end_p);
+            break;
+        case Op_f32_const:
+            instr->imm.values.value.type = Value_f32;
+            instr->imm.values.value.value.u32 = toLittle32(*((u32_t*)*read_p), 0);
+            *read_p += 4;
+            break;
+        case Op_f64_const:
+            instr->imm.values.value.type = Value_f64;
+            instr->imm.values.value.value.u64 = toLittle64(*((u64_t*)*read_p), 0);
+            *read_p += 8;
+            break;
+        default:
             break;
     }
     return 0;
@@ -380,136 +404,144 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
                     return -1;
                 }
                 break;
-            //     case Op_i32_const:
-            //     case Op_i64_const:
-            //     case Op_f32_const:
-            //     case Op_f64_const:
-            //     case Op_i32_eqz:
-            //     case Op_i32_eq:
-            //     case Op_i32_ne:
-            //     case Op_i32_lt_s:
-            //     case Op_i32_lt_u:
-            //     case Op_i32_gt_s:
-            //     case Op_i32_gt_u:
-            //     case Op_i32_le_s:
-            //     case Op_i32_le_u:
-            //     case Op_i32_ge_s:
-            //     case Op_i32_ge_u:
-            //     case Op_i64_eqz:
-            //     case Op_i64_eq:
-            //     case Op_i64_ne:
-            //     case Op_i64_lt_s:
-            //     case Op_i64_lt_u:
-            //     case Op_i64_gt_s:
-            //     case Op_i64_gt_u:
-            //     case Op_i64_le_s:
-            //     case Op_i64_le_u:
-            //     case Op_i64_ge_s:
-            //     case Op_i64_ge_u:
-            //     case Op_f32_eq:
-            //     case Op_f32_ne:
-            //     case Op_f32_lt:
-            //     case Op_f32_gt:
-            //     case Op_f32_le:
-            //     case Op_f32_ge:
-            //     case Op_f64_eq:
-            //     case Op_f64_ne:
-            //     case Op_f64_lt:
-            //     case Op_f64_gt:
-            //     case Op_f64_le:
-            //     case Op_f64_ge:
-            //     case Op_i32_clz:
-            //     case Op_i32_ctz:
-            //     case Op_i32_popcnt:
-            //     case Op_i32_add:
-            //     case Op_i32_sub:
-            //     case Op_i32_mul:
-            //     case Op_i32_div_s:
-            //     case Op_i32_div_u:
-            //     case Op_i32_rem_s:
-            //     case Op_i32_rem_u:
-            //     case Op_i32_and:
-            //     case Op_i32_or:
-            //     case Op_i32_xor:
-            //     case Op_i32_shl:
-            //     case Op_i32_shr_s:
-            //     case Op_i32_shr_u:
-            //     case Op_i32_rotl:
-            //     case Op_i32_rotr:
-            //     case Op_i64_clz:
-            //     case Op_i64_ctz:
-            //     case Op_i64_popcnt:
-            //     case Op_i64_add:
-            //     case Op_i64_sub:
-            //     case Op_i64_mul:
-            //     case Op_i64_div_s:
-            //     case Op_i64_div_u:
-            //     case Op_i64_rem_s:
-            //     case Op_i64_rem_u:
-            //     case Op_i64_and:
-            //     case Op_i64_or:
-            //     case Op_i64_xor:
-            //     case Op_i64_shl:
-            //     case Op_i64_shr_s:
-            //     case Op_i64_shr_u:
-            //     case Op_i64_rotl:
-            //     case Op_i64_rotr:
-            //     case Op_f32_abs:
-            //     case Op_f32_neg:
-            //     case Op_f32_ceil:
-            //     case Op_f32_floor:
-            //     case Op_f32_trunc:
-            //     case Op_f32_nearest:
-            //     case Op_f32_sqrt:
-            //     case Op_f32_add:
-            //     case Op_f32_sub:
-            //     case Op_f32_mul:
-            //     case Op_f32_div:
-            //     case Op_f32_min:
-            //     case Op_f32_max:
-            //     case Op_f32_copysign:
-            //     case Op_f64_abs:
-            //     case Op_f64_neg:
-            //     case Op_f64_ceil:
-            //     case Op_f64_floor:
-            //     case Op_f64_trunc:
-            //     case Op_f64_nearest:
-            //     case Op_f64_sqrt:
-            //     case Op_f64_add:
-            //     case Op_f64_sub:
-            //     case Op_f64_mul:
-            //     case Op_f64_div:
-            //     case Op_f64_min:
-            //     case Op_f64_max:
-            //     case Op_f64_copysign:
-            //     case Op_i32_wrap_i64:
-            //     case Op_i32_trunc_s_f32:
-            //     case Op_i32_trunc_u_f32:
-            //     case Op_i32_trunc_s_f64:
-            //     case Op_i32_trunc_u_f64:
-            //     case Op_i64_extend_s_i32:
-            //     case Op_i64_extend_u_i32:
-            //     case Op_i64_trunc_s_f32:
-            //     case Op_i64_trunc_u_f32:
-            //     case Op_i64_trunc_s_f64:
-            //     case Op_i64_trunc_u_f64:
-            //     case Op_f32_convert_s_i32:
-            //     case Op_f32_convert_u_i32:
-            //     case Op_f32_convert_s_i64:
-            //     case Op_f32_convert_u_i64:
-            //     case Op_f32_demote_f64:
-            //     case Op_f64_convert_s_i32:
-            //     case Op_f64_convert_u_i32:
-            //     case Op_f64_convert_s_i64:
-            //     case Op_f64_convert_u_i64:
-            //     case Op_f64_promote_f32:
-            //     case Op_i32_reinterpret_f32:
-            //     case Op_i64_reinterpret_f64:
-            //     case Op_f32_reinterpret_i32:
-            //     case Op_f64_reinterpret_i64:
-            //         instr = (WasmInstr*)parseNumericInstr(opcode, read_p, end_p);
-            //         break;
+            case Op_i32_const:
+            case Op_i64_const:
+            case Op_f32_const:
+            case Op_f64_const:
+            case Op_i32_eqz:
+            case Op_i32_eq:
+            case Op_i32_ne:
+            case Op_i32_lt_s:
+            case Op_i32_lt_u:
+            case Op_i32_gt_s:
+            case Op_i32_gt_u:
+            case Op_i32_le_s:
+            case Op_i32_le_u:
+            case Op_i32_ge_s:
+            case Op_i32_ge_u:
+            case Op_i64_eqz:
+            case Op_i64_eq:
+            case Op_i64_ne:
+            case Op_i64_lt_s:
+            case Op_i64_lt_u:
+            case Op_i64_gt_s:
+            case Op_i64_gt_u:
+            case Op_i64_le_s:
+            case Op_i64_le_u:
+            case Op_i64_ge_s:
+            case Op_i64_ge_u:
+            case Op_f32_eq:
+            case Op_f32_ne:
+            case Op_f32_lt:
+            case Op_f32_gt:
+            case Op_f32_le:
+            case Op_f32_ge:
+            case Op_f64_eq:
+            case Op_f64_ne:
+            case Op_f64_lt:
+            case Op_f64_gt:
+            case Op_f64_le:
+            case Op_f64_ge:
+            case Op_i32_clz:
+            case Op_i32_ctz:
+            case Op_i32_popcnt:
+            case Op_i32_add:
+            case Op_i32_sub:
+            case Op_i32_mul:
+            case Op_i32_div_s:
+            case Op_i32_div_u:
+            case Op_i32_rem_s:
+            case Op_i32_rem_u:
+            case Op_i32_and:
+            case Op_i32_or:
+            case Op_i32_xor:
+            case Op_i32_shl:
+            case Op_i32_shr_s:
+            case Op_i32_shr_u:
+            case Op_i32_rotl:
+            case Op_i32_rotr:
+            case Op_i64_clz:
+            case Op_i64_ctz:
+            case Op_i64_popcnt:
+            case Op_i64_add:
+            case Op_i64_sub:
+            case Op_i64_mul:
+            case Op_i64_div_s:
+            case Op_i64_div_u:
+            case Op_i64_rem_s:
+            case Op_i64_rem_u:
+            case Op_i64_and:
+            case Op_i64_or:
+            case Op_i64_xor:
+            case Op_i64_shl:
+            case Op_i64_shr_s:
+            case Op_i64_shr_u:
+            case Op_i64_rotl:
+            case Op_i64_rotr:
+            case Op_f32_abs:
+            case Op_f32_neg:
+            case Op_f32_ceil:
+            case Op_f32_floor:
+            case Op_f32_trunc:
+            case Op_f32_nearest:
+            case Op_f32_sqrt:
+            case Op_f32_add:
+            case Op_f32_sub:
+            case Op_f32_mul:
+            case Op_f32_div:
+            case Op_f32_min:
+            case Op_f32_max:
+            case Op_f32_copysign:
+            case Op_f64_abs:
+            case Op_f64_neg:
+            case Op_f64_ceil:
+            case Op_f64_floor:
+            case Op_f64_trunc:
+            case Op_f64_nearest:
+            case Op_f64_sqrt:
+            case Op_f64_add:
+            case Op_f64_sub:
+            case Op_f64_mul:
+            case Op_f64_div:
+            case Op_f64_min:
+            case Op_f64_max:
+            case Op_f64_copysign:
+            case Op_i32_wrap_i64:
+            case Op_i32_trunc_s_f32:
+            case Op_i32_trunc_u_f32:
+            case Op_i32_trunc_s_f64:
+            case Op_i32_trunc_u_f64:
+            case Op_i64_extend_s_i32:
+            case Op_i64_extend_u_i32:
+            case Op_i64_trunc_s_f32:
+            case Op_i64_trunc_u_f32:
+            case Op_i64_trunc_s_f64:
+            case Op_i64_trunc_u_f64:
+            case Op_f32_convert_s_i32:
+            case Op_f32_convert_u_i32:
+            case Op_f32_convert_s_i64:
+            case Op_f32_convert_u_i64:
+            case Op_f32_demote_f64:
+            case Op_f64_convert_s_i32:
+            case Op_f64_convert_u_i32:
+            case Op_f64_convert_s_i64:
+            case Op_f64_convert_u_i64:
+            case Op_f64_promote_f32:
+            case Op_i32_reinterpret_f32:
+            case Op_i64_reinterpret_f64:
+            case Op_f32_reinterpret_i32:
+            case Op_f64_reinterpret_i64:
+            case Op_i32_extend8_s:
+            case Op_i32_extend16_s:
+            case Op_i64_extend8_s:
+            case Op_i64_extend16_s:
+            case Op_i64_extend32_s:
+                if(parseNumericInstr(opcode, &instrs, read_p, end_p)) {
+                    return -1;
+                }
+                break;
             default:
+                wasmvm_errno = ERROR_unexpected_token;
                 return -1;
         }
     }

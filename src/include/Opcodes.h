@@ -194,6 +194,11 @@
 #define Op_i64_reinterpret_f64	0xBD
 #define Op_f32_reinterpret_i32	0xBE
 #define Op_f64_reinterpret_i64	0xBF
+#define Op_i32_extend8_s	    0xC0
+#define Op_i32_extend16_s	    0xC1
+#define Op_i64_extend8_s	    0xC2
+#define Op_i64_extend16_s	    0xC3
+#define Op_i64_extend32_s	    0xC4
 
 #define Op_ref_null             0xD0
 #define Op_ref_is_null          0xD1
