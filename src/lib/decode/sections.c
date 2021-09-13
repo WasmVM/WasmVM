@@ -561,12 +561,12 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
         // Mode
         if(initByte & 0x01) {
             if(initByte & 0x02) {
-                newElem->mode.type = Elem_declarative;
+                newElem->mode.mode = Elem_declarative;
             } else {
-                newElem->mode.type = Elem_passive;
+                newElem->mode.mode = Elem_passive;
             }
         } else {
-            newElem->mode.type = Elem_active;
+            newElem->mode.mode = Elem_active;
             if(initByte & 0x02) {
                 // Explicit table index
                 newElem->mode.tableidx = getLeb128_u32(read_p, end_p);
@@ -643,7 +643,7 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
 
 int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
 {
-    SECTION_PROLOGUE(9)
+    SECTION_PROLOGUE(10)
     // Allocate memory
     u32_t codeNum = getLeb128_u32(read_p, end_p);
     if(wasmvm_errno) {
@@ -706,33 +706,54 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
     SECTION_EPILOGUE
 }
 
-// int parse_data_section(WasmModule *newModule, uint8_t **read_p, const uint8_t *end_p)
-// {
-//     if(skip_to_section(11, read_p, end_p) == 11) {
-//         for(uint32_t dataNum = getLeb128_u32(read_p, end_p); dataNum > 0; --dataNum) {
-//             WasmData* newWasmData = new_WasmData();
-//             // Index
-//             newWasmData->data = getLeb128_u32(read_p, end_p);
-//             if(newWasmData->data) {
-//                 printf("%s: Only table 0 is allowed currently.\n", newModule->module_name);
-//                 return -1;
-//             }
-//             // Offset
-//             if(*((*read_p)++) == Op_i32_const) {
-//                 newWasmData->offset.type = Value_i32;
-//                 newWasmData->offset.value.i32 = getLeb128_i32(read_p, end_p);
-//             } else {
-//                 printf("%s: Data offset must be an i32.const expression.\n", newModule->module_name);
-//                 return -2;
-//             }
-//             *read_p += 1;
-//             // Init data
-//             vector_resize(newWasmData->init, getLeb128_u32(read_p, end_p));
-//             strncpy(vector_data(char*, newWasmData->init), (char*)*read_p, vector_size(newWasmData->init));
-//             *read_p += vector_size(newWasmData->init);
-//             // Push into newModule
-//             vector_push_back(newModule->datas, newWasmData);
-//         }
-//     }
-//     return 0;
-// }
+int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(11)
+    // Allocate memory
+    u32_t dataNum = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
+    }
+    module->datas.data = (WasmData*)malloc_func(sizeof(WasmData) * dataNum);
+    module->datas.size = dataNum;
+    // Parse all codes
+    for(u32_t index = 0; index < dataNum; ++index) {
+        WasmData *newData = module->datas.data + index;
+        byte_t modeCode = *((*read_p)++);
+        switch (modeCode) {
+            case 0x02:
+                // Read memory index
+                newData->mode.memidx = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+            case 0x00:
+                // Parse offset
+                if(parse_const_expr(&(newData->mode.offset), read_p, end_p)) {
+                    return -1;
+                }
+            case 0x01:
+                // Read init value
+                newData->init.size = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+                newData->init.data = (byte_t*)malloc_func(sizeof(byte_t) * newData->init.size);
+                memcpy_func((char**)&(newData->init.data), (char*)*read_p, newData->init.size);
+                *read_p += newData->init.size;
+                break;
+            default:
+                wasmvm_errno = ERROR_unexpected_token;
+                break;
+        }
+        if(modeCode == 0x01) {
+            newData->mode.mode = Data_passive;
+        } else {
+            newData->mode.mode = Data_active;
+            if(modeCode == 0x00) {
+                newData->mode.memidx = 0;
+            }
+        }
+    }
+    SECTION_EPILOGUE
+}

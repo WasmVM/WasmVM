@@ -1,18 +1,23 @@
 #ifndef WASMVM_STRUCTURE_DATA
 #define WASMVM_STRUCTURE_DATA
 
-#include <stdint.h>
-#include <dataTypes/Value.h>
-#include <dataTypes/vector_p.h>
+#include <defines.h>
+#include <dataTypes/vector_t.h>
+#include <dataTypes/ConstExpr.h>
 
-typedef struct _wasm_data {
-    uint32_t    data;
-    Value       offset;
-    vector_p     init;       // char
+typedef enum {
+    Data_unspecified = 0,
+    Data_passive,
+    Data_active,
+} DataMode;
+
+typedef struct {
+    vector_t(byte_t) init;
+    struct {
+        DataMode    mode;
+        u32_t       memidx;
+        ConstExpr   offset;
+    } mode;
 } WasmData;
-
-WasmData* new_WasmData();
-void clean_WasmData(WasmData* thisWasmData);
-void free_WasmData(WasmData* thisWasmData);
 
 #endif

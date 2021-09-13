@@ -11,13 +11,13 @@ typedef enum {
     Elem_passive,
     Elem_active,
     Elem_declarative,
-} ElemModeType;
+} ElemMode;
 
 typedef struct {
     ValueType           type;
     vector_t(ConstExpr) init;
     struct {
-        ElemModeType type;
+        ElemMode mode;
         u32_t        tableidx;
         ConstExpr    offset;
     } mode;
