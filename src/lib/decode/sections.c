@@ -714,8 +714,11 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
     if(wasmvm_errno) {
         return -1;
     }
+    if(module->datas.size != dataNum) {
+        wasmvm_errno = ERROR_data_seg_not_fit;
+        return -1;
+    }
     module->datas.data = (WasmData*)malloc_func(sizeof(WasmData) * dataNum);
-    module->datas.size = dataNum;
     // Parse all codes
     for(u32_t index = 0; index < dataNum; ++index) {
         WasmData *newData = module->datas.data + index;
@@ -754,6 +757,16 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
                 newData->mode.memidx = 0;
             }
         }
+    }
+    SECTION_EPILOGUE
+}
+
+int parse_data_count_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
+{
+    SECTION_PROLOGUE(12)
+    module->datas.size = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
     }
     SECTION_EPILOGUE
 }

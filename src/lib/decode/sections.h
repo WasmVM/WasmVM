@@ -20,7 +20,7 @@ int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t 
 int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
-
+int parse_data_count_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p);
 // TODO: name section
 
 #endif
