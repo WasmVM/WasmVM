@@ -400,7 +400,7 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
         return -1;
     }
     module->mems.data = (WasmMemory*)malloc_func(sizeof(WasmMemory) * memNum);
-    module->tables.size = memNum;
+    module->mems.size = memNum;
     // Get all memories
     for(u32_t index = 0; index < memNum; ++index) {
         // Only one memory supported
@@ -665,16 +665,20 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
         WasmFunc *func = module->funcs.data + index;
         func->locals.size = 0;
         // Locals
-        u32_t localSize = getLeb128_u32(read_p, end_p);
+        u32_t localSize = getLeb128_u32(read_p, bodyEnd);
         if(wasmvm_errno) {
             return -1;
         }
         for(u32_t localIdx = 0; localIdx < localSize; ++localIdx) {
+
             // Type count
-            u32_t typeCount = getLeb128_u32(read_p, end_p);
+            u32_t typeCount = getLeb128_u32(read_p, bodyEnd);
             if(wasmvm_errno) {
                 return -1;
             }
+            u32_t localRoot = func->locals.size;
+            func->locals.size += typeCount;
+            func->locals.data = (ValueType*) realloc_func(func->locals.data, sizeof(ValueType) * func->locals.size);
             ValueType type;
             switch(*((*read_p)++)) {
                 case TYPE_i32:
@@ -694,11 +698,11 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
                     return -1;
             }
             for(u32_t typeIdx = 0; typeIdx < typeCount; ++typeIdx) {
-                func->locals.data[func->locals.size + typeIdx] = type;
+                func->locals.data[localRoot + typeIdx] = type;
             }
-            func->locals.size += typeCount;
         }
         // Body
+        const byte_t* bodyHead = *read_p;
         if(parseFuncBody(func, read_p, bodyEnd)) {
             return -1;
         }

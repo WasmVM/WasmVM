@@ -18,15 +18,20 @@ typedef struct {
 
 // Allocate instruction
 #define alloc_instr() \
-    instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
-    instrs->end = instrs->end->next; \
+    if(instrs->head == NULL){ \
+        instrs->head = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
+        instrs->end = instrs->head; \
+    }else{ \
+        instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
+        instrs->end = instrs->end->next; \
+    } \
     instrs->end->next = NULL;
 
 int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
     // Fill instr
-    WasmInstr* instr = &instrs->end->data;
+    WasmInstr* instr = &(instrs->end->data);
     instr->opcode = opcode;
     switch (opcode) {
         case Op_block:
@@ -69,12 +74,12 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
             }
             break;
         case Op_br_table:
-            instr->imm.vec.size = getLeb128_u32(read_p, end_p);
+            instr->imm.vec.size = getLeb128_u32(read_p, end_p) + 1;
             if(wasmvm_errno) {
                 return -1;
             }
             instr->imm.vec.data = (u32_t*)malloc_func(instr->imm.vec.size * sizeof(u32_t));
-            for(u32_t count = 0; count < (instr->imm.vec.size + 1); ++count) {
+            for(u32_t count = 0; count < instr->imm.vec.size; ++count) {
                 ((u32_t*)instr->imm.vec.data)[count] = getLeb128_u32(read_p, end_p);
                 if(wasmvm_errno) {
                     return -1;
@@ -178,28 +183,9 @@ int parseVariableInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **
     // Fill instr
     WasmInstr* instr = &instrs->end->data;
     instr->opcode = opcode;
-    switch (opcode) {
-        case Op_ref_null:
-            switch (*((*read_p)++)) {
-                case REF_funcref:
-                    instr->imm.values.value.type = Value_funcref;
-                    break;
-                case REF_externref:
-                    instr->imm.values.value.type = Value_externref;
-                    break;
-                default:
-                    wasmvm_errno = ERROR_unexpected_token;
-                    return -1;
-            }
-            break;
-        case Op_ref_func:
-            instr->imm.values.index = getLeb128_u32(read_p, end_p);
-            if(wasmvm_errno) {
-                return -1;
-            }
-            break;
-        default:
-            break;
+    instr->imm.values.index = getLeb128_u32(read_p, end_p);
+    if(wasmvm_errno) {
+        return -1;
     }
     return 0;
 }

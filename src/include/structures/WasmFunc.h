@@ -12,8 +12,4 @@ typedef struct {
     vector_t(WasmInstr) body;
 } WasmFunc;
 
-// WasmFunc* new_WasmFunc();
-// void clean_WasmFunc(WasmFunc* thisWasmFunc);
-// void free_WasmFunc(WasmFunc* thisWasmFunc);
-
 #endif
