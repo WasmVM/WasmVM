@@ -1,9 +1,6 @@
 [submodule "third_party/wabt"]
 	path = third_party/wabt
 	url = https://github.com/WasmVM/wabt.git
-[submodule "test/testsuite"]
-	path = test/testsuite
-	url = https://github.com/WasmVM/testsuite.git
 [submodule "test/spec"]
 	path = test/spec
 	url = https://github.com/WasmVM/testsuite-cases.git
