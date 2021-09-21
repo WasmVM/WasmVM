@@ -93,11 +93,13 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
                 return -1;
             }
             // tableidx
-            instr->imm.values.value.type = Value_i32;
-            instr->imm.values.index = getLeb128_u32(read_p, end_p);
-            if(wasmvm_errno) {
+            if(*((*read_p)++) != 0x00) {
+                // typeidx should be zero now
+                wasmvm_errno = ERROR_zero_expected;
                 return -1;
             }
+            instr->imm.values.value.type = Value_i32;
+            instr->imm.values.value.value.u32 = 0;
             break;
         default:
             break;
@@ -242,7 +244,7 @@ int parseMemoryInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **re
         case Op_memory_grow:
         case Op_memory_fill:
             if(*((*read_p)++) != 0x00) {
-                wasmvm_errno = ERROR_unexpected_token;
+                wasmvm_errno = ERROR_zero_expected;
                 return -1;
             }
             break;

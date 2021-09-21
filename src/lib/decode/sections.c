@@ -29,8 +29,7 @@
             wasmvm_errno = ERROR_sect_size_mis; \
             return -1; \
         } \
-    } \
-    return 0;
+    }
 
 static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p)
 {
@@ -105,6 +104,10 @@ static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t
             wasmvm_errno = ERROR_req_const_expr;
             return -1;
     }
+    if(*((*read_p)++) != 0x0B) {
+        wasmvm_errno = ERROR_unexpected_end;
+        return -1;
+    }
     return 0;
 }
 
@@ -118,6 +121,7 @@ int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
         return -1;
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_magic_version(const byte_t **read_p, const byte_t * const end_p)
@@ -165,6 +169,11 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
     module->types.size = typeNum;
     // Get all types
     for(u32_t index = 0; index < typeNum; ++index) {
+        // Type should present
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
         FuncType* funcType = module->types.data + index;
         // FuncType check
         if(*((*read_p)++) != TYPE_Func) {
@@ -225,6 +234,7 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -319,11 +329,12 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                     return -1;
             }
         } else {
-            wasmvm_errno = ERROR_sect_size_mis;
+            wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -344,6 +355,7 @@ int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -371,10 +383,14 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
         } else if(refCode == REF_externref) {
             module->tables.data[index].refType = Ref_extern;
         } else {
-            wasmvm_errno = ERROR_unknown_table;
+            wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
         byte_t flags = *((*read_p)++);
+        if(flags != 0 && flags != 1) {
+            wasmvm_errno = ERROR_int_too_large;
+            return -1;
+        }
         module->tables.data[index].min = getLeb128_u32(read_p, end_p);
         if(wasmvm_errno) {
             return -1;
@@ -389,6 +405,7 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -409,8 +426,22 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
             return -1;
         }
 
+        // Handle unexpected end
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
+
         // Create WasmMemory instance
         byte_t flags = *((*read_p)++);
+        if(flags != 0 && flags != 1) {
+            if(flags == 0x81) {
+                wasmvm_errno = ERROR_int_rep_too_long;
+            } else {
+                wasmvm_errno = ERROR_int_too_large;
+            }
+            return -1;
+        }
         module->mems.data[index].min = getLeb128_u32(read_p, end_p);
         if(wasmvm_errno) {
             return -1;
@@ -420,11 +451,15 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
             if(wasmvm_errno) {
                 return -1;
             }
-        } else {
+        } else if(flags == 0) {
             module->mems.data[index].max = 0;
+        } else {
+            wasmvm_errno = ERROR_int_too_large;
+            return -1;
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -439,6 +474,11 @@ int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t
     module->globals.size = globalNum;
     // Get all globals
     for(u32_t index = 0; index < globalNum; ++index) {
+        // Handle unexpected end
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
         WasmGlobal* newGlobal = module->globals.data + index;
         switch(*((*read_p)++)) {
             case TYPE_i32:
@@ -480,6 +520,7 @@ int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -493,10 +534,20 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
     module->exports.data = (WasmExport*)malloc_func(sizeof(WasmExport) * exportNum);
     module->exports.size = exportNum;
     for(u32_t index = 0; index < exportNum; ++index) {
+        // Handle unexpected end
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
         WasmExport* newExport = module->exports.data + index;
         // Get name length
         u32_t nameLen = getLeb128_u32(read_p, end_p);
         if(wasmvm_errno) {
+            return -1;
+        }
+        // Handle name too short
+        if((*read_p + nameLen) >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
         // Get name
@@ -531,6 +582,7 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -541,6 +593,7 @@ int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t 
         return -1;
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -555,6 +608,11 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
     module->elems.size = elemNum;
     // Get all elems
     for(u32_t index = 0; index < elemNum; ++index) {
+        // Handle unexpected end
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpected_end;
+            return -1;
+        }
         WasmElem *newElem = module->elems.data + index;
         // Initial byte
         byte_t initByte = *((*read_p)++);
@@ -583,32 +641,6 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
         }
         // Init
         if(initByte & 0x04) {
-            // Funcidx
-            if(initByte & 0x03) {
-                if(*((*read_p)++) != 0x00) {
-                    // Elemkind should be 0x00 now
-                    wasmvm_errno = ERROR_undefined_elem;
-                    return -1;
-                }
-                newElem->type = Value_funcref;
-            }
-            // Allocate vector
-            u32_t idxNum = getLeb128_u32(read_p, end_p);
-            if(wasmvm_errno) {
-                return -1;
-            }
-            newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
-            newElem->init.size = idxNum;
-            // Get funcIdx
-            for(u32_t idx = 0; idx < idxNum; ++idx) {
-                newElem->init.data[idx].type = Const_Value;
-                newElem->init.data[idx].value.type = Value_i32;
-                newElem->init.data[idx].value.value.u32 = getLeb128_u32(read_p, end_p);
-                if(wasmvm_errno) {
-                    return -1;
-                }
-            }
-        } else {
             // Expr
             if(initByte & 0x03) {
                 switch (*((*read_p)++)) {
@@ -636,10 +668,43 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
                     return -1;
                 }
             }
+        } else {
+            // Funcidx
+            if(initByte & 0x03) {
+                if(*((*read_p)++) != 0x00) {
+                    // Elemkind should be 0x00 now
+                    wasmvm_errno = ERROR_undefined_elem;
+                    return -1;
+                }
+                newElem->type = Value_funcref;
+            }
+            // Allocate vector
+            u32_t idxNum = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
+            newElem->init.size = idxNum;
+            // Get funcIdx
+            for(u32_t idx = 0; idx < idxNum; ++idx) {
+                newElem->init.data[idx].type = Const_Value;
+                newElem->init.data[idx].value.type = Value_i32;
+                newElem->init.data[idx].value.value.u32 = getLeb128_u32(read_p, end_p);
+                if(wasmvm_errno) {
+                    return -1;
+                }
+            }
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
+
+typedef struct {
+    u32_t count;
+    ValueType type;
+} local_map_t;
+
 
 int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
 {
@@ -662,43 +727,51 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
             return -1;
         }
         const byte_t* bodyEnd = *read_p + codeSize;
-        WasmFunc *func = module->funcs.data + index;
-        func->locals.size = 0;
-        // Locals
+        // Count locals
         u32_t localSize = getLeb128_u32(read_p, bodyEnd);
         if(wasmvm_errno) {
             return -1;
         }
-        for(u32_t localIdx = 0; localIdx < localSize; ++localIdx) {
-
-            // Type count
-            u32_t typeCount = getLeb128_u32(read_p, bodyEnd);
+        local_map_t localMap[localSize];
+        u32_t totalLocal = 0;
+        for(u32_t mapIdx = 0; mapIdx < localSize; ++mapIdx) {
+            // Get count
+            localMap[mapIdx].count = getLeb128_u32(read_p, bodyEnd);
             if(wasmvm_errno) {
                 return -1;
             }
-            u32_t localRoot = func->locals.size;
-            func->locals.size += typeCount;
-            func->locals.data = (ValueType*) realloc_func(func->locals.data, sizeof(ValueType) * func->locals.size);
-            ValueType type;
+            if((totalLocal + localMap[mapIdx].count) < totalLocal) {
+                // Overflow
+                wasmvm_errno = ERROR_too_many_locals;
+                return -1;
+            }
+            totalLocal += localMap[mapIdx].count;
+            // Get type
             switch(*((*read_p)++)) {
                 case TYPE_i32:
-                    type = Value_i32;
+                    localMap[mapIdx].type = Value_i32;
                     break;
                 case TYPE_i64:
-                    type = Value_i64;
+                    localMap[mapIdx].type = Value_i64;
                     break;
                 case TYPE_f32:
-                    type = Value_f32;
+                    localMap[mapIdx].type = Value_f32;
                     break;
                 case TYPE_f64:
-                    type = Value_f64;
+                    localMap[mapIdx].type = Value_f64;
                     break;
                 default:
                     wasmvm_errno = ERROR_unknown_type;
                     return -1;
             }
-            for(u32_t typeIdx = 0; typeIdx < typeCount; ++typeIdx) {
-                func->locals.data[localRoot + typeIdx] = type;
+        }
+        // Fill func
+        WasmFunc *func = module->funcs.data + index;
+        func->locals.size = totalLocal;
+        func->locals.data = (ValueType*) malloc_func(sizeof(ValueType) * totalLocal);
+        for(u32_t localIdx = 0, mapIdx = 0; mapIdx < localSize; ++mapIdx) {
+            for(u32_t i = 0; i < localMap[mapIdx].count; ++i, ++localIdx) {
+                func->locals.data[localIdx] = localMap[mapIdx].type;
             }
         }
         // Body
@@ -708,6 +781,11 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
         }
     }
     SECTION_EPILOGUE
+    else if(module->funcs.size > 0) {
+        wasmvm_errno = ERROR_inconsist_func;
+        return -1;
+    }
+    return 0;
 }
 
 int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -763,6 +841,7 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
         }
     }
     SECTION_EPILOGUE
+    return 0;
 }
 
 int parse_data_count_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
@@ -773,4 +852,5 @@ int parse_data_count_section(WasmModule *module, const byte_t **read_p, const by
         return -1;
     }
     SECTION_EPILOGUE
+    return 0;
 }
