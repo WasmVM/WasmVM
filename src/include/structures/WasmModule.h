@@ -23,7 +23,7 @@ typedef struct module_t {
     vector_t(WasmMemory) mems;    // mems:    Vector<WasmMemory>
     vector_t(WasmGlobal) globals; // globals: Vector<WasmGlobal>
     vector_t(WasmExport) exports; // exports: Vector<WasmExport>
-    u32_t   start;                // start:   u32_t
+    u32_t   start;                // start:   u32_t (-1 as unspecified)
     vector_t(WasmElem)   elems;   // elems: Vector<WasmElem>
     vector_t(WasmData)   datas;   // datas: Vector<WasmData>
 } WasmModule;

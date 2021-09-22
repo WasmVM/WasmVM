@@ -18,6 +18,17 @@ int module_decode(const byte_t* data, const size_t data_size, WasmModule** modul
     if((*module = (WasmModule*)malloc_func(sizeof(WasmModule))) == NULL) {
         return -1;
     }
+    // Initialize
+    vector_init((*module)->types);
+    vector_init((*module)->imports);
+    vector_init((*module)->funcs);
+    vector_init((*module)->tables);
+    vector_init((*module)->mems);
+    vector_init((*module)->globals);
+    vector_init((*module)->exports);
+    vector_init((*module)->elems);
+    vector_init((*module)->datas);
+    (*module)->start = -1;
 
     // Cursor pointers
     const byte_t* read_p = data;
@@ -100,6 +111,14 @@ int module_decode(const byte_t* data, const size_t data_size, WasmModule** modul
         return -1;
     }
 
+    // Section 12: Data count
+    if(skip_custom_section(&read_p, end_p)) {
+        return -1;
+    }
+    if(parse_data_count_section(*module, &read_p, end_p)) {
+        return -1;
+    }
+
     // Section 10: Code
     if(skip_custom_section(&read_p, end_p)) {
         return -1;
@@ -108,9 +127,23 @@ int module_decode(const byte_t* data, const size_t data_size, WasmModule** modul
         return -1;
     }
 
+    // Section 11: Data
+    if(skip_custom_section(&read_p, end_p)) {
+        return -1;
+    }
+    if(parse_data_section(*module, &read_p, end_p)) {
+        return -1;
+    }
+
     // Malformed section num
-    if((read_p < end_p) && (*read_p >= 12)) {
-        wasmvm_errno = ERROR_malform_sec_id;
+    if(read_p < end_p) {
+        if(*read_p >= 12) {
+            // Malformed section num
+            wasmvm_errno = ERROR_malform_sec_id;
+        } else {
+            // Junk
+            wasmvm_errno = ERROR_junk_aft_sect;
+        }
         return -1;
     }
     return ERROR_success;

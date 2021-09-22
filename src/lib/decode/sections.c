@@ -23,12 +23,15 @@
             return -1; \
         }
 
-#define SECTION_EPILOGUE  \
+#define SECTION_EPILOGUE(ID)  \
         i64_t offset = (i64_t)(*read_p - start_p); \
         if(offset != sectSize) { \
             wasmvm_errno = ERROR_sect_size_mis; \
             return -1; \
         } \
+    } else if ((**read_p <= ID) && (**read_p != 0)) { \
+        wasmvm_errno = ERROR_junk_aft_sect; \
+        return -1; \
     }
 
 static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p)
@@ -120,8 +123,13 @@ int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
         wasmvm_errno = ERROR_int_rep_too_long;
         return -1;
     }
-    SECTION_EPILOGUE
-    return 0;
+    i64_t offset = (i64_t)(*read_p - start_p);
+    if(offset != sectSize) {
+        wasmvm_errno = ERROR_sect_size_mis;
+        return -1;
+    }
+}
+return 0;
 }
 
 int parse_magic_version(const byte_t **read_p, const byte_t * const end_p)
@@ -233,7 +241,7 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
             }
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(1)
     return 0;
 }
 
@@ -333,7 +341,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
             return -1;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(2)
     return 0;
 }
 
@@ -354,7 +362,7 @@ int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *
             return -1;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(3)
     return 0;
 }
 
@@ -404,7 +412,7 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
             module->tables.data[index].max = 0;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(4)
     return 0;
 }
 
@@ -458,7 +466,7 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
             return -1;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(5)
     return 0;
 }
 
@@ -514,12 +522,8 @@ int parse_global_section(WasmModule *module, const byte_t **read_p, const byte_t
         if(parse_const_expr(&(newGlobal->init), read_p, end_p)) {
             return -1;
         }
-        // Skip end
-        if(*((*read_p)++) != Op_end) {
-            wasmvm_errno = ERROR_unknown_global;
-        }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(6)
     return 0;
 }
 
@@ -581,7 +585,7 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
             return -1;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(7)
     return 0;
 }
 
@@ -592,7 +596,7 @@ int parse_start_section(WasmModule *module, const byte_t **read_p, const byte_t 
     if(wasmvm_errno) {
         return -1;
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(8)
     return 0;
 }
 
@@ -696,7 +700,7 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
             }
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(9)
     return 0;
 }
 
@@ -780,7 +784,7 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
             return -1;
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(10)
     else if(module->funcs.size > 0) {
         wasmvm_errno = ERROR_inconsist_func;
         return -1;
@@ -803,6 +807,11 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
     module->datas.data = (WasmData*)malloc_func(sizeof(WasmData) * dataNum);
     // Parse all codes
     for(u32_t index = 0; index < dataNum; ++index) {
+        // Handle unexpected end
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
         WasmData *newData = module->datas.data + index;
         byte_t modeCode = *((*read_p)++);
         switch (modeCode) {
@@ -824,11 +833,16 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
                     return -1;
                 }
                 newData->init.data = (byte_t*)malloc_func(sizeof(byte_t) * newData->init.size);
+                if((end_p - *read_p) < newData->init.size) {
+                    wasmvm_errno = ERROR_unexpect_end;
+                    return -1;
+                }
                 memcpy_func((char**)&(newData->init.data), (char*)*read_p, newData->init.size);
                 *read_p += newData->init.size;
                 break;
             default:
                 wasmvm_errno = ERROR_unexpected_token;
+                return -1;
                 break;
         }
         if(modeCode == 0x01) {
@@ -840,7 +854,7 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
             }
         }
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(11)
     return 0;
 }
 
@@ -851,6 +865,6 @@ int parse_data_count_section(WasmModule *module, const byte_t **read_p, const by
     if(wasmvm_errno) {
         return -1;
     }
-    SECTION_EPILOGUE
+    SECTION_EPILOGUE(9)
     return 0;
 }
