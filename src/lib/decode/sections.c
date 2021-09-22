@@ -14,24 +14,26 @@
 #include "utils.h"
 #include "parseFuncBody.h"
 
-#define SECTION_PROLOGUE(ID)  \
-    if((*read_p < end_p) && (**read_p == ID)) { \
-        *read_p += 1; \
-        u32_t sectSize = getLeb128_u32(read_p, end_p); \
-        const byte_t *start_p = *read_p; \
-        if(wasmvm_errno) { \
-            return -1; \
-        }
+#define SECTION_PROLOGUE(ID) \
+    if(*read_p < end_p) { \
+        if(**read_p == ID) { \
+            *read_p += 1; \
+            u32_t sectSize = getLeb128_u32(read_p, end_p); \
+            const byte_t *start_p = *read_p; \
+            if(wasmvm_errno) { \
+                return -1; \
+            }
 
 #define SECTION_EPILOGUE(ID)  \
-        i64_t offset = (i64_t)(*read_p - start_p); \
-        if(offset != sectSize) { \
-            wasmvm_errno = ERROR_sect_size_mis; \
+            i64_t offset = (i64_t)(*read_p - start_p); \
+            if(offset != sectSize) { \
+                wasmvm_errno = ERROR_sect_size_mis; \
+                return -1; \
+            } \
+        } else if ((**read_p <= ID) && (**read_p != 0)) { \
+            wasmvm_errno = ERROR_junk_aft_sect; \
             return -1; \
         } \
-    } else if ((**read_p <= ID) && (**read_p != 0)) { \
-        wasmvm_errno = ERROR_junk_aft_sect; \
-        return -1; \
     }
 
 static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p)
@@ -123,13 +125,8 @@ int skip_custom_section(const byte_t **read_p, const byte_t * const end_p)
         wasmvm_errno = ERROR_int_rep_too_long;
         return -1;
     }
-    i64_t offset = (i64_t)(*read_p - start_p);
-    if(offset != sectSize) {
-        wasmvm_errno = ERROR_sect_size_mis;
-        return -1;
-    }
-}
-return 0;
+    SECTION_EPILOGUE(0)
+    return 0;
 }
 
 int parse_magic_version(const byte_t **read_p, const byte_t * const end_p)
