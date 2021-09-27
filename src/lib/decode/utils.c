@@ -65,6 +65,7 @@ u32_t getLeb128_u32(const byte_t **ptr, const byte_t* const end)
                 return -1;
             } else if(byte & 0x70) {
                 wasmvm_errno = ERROR_int_too_large;
+                return -1;
             }
         }
         // Finished
@@ -91,6 +92,19 @@ i32_t getLeb128_i32(const byte_t **ptr, const byte_t* const end)
             if(byte & 0x80) {
                 wasmvm_errno = ERROR_int_rep_too_long;
                 return -1;
+            } else {
+                u8_t sign = byte & 0x04;
+                if(sign) {
+                    if((byte & 0xf0) != 0x70) {
+                        wasmvm_errno = ERROR_int_too_large;
+                        return -1;
+                    }
+                } else {
+                    if((byte & 0xf0) != 0x00) {
+                        wasmvm_errno = ERROR_int_too_large;
+                        return -1;
+                    }
+                }
             }
         }
         // Finished
@@ -134,6 +148,19 @@ i64_t getLeb128_i64(const byte_t **ptr, const byte_t * const end)
             if(byte & 0x80) {
                 wasmvm_errno = ERROR_int_rep_too_long;
                 return -1;
+            } else {
+                u8_t sign = byte & 0x01;
+                if(sign) {
+                    if((byte & 0xfe) != 0x7e) {
+                        wasmvm_errno = ERROR_int_too_large;
+                        return -1;
+                    }
+                } else {
+                    if((byte & 0xfe) != 0x00) {
+                        wasmvm_errno = ERROR_int_too_large;
+                        return -1;
+                    }
+                }
             }
         }
         // Finished

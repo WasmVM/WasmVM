@@ -304,7 +304,11 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
     while(*read_p != end_p) {
         u16_t opcode = *((*read_p)++);
         if(opcode == 0xFC) {
-            opcode = (opcode << 8) | *((*read_p)++);
+            u32_t extOp = getLeb128_u32(read_p, end_p);
+            if(wasmvm_errno) {
+                return -1;
+            }
+            opcode = (opcode << 8) | ((u16_t)extOp);
         }
         switch (opcode) {
             case Op_nop:
@@ -524,6 +528,14 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_i64_extend8_s:
             case Op_i64_extend16_s:
             case Op_i64_extend32_s:
+            case Op_i32_trunc_sat_f32_s:
+            case Op_i32_trunc_sat_f32_u:
+            case Op_i32_trunc_sat_f64_s:
+            case Op_i32_trunc_sat_f64_u:
+            case Op_i64_trunc_sat_f32_s:
+            case Op_i64_trunc_sat_f32_u:
+            case Op_i64_trunc_sat_f64_s:
+            case Op_i64_trunc_sat_f64_u:
                 if(parseNumericInstr(opcode, &instrs, read_p, end_p)) {
                     return -1;
                 }
