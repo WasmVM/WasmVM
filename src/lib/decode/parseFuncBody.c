@@ -37,26 +37,33 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
         case Op_block:
         case Op_loop:
         case Op_if:
-            switch (*((*read_p)++)) {
+            switch (**read_p) {
                 case 0x40:
+                    (*read_p)++;
                     break;
                 case TYPE_i32:
                     instr->imm.values.value.type = Value_i32;
+                    (*read_p)++;
                     break;
                 case TYPE_i64:
                     instr->imm.values.value.type = Value_i64;
+                    (*read_p)++;
                     break;
                 case TYPE_f32:
                     instr->imm.values.value.type = Value_f32;
+                    (*read_p)++;
                     break;
                 case TYPE_f64:
                     instr->imm.values.value.type = Value_f64;
+                    (*read_p)++;
                     break;
                 case REF_funcref:
                     instr->imm.values.value.type = Value_funcref;
+                    (*read_p)++;
                     break;
                 case REF_externref:
                     instr->imm.values.value.type = Value_externref;
+                    (*read_p)++;
                     break;
                 default:
                     instr->imm.values.index = getLeb128_u32(read_p, end_p);

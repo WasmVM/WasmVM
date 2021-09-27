@@ -323,7 +323,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                             return -1;
                     }
                     if((**read_p == 0x01) || (**read_p == 0x00)) {
-                        import->desc.global.mut = **read_p;
+                        import->desc.global.mut = *((*read_p)++);
                     } else {
                         wasmvm_errno = ERROR_unexpected_token;
                         return -1;
