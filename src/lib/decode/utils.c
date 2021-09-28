@@ -93,7 +93,7 @@ i32_t getLeb128_i32(const byte_t **ptr, const byte_t* const end)
                 wasmvm_errno = ERROR_int_rep_too_long;
                 return -1;
             } else {
-                u8_t sign = byte & 0x04;
+                u8_t sign = byte & 0x08;
                 if(sign) {
                     if((byte & 0xf0) != 0x70) {
                         wasmvm_errno = ERROR_int_too_large;

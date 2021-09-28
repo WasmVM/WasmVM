@@ -52,7 +52,7 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '    result += 1;\n'
             '  }else{\n'
             f'    if(strcmp(wasmvm_strerror(wasmvm_errno), "{expected_text}")){{\n'
-            f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] expected message \'{expected_text}\', but got \'%s\'\\n", wasmvm_strerror(wasmvm_errno));\n'
+            f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] module_decode expected message \'{expected_text}\', but got \'%s\'\\n", wasmvm_strerror(wasmvm_errno));\n'
             '      result += 1;\n'
             '    }else{\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'

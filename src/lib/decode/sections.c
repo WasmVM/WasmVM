@@ -769,11 +769,15 @@ int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *
         // Fill func
         WasmFunc *func = module->funcs.data + index;
         func->locals.size = totalLocal;
-        func->locals.data = (ValueType*) malloc_func(sizeof(ValueType) * totalLocal);
-        for(u32_t localIdx = 0, mapIdx = 0; mapIdx < localSize; ++mapIdx) {
-            for(u32_t i = 0; i < localMap[mapIdx].count; ++i, ++localIdx) {
-                func->locals.data[localIdx] = localMap[mapIdx].type;
+        if(totalLocal > 0) {
+            func->locals.data = (ValueType*) malloc_func(sizeof(ValueType) * totalLocal);
+            for(u32_t localIdx = 0, mapIdx = 0; mapIdx < localSize; ++mapIdx) {
+                for(u32_t i = 0; i < localMap[mapIdx].count; ++i, ++localIdx) {
+                    func->locals.data[localIdx] = localMap[mapIdx].type;
+                }
             }
+        } else {
+            func->locals.data = NULL;
         }
         // Body
         const byte_t* bodyHead = *read_p;
