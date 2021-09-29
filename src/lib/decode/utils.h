@@ -13,4 +13,6 @@ u32_t getLeb128_u32(const byte_t **ptr, const byte_t* end);
 i32_t getLeb128_i32(const byte_t **ptr, const byte_t* end);
 i64_t getLeb128_i64(const byte_t **ptr, const byte_t* end);
 
+_Bool check_utf8(const byte_t *ptr, const byte_t* end);
+
 #endif

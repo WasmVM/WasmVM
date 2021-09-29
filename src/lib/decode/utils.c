@@ -203,3 +203,24 @@ i64_t getLeb128_i64(const byte_t **ptr, const byte_t * const end)
     }
     return toLittle64(ret, 0);
 }
+
+_Bool check_utf8(const byte_t* ptr, const byte_t* end)
+{
+    while (ptr < end) {
+        if(*ptr >= 0x80) {
+            if(*ptr >= 0xC0) {
+                for(int count = 1 + (*ptr >= 0xE0) + (*ptr >= 0xF0); count > 0; --count) {
+                    if(((*(++ptr)) & 0xC0) != 0x80) {
+                        return 0;
+                    }
+                }
+                ++ptr;
+            } else {
+                return 0;
+            }
+        } else {
+            ++ptr;
+        }
+    }
+    return (ptr == end);
+}

@@ -262,6 +262,10 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 return -1;
             }
             // Get Module Name
+            if(!check_utf8(*read_p, (*read_p) + modNameLen)) {
+                wasmvm_errno = ERROR_malform_utf8;
+                return -1;
+            }
             import->module = (char*) malloc_func(sizeof(char) * (modNameLen + 1));
             import->module[modNameLen] = '\0';
             memcpy_func(&(import->module), (const char*)*read_p, modNameLen);
@@ -272,6 +276,10 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 return -1;
             }
             // Get name
+            if(!check_utf8(*read_p, (*read_p) + nameLen)) {
+                wasmvm_errno = ERROR_malform_utf8;
+                return -1;
+            }
             import->name = (char*) malloc_func(sizeof(char) * (nameLen + 1));
             import->name[nameLen] = '\0';
             memcpy_func(&(import->name), (const char*)*read_p, nameLen);
@@ -552,6 +560,10 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
             return -1;
         }
         // Get name
+        if(!check_utf8(*read_p, (*read_p) + nameLen)) {
+            wasmvm_errno = ERROR_malform_utf8;
+            return -1;
+        }
         char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
         name[nameLen] = '\0';
         memcpy_func(&name, (const char*)*read_p, nameLen);
