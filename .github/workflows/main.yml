@@ -21,4 +21,4 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - name: Build
-        run: cmake -G Ninja --build $GITHUB_WORKSPACE/build --config Release 
+        run: mkdir build && cd build && cmake -G Ninja --config Release .. && ninja
