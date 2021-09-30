@@ -20,5 +20,7 @@ jobs:
       image: wasmvm/wasmvm:ci
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: 'true'
       - name: Build
         run: mkdir build && cd build && cmake -G Ninja --config Release .. && ninja
