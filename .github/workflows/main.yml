@@ -24,3 +24,9 @@ jobs:
           submodules: 'recursive'
       - name: Build
         run: mkdir build && cd build && cmake -G Ninja --config Release .. && ninja
+      - name: Cache build result
+        uses: actions/cache@v2
+        with:
+          path:
+            ${{ github.workspace }}/build
+          key: ${{ github.sha }}
