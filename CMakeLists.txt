@@ -6,5 +6,6 @@ set(CMAKE_C_STANDARD 11)
 add_subdirectory(src)
 add_subdirectory(third_party)
 
+include(CTest)
 enable_testing()
 add_subdirectory(test)
