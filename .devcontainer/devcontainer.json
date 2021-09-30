@@ -1,6 +1,6 @@
 {
 	"name": "WasmVM",
-	"dockerFile": "../docker/Dockerfile.vscode.develop",
+	"dockerFile": "../docker/Dockerfile.develop",
 	"runArgs": ["--cap-add=SYS_PTRACE"],
 	"extensions": [
 		"ms-vscode.cpptools",
