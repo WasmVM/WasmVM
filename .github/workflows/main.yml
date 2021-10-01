@@ -32,6 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     container:
       image: wasmvm/wasmvm:ci
+    needs: build
     steps:
       - uses: actions/cache@v2
         with:
@@ -39,4 +40,4 @@ jobs:
             ${{ github.workspace }}/build
           key: ${{ github.sha }}
       - name: Run CTest
-        run: ctest
+        run: cd build && ctest
