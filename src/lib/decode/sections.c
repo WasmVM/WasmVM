@@ -170,7 +170,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
     if(wasmvm_errno) {
         return -1;
     }
-    module->types.data = (FuncType*)malloc_func(sizeof(FuncType) * typeNum);
+    if(typeNum > 0){
+        module->types.data = (FuncType*)malloc_func(sizeof(FuncType) * typeNum);
+    }
     module->types.size = typeNum;
     // Get all types
     for(u32_t index = 0; index < typeNum; ++index) {
@@ -180,6 +182,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
             return -1;
         }
         FuncType* funcType = module->types.data + index;
+        // Initialize
+        vector_init(funcType->params);
+        vector_init(funcType->results);
         // FuncType check
         if(*((*read_p)++) != TYPE_Func) {
             wasmvm_errno = ERROR_int_rep_too_long;
@@ -190,7 +195,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         if(wasmvm_errno) {
             return -1;
         }
-        funcType->params.data = (ValueType*)malloc_func(sizeof(ValueType) * paramNum);
+        if(paramNum > 0){
+            funcType->params.data = (ValueType*)malloc_func(sizeof(ValueType) * paramNum);
+        }
         funcType->params.size = paramNum;
         for(u32_t i = 0; i < paramNum; ++i, ++(*read_p)) {
             switch(**read_p) {
@@ -216,7 +223,9 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         if(wasmvm_errno) {
             return -1;
         }
-        funcType->results.data = (ValueType*)malloc_func(sizeof(ValueType) * resultNum);
+        if(resultNum > 0){
+            funcType->results.data = (ValueType*)malloc_func(sizeof(ValueType) * resultNum);
+        }
         funcType->results.size = resultNum;
         for(u32_t i = 0; i < resultNum; ++i, ++(*read_p)) {
             switch (**read_p) {
