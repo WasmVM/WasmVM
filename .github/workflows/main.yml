@@ -41,3 +41,17 @@ jobs:
           key: ${{ github.sha }}
       - name: Run CTest
         run: cd build && ctest
+  
+  memcheck:
+    runs-on: ubuntu-latest
+    container:
+      image: wasmvm/wasmvm:ci
+    needs: build
+    steps:
+      - uses: actions/cache@v2
+        with:
+          path:
+            ${{ github.workspace }}/build
+          key: ${{ github.sha }}
+      - name: Run CTest
+        run: cd build && ctest -T memcheck
