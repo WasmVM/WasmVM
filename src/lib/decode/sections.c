@@ -176,15 +176,15 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
     module->types.size = typeNum;
     // Get all types
     for(u32_t index = 0; index < typeNum; ++index) {
+        FuncType* funcType = module->types.data + index;
+        // Initialize
+        vector_init(funcType->params);
+        vector_init(funcType->results);
         // Type should present
         if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
-        FuncType* funcType = module->types.data + index;
-        // Initialize
-        vector_init(funcType->params);
-        vector_init(funcType->results);
         // FuncType check
         if(*((*read_p)++) != TYPE_Func) {
             wasmvm_errno = ERROR_int_rep_too_long;
@@ -259,12 +259,17 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
     if(wasmvm_errno) {
         return -1;
     }
-    module->imports.data = (WasmImport*)malloc_func(sizeof(WasmImport) * importNum);
+    if(importNum > 0){
+        module->imports.data = (WasmImport*)malloc_func(sizeof(WasmImport) * importNum);
+    }
     module->imports.size = importNum;
     // Get all imports
     for(u32_t index = 0; index < importNum; ++index) {
         if(*read_p < end_p) {
             WasmImport* import = module->imports.data + index;
+            // Initialize
+            vector_init(import->module);
+            vector_init(import->name);
             // Get Module Name length
             u32_t modNameLen = getLeb128_u32(read_p, end_p);
             if(wasmvm_errno) {
@@ -275,10 +280,12 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 wasmvm_errno = ERROR_malform_utf8;
                 return -1;
             }
-            import->module = (char*) malloc_func(sizeof(char) * (modNameLen + 1));
-            import->module[modNameLen] = '\0';
-            memcpy_func(&(import->module), (const char*)*read_p, modNameLen);
-            *read_p += modNameLen;
+            import->module.size = modNameLen;
+            if(modNameLen > 0){
+                import->module.data = (byte_t*) malloc_func(sizeof(byte_t) * modNameLen);
+                memcpy_func((char**)&(import->module.data), (const char*)*read_p, modNameLen);
+                *read_p += modNameLen;
+            }
             // Get Name length
             u32_t nameLen = getLeb128_u32(read_p, end_p);
             if(wasmvm_errno) {
@@ -289,10 +296,12 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 wasmvm_errno = ERROR_malform_utf8;
                 return -1;
             }
-            import->name = (char*) malloc_func(sizeof(char) * (nameLen + 1));
-            import->name[nameLen] = '\0';
-            memcpy_func(&(import->name), (const char*)*read_p, nameLen);
-            *read_p += nameLen;
+            import->name.size = nameLen;
+            if(nameLen > 0){
+                import->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
+                memcpy_func((char**)&(import->name.data), (const char*)*read_p, nameLen);
+                *read_p += nameLen;
+            }
             // import kind
             switch(*((*read_p)++)) {
                 case IMPORT_Func:
