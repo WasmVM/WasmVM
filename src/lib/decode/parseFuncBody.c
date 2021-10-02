@@ -552,5 +552,18 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
                 return -1;
         }
     }
+    // Allocate memory
+    if(instrs.size > 0) {
+        func->body.data = (WasmInstr*)malloc_func(sizeof(WasmInstr) * instrs.size);
+    }
+    func->body.size = instrs.size;
+    // Copy instrs
+    for (unsigned int i = 0; i < instrs.size; ++i) {
+        instr_node_t* cur = instrs.head;
+        instrs.head = instrs.head->next;
+        func->body.data[i] = cur->data;
+        free_func(cur);
+    }
+
     return 0;
 }
