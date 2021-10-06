@@ -29,7 +29,7 @@ jobs:
           path:
             ${{ github.workspace }}/build/third_party/wabt
           key: ${{ hashFiles('.wabt_head') }}
-      - run: mkdir build && cd build && cmake -G Ninja --config Release .. && ninja
+      - run: mkdir -p build && cd build && cmake -G Ninja --config Release .. && ninja
       - uses: actions/cache@v2
         with:
           path:
