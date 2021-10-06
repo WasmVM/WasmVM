@@ -109,7 +109,7 @@ static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t
             wasmvm_errno = ERROR_req_const_expr;
             return -1;
     }
-    if(*((*read_p)++) != 0x0B) {
+    if((*read_p >= end_p) || (*((*read_p)++) != 0x0B)) {
         wasmvm_errno = ERROR_unexpected_end;
         return -1;
     }
@@ -170,7 +170,7 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
     if(wasmvm_errno) {
         return -1;
     }
-    if(typeNum > 0){
+    if(typeNum > 0) {
         module->types.data = (FuncType*)malloc_func(sizeof(FuncType) * typeNum);
     }
     module->types.size = typeNum;
@@ -195,7 +195,7 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         if(wasmvm_errno) {
             return -1;
         }
-        if(paramNum > 0){
+        if(paramNum > 0) {
             funcType->params.data = (ValueType*)malloc_func(sizeof(ValueType) * paramNum);
         }
         funcType->params.size = paramNum;
@@ -223,7 +223,7 @@ int parse_type_section(WasmModule *module, const byte_t **read_p, const byte_t *
         if(wasmvm_errno) {
             return -1;
         }
-        if(resultNum > 0){
+        if(resultNum > 0) {
             funcType->results.data = (ValueType*)malloc_func(sizeof(ValueType) * resultNum);
         }
         funcType->results.size = resultNum;
@@ -259,17 +259,17 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
     if(wasmvm_errno) {
         return -1;
     }
-    if(importNum > 0){
+    if(importNum > 0) {
         module->imports.data = (WasmImport*)malloc_func(sizeof(WasmImport) * importNum);
     }
     module->imports.size = importNum;
     // Get all imports
     for(u32_t index = 0; index < importNum; ++index) {
+        WasmImport* import = module->imports.data + index;
+        // Initialize
+        vector_init(import->module);
+        vector_init(import->name);
         if(*read_p < end_p) {
-            WasmImport* import = module->imports.data + index;
-            // Initialize
-            vector_init(import->module);
-            vector_init(import->name);
             // Get Module Name length
             u32_t modNameLen = getLeb128_u32(read_p, end_p);
             if(wasmvm_errno) {
@@ -281,9 +281,9 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 return -1;
             }
             import->module.size = modNameLen;
-            if(modNameLen > 0){
+            if(modNameLen > 0) {
                 import->module.data = (byte_t*) malloc_func(sizeof(byte_t) * modNameLen);
-                memcpy_func((char**)&(import->module.data), (const char*)*read_p, modNameLen);
+                memcpy_func((char*)import->module.data, (const char*)*read_p, modNameLen);
                 *read_p += modNameLen;
             }
             // Get Name length
@@ -297,9 +297,9 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                 return -1;
             }
             import->name.size = nameLen;
-            if(nameLen > 0){
+            if(nameLen > 0) {
                 import->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
-                memcpy_func((char**)&(import->name.data), (const char*)*read_p, nameLen);
+                memcpy_func((char*)import->name.data, (const char*)*read_p, nameLen);
                 *read_p += nameLen;
             }
             // import kind
@@ -408,12 +408,20 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
         }
 
         // Create WasmTable instance
+        if(*read_p >= end_p) {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
         byte_t refCode = *((*read_p)++);
         if(refCode == REF_funcref) {
             module->tables.data[index].refType = Ref_func;
         } else if(refCode == REF_externref) {
             module->tables.data[index].refType = Ref_extern;
         } else {
+            wasmvm_errno = ERROR_unexpect_end;
+            return -1;
+        }
+        if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
@@ -582,10 +590,12 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
             wasmvm_errno = ERROR_malform_utf8;
             return -1;
         }
-        char* name = (char*) malloc(sizeof(char) * (nameLen + 1));
-        name[nameLen] = '\0';
-        memcpy_func(&name, (const char*)*read_p, nameLen);
-        *read_p += nameLen;
+        newExport->name.size = nameLen;
+        if(nameLen > 0) {
+            newExport->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
+            memcpy_func((char*)newExport->name.data, (const char*)*read_p, nameLen);
+            *read_p += nameLen;
+        }
 
         // Export type
         newExport->descType = Desc_Unspecified;
@@ -868,7 +878,7 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
                     wasmvm_errno = ERROR_unexpect_end;
                     return -1;
                 }
-                memcpy_func((char**)&(newData->init.data), (char*)*read_p, newData->init.size);
+                memcpy_func((char*)newData->init.data, (char*)*read_p, newData->init.size);
                 *read_p += newData->init.size;
                 break;
             default:

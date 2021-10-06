@@ -24,8 +24,8 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '    result += 1;\n'
         '  }else{\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
+        '    module_free(module);\n'
         '  }\n'
-        '  module_free(module);\n'
         '}\n'
         '\n'
     )
@@ -56,9 +56,9 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '      result += 1;\n'
             '    }else{\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
+            '    module_free(module);\n'
             '    }\n'
             '  }\n'
-            '  module_free(module);\n'
             '}\n'
             '\n'
         )

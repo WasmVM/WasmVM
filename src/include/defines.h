@@ -18,6 +18,6 @@ typedef unsigned char   byte_t;
 #define free_func free
 #define realloc_func realloc
 
-void memcpy_func(char** const dst, const char* const src, u64_t size);
+void memcpy_func(char* const dst, const char* const src, u64_t size);
 
 #endif

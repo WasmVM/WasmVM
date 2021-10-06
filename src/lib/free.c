@@ -8,17 +8,46 @@
 #include <structures/WasmModule.h>
 #include <dataTypes/vector_t.h>
 
-static void free_FuncType(FuncType type){
-    free_func(type.params.data);
-    free_func(type.results.data);
+static void free_FuncType(FuncType* type)
+{
+    free_func(type->params.data);
+    vector_init(type->params);
+    free_func(type->results.data);
+    vector_init(type->results);
 }
+
+static void free_Import(WasmImport* import)
+{
+    free_func(import->module.data);
+    vector_init(import->module);
+    free_func(import->name.data);
+    vector_init(import->name);
+}
+
 
 void module_free(wasm_module modulePtr)
 {
-    WasmModule* module = modulePtr;
-    // types
-    for(unsigned int i = 0; i < module->types.size; ++i){
-        free_FuncType(module->types.data[i]);
+    if(modulePtr != NULL) {
+        WasmModule* module = modulePtr;
+        // types
+        for(unsigned int i = 0; i < module->types.size; ++i) {
+            free_FuncType(module->types.data + i);
+        }
+        free_vector(module->types);
+        // imports
+        for(unsigned int i = 0; i < module->imports.size; ++i) {
+            free_Import(module->imports.data + i);
+        }
+        free_vector(module->imports);
+        // TODO: funcs
+        // tables
+        free_vector(module->tables);
+        // mems
+        free_vector(module->mems);
+        // globals
+        free_vector(module->globals);
+        // TODO: exports
+        // TODO: elems
+        // TODO: datas
     }
-    free_vector(module->types);
 }
