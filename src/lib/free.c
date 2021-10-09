@@ -24,6 +24,11 @@ static void free_Import(WasmImport* import)
     vector_init(import->name);
 }
 
+static void free_Export(WasmExport* export)
+{
+    free_func(export->name.data);
+    vector_init(export->name);
+}
 
 void module_free(wasm_module modulePtr)
 {
@@ -46,8 +51,14 @@ void module_free(wasm_module modulePtr)
         free_vector(module->mems);
         // globals
         free_vector(module->globals);
-        // TODO: exports
+        // exports
+        for(unsigned int i = 0; i < module->exports.size; ++i) {
+            free_Export(module->exports.data + i);
+        }
+        free_vector(module->exports);
         // TODO: elems
         // TODO: datas
+        free_func(modulePtr);
+        modulePtr = NULL;
     }
 }

@@ -569,12 +569,14 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
     module->exports.data = (WasmExport*)malloc_func(sizeof(WasmExport) * exportNum);
     module->exports.size = exportNum;
     for(u32_t index = 0; index < exportNum; ++index) {
+        WasmExport* export = module->exports.data + index;
+        // Initialize
+        vector_init(export->name);
         // Handle unexpected end
         if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
-        WasmExport* newExport = module->exports.data + index;
         // Get name length
         u32_t nameLen = getLeb128_u32(read_p, end_p);
         if(wasmvm_errno) {
@@ -590,34 +592,34 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
             wasmvm_errno = ERROR_malform_utf8;
             return -1;
         }
-        newExport->name.size = nameLen;
+        export->name.size = nameLen;
         if(nameLen > 0) {
-            newExport->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
-            memcpy_func((char*)newExport->name.data, (const char*)*read_p, nameLen);
+            export->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
+            memcpy_func((char*)export->name.data, (const char*)*read_p, nameLen);
             *read_p += nameLen;
         }
 
         // Export type
-        newExport->descType = Desc_Unspecified;
+        export->descType = Desc_Unspecified;
         switch(*((*read_p)++)) {
             case IMPORT_Func:
-                newExport->descType = Desc_Func;
+                export->descType = Desc_Func;
                 break;
             case IMPORT_Table:
-                newExport->descType = Desc_Table;
+                export->descType = Desc_Table;
                 break;
             case IMPORT_Mem:
-                newExport->descType = Desc_Mem;
+                export->descType = Desc_Mem;
                 break;
             case IMPORT_Global:
-                newExport->descType = Desc_Global;
+                export->descType = Desc_Global;
                 break;
             default:
                 wasmvm_errno = ERROR_type_mis;
                 return -1;
         }
         // Export index
-        newExport->descIdx = getLeb128_u32(read_p, end_p);
+        export->descIdx = getLeb128_u32(read_p, end_p);
         if(wasmvm_errno) {
             return -1;
         }
