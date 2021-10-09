@@ -61,5 +61,5 @@ jobs:
           path:
             ${{ github.workspace }}/build
           key: ${{ github.sha }}
-      - name: Run CTest
-        run: cd build && ctest -T memcheck
+      - name: Run memory check
+        run: ./scripts/memory_check.sh
