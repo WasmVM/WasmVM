@@ -56,6 +56,7 @@ jobs:
       image: wasmvm/wasmvm:ci
     needs: build
     steps:
+      - uses: actions/checkout@v2
       - uses: actions/cache@v2
         with:
           path:
