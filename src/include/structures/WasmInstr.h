@@ -23,9 +23,6 @@ typedef struct {
     } imm;
 } WasmInstr;
 
-#define get_imm_vector(T, V) (vector_t(T)*)(&(V.imm.vec))
-
-// void clean_WasmInstr(WasmInstr* instr);
-// void free_WasmInstr(WasmInstr* instr);
+void free_Instr(WasmInstr* instr);
 
 #endif

@@ -5,6 +5,7 @@
  */
 
 #include <WasmVM.h>
+#include <Opcodes.h>
 #include <structures/WasmModule.h>
 #include <dataTypes/vector_t.h>
 
@@ -30,6 +31,38 @@ static void free_Export(WasmExport* export)
     vector_init(export->name);
 }
 
+static void free_Func(WasmFunc* func)
+{
+    // locals
+    free_func(func->locals.data);
+    vector_init(func->locals);
+    // body
+    for(unsigned int i = 0; i < func->body.size; ++i) {
+        WasmInstr* instr = func->body.data + i;
+        free_Instr(instr);
+    }
+    free_func(func->body.data);
+    vector_init(func->body);
+}
+
+static void free_Data(WasmData* data)
+{
+    free_func(data->init.data);
+    vector_init(data->init);
+}
+
+void free_Instr(WasmInstr* instr)
+{
+    switch (instr->opcode) {
+        case Op_select_t:
+        case Op_br_table:
+            free_func(instr->imm.vec.data);
+            break;
+        default:
+            break;
+    }
+}
+
 void module_free(wasm_module modulePtr)
 {
     if(modulePtr != NULL) {
@@ -44,7 +77,11 @@ void module_free(wasm_module modulePtr)
             free_Import(module->imports.data + i);
         }
         free_vector(module->imports);
-        // TODO: funcs
+        // funcs
+        for(unsigned int i = 0; i < module->funcs.size; ++i) {
+            free_Func(module->funcs.data + i);
+        }
+        free_vector(module->funcs);
         // tables
         free_vector(module->tables);
         // mems
@@ -57,7 +94,11 @@ void module_free(wasm_module modulePtr)
         }
         free_vector(module->exports);
         // TODO: elems
-        // TODO: datas
+        // datas
+        for(unsigned int i = 0; i < module->datas.size; ++i) {
+            free_Data(module->datas.data + i);
+        }
+        free_vector(module->datas);
         free_func(modulePtr);
         modulePtr = NULL;
     }

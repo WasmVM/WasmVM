@@ -25,8 +25,11 @@ typedef struct {
         instrs->end->next = (instr_node_t*) malloc_func(sizeof(instr_node_t)); \
         instrs->end = instrs->end->next; \
     } \
+    instrs->end->data.opcode = 0; \
+    instrs->size += 1; \
     instrs->end->next = NULL;
 
+typedef vector_t(u32_t) br_table_imm_t;
 int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
@@ -87,7 +90,8 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
             }
             instr->imm.vec.data = (u32_t*)malloc_func(instr->imm.vec.size * sizeof(u32_t));
             for(u32_t count = 0; count < instr->imm.vec.size; ++count) {
-                ((u32_t*)instr->imm.vec.data)[count] = getLeb128_u32(read_p, end_p);
+                br_table_imm_t* immVec = (br_table_imm_t*)&(instr->imm.vec);
+                immVec->data[count] = getLeb128_u32(read_p, end_p);
                 if(wasmvm_errno) {
                     return -1;
                 }
@@ -146,6 +150,7 @@ int parseReferenceInstr(u16_t opcode, instr_list_t* const instrs, const byte_t *
     return 0;
 }
 
+typedef vector_t(ValueType) select_imm_t;
 int parseParametricInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
@@ -157,25 +162,27 @@ int parseParametricInstr(u16_t opcode, instr_list_t* const instrs, const byte_t 
         if(wasmvm_errno) {
             return -1;
         }
+        select_imm_t *immVec = (select_imm_t*)&(instr->imm.vec);
+        immVec->data = (ValueType*)malloc_func(immVec->size * sizeof(ValueType));
         for(u32_t index = 0; index < instr->imm.vec.size; ++index) {
             switch (*((*read_p)++)) {
                 case TYPE_i32:
-                    instr->imm.values.value.type = Value_i32;
+                    immVec->data[index] = Value_i32;
                     break;
                 case TYPE_i64:
-                    instr->imm.values.value.type = Value_i64;
+                    immVec->data[index] = Value_i64;
                     break;
                 case TYPE_f32:
-                    instr->imm.values.value.type = Value_f32;
+                    immVec->data[index] = Value_f32;
                     break;
                 case TYPE_f64:
-                    instr->imm.values.value.type = Value_f64;
+                    immVec->data[index] = Value_f64;
                     break;
                 case REF_funcref:
-                    instr->imm.values.value.type = Value_funcref;
+                    immVec->data[index] = Value_funcref;
                     break;
                 case REF_externref:
-                    instr->imm.values.value.type = Value_externref;
+                    immVec->data[index] = Value_externref;
                     break;
                 default:
                     wasmvm_errno = ERROR_unexpected_token;
@@ -300,6 +307,18 @@ int parseNumericInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
     return 0;
 }
 
+static void freeInstrList(instr_list_t* list)
+{
+    while (list->head != NULL) {
+        instr_node_t* node = list->head;
+        list->head = list->head->next;
+        free_Instr(&(node->data));
+        free_func(node);
+    }
+    list->size = 0;
+    list->end = NULL;
+}
+
 int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end_p)
 {
     // Initialize instruction list
@@ -313,6 +332,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
         if(opcode == 0xFC) {
             u32_t extOp = getLeb128_u32(read_p, end_p);
             if(wasmvm_errno) {
+                freeInstrList(&instrs);
                 return -1;
             }
             opcode = (opcode << 8) | ((u16_t)extOp);
@@ -332,6 +352,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_call:
             case Op_call_indirect:
                 if(parseControlInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -339,6 +360,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_ref_is_null:
             case Op_ref_func:
                 if(parseReferenceInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -346,6 +368,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_select:
             case Op_select_t:
                 if(parseParametricInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -355,6 +378,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_global_get:
             case Op_global_set:
                 if(parseVariableInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -367,6 +391,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_table_size:
             case Op_table_fill:
                 if(parseTableInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -400,6 +425,7 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_memory_copy:
             case Op_memory_fill:
                 if(parseMemoryInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
@@ -544,11 +570,13 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
             case Op_i64_trunc_sat_f64_s:
             case Op_i64_trunc_sat_f64_u:
                 if(parseNumericInstr(opcode, &instrs, read_p, end_p)) {
+                    freeInstrList(&instrs);
                     return -1;
                 }
                 break;
             default:
                 wasmvm_errno = ERROR_unexpected_token;
+                freeInstrList(&instrs);
                 return -1;
         }
     }
@@ -564,6 +592,5 @@ int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end
         func->body.data[i] = cur->data;
         free_func(cur);
     }
-
     return 0;
 }

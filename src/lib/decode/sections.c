@@ -376,11 +376,15 @@ int parse_func_section(WasmModule *module, const byte_t **read_p, const byte_t *
     if(wasmvm_errno) {
         return -1;
     }
-    module->funcs.data = (WasmFunc*)malloc_func(sizeof(WasmFunc) * funcNum);
     module->funcs.size = funcNum;
+    if(funcNum > 0) {
+        module->funcs.data = (WasmFunc*)malloc_func(sizeof(WasmFunc) * funcNum);
+    }
     // Get all funcs
     for(u32_t index = 0; index < funcNum; ++index) {
         module->funcs.data[index].type = getLeb128_u32(read_p, end_p);
+        vector_init(module->funcs.data[index].locals);
+        vector_init(module->funcs.data[index].body);
         if(wasmvm_errno) {
             return -1;
         }
