@@ -12,7 +12,7 @@ typedef struct {
     FuncType type;
     vector_t(ValueType) locals;    // ValueType
     ModuleInst* module;
-    // int (*hostcode)(); // TODO: accelerator
+    // int (*hostcode)(); // TODO:
     vector_t(InstrInst*) code;    // InstrInst
     byte_t payload[];
 } FuncInst;

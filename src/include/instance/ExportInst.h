@@ -1,17 +1,14 @@
-#ifndef WASMVM_INSTANCE_EXPORTINST_DEF
-#define WASMVM_INSTANCE_EXPORTINST_DEF
+#ifndef WASMVM_INSTANCE_EXPORTINST
+#define WASMVM_INSTANCE_EXPORTINST
 
-#include <stdint.h>
+#include <defines.h>
+#include <dataTypes/vector_t.h>
 #include <dataTypes/DescType.h>
 
 typedef struct {
-    char* name;
-    DescType descType;
-    uint32_t valueAddr;
+    vector_t(byte_t) name;
+    DescType type;
+    u32_t value;
 } ExportInst;
-
-ExportInst* new_ExportInst();
-void clean_ExportInst(ExportInst* exportInst);
-void free_ExportInst(ExportInst* exportInst);
 
 #endif
