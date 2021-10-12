@@ -651,16 +651,19 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
     if(wasmvm_errno) {
         return -1;
     }
-    module->elems.data = (WasmElem*)malloc_func(sizeof(WasmElem) * elemNum);
     module->elems.size = elemNum;
+    if(elemNum > 0) {
+        module->elems.data = (WasmElem*)malloc_func(sizeof(WasmElem) * elemNum);
+    }
     // Get all elems
     for(u32_t index = 0; index < elemNum; ++index) {
+        WasmElem *newElem = module->elems.data + index;
+        vector_init(newElem->init);
         // Handle unexpected end
         if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpected_end;
             return -1;
         }
-        WasmElem *newElem = module->elems.data + index;
         // Initial byte
         byte_t initByte = *((*read_p)++);
         // Mode
@@ -707,7 +710,9 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
             if(wasmvm_errno) {
                 return -1;
             }
-            newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
+            if(idxNum > 0) {
+                newElem->init.data = (ConstExpr*)malloc_func(sizeof(ConstExpr) * idxNum);
+            }
             newElem->init.size = idxNum;
             // Get expr
             for(u32_t idx = 0; idx < idxNum; ++idx) {
@@ -851,15 +856,18 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
         wasmvm_errno = ERROR_data_seg_not_fit;
         return -1;
     }
-    module->datas.data = (WasmData*)malloc_func(sizeof(WasmData) * dataNum);
+    if(dataNum > 0) {
+        module->datas.data = (WasmData*)malloc_func(sizeof(WasmData) * dataNum);
+    }
     // Parse all codes
     for(u32_t index = 0; index < dataNum; ++index) {
+        WasmData *newData = module->datas.data + index;
+        vector_init(newData->init);
         // Handle unexpected end
         if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpect_end;
             return -1;
         }
-        WasmData *newData = module->datas.data + index;
         byte_t modeCode = *((*read_p)++);
         switch (modeCode) {
             case 0x02:
@@ -879,7 +887,9 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
                 if(wasmvm_errno) {
                     return -1;
                 }
-                newData->init.data = (byte_t*)malloc_func(sizeof(byte_t) * newData->init.size);
+                if(newData->init.size > 0) {
+                    newData->init.data = (byte_t*)malloc_func(sizeof(byte_t) * newData->init.size);
+                }
                 if((end_p - *read_p) < newData->init.size) {
                     wasmvm_errno = ERROR_unexpect_end;
                     return -1;

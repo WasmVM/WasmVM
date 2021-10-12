@@ -51,6 +51,12 @@ static void free_Data(WasmData* data)
     vector_init(data->init);
 }
 
+static void free_Elem(WasmElem* elem)
+{
+    free_func(elem->init.data);
+    vector_init(elem->init);
+}
+
 void free_Instr(WasmInstr* instr)
 {
     switch (instr->opcode) {
@@ -93,7 +99,11 @@ void module_free(wasm_module modulePtr)
             free_Export(module->exports.data + i);
         }
         free_vector(module->exports);
-        // TODO: elems
+        // elems
+        for(unsigned int i = 0; i < module->elems.size; ++i) {
+            free_Elem(module->elems.data + i);
+        }
+        free_vector(module->elems);
         // datas
         for(unsigned int i = 0; i < module->datas.size; ++i) {
             free_Data(module->datas.data + i);
