@@ -3,8 +3,9 @@
 
 #include <defines.h>
 #include <error.h>
+#include <structures/WasmModule.h>
 
-typedef struct module_t* wasm_module;
+typedef WasmModule* wasm_module;
 
 int module_decode(const byte_t* data, const size_t size, wasm_module* module);
 void module_free(wasm_module module);
