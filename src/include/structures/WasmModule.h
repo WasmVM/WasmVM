@@ -15,7 +15,6 @@
 #include <structures/WasmData.h>
 
 typedef struct {
-    // char*          modulename; // module_name: string, indicate name of module (aim to support import/export)
     vector_t(FuncType)   types;   // types:   Vector<FuncType>
     vector_t(WasmImport) imports; // imports: Vector<WasmImport>
     vector_t(WasmFunc)   funcs;   // funcs:   Vector<WasmFunc>
@@ -27,5 +26,7 @@ typedef struct {
     vector_t(WasmElem)   elems;   // elems: Vector<WasmElem>
     vector_t(WasmData)   datas;   // datas: Vector<WasmData>
 } WasmModule;
+
+typedef WasmModule* wasm_module;
 
 #endif

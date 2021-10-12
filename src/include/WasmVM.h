@@ -4,13 +4,12 @@
 #include <defines.h>
 #include <error.h>
 #include <structures/WasmModule.h>
-
-typedef WasmModule* wasm_module;
+#include <Store.h>
 
 int module_decode(const byte_t* data, const size_t size, wasm_module* module);
 void module_free(wasm_module module);
+wasm_store store_init();
 
-// TODO: store_init()
 // TODO: module_validate()
 // TODO: module_instantiate()
 // TODO: module_imports()
