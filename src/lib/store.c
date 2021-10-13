@@ -9,6 +9,8 @@ Store* store_init()
     vector_init(store->tables);
     vector_init(store->mems);
     vector_init(store->globals);
+    vector_init(store->elems);
+    vector_init(store->datas);
     return store;
 }
 
