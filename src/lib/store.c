@@ -1,4 +1,4 @@
-#include <Store.h>
+#include <WasmVM.h>
 
 #include <defines.h>
 
@@ -10,4 +10,9 @@ Store* store_init()
     vector_init(store->mems);
     vector_init(store->globals);
     return store;
+}
+
+void store_free(Store* store)
+{
+    // TODO:
 }

@@ -9,6 +9,7 @@
 int module_decode(const byte_t* data, const size_t size, wasm_module* module);
 void module_free(wasm_module module);
 wasm_store store_init();
+void store_free(wasm_store store); // TODO:
 
 // TODO: module_instantiate()
 // TODO: module_validate()
