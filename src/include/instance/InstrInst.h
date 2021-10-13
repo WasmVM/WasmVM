@@ -1,16 +1,11 @@
-#ifndef WASMVM_INSTANCE_INSTRINST_DEF
-#define WASMVM_INSTANCE_INSTRINST_DEF
+#ifndef WASMVM_INSTANCE_INSTRINST
+#define WASMVM_INSTANCE_INSTRINST
 
-#include <stdint.h>
+#include <defines.h>
 
-typedef struct InstrInst_ {
-    uint8_t opcode;
-    void (*free)(struct InstrInst_* instrInst);
-    void (*clean)(struct InstrInst_* instrInst);
+typedef struct {
+    u16_t opcode;
+    byte_t payload[];
 } InstrInst;
-
-InstrInst* new_InstrInst();
-void clean_InstrInst(InstrInst* instrInst);
-void free_InstrInst(InstrInst* instrInst);
 
 #endif
