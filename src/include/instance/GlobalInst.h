@@ -1,14 +1,8 @@
-#ifndef WASMVM_INSTANCE_GLOBAL_DEF
-#define WASMVM_INSTANCE_GLOBAL_DEF
+#ifndef WASMVM_INSTANCE_GLOBAL
+#define WASMVM_INSTANCE_GLOBAL
 
 #include <dataTypes/Value.h>
 
-typedef struct {
-    Value value;
-    _Bool mut;
-} GlobalInst;
-
-GlobalInst* new_GlobalInst();
-void free_GlobalInst(GlobalInst* globalInst);
+typedef Value GlobalInst;
 
 #endif

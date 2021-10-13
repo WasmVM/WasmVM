@@ -2,7 +2,6 @@
 #define WASMVM_DATATYPES_VALUE_DEF
 
 #include <defines.h>
-// #include <dataTypes/Entry.h>
 
 typedef enum {
     Value_Unspecified = 0,
@@ -15,7 +14,6 @@ typedef enum {
 } ValueType;
 
 typedef struct {
-    // Entry parent;
     ValueType type;
     union {
         i32_t i32;
@@ -27,11 +25,5 @@ typedef struct {
         void* ref;
     } value;
 } Value;
-
-// Value* new_i32Value(int32_t value);
-// Value* new_i64Value(int64_t value);
-// Value* new_f32Value(float value);
-// Value* new_f64Value(double value);
-// void free_Value(Value *value);
 
 #endif
