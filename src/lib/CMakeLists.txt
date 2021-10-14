@@ -13,7 +13,7 @@ add_library(WasmVM
     decode/sections.c
     decode/utils.c
     decode/parseFuncBody.c
-    instanciate/instanciate.c
+    instantiate/instantiate.c
     error.c
     defines.c
     free.c
