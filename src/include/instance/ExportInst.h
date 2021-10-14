@@ -4,11 +4,11 @@
 #include <defines.h>
 #include <dataTypes/vector_t.h>
 #include <dataTypes/DescType.h>
+#include <instance/ExternVal.h>
 
 typedef struct {
     vector_t(byte_t) name;
-    DescType type;
-    u32_t value;
+    ExternVal value;
 } ExportInst;
 
 #endif
