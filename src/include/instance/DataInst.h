@@ -5,7 +5,7 @@
 #include <dataTypes/vector_t.h>
 
 typedef struct {
-    vector_t(byte) data;
+    vector_t(byte_t) data;
 } DataInst;
 
 #endif

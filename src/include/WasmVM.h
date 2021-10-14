@@ -10,8 +10,8 @@ int module_decode(const byte_t* data, const size_t size, wasm_module* module);
 void module_free(wasm_module module);
 wasm_store store_init();
 void store_free(wasm_store store); // TODO:
+int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const ExternVal extern_val[extern_size], wasm_module_inst* module_inst);
 
-// TODO: module_instantiate()
 // TODO: module_validate()
 // TODO: module_imports()
 // TODO: module_exports()

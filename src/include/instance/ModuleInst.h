@@ -15,4 +15,5 @@ typedef struct {
     vector_t(ExportInst) exports;
 } ModuleInst;
 
+typedef ModuleInst* wasm_module_inst;
 #endif
