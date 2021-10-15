@@ -9,4 +9,6 @@ typedef struct {
     vector_t(ValueType) results;    // ValueType
 } FuncType;
 
+void free_FuncType(FuncType* type);
+
 #endif

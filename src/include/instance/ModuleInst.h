@@ -16,4 +16,7 @@ typedef struct {
 } ModuleInst;
 
 typedef ModuleInst* wasm_module_inst;
+
+void module_inst_free(wasm_module_inst moduleInst);
+
 #endif

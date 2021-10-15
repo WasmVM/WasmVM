@@ -9,14 +9,6 @@
 #include <structures/WasmModule.h>
 #include <dataTypes/vector_t.h>
 
-static void free_FuncType(FuncType* type)
-{
-    free_func(type->params.data);
-    vector_init(type->params);
-    free_func(type->results.data);
-    vector_init(type->results);
-}
-
 static void free_Import(WasmImport* import)
 {
     free_func(import->module.data);
@@ -55,6 +47,14 @@ static void free_Elem(WasmElem* elem)
 {
     free_func(elem->init.data);
     vector_init(elem->init);
+}
+
+void free_FuncType(FuncType* type)
+{
+    free_func(type->params.data);
+    vector_init(type->params);
+    free_func(type->results.data);
+    vector_init(type->results);
 }
 
 void free_Instr(WasmInstr* instr)
@@ -110,6 +110,5 @@ void module_free(wasm_module modulePtr)
         }
         free_vector(module->datas);
         free_func(modulePtr);
-        modulePtr = NULL;
     }
 }

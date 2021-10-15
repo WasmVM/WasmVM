@@ -21,5 +21,13 @@ Store* store_init()
 
 void store_free(Store* store)
 {
-    // TODO:
+    if(store != NULL) {
+        free_vector(store->funcs);
+        free_vector(store->tables);
+        free_vector(store->mems);
+        free_vector(store->globals);
+        free_vector(store->elems);
+        free_vector(store->datas);
+        free_func(store);
+    }
 }

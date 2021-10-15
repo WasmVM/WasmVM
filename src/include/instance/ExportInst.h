@@ -11,4 +11,6 @@ typedef struct {
     ExternVal value;
 } ExportInst;
 
+void free_ExportInst(ExportInst* export);
+
 #endif

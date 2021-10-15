@@ -4,6 +4,7 @@
  * license that can be found in the LICENSE file.
  */
 
+#include <error.h>
 #include <Store.h>
 #include <structures/WasmModule.h>
 #include <instance/ExternVal.h>
@@ -12,5 +13,5 @@
 int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const ExternVal extern_val[extern_size], wasm_module_inst* module_inst)
 {
     // TODO:
-    return 0;
+    return ERROR_success;
 }

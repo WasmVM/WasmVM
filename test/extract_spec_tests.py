@@ -10,25 +10,26 @@ def action_module(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
     # Decode module
     case_file.write(
-        f'/** module "{wasm_file}" */\n'
-        '{\n'
+        f'/** {wast_line}: module "{wasm_file}" */\n'
+        '{ // Decode\n'
+        '  module_free(module);\n'
+        '  module = NULL;\n'
+        '  module_inst_free(module_inst);\n'
+        '  module_inst = NULL;\n'
         '  size_t bin_size = 0;\n'
         f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
         '  if(bin_data == NULL){\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
         '    return -1;\n'
         '  }\n'
-        '  wasm_module module = NULL;\n'
         '  if(module_decode(bin_data, bin_size, &module)){\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed decoding module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
         '    result += 1;\n'
         '  }else{\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
-        '    module_free(module);\n'
         '  }\n'
         '  free(bin_data);\n'
         '}\n'
-        '\n'
     )
 
 def action_assert_malformed(case_file: TextIO, command: dict) -> None:
@@ -39,7 +40,7 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
         expected_text = command["text"]
         # Decode module
         case_file.write(
-            f'/** assert_malformed module: {wasm_file} text: "{expected_text}"*/\n'
+            f'/** {wast_line}: assert_malformed module: {wasm_file} text: "{expected_text}"*/\n'
             '{\n'
             '  size_t bin_size = 0;\n'
             f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
@@ -47,8 +48,8 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
             '    return -1;\n'
             '  }\n'
-            '  wasm_module module = NULL;\n'
-            '  if(module_decode(bin_data, bin_size, &module) == ERROR_success){\n'
+            '  wasm_module malformed = NULL;\n'
+            '  if(module_decode(bin_data, bin_size, &malformed) == ERROR_success){\n'
             f'    fprintf(stderr, "{wasm_file}({wast_line}): [Failed] should be malformed\\n");\n'
             '    result += 1;\n'
             '  }else{\n'
@@ -57,7 +58,7 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '      result += 1;\n'
             '    }else{\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
-            '      module_free(module);\n'
+            '      module_free(malformed);\n'
             '    }\n'
             '  }\n'
             '  free(bin_data);\n'
@@ -78,6 +79,9 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "\n"
             "int main(void){\n"
             "int result = 0;\n"
+            "wasm_module module = NULL;\n"
+            "wasm_module_inst module_inst = NULL;\n"
+            "wasm_store store = store_init();\n"
             "\n"
         )
         # Commands
@@ -90,6 +94,9 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
         # Epilogue
         case_file.write(
             "\n"
+            "store_free(store);\n"
+            "module_free(module);\n"
+            "module_inst_free(module_inst);\n"
             "return result;\n"
             "}\n"
         )
