@@ -67,17 +67,21 @@ static void adjust_red(struct _hashmap* node)
 
 void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* value, struct _hashmap** map)
 {
+    // Get hash
     u64_t md5[2];
     md5_hash(key_size, key, md5);
+    // Traverse
     struct _hashmap **previous = map, *cursor = *map, *parent = NULL;
     while(cursor != NULL) {
         if(md5[0] == cursor->key[0]) {
+            // Equal key 0
             if(md5[1] == cursor->key[1]) {
                 // Same key
                 free(cursor->data);
                 cursor->data = value;
                 return;
             } else {
+                // Differ key 1
                 parent = cursor;
                 if(md5[1] < cursor->key[1]) {
                     previous = &(cursor->left);
@@ -88,6 +92,7 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
                 }
             }
         } else {
+            // Differ key 0
             parent = cursor;
             if(md5[0] < cursor->key[0]) {
                 previous = &(cursor->left);
@@ -109,4 +114,54 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
     node->root = parent;
     *previous = node;
     adjust_red(node);
+}
+
+void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], struct _hashmap* map)
+{
+    // Empty map
+    if(map == NULL) {
+        return NULL;
+    }
+    // Get hash
+    u64_t md5[2];
+    md5_hash(key_size, key, md5);
+    // Traverse
+    struct _hashmap *cursor = map;
+    while(cursor != NULL) {
+        if(md5[0] == cursor->key[0]) {
+            if(md5[1] == cursor->key[1]) {
+                // Matched
+                return cursor->data;
+            } else {
+                if(md5[1] < cursor->key[1]) {
+                    cursor = cursor->left;
+                } else {
+                    cursor = cursor->right;
+                }
+            }
+        } else {
+            if(md5[0] < cursor->key[0]) {
+                cursor = cursor->left;
+            } else {
+                cursor = cursor->right;
+            }
+        }
+    }
+    return NULL;
+}
+
+void free_hashmap(struct _hashmap* map)
+{
+    while(map != NULL) {
+        if(map->left != NULL) {
+            map = map->left;
+        } else if(map->right != NULL) {
+            map = map->right;
+        } else {
+            struct _hashmap* cur = map;
+            map = map->root;
+            free(cur->data);
+            free(cur);
+        }
+    }
 }
