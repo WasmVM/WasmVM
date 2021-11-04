@@ -19,4 +19,5 @@ add_library(WasmVM
     defines.c
     free.c
     store.c
+    import.c
 )

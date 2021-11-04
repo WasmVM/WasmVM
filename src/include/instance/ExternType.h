@@ -1,17 +1,16 @@
-#ifndef WASMVM_STRUCTURE_IMPORT
-#define WASMVM_STRUCTURE_IMPORT
+#ifndef WASMVM_INSTANCE_EXTERNTYPE
+#define WASMVM_INSTANCE_EXTERNTYPE
 
 #include <defines.h>
-#include <dataTypes/Value.h>
 #include <dataTypes/DescType.h>
-#include <dataTypes/vector_t.h>
+#include <dataTypes/FuncType.h>
 
 typedef struct {
     vector_t(byte_t) module;
     vector_t(byte_t) name;
     DescType         descType;
     union {
-        u32_t typeidx; // index of funcType in types
+        FuncType func;
         struct {
             u32_t min;
             u32_t max;
@@ -21,6 +20,6 @@ typedef struct {
             ValueType valueType;
         } global;
     } desc;
-} WasmImport;
+} ExternType;
 
 #endif
