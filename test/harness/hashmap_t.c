@@ -116,7 +116,7 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
     adjust_red(node);
 }
 
-void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], struct _hashmap* map)
+void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], const struct _hashmap* map)
 {
     // Empty map
     if(map == NULL) {
@@ -126,7 +126,7 @@ void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], struct _h
     u64_t md5[2];
     md5_hash(key_size, key, md5);
     // Traverse
-    struct _hashmap *cursor = map;
+    const struct _hashmap *cursor = map;
     while(cursor != NULL) {
         if(md5[0] == cursor->key[0]) {
             if(md5[1] == cursor->key[1]) {
