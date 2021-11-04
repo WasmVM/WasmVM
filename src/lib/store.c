@@ -22,7 +22,7 @@ Store* store_init()
 void store_free(Store* store)
 {
     if(store != NULL) {
-        // TODO:
+        // FIXME:
         free_vector(store->funcs);
         free_vector(store->tables);
         free_vector(store->mems);

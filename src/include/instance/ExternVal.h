@@ -9,4 +9,6 @@ typedef struct {
     u32_t value;
 } ExternVal;
 
+typedef ExternVal wasm_externval;
+
 #endif

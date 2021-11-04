@@ -3,7 +3,10 @@ project(WasmVM)
 set(PROJECT_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_C_STANDARD 11)
 
+include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
+
 add_subdirectory(src)
+add_subdirectory(host)
 add_subdirectory(third_party)
 
 set(MEMORYCHECK_COMMAND_OPTIONS "--error-exitcode=1")

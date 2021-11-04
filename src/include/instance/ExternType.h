@@ -22,4 +22,6 @@ typedef struct {
     } desc;
 } ExternType;
 
+typedef ExternType wasm_externtype;
+
 #endif
