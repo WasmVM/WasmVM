@@ -12,6 +12,8 @@ typedef struct {
     vector_t(u32_t) tableaddrs;
     vector_t(u32_t) memaddrs;
     vector_t(u32_t) globaladdrs;
+    vector_t(u32_t) elemaddrs;
+    vector_t(u32_t) dataaddrs;
     vector_t(ExportInst) exports;
 } ModuleInst;
 
