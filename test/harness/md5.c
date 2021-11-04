@@ -22,7 +22,7 @@ documentation and/or software.
  * license that can be found in the LICENSE file.
  */
 
-#include <helper.h>
+#include <md5.h>
 
 #define F(x, y, z) (((x) & (y)) | ((~x) & (z)))
 #define G(x, y, z) (((x) & (z)) | ((y) & (~z)))
