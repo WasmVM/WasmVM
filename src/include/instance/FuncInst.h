@@ -1,8 +1,7 @@
 #ifndef WASMVM_INSTANCE_FUNCINST
 #define WASMVM_INSTANCE_FUNCINST
 
-// #include <dataTypes/vector_p.h>
-// #include <dataTypes/list_p.h>
+#include <Stack.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
 #include <instance/ModuleInst.h>
@@ -10,11 +9,18 @@
 
 typedef struct {
     FuncType type;
-    vector_t(ValueType) locals;    // ValueType
-    ModuleInst* module;
-    // int (*hostcode)(); // TODO:
-    vector_t(InstrInst*) code;    // InstrInst
-    byte_t payload[];
+    vector_t(ValueType) locals;
+    enum {
+        FuncBody_Wasm,
+        FuncBody_Host,
+    } bodyType;
+    union {
+        struct {
+            ModuleInst* module;
+            vector_t(InstrInst*) code;
+        } wasm;
+        int (*hostcode)(Stack* stack, void* data);
+    } body;
 } FuncInst;
 
 #endif
