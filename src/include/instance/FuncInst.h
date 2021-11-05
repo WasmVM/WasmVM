@@ -7,6 +7,8 @@
 #include <instance/ModuleInst.h>
 #include <instance/InstrInst.h>
 
+typedef int (*hostfunc_t) (Stack* stack, void* data);
+
 typedef struct {
     FuncType type;
     vector_t(ValueType) locals;
@@ -19,7 +21,7 @@ typedef struct {
             ModuleInst* module;
             vector_t(InstrInst*) code;
         } wasm;
-        int (*hostcode)(Stack* stack, void* data);
+        hostfunc_t hostcode;
     } body;
 } FuncInst;
 

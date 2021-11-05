@@ -4,8 +4,11 @@
 #include <defines.h>
 #include <WasmVM.h>
 #include <hashmap_t.h>
+#include <dataTypes/vector_t.h>
 
-byte_t* load_file(const char* filename, size_t* size);
-int match_imports(const wasm_module module, const struct _hashmap* moduleInsts, size_t* size, ExternVal** externvals);
+bytes_vector_t load_file(const char* filename);
+
+typedef vector_t(ExternVal) externval_vector_t;
+externval_vector_t match_imports(const wasm_module module, const struct _hashmap* moduleInsts);
 
 #endif

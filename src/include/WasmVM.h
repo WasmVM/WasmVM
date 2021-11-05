@@ -7,14 +7,17 @@
 #include <instance/ExternType.h>
 #include <Store.h>
 
-int module_decode(const byte_t* data, const size_t size, wasm_module* module);
+typedef vector_t(wasm_externtype) imports_vector_t;
+typedef vector_t(byte_t) bytes_vector_t;
+
+wasm_module module_decode(const bytes_vector_t bytes);
 void module_free(wasm_module module);
 wasm_store store_init();
 void store_free(wasm_store store); // FIXME:
 int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const wasm_externval extern_val[extern_size], wasm_module_inst* module_inst);
 
-int module_imports(wasm_module module, size_t* size, wasm_externtype** imports);
-// TODO: func_alloc()
+imports_vector_t module_imports(wasm_module module);
+u32_t func_alloc(wasm_store store, wasm_functype functype, hostfunc_t hostfunc);
 // TODO: table_alloc()
 // TODO: mem_alloc()
 // TODO: global_alloc()

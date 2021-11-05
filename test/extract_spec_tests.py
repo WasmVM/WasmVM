@@ -17,9 +17,8 @@ def action_module(case_file: TextIO, command: dict) -> None:
     # Load module
     case_file.write(
         '  // Load\n'
-        '  size_t bin_size = 0;\n'
-        f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
-        '  if(bin_data == NULL){\n'
+        f'  bytes_vector_t bin_data = load_file("{wasm_file}");\n'
+        '  if(bin_data.data == NULL){\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
         '    result += 1;\n'
         '    failed = 1;\n'
@@ -31,40 +30,42 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '  module_free(module);\n'
         '  module = NULL;\n'
         '  if(!failed){\n'
-        '    if(module_decode(bin_data, bin_size, &module)){\n'
+        '    module = module_decode(bin_data);\n'
+        '    if(wasmvm_errno != ERROR_success){\n'
         f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed decoding module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
         '      result += 1;\n'
         '      failed = 1;\n'
         '    }\n'
-        '    free(bin_data);\n'
+        '    free_vector(bin_data);\n'
         '  }\n'
     )
     # Import matching
     case_file.write(
         '  // Get import\n'
-        '  ExternVal* externVals = NULL;\n'
-        '  size_t externSize = 0;\n'
+        '  externval_vector_t externVals;\n'
         '  if(!failed){\n'
-        '    if(match_imports(module, moduleInsts, &externSize, &externVals)){\n'
+        '    externVals = match_imports(module, moduleInsts);\n'
+        '    if(wasmvm_errno != ERROR_success){\n'
         f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed match imports with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
         '      result += 1;\n'
         '      failed = 1;\n'
+        '      free_vector(externVals);\n'
         '    }\n'
         '  }\n'
     )
     # Instantiate module
-    case_file.write(
-        '  // Instantiate\n'
-        '  module_inst_free(module_inst);\n'
-        '  module_inst = NULL;\n'
-        '  if(!failed){\n'
-        '    if(module_instantiate(store, module, externSize, externVals, &module_inst)){\n'
-        f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed instantiate module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
-        '      result += 1;\n'
-        '      failed = 1;\n'
-        '    }\n'
-        '  }\n'
-    )
+    # case_file.write(
+    #     '  // Instantiate\n'
+    #     '  module_inst_free(module_inst);\n'
+    #     '  module_inst = NULL;\n'
+    #     '  if(!failed){\n'
+    #     '    if(module_instantiate(store, module, externSize, externVals, &module_inst)){\n'
+    #     f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed instantiate module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+    #     '      result += 1;\n'
+    #     '      failed = 1;\n'
+    #     '    }\n'
+    #     '  }\n'
+    # )
     # End
     case_file.write(
         '  // End\n'
@@ -90,8 +91,8 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '  // Load\n'
             '  size_t bin_size = 0;\n'
-            f'  byte_t* bin_data = load_file("{wasm_file}", &bin_size);\n'
-            '  if(bin_data == NULL){\n'
+            f'  bytes_vector_t bin_data = load_file("{wasm_file}");\n'
+            '  if(bin_data.data == NULL){\n'
             f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
             '    result += 1;\n'
             '    failed = 1;\n'
@@ -102,12 +103,13 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '  // Decode\n'
             '  wasm_module malformed = NULL;\n'
             '  if(!failed){\n'
-            '    if(module_decode(bin_data, bin_size, &malformed) == ERROR_success){\n'
+            '    malformed = module_decode(bin_data);\n'
+            '    if(wasmvm_errno == ERROR_success){\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] should be malformed\\n");\n'
             '      result += 1;\n'
             '      failed = 1;\n'
             '    }\n'
-            '    free(bin_data);\n'
+            '    free_vector(bin_data);\n'
             '  }\n'
         )
         # End

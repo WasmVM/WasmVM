@@ -9,6 +9,8 @@ typedef struct {
     vector_t(ValueType) results;    // ValueType
 } FuncType;
 
+typedef FuncType wasm_functype;
+
 void free_FuncType(FuncType* type);
 
 #endif

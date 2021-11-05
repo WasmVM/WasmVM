@@ -9,35 +9,41 @@
 #include <stdlib.h>
 #include <error.h>
 
-byte_t* load_file(const char* filename, size_t* size)
+bytes_vector_t load_file(const char* filename)
 {
     FILE* fin = NULL;
+    bytes_vector_t bytes;
+    vector_init(bytes);
     // Open file
     if((fin = fopen(filename, "rb")) == NULL) {
-        return NULL;
+        return bytes;
     }
     // Get file size
     if(fseek(fin, 0L, SEEK_END)) {
-        return NULL;
+        return bytes;
     }
-    *size = ftell(fin);
-    if(*size == -1L) {
-        return NULL;
+    long fileSize = ftell(fin);
+    if(fileSize == -1L) {
+        return bytes;
+    } else {
+        bytes.size = fileSize;
     }
     if(fseek(fin, 0L, SEEK_SET)) {
-        return NULL;
+        return bytes;
     }
     // Allocate data memory
-    byte_t* data = malloc(*size);
-    if(data == NULL) {
-        return NULL;
+    bytes.data = malloc(bytes.size);
+    if(bytes.data == NULL) {
+        return bytes;
     }
     // Read file
-    if(fread(data, sizeof(char), *size, fin) != *size) {
-        return NULL;
+    if(fread(bytes.data, sizeof(byte_t), bytes.size, fin) != bytes.size) {
+        free_vector(bytes);
+        bytes.data = NULL;
+        return bytes;
     }
     fclose(fin);
-    return data;
+    return bytes;
 }
 
 static _Bool name_compare(
@@ -56,33 +62,34 @@ static _Bool name_compare(
     return 1;
 }
 
-int match_imports(const wasm_module module, const struct _hashmap* moduleInsts, size_t* size, ExternVal** externvals)
+externval_vector_t match_imports(const wasm_module module, const struct _hashmap* moduleInsts)
 {
+    externval_vector_t externals;
+    vector_init(externals);
     // Get imports
-    ExternType* imports = NULL;
-    if(module_imports(module, size, &imports)) {
-        *externvals = NULL;
-        *size = 0;
-        return -1;
+    imports_vector_t imports = module_imports(module);
+    if(wasmvm_errno) {
+        wasmvm_errno = ERROR_unknown_import;
+        return externals;
     }
     // Allocate externVals
-    *externvals = (ExternVal*) malloc_func(sizeof(ExternVal) * (*size));
+    externals.size = imports.size;
+    externals.data = (ExternVal*) malloc_func(sizeof(ExternVal) * imports.size);
     // Retrieve externvals
-    for(size_t impIdx = 0; impIdx < *size; ++impIdx) {
+    for(size_t impIdx = 0; impIdx < imports.size; ++impIdx) {
         // Get module_inst
         wasm_module_inst moduleInst = hashmap_get(
                                           ModuleInst,
-                                          sizeof(byte_t) * imports[impIdx].module.size,
-                                          imports[impIdx].module.data,
+                                          sizeof(byte_t) * imports.data[impIdx].module.size,
+                                          imports.data[impIdx].module.data,
                                           moduleInsts
                                       );
         if(moduleInst == NULL) {
             // Module not found
-            free(*externvals);
-            *externvals = NULL;
-            *size = 0;
+            free_vector(externals);
+            vector_init(externals);
             wasmvm_errno = ERROR_unknown_import;
-            return -1;
+            return externals;
         }
         // Get export
         ExternVal* exportValPtr = NULL;
@@ -90,8 +97,8 @@ int match_imports(const wasm_module module, const struct _hashmap* moduleInsts, 
             if(name_compare(
                         moduleInst->exports.data[expIdx].name.size,
                         moduleInst->exports.data[expIdx].name.data,
-                        imports[impIdx].name.size,
-                        imports[impIdx].name.data
+                        imports.data[impIdx].name.size,
+                        imports.data[impIdx].name.data
                     )) {
                 exportValPtr = &(moduleInst->exports.data[expIdx].value);
                 break;
@@ -99,14 +106,13 @@ int match_imports(const wasm_module module, const struct _hashmap* moduleInsts, 
         }
         if(exportValPtr == NULL) {
             // Export not found
-            free(*externvals);
-            *externvals = NULL;
-            *size = 0;
+            free_vector(externals);
+            vector_init(externals);
             wasmvm_errno = ERROR_unknown_import;
-            return -1;
+            return externals;
         } else {
-            (*externvals)[impIdx] = *exportValPtr;
+            externals.data[impIdx] = *exportValPtr;
         }
     }
-    return 0;
+    return externals;
 }

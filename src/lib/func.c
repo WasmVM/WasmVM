@@ -4,10 +4,5 @@
  * license that can be found in the LICENSE file.
  */
 
-#include "spectest.h"
+#include <WasmVM.h>
 
-wasm_module_inst spectest_instanciate(wasm_store store)
-{
-    // TODO:
-    return NULL;
-}
