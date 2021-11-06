@@ -20,4 +20,5 @@ add_library(WasmVM
     free.c
     store.c
     import.c
+    func.c
 )

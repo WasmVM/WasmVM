@@ -11,13 +11,13 @@ typedef int (*hostfunc_t) (Stack* stack, void* data);
 
 typedef struct {
     FuncType type;
-    vector_t(ValueType) locals;
     enum {
         FuncBody_Wasm,
         FuncBody_Host,
     } bodyType;
     union {
         struct {
+            vector_t(ValueType) locals;
             ModuleInst* module;
             vector_t(InstrInst*) code;
         } wasm;

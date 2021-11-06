@@ -8,7 +8,9 @@
 
 void memcpy_func(char* const dst, const char* const src, u64_t size)
 {
-    for(u64_t i = 0; i < size; ++i) {
-        dst[i] = src[i];
+    if(src != NULL) {
+        for(u64_t i = 0; i < size; ++i) {
+            dst[i] = src[i];
+        }
     }
 }

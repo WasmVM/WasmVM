@@ -14,13 +14,13 @@ wasm_module module_decode(const bytes_vector_t bytes);
 void module_free(wasm_module module);
 wasm_store store_init();
 void store_free(wasm_store store); // FIXME:
-int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const wasm_externval extern_val[extern_size], wasm_module_inst* module_inst);
-
 imports_vector_t module_imports(wasm_module module);
 u32_t func_alloc(wasm_store store, wasm_functype functype, hostfunc_t hostfunc);
 // TODO: table_alloc()
 // TODO: mem_alloc()
 // TODO: global_alloc()
+
+// TODO: int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const wasm_externval extern_val[extern_size], wasm_module_inst* module_inst);
 
 // TODO: module_validate()
 // TODO: module_exports()

@@ -6,3 +6,27 @@
 
 #include <WasmVM.h>
 
+u32_t func_alloc(wasm_store store, wasm_functype functype, hostfunc_t hostfunc)
+{
+    // Allocate FuncInst
+    if(store->funcs.size == 0) {
+        store->funcs.data = (FuncInst*)malloc_func(sizeof(FuncInst));
+    } else {
+        vector_resize(store->funcs, FuncInst, store->funcs.size + 1);
+    }
+    u32_t index = store->funcs.size;
+    store->funcs.size += 1;
+    // Fill FuncInst
+    FuncInst* funcInst = store->funcs.data + index;
+    funcInst->bodyType = FuncBody_Host;
+    if(functype.params.size > 0) {
+        funcInst->type.params.size = functype.params.size;
+        memcpy_func((char*)funcInst->type.params.data, (char*)functype.params.data, sizeof(ValueType) * functype.params.size);
+    }
+    if(functype.results.size > 0) {
+        funcInst->type.results.size = functype.results.size;
+        memcpy_func((char*)funcInst->type.results.data, (char*)functype.results.data, sizeof(ValueType) * functype.results.size);
+    }
+    funcInst->body.hostcode = hostfunc;
+    return index;
+}
