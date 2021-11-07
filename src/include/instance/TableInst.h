@@ -8,7 +8,7 @@
 typedef struct {
     u32_t max;
     RefType type;
-    vector_t(Ref) elem; // uint32_t
+    vector_t(Ref) elem;
 } TableInst;
 
 #endif

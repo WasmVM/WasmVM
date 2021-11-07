@@ -21,4 +21,5 @@ add_library(WasmVM
     store.c
     import.c
     func.c
+    table.c
 )

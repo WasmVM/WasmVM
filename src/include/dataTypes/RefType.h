@@ -15,4 +15,6 @@ typedef struct {
     u32_t addr;
 } Ref;
 
+typedef Ref wasm_ref;
+
 #endif

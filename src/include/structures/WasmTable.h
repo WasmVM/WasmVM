@@ -10,4 +10,6 @@ typedef struct {
     RefType  refType;
 } WasmTable;
 
+typedef WasmTable wasm_table;
+
 #endif
