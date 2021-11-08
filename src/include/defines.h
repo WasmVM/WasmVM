@@ -14,9 +14,11 @@ typedef unsigned long   size_t;
 typedef unsigned char   byte_t;
 
 #include <stdlib.h>
+#include <string.h>
 #define malloc_func malloc
 #define free_func free
 #define realloc_func realloc
+#define memset_func memset
 
 void memcpy_func(char* const dst, const char* const src, u64_t size);
 

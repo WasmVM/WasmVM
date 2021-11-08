@@ -8,4 +8,6 @@ typedef struct {
     u32_t    max;
 } WasmMemory;
 
+typedef WasmMemory wasm_memory;
+
 #endif

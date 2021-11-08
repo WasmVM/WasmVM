@@ -9,13 +9,9 @@
 u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref)
 {
     // Allocate TableInst
-    if(store->tables.size == 0) {
-        store->tables.data = (TableInst*)malloc_func(sizeof(TableInst));
-    } else {
-        vector_resize(store->tables, TableInst, store->tables.size + 1);
-    }
     u32_t index = store->tables.size;
     store->tables.size += 1;
+    vector_resize(store->tables, TableInst, store->tables.size);
     // Fill tableInst
     TableInst* tableInst = store->tables.data + index;
     tableInst->type = tabletype.refType;

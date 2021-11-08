@@ -22,4 +22,5 @@ add_library(WasmVM
     import.c
     func.c
     table.c
+    mem.c
 )
