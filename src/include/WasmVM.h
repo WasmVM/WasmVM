@@ -18,7 +18,7 @@ imports_vector_t module_imports(wasm_module module);
 u32_t func_alloc(wasm_store store, wasm_functype functype, hostfunc_t hostfunc);
 u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref);
 u32_t mem_alloc(wasm_store store, wasm_memory memtype);
-// TODO: global_alloc()
+u32_t global_alloc(wasm_store store, wasm_global global, wasm_value val);
 
 // TODO: int module_instantiate(wasm_store store, const wasm_module module, const size_t extern_size, const wasm_externval extern_val[extern_size], wasm_module_inst* module_inst);
 

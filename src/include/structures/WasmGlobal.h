@@ -9,4 +9,6 @@ typedef struct {
     ConstExpr   init;
 } WasmGlobal;
 
+typedef WasmGlobal wasm_global;
+
 #endif

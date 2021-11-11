@@ -26,4 +26,6 @@ typedef struct {
     } value;
 } Value;
 
+typedef Value wasm_value;
+
 #endif
