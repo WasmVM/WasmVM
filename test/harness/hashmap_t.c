@@ -65,7 +65,7 @@ static void adjust_red(struct _hashmap* node)
     }
 }
 
-void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* value, struct _hashmap** map)
+void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valuePtr, struct _hashmap** map)
 {
     // Get hash
     u64_t md5[2];
@@ -78,7 +78,7 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
             if(md5[1] == cursor->key[1]) {
                 // Same key
                 free(cursor->data);
-                cursor->data = value;
+                cursor->data = valuePtr;
                 return;
             } else {
                 // Differ key 1
@@ -107,7 +107,7 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
     struct _hashmap* node = (struct _hashmap*) malloc_func(sizeof(struct _hashmap));
     node->key[0] = md5[0];
     node->key[1] = md5[1];
-    node->data = value;
+    node->data = valuePtr;
     node->isRed = 1;
     node->left = NULL;
     node->right = NULL;
@@ -116,11 +116,12 @@ void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valu
     adjust_red(node);
 }
 
-void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], const struct _hashmap* map)
+void _hashmap_get_private(const u32_t key_size, byte_t key[key_size], void** valuePtr, const struct _hashmap* map)
 {
     // Empty map
     if(map == NULL) {
-        return NULL;
+        *valuePtr = NULL;
+        return;
     }
     // Get hash
     u64_t md5[2];
@@ -131,7 +132,8 @@ void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], const str
         if(md5[0] == cursor->key[0]) {
             if(md5[1] == cursor->key[1]) {
                 // Matched
-                return cursor->data;
+                *valuePtr = cursor->data;
+                return;
             } else {
                 if(md5[1] < cursor->key[1]) {
                     cursor = cursor->left;
@@ -147,7 +149,7 @@ void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], const str
             }
         }
     }
-    return NULL;
+    *valuePtr = NULL;
 }
 
 void free_hashmap(struct _hashmap* map)

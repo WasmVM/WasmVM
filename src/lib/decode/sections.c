@@ -283,7 +283,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
             import->module.size = modNameLen;
             if(modNameLen > 0) {
                 import->module.data = (byte_t*) malloc_func(sizeof(byte_t) * modNameLen);
-                memcpy_func((char*)import->module.data, (const char*)*read_p, modNameLen);
+                memcpy_func(import->module.data, *read_p, modNameLen);
                 *read_p += modNameLen;
             }
             // Get Name length
@@ -299,7 +299,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
             import->name.size = nameLen;
             if(nameLen > 0) {
                 import->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
-                memcpy_func((char*)import->name.data, (const char*)*read_p, nameLen);
+                memcpy_func(import->name.data, *read_p, nameLen);
                 *read_p += nameLen;
             }
             // import kind
@@ -599,7 +599,7 @@ int parse_export_section(WasmModule *module, const byte_t **read_p, const byte_t
         export->name.size = nameLen;
         if(nameLen > 0) {
             export->name.data = (byte_t*) malloc_func(sizeof(byte_t) * nameLen);
-            memcpy_func((char*)export->name.data, (const char*)*read_p, nameLen);
+            memcpy_func(export->name.data, *read_p, nameLen);
             *read_p += nameLen;
         }
 
@@ -894,7 +894,7 @@ int parse_data_section(WasmModule *module, const byte_t **read_p, const byte_t *
                     wasmvm_errno = ERROR_unexpect_end;
                     return -1;
                 }
-                memcpy_func((char*)newData->init.data, (char*)*read_p, newData->init.size);
+                memcpy_func(newData->init.data, *read_p, newData->init.size);
                 *read_p += newData->init.size;
                 break;
             default:

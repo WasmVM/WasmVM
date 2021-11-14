@@ -1,5 +1,6 @@
 include_directories(${PROJECT_ROOT}/src/include)
 include_directories(${PROJECT_ROOT}/src/lib)
+include_directories(${PROJECT_ROOT}/host)
 
 # Extract spec test cases
 add_custom_target(spec_test_extract
@@ -25,6 +26,7 @@ macro(add_spec_test test_name)
   target_link_libraries(spec_${test_name}
     harness
     WasmVM
+    wasmvm_spectest
   )
   set_target_properties(spec_${test_name}
     PROPERTIES OUTPUT_NAME spec/${test_name}/${test_name}

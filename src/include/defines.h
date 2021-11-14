@@ -20,6 +20,7 @@ typedef unsigned char   byte_t;
 #define realloc_func realloc
 #define memset_func memset
 
-void memcpy_func(char* const dst, const char* const src, u64_t size);
+#define memcpy_func(D, S, Siz) _memcpy_func((char*)(D), (const char*)(S), (Siz))
+void _memcpy_func(char* const dst, const char* const src, u64_t size);
 
 #endif

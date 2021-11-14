@@ -135,10 +135,11 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             f"/*** spec test - {case_name} ***/\n"
             "#include <WasmVM.h>\n"
             "#include <helper.h>\n"
-            "#include <hashmap_t.h>\n"
             "#include <stdio.h>\n"
             "#include <string.h>\n"
             "#include <stdlib.h>\n"
+            "#include <hashmap_t.h>\n"
+            "#include <spectest/spectest.h>\n"
             "\n"
             "int main(void){\n"
             "int result = 0;\n"
@@ -146,6 +147,7 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "wasm_module module = NULL;\n"
             "wasm_module_inst module_inst = NULL;\n"
             "wasm_store store = store_init();\n"
+            "hashmap_set(sizeof(char) * 8, \"spectest\", spectest_instanciate(store), moduleInsts);"
             "\n"
         )
         # Commands

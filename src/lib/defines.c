@@ -6,7 +6,7 @@
 
 #include <defines.h>
 
-void memcpy_func(char* const dst, const char* const src, u64_t size)
+void _memcpy_func(char* const dst, const char* const src, u64_t size)
 {
     if(src != NULL) {
         for(u64_t i = 0; i < size; ++i) {

@@ -78,12 +78,13 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
     // Retrieve externvals
     for(size_t impIdx = 0; impIdx < imports.size; ++impIdx) {
         // Get module_inst
-        wasm_module_inst moduleInst = hashmap_get(
-                                          ModuleInst,
-                                          sizeof(byte_t) * imports.data[impIdx].module.size,
-                                          imports.data[impIdx].module.data,
-                                          moduleInsts
-                                      );
+        wasm_module_inst moduleInst;
+        hashmap_get(
+            sizeof(byte_t) * imports.data[impIdx].module.size,
+            imports.data[impIdx].module.data,
+            moduleInst,
+            moduleInsts
+        );
         if(moduleInst == NULL) {
             // Module not found
             free_vector(externals);

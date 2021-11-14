@@ -11,6 +11,8 @@ typedef struct {
     ExternVal value;
 } ExportInst;
 
+typedef ExportInst wasm_export_inst;
+
 void free_ExportInst(ExportInst* export);
 
 #endif

@@ -19,6 +19,7 @@ typedef struct {
 
 typedef ModuleInst* wasm_module_inst;
 
+wasm_module_inst module_inst_create();
 void module_inst_free(wasm_module_inst moduleInst);
 
 #endif

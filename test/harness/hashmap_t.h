@@ -6,17 +6,12 @@
 
 struct _hashmap;
 
-void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* value, struct _hashmap** map);
-void* _hashmap_get_private(const u32_t key_size, byte_t key[key_size], const struct _hashmap* map);
+void _hashmap_set_private(const u32_t key_size, byte_t key[key_size], void* valuePtr, struct _hashmap** map);
+void _hashmap_get_private(const u32_t key_size, byte_t key[key_size], void** valuePtr, const struct _hashmap* map);
 void free_hashmap(struct _hashmap* map);
 
 #define hashmap_t(T) struct _hashmap*
-#define hashmap_set(T, KSize, K, V, H) { \
-    T* valuePtr = malloc_func(sizeof(T)); \
-    *valuePtr = V; \
-    _hashmap_set_private(KSize, (byte_t*)K, valuePtr, &H); \
-}
-#define hashmap_get(T, KSize, K, H) \
-    ((T*)_hashmap_get_private(KSize, (byte_t*)K, H))
+#define hashmap_set(KSize, K, Vp, H) _hashmap_set_private(KSize, (byte_t*)K, (void*)Vp, &H);
+#define hashmap_get(KSize, K, Vp, H) _hashmap_get_private(KSize, (byte_t*)K, (void**)&Vp, H);
 
 #endif
