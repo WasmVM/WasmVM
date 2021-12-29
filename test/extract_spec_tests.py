@@ -20,7 +20,6 @@ def action_module(case_file: TextIO, command: dict) -> None:
         f'  bytes_vector_t bin_data = load_file("{wasm_file}");\n'
         '  if(bin_data.data == NULL){\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
-        '    result += 1;\n'
         '    failed = 1;\n'
         '  }\n'
     )
@@ -33,7 +32,6 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '    module = module_decode(bin_data);\n'
         '    if(wasmvm_errno != ERROR_success){\n'
         f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed decoding module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
-        '      result += 1;\n'
         '      failed = 1;\n'
         '    }\n'
         '    free_vector(bin_data);\n'
@@ -47,29 +45,30 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '    externVals = match_imports(module, moduleInsts);\n'
         '    if(wasmvm_errno != ERROR_success){\n'
         f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed match imports with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
-        '      result += 1;\n'
         '      failed = 1;\n'
         '      free_vector(externVals);\n'
         '    }\n'
         '  }\n'
     )
     # Instantiate module
-    # case_file.write(
-    #     '  // Instantiate\n'
-    #     '  module_inst_free(module_inst);\n'
-    #     '  module_inst = NULL;\n'
-    #     '  if(!failed){\n'
-    #     '    if(module_instantiate(store, module, externSize, externVals, &module_inst)){\n'
-    #     f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed instantiate module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
-    #     '      result += 1;\n'
-    #     '      failed = 1;\n'
-    #     '    }\n'
-    #     '  }\n'
-    # )
+    case_file.write(
+        '  // Instantiate\n'
+        '  module_inst_free(module_inst);\n'
+        '  module_inst = NULL;\n'
+        '  if(!failed){\n'
+        '    module_inst = module_instantiate(store, module, externVals);\n'
+        '    if(wasmvm_errno != ERROR_success){\n'
+        f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] failed instantiate module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+        '      failed = 1;\n'
+        '    }\n'
+        '  }\n'
+    )
     # End
     case_file.write(
         '  // End\n'
-        '  if(!failed){\n'
+        '  if(failed){\n'
+        '    result += 1;\n'
+        '  }else{\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
         '  }\n'
         '}\n'
@@ -94,7 +93,6 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             f'  bytes_vector_t bin_data = load_file("{wasm_file}");\n'
             '  if(bin_data.data == NULL){\n'
             f'    fprintf(stderr, "{wasm_file}({wast_line}): [Error] cannot load module\\n");\n'
-            '    result += 1;\n'
             '    failed = 1;\n'
             '  }\n'
         )
@@ -106,7 +104,6 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '    malformed = module_decode(bin_data);\n'
             '    if(wasmvm_errno == ERROR_success){\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] should be malformed\\n");\n'
-            '      result += 1;\n'
             '      failed = 1;\n'
             '    }\n'
             '    free_vector(bin_data);\n'
@@ -115,7 +112,9 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
         # End
         case_file.write(
             '  // End\n'
-            '  if(!failed){\n'
+            '  if(failed){\n'
+            '    result += 1;\n'
+            '  }else{\n'
             f'    if(strcmp(wasmvm_strerror(wasmvm_errno), "{expected_text}")){{\n'
             f'      fprintf(stderr, "{wasm_file}({wast_line}): [Failed] module_decode expected message \'{expected_text}\', but got \'%s\'\\n", wasmvm_strerror(wasmvm_errno));\n'
             '      result += 1;\n'
@@ -127,6 +126,9 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '}\n'
             '\n'
         )
+
+def register(case_file: TextIO, command: dict) -> None:
+    pass #TODO:
 
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:

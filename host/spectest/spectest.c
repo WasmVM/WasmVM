@@ -53,9 +53,51 @@ static int spectest_print_f64_f64(Stack* stack, void* data)
 wasm_module_inst spectest_instanciate(wasm_store store)
 {
     wasm_module_inst module = module_inst_create();
+
+    // Allocate exports
     module->exports.size = 13;
     vector_resize(module->exports, wasm_export_inst, 13);
     wasm_export_inst* exports = module->exports.data;
+
+    /** Types **/
+    module->types.size = 7;
+    vector_resize(module->types, wasm_functype, 7);
+
+    // ()
+    vector_init(module->types.data[0].params);
+    vector_init(module->types.data[0].results);
+    // (i32)
+    vector_init(module->types.data[1].params);
+    module->types.data[1].params.size = 1;
+    module->types.data[1].params.data[0] = Value_i32;
+    vector_init(module->types.data[1].results);
+    // (i64)
+    vector_init(module->types.data[2].params);
+    module->types.data[2].params.size = 1;
+    module->types.data[2].params.data[0] = Value_i64;
+    vector_init(module->types.data[2].results);
+    // (f32)
+    vector_init(module->types.data[3].params);
+    module->types.data[3].params.size = 1;
+    module->types.data[3].params.data[0] = Value_f32;
+    vector_init(module->types.data[3].results);
+    // (f64)
+    vector_init(module->types.data[4].params);
+    module->types.data[4].params.size = 1;
+    module->types.data[4].params.data[0] = Value_f64;
+    vector_init(module->types.data[4].results);
+    // (i32 f32)
+    vector_init(module->types.data[5].params);
+    module->types.data[5].params.size = 2;
+    module->types.data[5].params.data[0] = Value_i32;
+    module->types.data[5].params.data[1] = Value_f32;
+    vector_init(module->types.data[5].results);
+    // (f64 f64)
+    vector_init(module->types.data[6].params);
+    module->types.data[6].params.size = 2;
+    module->types.data[6].params.data[0] = Value_f64;
+    module->types.data[6].params.data[1] = Value_f64;
+    vector_init(module->types.data[6].results);
 
     /** Globals **/
     module->globaladdrs.size = 4;
@@ -205,11 +247,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
 
     // (func (export "print"))
     module->funcaddrs.data[0] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 0, .data = NULL},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print
+                                           module->types.data,
+                                           spectest_print
                                           );
     exports[6].name.size = 5;
     exports[6].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 5);
@@ -219,13 +258,9 @@ wasm_module_inst spectest_instanciate(wasm_store store)
 
     // (func (export "print_i32") (param i32))
     params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
-    params[0] = Value_i32;
     module->funcaddrs.data[1] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_i32
+                                           module->types.data + 1,
+                                           spectest_print_i32
                                           );
     exports[7].name.size = 9;
     exports[7].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 9);
@@ -237,11 +272,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
     params[0] = Value_i64;
     module->funcaddrs.data[2] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_i64
+                                           module->types.data + 2,
+                                           spectest_print_i64
                                           );
     exports[8].name.size = 9;
     exports[8].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 9);
@@ -253,11 +285,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
     params[0] = Value_f32;
     module->funcaddrs.data[3] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_f32
+                                           module->types.data + 3,
+                                           spectest_print_f32
                                           );
     exports[9].name.size = 9;
     exports[9].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 9);
@@ -269,11 +298,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
     params[0] = Value_f64;
     module->funcaddrs.data[4] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_f64
+                                           module->types.data + 4,
+                                           spectest_print_f64
                                           );
     exports[10].name.size = 9;
     exports[10].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 9);
@@ -286,11 +312,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     params[0] = Value_i32;
     params[1] = Value_f32;
     module->funcaddrs.data[5] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_i32_f32
+                                           module->types.data + 5,
+                                           spectest_print_i32_f32
                                           );
     exports[11].name.size = 13;
     exports[11].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 13);
@@ -303,11 +326,8 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     params[0] = Value_f64;
     params[1] = Value_f64;
     module->funcaddrs.data[6] = func_alloc(store,
-    (wasm_functype) {
-        .params = {.size = 1, .data = params},
-        .results = {.size = 0, .data = NULL},
-    },
-    spectest_print_f64_f64
+                                           module->types.data + 5,
+                                           spectest_print_f64_f64
                                           );
     exports[12].name.size = 13;
     exports[12].name.data = (byte_t*)malloc_func(sizeof(byte_t) * 13);

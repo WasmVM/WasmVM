@@ -10,7 +10,7 @@
 typedef int (*hostfunc_t) (Stack* stack, void* data);
 
 typedef struct {
-    FuncType type;
+    FuncType* type;
     enum {
         FuncBody_Wasm,
         FuncBody_Host,
