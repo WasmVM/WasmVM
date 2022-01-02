@@ -75,7 +75,6 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         }
     }
     // Functions
-
     // Allocate FuncInst
     vector_resize(store->funcs, FuncInst, store->funcs.size + module->funcs.size);
     // Fill FuncInst
@@ -109,7 +108,22 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     }
     store->tables.size += module->tables.size;
 
-    // TODO: Memories
+    // Memories
+    // Allocate MemInst
+    vector_resize(store->mems, MemInst, store->mems.size + module->mems.size);
+    // Fill MemInst
+    for(size_t i = 0; i < module->mems.size; ++i){
+        const WasmMemory *memory = module->mems.data + i;
+        MemInst* memInst = store->mems.data + store->mems.size + i;
+        memInst->max = memory->max;
+        vector_init(memInst->data);
+        if(memory->min > 0){
+            memInst->data.size = 65536 * memory->min;
+            vector_resize(memInst->data, byte_t, memInst->data.size);
+            memset_func(memInst->data.data, 0, memInst->data.size);
+        }
+    }
+    store->mems.size += module->mems.size;
     // TODO: Globals
     // TODO: Elements
     // TODO: Datas
