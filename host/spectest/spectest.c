@@ -69,32 +69,38 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     // (i32)
     vector_init(module->types.data[1].params);
     module->types.data[1].params.size = 1;
+    vector_resize(module->types.data[1].params, ValueType, 1);
     module->types.data[1].params.data[0] = Value_i32;
     vector_init(module->types.data[1].results);
     // (i64)
     vector_init(module->types.data[2].params);
     module->types.data[2].params.size = 1;
+    vector_resize(module->types.data[2].params, ValueType, 1);
     module->types.data[2].params.data[0] = Value_i64;
     vector_init(module->types.data[2].results);
     // (f32)
     vector_init(module->types.data[3].params);
     module->types.data[3].params.size = 1;
+    vector_resize(module->types.data[3].params, ValueType, 1);
     module->types.data[3].params.data[0] = Value_f32;
     vector_init(module->types.data[3].results);
     // (f64)
     vector_init(module->types.data[4].params);
     module->types.data[4].params.size = 1;
+    vector_resize(module->types.data[4].params, ValueType, 1);
     module->types.data[4].params.data[0] = Value_f64;
     vector_init(module->types.data[4].results);
     // (i32 f32)
     vector_init(module->types.data[5].params);
     module->types.data[5].params.size = 2;
+    vector_resize(module->types.data[5].params, ValueType, 2);
     module->types.data[5].params.data[0] = Value_i32;
     module->types.data[5].params.data[1] = Value_f32;
     vector_init(module->types.data[5].results);
     // (f64 f64)
     vector_init(module->types.data[6].params);
     module->types.data[6].params.size = 2;
+    vector_resize(module->types.data[6].params, ValueType, 2);
     module->types.data[6].params.data[0] = Value_f64;
     module->types.data[6].params.data[1] = Value_f64;
     vector_init(module->types.data[6].results);

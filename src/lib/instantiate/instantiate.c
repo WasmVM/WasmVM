@@ -74,20 +74,41 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             moduleInst->types.data[i].results.data = NULL;
         }
     }
-
     // Functions
+
     // Allocate FuncInst
     vector_resize(store->funcs, FuncInst, store->funcs.size + module->funcs.size);
     // Fill FuncInst
     for(size_t i = 0; i < module->funcs.size; ++i) {
         const WasmFunc *func = module->funcs.data + i;
-        FuncInst* funcInst = store->funcs.data + store->funcs.size + i;
+        FuncInst* funcInst = store->funcs.data + (store->funcs.size + i);
         funcInst->bodyType = FuncBody_Wasm;
         funcInst->type = module->types.data + func->type;
         // TODO: Body
     }
+    store->funcs.size += module->funcs.size;
 
-    // TODO: Tables
+    // Tables
+    // Allocate TableInst
+    vector_resize(store->tables, TableInst, store->tables.size + module->tables.size);
+    // Fill TableInst
+    for(size_t i = 0; i < module->tables.size; ++i) {
+        const WasmTable *table = module->tables.data + i;
+        TableInst* tableInst = store->tables.data + store->tables.size + i;
+        tableInst->max = table->max;
+        vector_init(tableInst->elem);
+        if(table->min > 0) {
+            tableInst->elem.size = table->min;
+            vector_resize(tableInst->elem, Ref, table->min);
+            for(unsigned int i = 0; i < tableInst->elem.size; ++i) {
+                tableInst->elem.data[i].type = table->refType;
+                tableInst->elem.data[i].isNull = 1;
+            }
+        }
+        moduleInst->tableaddrs.data[i] = store->tables.size + i;
+    }
+    store->tables.size += module->tables.size;
+
     // TODO: Memories
     // TODO: Globals
     // TODO: Elements
