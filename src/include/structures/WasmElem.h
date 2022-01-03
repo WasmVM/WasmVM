@@ -21,7 +21,6 @@ typedef struct {
         u32_t        tableidx;
         ConstExpr    offset;
     } mode;
-
 } WasmElem;
 
 #endif

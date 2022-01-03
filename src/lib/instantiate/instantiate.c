@@ -244,8 +244,34 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
     }
     // Allocate module instance
     wasm_module_inst moduleInst = module_alloc(store, module, externval, sizes);
-    // TODO: Init tables with elems
-    // TODO: Init memories with datas
+    // Init tables with elems
+    for(size_t i = 0; i < module->elems.size; ++i){
+        const WasmElem* elem = module->elems.data + i;
+        if(elem->mode.mode == Elem_active){
+            TableInst *tableInst = store->tables.data + moduleInst->tableaddrs.data[elem->mode.tableidx];
+            u32_t offset = elem->mode.offset.value.value.u32;
+            if((offset + elem->init.size) > tableInst->elem.size){
+                wasmvm_errno = ERROR_len_out_of_bound;
+                return NULL;
+            }
+            const ElemInst* elemInst = store->elems.data + moduleInst->elemaddrs.data[i];
+            memcpy_func(tableInst->elem.data + offset, elemInst->elem.data, sizeof(Ref) * elemInst->elem.size);
+        }
+    }
+    // Init memories with datas
+    for(size_t i = 0; i < module->datas.size; ++i){
+        const WasmData* data = module->datas.data + i;
+        if(data->mode.mode == Data_active){
+            MemInst *memInst = store->mems.data + moduleInst->memaddrs.data[data->mode.memidx];
+            u32_t offset = data->mode.offset.value.value.u32;
+            if((offset + data->init.size) > memInst->data.size){
+                wasmvm_errno = ERROR_len_out_of_bound;
+                return NULL;
+            }
+            const DataInst* dataInst = store->datas.data + moduleInst->dataaddrs.data[i];
+            memcpy_func(memInst->data.data + offset, dataInst->data.data, sizeof(byte_t) * dataInst->data.size);
+        }
+    }
     // TODO: Execute start function
     return moduleInst;
 }
