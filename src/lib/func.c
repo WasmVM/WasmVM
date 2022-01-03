@@ -6,7 +6,7 @@
 
 #include <WasmVM.h>
 
-u32_t func_alloc(wasm_store store, const wasm_functype* functype, hostfunc_t hostfunc)
+u32_t func_alloc(wasm_store store, wasm_functype* const functype, hostfunc_t hostfunc)
 {
     // Allocate FuncInst
     u32_t index = store->funcs.size;

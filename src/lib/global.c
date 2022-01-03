@@ -14,7 +14,8 @@ u32_t global_alloc(wasm_store store, wasm_global global, wasm_value val)
     vector_resize(store->globals, GlobalInst, store->globals.size);
     // Fill GlobalInst
     GlobalInst* globalInst = store->globals.data + index;
-    globalInst->type = global.valType;
-    globalInst->value = val.value;
+    globalInst->val.type = global.valType;
+    globalInst->mut = global.mut;
+    globalInst->val.value = val.value;
     return index;
 }

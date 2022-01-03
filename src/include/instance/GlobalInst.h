@@ -3,6 +3,9 @@
 
 #include <dataTypes/Value.h>
 
-typedef Value GlobalInst;
+typedef struct {
+    _Bool mut;
+    Value val;
+} GlobalInst;
 
 #endif

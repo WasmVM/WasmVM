@@ -24,8 +24,4 @@ typedef struct {
 
 } WasmElem;
 
-// WasmElem* new_WasmElem();
-// void clean_WasmElem(WasmElem *thisWasmElem);
-// void free_WasmElem(WasmElem *thisWasmElem);
-
 #endif

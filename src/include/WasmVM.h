@@ -16,7 +16,7 @@ void module_free(wasm_module module);
 wasm_store store_init();
 void store_free(wasm_store store); // FIXME:
 imports_vector_t module_imports(wasm_module module);
-u32_t func_alloc(wasm_store store, const wasm_functype *functype, hostfunc_t hostfunc);
+u32_t func_alloc(wasm_store store, wasm_functype* const functype, hostfunc_t hostfunc);
 u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref);
 u32_t mem_alloc(wasm_store store, wasm_memory memtype);
 u32_t global_alloc(wasm_store store, wasm_global global, wasm_value val);

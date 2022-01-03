@@ -124,8 +124,40 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         }
     }
     store->mems.size += module->mems.size;
-    // TODO: Globals
-    // TODO: Elements
+
+    // Globals
+    // Allocate GlobalInst
+    vector_resize(store->globals, GlobalInst, store->globals.size + module->globals.size);
+    // Fill GlobalInst
+    for(size_t i = 0; i < module->globals.size; ++i){
+        const WasmGlobal *global = module->globals.data + i;
+        GlobalInst* globalInst = store->globals.data + store->globals.size + i;
+        globalInst->val.type = global->valType;
+        globalInst->mut = global->mut;
+        globalInst->val.value = global->init.value.value;
+    }
+    store->globals.size += module->globals.size;
+    // Elements
+    // Allocate ElemInst
+    vector_resize(store->elems, ElemInst, store->elems.size + module->elems.size);
+    // Fill ElemInst
+    for(size_t i = 0; i < module->elems.size; ++i){
+        const WasmElem *elem = module->elems.data + i;
+        ElemInst* elemInst = store->elems.data + store->elems.size + i;
+        if(elem->type != Value_funcref){
+            wasmvm_errno = ERROR_unknown_type;
+            return NULL;
+        }
+        elemInst->type = Ref_func;
+        elemInst->elem.size = elem->init.size;
+        vector_resize(elemInst->elem, Ref, elemInst->elem.size);
+        for(size_t j = 0; j < elemInst->elem.size; ++j){
+            elemInst->elem.data[j].type = Ref_func;
+            elemInst->elem.data[j].isNull = 0;
+            elemInst->elem.data[j].addr = elem->init.data[j].value.value.u32;
+        }
+    }
+    store->elems.size += module->elems.size;
     // TODO: Datas
     // TODO: Exports
     return moduleInst;
