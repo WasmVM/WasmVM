@@ -122,6 +122,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             vector_resize(memInst->data, byte_t, memInst->data.size);
             memset_func(memInst->data.data, 0, memInst->data.size);
         }
+        moduleInst->memaddrs.data[i] = store->mems.size + i;
     }
     store->mems.size += module->mems.size;
 
@@ -135,6 +136,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         globalInst->val.type = global->valType;
         globalInst->mut = global->mut;
         globalInst->val.value = global->init.value.value;
+        moduleInst->globaladdrs.data[i] = store->globals.size + i;
     }
     store->globals.size += module->globals.size;
     // Elements
@@ -156,9 +158,23 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             elemInst->elem.data[j].isNull = 0;
             elemInst->elem.data[j].addr = elem->init.data[j].value.value.u32;
         }
+        moduleInst->elemaddrs.data[i] = store->elems.size + i;
     }
     store->elems.size += module->elems.size;
-    // TODO: Datas
+
+    // Datas
+    // Allocate DataInst
+    vector_resize(store->datas, DataInst, store->datas.size + module->datas.size);
+    // Fill DataInst
+    for(size_t i = 0; i < module->datas.size; ++i){
+        const WasmData* data = module->datas.data + i;
+        DataInst* dataInst = store->datas.data + store->datas.size + i;
+        dataInst->data.size = data->init.size;
+        vector_resize(dataInst->data, byte_t, dataInst->data.size);
+        memcpy_func(dataInst->data.data, data->init.data, sizeof(byte_t) * dataInst->data.size);
+        moduleInst->dataaddrs.data[i] = store->elems.size + i;
+    }
+    store->datas.size += module->datas.size;
     // TODO: Exports
     return moduleInst;
 }
