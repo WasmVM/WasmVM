@@ -175,7 +175,15 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         moduleInst->dataaddrs.data[i] = store->elems.size + i;
     }
     store->datas.size += module->datas.size;
-    // TODO: Exports
+    // Exports
+    // Allocate ExportInsts
+    moduleInst->exports.size = module->exports.size;
+    vector_resize(moduleInst->exports, ExportInst, module->exports.size);
+    for(size_t i = 0; i < module->exports.size; ++i){
+        moduleInst->exports.data[i] = *((ExportInst*)(module->exports.data + i));
+        moduleInst->exports.data[i].name.data = malloc_func(sizeof(byte_t) * module->exports.data->name.size);
+        memcpy_func(moduleInst->exports.data[i].name.data, module->exports.data->name.data, sizeof(byte_t) * module->exports.data->name.size);
+    }
     return moduleInst;
 }
 
@@ -239,5 +247,5 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
     // TODO: Init tables with elems
     // TODO: Init memories with datas
     // TODO: Execute start function
-    return NULL;
+    return moduleInst;
 }
