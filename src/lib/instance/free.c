@@ -12,7 +12,7 @@ void module_inst_free(ModuleInst* moduleInst)
         free_vector(moduleInst->types);
         // Export
         for(unsigned int i = 0; i < moduleInst->exports.size; ++i) {
-            free_ExportInst(moduleInst->exports.data + i);
+            free_vector(moduleInst->exports.data[i].name);
         }
         free_vector(moduleInst->exports);
         // Addrs
@@ -20,15 +20,9 @@ void module_inst_free(ModuleInst* moduleInst)
         free_vector(moduleInst->tableaddrs);
         free_vector(moduleInst->memaddrs);
         free_vector(moduleInst->globaladdrs);
+        free_vector(moduleInst->elemaddrs);
+        free_vector(moduleInst->dataaddrs);
         // self
         free_func(moduleInst);
-    }
-}
-
-void free_ExportInst(ExportInst* export)
-{
-    if(export != NULL) {
-        free_vector(export->name);
-        free_func(export);
     }
 }

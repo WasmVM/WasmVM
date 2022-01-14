@@ -26,6 +26,10 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     vector_resize(moduleInst->tableaddrs, u32_t, moduleInst->tableaddrs.size);
     moduleInst->memaddrs.size = sizes.mems + module->mems.size;
     vector_resize(moduleInst->memaddrs, u32_t, moduleInst->memaddrs.size);
+    moduleInst->elemaddrs.size = module->elems.size;
+    vector_resize(moduleInst->elemaddrs, u32_t, moduleInst->elemaddrs.size);
+    moduleInst->dataaddrs.size = module->datas.size;
+    vector_resize(moduleInst->dataaddrs, u32_t, moduleInst->dataaddrs.size);
 
     // Externvals
     struct module_alloc_sizes offsets = {
@@ -139,6 +143,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         moduleInst->globaladdrs.data[i] = store->globals.size + i;
     }
     store->globals.size += module->globals.size;
+    
     // Elements
     // Allocate ElemInst
     vector_resize(store->elems, ElemInst, store->elems.size + module->elems.size);
@@ -152,7 +157,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         }
         elemInst->type = Ref_func;
         elemInst->elem.size = elem->init.size;
-        vector_resize(elemInst->elem, Ref, elemInst->elem.size);
+        elemInst->elem.data = malloc_func(sizeof(Ref) * elemInst->elem.size);
         for(size_t j = 0; j < elemInst->elem.size; ++j){
             elemInst->elem.data[j].type = Ref_func;
             elemInst->elem.data[j].isNull = 0;
@@ -161,7 +166,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         moduleInst->elemaddrs.data[i] = store->elems.size + i;
     }
     store->elems.size += module->elems.size;
-
+    
     // Datas
     // Allocate DataInst
     vector_resize(store->datas, DataInst, store->datas.size + module->datas.size);
@@ -170,15 +175,16 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         const WasmData* data = module->datas.data + i;
         DataInst* dataInst = store->datas.data + store->datas.size + i;
         dataInst->data.size = data->init.size;
-        vector_resize(dataInst->data, byte_t, dataInst->data.size);
+        dataInst->data.data = malloc_func(sizeof(byte_t) * dataInst->data.size);
         memcpy_func(dataInst->data.data, data->init.data, sizeof(byte_t) * dataInst->data.size);
-        moduleInst->dataaddrs.data[i] = store->elems.size + i;
+        moduleInst->dataaddrs.data[i] = store->datas.size + i;
     }
     store->datas.size += module->datas.size;
+    
     // Exports
     // Allocate ExportInsts
     moduleInst->exports.size = module->exports.size;
-    vector_resize(moduleInst->exports, ExportInst, module->exports.size);
+    moduleInst->exports.data = malloc_func(sizeof(ExportInst) * module->exports.size);
     for(size_t i = 0; i < module->exports.size; ++i){
         moduleInst->exports.data[i] = *((ExportInst*)(module->exports.data + i));
         moduleInst->exports.data[i].name.data = malloc_func(sizeof(byte_t) * module->exports.data->name.size);
@@ -244,6 +250,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
     }
     // Allocate module instance
     wasm_module_inst moduleInst = module_alloc(store, module, externval, sizes);
+    
     // Init tables with elems
     for(size_t i = 0; i < module->elems.size; ++i){
         const WasmElem* elem = module->elems.data + i;
@@ -258,6 +265,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
             memcpy_func(tableInst->elem.data + offset, elemInst->elem.data, sizeof(Ref) * elemInst->elem.size);
         }
     }
+    
     // Init memories with datas
     for(size_t i = 0; i < module->datas.size; ++i){
         const WasmData* data = module->datas.data + i;
@@ -272,6 +280,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
             memcpy_func(memInst->data.data + offset, dataInst->data.data, sizeof(byte_t) * dataInst->data.size);
         }
     }
+    
     // TODO: Execute start function
     return moduleInst;
 }
