@@ -683,6 +683,7 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
                 }
             } else {
                 newElem->type = Value_funcref;
+                newElem->mode.tableidx = 0;
             }
             // offset
             if(parse_const_expr(&(newElem->mode.offset), read_p, end_p)) {
