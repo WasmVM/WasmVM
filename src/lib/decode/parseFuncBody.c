@@ -3,11 +3,11 @@
  * Use of this source code is governed by a BSD-style
  * license that can be found in the LICENSE file.
  */
-#include "parseFuncBody.h"
 
 #include <defines.h>
 #include <Opcodes.h>
 #include <structures/WasmInstr.h>
+#include <structures/WasmFunc.h>
 #include <error.h>
 #include "utils.h"
 

@@ -12,7 +12,6 @@
 #include <Opcodes.h>
 
 #include "utils.h"
-#include "parseFuncBody.h"
 
 #define SECTION_PROLOGUE(ID) \
     if(*read_p < end_p) { \
@@ -758,6 +757,7 @@ typedef struct {
     ValueType type;
 } local_map_t;
 
+int parseFuncBody(WasmFunc* const func, const byte_t **read_p, const byte_t *end_p);
 
 int parse_code_section(WasmModule *module, const byte_t **read_p, const byte_t *end_p)
 {
