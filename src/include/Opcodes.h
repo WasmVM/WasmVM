@@ -39,6 +39,7 @@
 #define Op_local_tee            0x22
 #define Op_global_get           0x23
 #define Op_global_set           0x24
+
 #define Op_table_get            0x25
 #define Op_table_set            0x26
 
@@ -67,10 +68,12 @@
 #define Op_i64_store32		    0x3E
 #define Op_memory_size		    0x3F
 #define Op_memory_grow		    0x40
+
 #define Op_i32_const		    0x41
 #define Op_i64_const		    0x42
 #define Op_f32_const		    0x43
 #define Op_f64_const		    0x44
+
 #define Op_i32_eqz		        0x45
 #define Op_i32_eq		        0x46
 #define Op_i32_ne		        0x47
@@ -213,10 +216,12 @@
 #define Op_i64_trunc_sat_f32_u  0xFC05
 #define Op_i64_trunc_sat_f64_s  0xFC06
 #define Op_i64_trunc_sat_f64_u  0xFC07
+
 #define Op_memory_init          0xFC08
 #define Op_data_drop            0xFC09
 #define Op_memory_copy          0xFC0A
 #define Op_memory_fill          0xFC0B
+
 #define Op_table_init           0xFC0C
 #define Op_elem_drop            0xFC0D
 #define Op_table_copy           0xFC0E

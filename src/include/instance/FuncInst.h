@@ -19,7 +19,7 @@ typedef struct {
         struct {
             vector_t(ValueType) locals;
             ModuleInst* module;
-            vector_t(InstrInst*) code;
+            vector_t(byte_t) codes;
         } wasm;
         hostfunc_t hostcode;
     } body;
