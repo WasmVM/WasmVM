@@ -1,7 +1,7 @@
 FROM ubuntu:focal
 
 RUN apt update \
-    && DEBIAN_FRONTEND=noninteractive apt install -y gcc g++ cmake binutils git vim zsh ninja-build curl gdb astyle python3 \
+    && DEBIAN_FRONTEND=noninteractive apt install -y gcc g++ cmake binutils git vim zsh ninja-build curl gdb valgrind astyle python3 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
