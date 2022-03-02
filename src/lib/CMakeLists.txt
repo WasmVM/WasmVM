@@ -16,6 +16,7 @@ add_library(WasmVM
     instance/free.c
     instance/module.c
     instantiate/instantiate.c
+    instantiate/instrs.c
     error.c
     defines.c
     free.c

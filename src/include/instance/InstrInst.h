@@ -17,7 +17,8 @@ typedef struct {
 
 typedef struct {
     u16_t opcode;
-    vector_t(ValueType) param;
+    u32_t size;
+    ValueType params[];
 } SelectInstrInst;
 
 typedef struct {
@@ -38,7 +39,8 @@ typedef struct {
 
 typedef struct {
     u16_t opcode;
-    vector_t(u32_t) param;
+    u32_t size;
+    u32_t params[];
 } BrTableInstrInst;
 
 #endif

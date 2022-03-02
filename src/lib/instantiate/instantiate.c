@@ -7,14 +7,16 @@
 #include <error.h>
 #include <WasmVM.h>
 
-struct module_alloc_sizes {
+#include "instrs.h"
+
+struct module_import_sizes {
     size_t funcs;
     size_t globals;
     size_t mems;
     size_t tables;
 };
 
-static wasm_module_inst module_alloc(wasm_store store, const wasm_module module, externval_vector_t externval, struct module_alloc_sizes sizes)
+static wasm_module_inst module_alloc(wasm_store store, const wasm_module module, externval_vector_t externval, struct module_import_sizes sizes)
 {
     // Allocate vectors
     wasm_module_inst moduleInst = module_inst_create();
@@ -32,7 +34,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     vector_resize(moduleInst->dataaddrs, u32_t, moduleInst->dataaddrs.size);
 
     // Externvals
-    struct module_alloc_sizes offsets = {
+    struct module_import_sizes offsets = {
         .funcs = 0,
         .globals = 0,
         .mems = 0,
@@ -87,7 +89,14 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         FuncInst* funcInst = store->funcs.data + (store->funcs.size + i);
         funcInst->bodyType = FuncBody_Wasm;
         funcInst->type = module->types.data + func->type;
-        // TODO: Body
+        funcInst->body.wasm.module = moduleInst;
+        funcInst->body.wasm.locals.size = func->locals.size;
+        funcInst->body.wasm.locals.data = (ValueType*) malloc_func(sizeof(ValueType) * func->locals.size);
+        memcpy_func(funcInst->body.wasm.locals.data, func->locals.data, sizeof(ValueType) * func->locals.size);
+        size_t codeLen = get_code_size(func);
+        funcInst->body.wasm.codes.size = codeLen;
+        funcInst->body.wasm.codes.data = (byte_t*) malloc_func(codeLen);
+        fill_func_body(func, funcInst->body.wasm.codes.data);
     }
     store->funcs.size += module->funcs.size;
 
@@ -201,7 +210,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         return NULL;
     }
     // Check externval
-    struct module_alloc_sizes sizes = {
+    struct module_import_sizes sizes = {
         .funcs = 0,
         .globals = 0,
         .mems = 0,
@@ -211,28 +220,28 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         ExternVal *extVal = externval.data + i;
         switch (extVal->type) {
             case Desc_Func:
-                if(extVal->value >= module->funcs.size) {
+                if(extVal->value >= store->funcs.size) {
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return NULL;
                 }
                 sizes.funcs += 1;
                 break;
             case Desc_Global:
-                if(extVal->value >= module->globals.size) {
+                if(extVal->value >= store->globals.size) {
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return NULL;
                 }
                 sizes.globals += 1;
                 break;
             case Desc_Table:
-                if(extVal->value >= module->tables.size) {
+                if(extVal->value >= store->tables.size) {
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return NULL;
                 }
                 sizes.tables += 1;
                 break;
             case Desc_Mem:
-                if(extVal->value >= module->mems.size) {
+                if(extVal->value >= store->mems.size) {
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return NULL;
                 }
