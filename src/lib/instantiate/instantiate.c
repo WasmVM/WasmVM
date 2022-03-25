@@ -195,9 +195,11 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     moduleInst->exports.size = module->exports.size;
     moduleInst->exports.data = malloc_func(sizeof(ExportInst) * module->exports.size);
     for(size_t i = 0; i < module->exports.size; ++i){
-        moduleInst->exports.data[i] = *((ExportInst*)(module->exports.data + i));
-        moduleInst->exports.data[i].name.data = malloc_func(sizeof(byte_t) * module->exports.data->name.size);
-        memcpy_func(moduleInst->exports.data[i].name.data, module->exports.data->name.data, sizeof(byte_t) * module->exports.data->name.size);
+        moduleInst->exports.data[i].value.type = module->exports.data[i].descType;
+        moduleInst->exports.data[i].value.value = module->exports.data[i].descIdx;
+        moduleInst->exports.data[i].name.size = module->exports.data[i].name.size;
+        moduleInst->exports.data[i].name.data = malloc_func(sizeof(byte_t) * module->exports.data[i].name.size);
+        memcpy_func(moduleInst->exports.data[i].name.data, module->exports.data[i].name.data, sizeof(byte_t) * module->exports.data[i].name.size);
     }
     return moduleInst;
 }

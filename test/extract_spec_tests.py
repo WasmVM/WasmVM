@@ -63,6 +63,15 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '    }\n'
         '  }\n'
     )
+    # Named module
+    if "name" in command:
+        module_name = command["name"]
+        case_file.write(
+            '  if(!failed){\n'
+            f'    hashmap_set(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst, named_modules);\n'
+            '    module_inst = NULL;\n'
+            '  }\n'
+        )
     # End
     case_file.write(
         '  // End\n'
@@ -128,7 +137,29 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
         )
 
 def register(case_file: TextIO, command: dict) -> None:
-    pass #TODO:
+    # Get wasm file name
+    module_as = command["as"]
+    wast_line = command["line"]
+    case_file.write(
+        f'/** {wast_line}: register "{module_as}" */\n'
+        '{\n'
+        f'  wasm_module_inst regist_inst;\n'
+    )
+    if "name" in command:
+        module_name = command["name"]
+        case_file.write(
+            f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", regist_inst, named_modules);\n'
+            f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", regist_inst, moduleInsts);\n'
+        )
+    else:
+        case_file.write(
+            f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", module_inst, named_modules);\n'
+            f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", module_inst, moduleInsts);\n'
+            '  module_inst = NULL;\n'
+        )
+    case_file.write(
+        '}\n'
+    )
 
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:
@@ -146,10 +177,11 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "int main(void){\n"
             "int result = 0;\n"
             "hashmap_t(wasm_module_inst) moduleInsts = NULL;\n"
+            "hashmap_t(wasm_module_inst) named_modules = NULL;\n"
             "wasm_module module = NULL;\n"
             "wasm_module_inst module_inst = NULL;\n"
             "wasm_store store = store_init();\n"
-            "hashmap_set(sizeof(char) * 8, \"spectest\", spectest_instanciate(store), moduleInsts);"
+            "hashmap_set(sizeof(char) * 8, \"spectest\", spectest_instanciate(store), moduleInsts);\n"
             "\n"
         )
         # Commands
@@ -158,6 +190,9 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
                 action_module(case_file, command)
             elif command["type"] == "assert_malformed":
                 action_assert_malformed(case_file, command)
+            elif command["type"] == "register":
+                register(case_file, command)
+
 
         # Epilogue
         case_file.write(
