@@ -62,7 +62,7 @@ static _Bool name_compare(
     return 1;
 }
 
-externval_vector_t match_imports(const wasm_module module, const struct _hashmap* moduleInsts)
+externval_vector_t match_imports(const wasm_module module, const struct _hashmap* module_insts)
 {
     externval_vector_t externals;
     vector_init(externals);
@@ -74,7 +74,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
     }
     // Allocate externVals
     externals.size = imports.size;
-    externals.data = (ExternVal*) malloc_func(sizeof(ExternVal) * imports.size);
+    externals.data = (wasm_externval*) malloc_func(sizeof(wasm_externval) * imports.size);
     // Retrieve externvals
     for(size_t impIdx = 0; impIdx < imports.size; ++impIdx) {
         // Get module_inst
@@ -83,7 +83,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
             sizeof(byte_t) * imports.data[impIdx].module.size,
             imports.data[impIdx].module.data,
             moduleInst,
-            moduleInsts
+            module_insts
         );
         if(moduleInst == NULL) {
             // Module not found
@@ -93,7 +93,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
             return externals;
         }
         // Get export
-        ExternVal* exportValPtr = NULL;
+        wasm_externval* exportValPtr = NULL;
         for(unsigned int expIdx = 0; expIdx < moduleInst->exports.size; ++expIdx) {
             if(name_compare(
                         moduleInst->exports.data[expIdx].name.size,
