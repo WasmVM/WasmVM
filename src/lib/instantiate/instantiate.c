@@ -97,6 +97,9 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         funcInst->body.wasm.codes.size = codeLen;
         funcInst->body.wasm.codes.data = (byte_t*) malloc_func(codeLen);
         fill_func_body(func, funcInst->body.wasm.codes.data);
+        if(wasmvm_errno != ERROR_success){
+            return NULL;
+        }
     }
     store->funcs.size += module->funcs.size;
 

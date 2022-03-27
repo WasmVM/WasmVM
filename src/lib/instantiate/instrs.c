@@ -5,6 +5,7 @@
  */
 
 #include "instrs.h"
+#include <error.h>
 
 size_t get_code_size(const WasmFunc* func){
     size_t code_size = 0;
@@ -259,7 +260,14 @@ size_t get_code_size(const WasmFunc* func){
     return code_size;
 }
 
+typedef struct _BlockNode{
+    BlockInstrInst* ptr;
+    struct _BlockNode* next;
+} BlockStack;
+
 void fill_func_body(const WasmFunc* func, byte_t* data){
+    const byte_t* const begin = data;
+    BlockStack* blockStack = NULL;
     for(size_t instr_index = 0; instr_index < func->body.size; ++instr_index){
         const WasmInstr* instr = func->body.data + instr_index;
         ((InstrInst*)data)->opcode = instr->opcode;
@@ -495,19 +503,50 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 data += sizeof(InstrInst);
                 break;
             // Control instructions
+            case Op_else:
+                if(blockStack->ptr->opcode != Op_if){
+                    wasmvm_errno = ERROR_mis_label;
+                    return;
+                }
+                blockStack->ptr->brOffset = data - begin;
+                data += sizeof(InstrInst);
+                break;
+            case Op_end:{
+                BlockStack* node = blockStack;
+                if(!node){
+                    wasmvm_errno = ERROR_mis_label;
+                    return;
+                }
+                blockStack = blockStack->next;
+                node->ptr->endOffset = data - begin;
+                free_func(node);
+                data += sizeof(InstrInst);
+                }break;
             case Op_unreachable:
             case Op_nop:
-            case Op_else:
-            case Op_end:
             case Op_return:
                 data += sizeof(InstrInst);
                 break;
+            case Op_loop:{
+                BlockInstrInst* blockInstr = (BlockInstrInst*)data;
+                blockInstr->blocktype = instr->imm.values.value.type;
+                blockInstr->index = instr->imm.values.index;
+                blockInstr->brOffset = data - begin;
+                BlockStack* node = (BlockStack*)malloc_func(sizeof(BlockStack));
+                node->next = blockStack;
+                node->ptr = blockInstr;
+                blockStack = node;
+                data += sizeof(BlockInstrInst);
+                }break;
             case Op_block:
-            case Op_loop:
             case Op_if:{
                 BlockInstrInst* blockInstr = (BlockInstrInst*)data;
                 blockInstr->blocktype = instr->imm.values.value.type;
                 blockInstr->index = instr->imm.values.index;
+                BlockStack* node = (BlockStack*)malloc_func(sizeof(BlockStack));
+                node->next = blockStack;
+                node->ptr = blockInstr;
+                blockStack = node;
                 data += sizeof(BlockInstrInst);
                 }break;
             case Op_br:

@@ -35,6 +35,7 @@ typedef struct {
     u16_t opcode;
     u8_t blocktype;
     u32_t index;
+    u64_t brOffset, endOffset;
 } BlockInstrInst;
 
 typedef struct {

@@ -4,13 +4,14 @@
 #include <defines.h>
 
 typedef enum {
-    Value_Unspecified = 0,
+    Value_unspecified = 0,
     Value_i32,
     Value_i64,
     Value_f32,
     Value_f64,
     Value_funcref,
     Value_externref,
+    Value_index,
 } ValueType;
 
 typedef struct {

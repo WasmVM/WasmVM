@@ -47,6 +47,7 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
         case Op_if:
             switch (**read_p) {
                 case 0x40:
+                    instr->imm.values.value.type = Value_unspecified;
                     (*read_p)++;
                     break;
                 case TYPE_i32:
@@ -74,6 +75,7 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
                     (*read_p)++;
                     break;
                 default:
+                    instr->imm.values.value.type = Value_index;
                     instr->imm.values.index = getLeb128_u32(read_p, end_p);
                     if(wasmvm_errno) {
                         return -1;
