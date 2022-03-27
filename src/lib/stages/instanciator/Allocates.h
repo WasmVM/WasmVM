@@ -9,13 +9,13 @@
 #include <structures/WasmMemory.h>
 #include <structures/WasmGlobal.h>
 #include <structures/instrs/WasmInstr.h>
-#include <instance/ModuleInst.h>
-#include <instance/FuncInst.h>
-#include <instance/TableInst.h>
-#include <instance/MemInst.h>
-#include <instance/GlobalInst.h>
-#include <instance/InstrInst.h>
-#include <instance/ExportInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/FuncInst.h>
+#include <instances/TableInst.h>
+#include <instances/MemInst.h>
+#include <instances/GlobalInst.h>
+#include <instances/InstrInst.h>
+#include <instances/ExportInst.h>
 
 ModuleInst* allocate_Module(WasmModule* module, Store store, ExportInst* exportInsts[], size_t exportCount);
 InstrInst* allocate_Instruction(list_p funcBody, size_t index);

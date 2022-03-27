@@ -4,7 +4,7 @@
 extern "C" {
 #include <core/Runtime.h>
 #include <dataTypes/Label.h>
-#include <instance/ControlInstrInst.h>
+#include <instances/ControlInstrInst.h>
 }
 #undef _Bool
 

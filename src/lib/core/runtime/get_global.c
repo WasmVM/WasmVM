@@ -1,7 +1,7 @@
 #include <core/Runtime.h>
 
 #include <dataTypes/Value.h>
-#include <instance/GlobalInst.h>
+#include <instances/GlobalInst.h>
 #include <core/Stack.h>
 #include <core/Store.h>
 

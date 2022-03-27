@@ -8,7 +8,7 @@ extern "C" {
 #include <Allocates.h>
 #include <core/Store.h>
 #include <structures/WasmMemory.h>
-#include <instance/MemInst.h>
+#include <instances/MemInst.h>
 }
 #undef _Bool
 

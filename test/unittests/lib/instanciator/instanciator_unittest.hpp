@@ -12,12 +12,12 @@ extern "C" {
 #include <structures/WasmData.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/vector_p.h>
-#include <instance/ModuleInst.h>
-#include <instance/FuncInst.h>
-#include <instance/ExportInst.h>
-#include <instance/GlobalInst.h>
-#include <instance/MemInst.h>
-#include <instance/TableInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/FuncInst.h>
+#include <instances/ExportInst.h>
+#include <instances/GlobalInst.h>
+#include <instances/MemInst.h>
+#include <instances/TableInst.h>
 }
 #undef _Bool
 

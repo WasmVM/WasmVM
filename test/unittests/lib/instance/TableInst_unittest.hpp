@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <instance/TableInst.h>
+#include <instances/TableInst.h>
 }
 #undef _Bool
 

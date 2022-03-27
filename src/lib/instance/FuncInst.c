@@ -1,9 +1,9 @@
-#include <instance/FuncInst.h>
+#include <instances/FuncInst.h>
 
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/FuncType.h>
-#include <instance/InstrInst.h>
+#include <instances/InstrInst.h>
 
 FuncInst* new_FuncInst(ModuleInst* module, FuncType type)
 {

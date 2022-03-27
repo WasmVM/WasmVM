@@ -9,7 +9,7 @@ extern "C" {
 #include <Executor.h>
 #include <core/Store.h>
 #include <dataTypes/vector_p.h>
-#include <instance/ModuleInst.h>
+#include <instances/ModuleInst.h>
 #include <structures/WasmImport.h>
 #include <structures/WasmModule.h>
 #include "sections.h"

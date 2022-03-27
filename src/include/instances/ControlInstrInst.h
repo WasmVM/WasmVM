@@ -4,7 +4,7 @@
 #include <stdint.h>
 #include <dataTypes/vector_p.h>
 #include <dataTypes/Value.h>
-#include <instance/InstrInst.h>
+#include <instances/InstrInst.h>
 
 typedef struct {
     InstrInst parent;

@@ -1,4 +1,4 @@
-#include <instance/MemInst.h>
+#include <instances/MemInst.h>
 
 #include <stdlib.h>
 

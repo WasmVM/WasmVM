@@ -9,7 +9,7 @@ extern "C" {
 #include <core/Store.h>
 #include <dataTypes/Value.h>
 #include <structures/WasmGlobal.h>
-#include <instance/GlobalInst.h>
+#include <instances/GlobalInst.h>
 }
 #undef _Bool
 

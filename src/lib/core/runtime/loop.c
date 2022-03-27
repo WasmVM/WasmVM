@@ -1,7 +1,7 @@
 #include <core/Runtime.h>
 #include <stdlib.h>
 #include <dataTypes/Label.h>
-#include <instance/ControlInstrInst.h>
+#include <instances/ControlInstrInst.h>
 
 int runtime_loop(Stack stack, ControlInstrInst *control)
 {

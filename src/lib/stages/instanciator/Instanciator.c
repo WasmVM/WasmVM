@@ -6,11 +6,11 @@
 #include <structures/WasmModule.h>
 #include <structures/WasmElem.h>
 #include <structures/WasmData.h>
-#include <instance/ExportInst.h>
-#include <instance/FuncInst.h>
-#include <instance/MemInst.h>
-#include <instance/GlobalInst.h>
-#include <instance/TableInst.h>
+#include <instances/ExportInst.h>
+#include <instances/FuncInst.h>
+#include <instances/MemInst.h>
+#include <instances/GlobalInst.h>
+#include <instances/TableInst.h>
 #include "Allocates.h"
 
 static int matchFunc(FuncType importType, FuncType exportType)

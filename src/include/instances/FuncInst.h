@@ -4,8 +4,8 @@
 #include <Stack.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
-#include <instance/ModuleInst.h>
-#include <instance/InstrInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/InstrInst.h>
 
 typedef int (*hostfunc_t) (Stack* stack, void* data);
 

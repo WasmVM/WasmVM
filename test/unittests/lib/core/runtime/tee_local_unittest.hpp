@@ -6,7 +6,7 @@ extern "C" {
 #include <core/Runtime.h>
 #include <string.h>
 #include <dataTypes/Frame_.h>
-#include <instance/ModuleInst.h>
+#include <instances/ModuleInst.h>
 }
 #undef _Bool
 

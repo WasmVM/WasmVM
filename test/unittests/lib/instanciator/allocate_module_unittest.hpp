@@ -10,8 +10,8 @@ extern "C" {
 #include <dataTypes/Value.h>
 #include <structures/WasmModule.h>
 #include <structures/WasmTable.h>
-#include <instance/ModuleInst.h>
-#include <instance/TableInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/TableInst.h>
 }
 #undef _Bool
 

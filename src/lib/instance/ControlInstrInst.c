@@ -1,4 +1,4 @@
-#include <instance/ControlInstrInst.h>
+#include <instances/ControlInstrInst.h>
 
 #include <stdlib.h>
 #include <dataTypes/Value.h>

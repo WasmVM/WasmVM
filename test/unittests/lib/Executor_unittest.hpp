@@ -7,8 +7,8 @@ extern "C" {
 #include <stdio.h>
 #include <Executor.h>
 #include <dataTypes/FuncType.h>
-#include <instance/ModuleInst.h>
-#include <instance/FuncInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/FuncInst.h>
 #include "../util/ExecutorHelper.h"
 }
 #undef _Bool

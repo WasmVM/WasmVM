@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <instance/GlobalInst.h>
+#include <instances/GlobalInst.h>
 }
 #undef _Bool
 

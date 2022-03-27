@@ -9,7 +9,7 @@ extern "C" {
 #include <dataTypes/vector_p.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <instance/ControlInstrInst.h>
+#include <instances/ControlInstrInst.h>
 }
 #undef _Bool
 

@@ -8,7 +8,7 @@ extern "C" {
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Value.h>
-#include <instance/ModuleInst.h>
+#include <instances/ModuleInst.h>
 }
 #undef _Bool
 

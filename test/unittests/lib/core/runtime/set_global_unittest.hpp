@@ -7,8 +7,8 @@ extern "C" {
 #include <string.h>
 #include <core/Store.h>
 #include <dataTypes/Frame_.h>
-#include <instance/ModuleInst.h>
-#include <instance/GlobalInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/GlobalInst.h>
 }
 #undef _Bool
 

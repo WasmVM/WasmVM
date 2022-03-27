@@ -14,11 +14,11 @@ extern "C" {
 #include <structures/instrs/Parametric.h>
 #include <structures/instrs/Memory.h>
 #include <structures/instrs/Numeric.h>
-#include <instance/ControlInstrInst.h>
-#include <instance/ParametricInstrInst.h>
-#include <instance/MemoryInstrInst.h>
-#include <instance/VariableInstrInst.h>
-#include <instance/NumericInstrInst.h>
+#include <instances/ControlInstrInst.h>
+#include <instances/ParametricInstrInst.h>
+#include <instances/MemoryInstrInst.h>
+#include <instances/VariableInstrInst.h>
+#include <instances/NumericInstrInst.h>
 }
 #undef _Bool
 

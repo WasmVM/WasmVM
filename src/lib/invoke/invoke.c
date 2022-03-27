@@ -5,9 +5,31 @@
  */
 
 #include <WasmVM.h>
+#include <Stack.h>
 
 values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t args){
     values_vector_t results;
     vector_init(results);
+    // Get function instance
+    if(funcaddr >= store->funcs.size){
+        wasmvm_errno = ERROR_unknown_func;
+        return results;
+    }
+    const FuncInst* funcInst = store->funcs.data + funcaddr;
+    // Check args
+    if(args.size != funcInst->type->params.size){
+        wasmvm_errno = ERROR_type_mis;
+        return results;
+    }
+    for(u32_t i = 0; i < funcInst->type->params.size; ++i){
+        if(args.data[i].type != funcInst->type->params.data[i]){
+            wasmvm_errno = ERROR_type_mis;
+            return results;
+        }
+    }
+    // TODO: Create Stack
+    // TODO: Push args
+    // TODO: Invoke
+    // TODO: Get return
     return results;
 }

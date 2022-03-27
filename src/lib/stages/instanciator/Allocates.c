@@ -4,12 +4,12 @@
 #include <string.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/FuncType.h>
-#include <instance/FuncInst.h>
-#include <instance/TableInst.h>
-#include <instance/MemInst.h>
-#include <instance/GlobalInst.h>
-#include <instance/ExportInst.h>
-#include <instance/ModuleInst.h>
+#include <instances/FuncInst.h>
+#include <instances/TableInst.h>
+#include <instances/MemInst.h>
+#include <instances/GlobalInst.h>
+#include <instances/ExportInst.h>
+#include <instances/ModuleInst.h>
 
 ModuleInst* allocate_Module(WasmModule* module, Store store, ExportInst* exportInsts[], size_t exportCount)
 {

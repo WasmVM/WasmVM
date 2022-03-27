@@ -8,7 +8,7 @@ extern "C" {
 #include <Allocates.h>
 #include <core/Store.h>
 #include <structures/WasmTable.h>
-#include <instance/TableInst.h>
+#include <instances/TableInst.h>
 }
 #undef _Bool
 

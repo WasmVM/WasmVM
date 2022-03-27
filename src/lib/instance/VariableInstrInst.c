@@ -1,4 +1,4 @@
-#include <instance/VariableInstrInst.h>
+#include <instances/VariableInstrInst.h>
 
 #include <stdlib.h>
 

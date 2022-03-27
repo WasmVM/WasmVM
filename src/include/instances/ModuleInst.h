@@ -4,7 +4,7 @@
 #include <defines.h>
 #include <dataTypes/vector_t.h>
 #include <dataTypes/FuncType.h>
-#include <instance/ExportInst.h>
+#include <instances/ExportInst.h>
 
 typedef struct {
     vector_t(FuncType) types;

@@ -4,7 +4,7 @@
  * license that can be found in the LICENSE file.
  */
 
-#include <instance/ModuleInst.h>
+#include <instances/ModuleInst.h>
 
 wasm_module_inst module_inst_create()
 {

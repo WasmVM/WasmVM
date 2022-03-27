@@ -1,4 +1,4 @@
-#include <instance/ParametricInstrInst.h>
+#include <instances/ParametricInstrInst.h>
 
 #include <stdlib.h>
 #include <dataTypes/Value.h>

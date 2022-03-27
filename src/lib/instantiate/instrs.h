@@ -3,7 +3,7 @@
 
 #include <defines.h>
 #include <Opcodes.h>
-#include <instance/InstrInst.h>
+#include <instances/InstrInst.h>
 #include <structures/WasmFunc.h>
 
 size_t get_code_size(const WasmFunc* func);

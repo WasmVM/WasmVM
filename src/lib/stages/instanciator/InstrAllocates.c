@@ -9,11 +9,11 @@
 #include <structures/instrs/Variable.h>
 #include <structures/instrs/Memory.h>
 #include <structures/instrs/Numeric.h>
-#include <instance/ControlInstrInst.h>
-#include <instance/ParametricInstrInst.h>
-#include <instance/VariableInstrInst.h>
-#include <instance/MemoryInstrInst.h>
-#include <instance/NumericInstrInst.h>
+#include <instances/ControlInstrInst.h>
+#include <instances/ParametricInstrInst.h>
+#include <instances/VariableInstrInst.h>
+#include <instances/MemoryInstrInst.h>
+#include <instances/NumericInstrInst.h>
 
 static InstrInst* allocate_ControlInstr(WasmControlInstr* instr, list_p funcBody, size_t index)
 {

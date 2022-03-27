@@ -1,4 +1,4 @@
-#include <instance/TableInst.h>
+#include <instances/TableInst.h>
 
 #include <stdint.h>
 #include <stdlib.h>

@@ -12,10 +12,10 @@ extern "C" {
 #include <dataTypes/Frame.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/vector_p.h>
-#include <instance/ControlInstrInst.h>
-#include <instance/FuncInst.h>
-#include <instance/ModuleInst.h>
-#include <instance/TableInst.h>
+#include <instances/ControlInstrInst.h>
+#include <instances/FuncInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/TableInst.h>
 }
 #undef _Bool
 

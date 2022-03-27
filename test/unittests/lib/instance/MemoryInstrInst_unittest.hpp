@@ -2,7 +2,7 @@
 
 #define _Bool bool
 extern "C" {
-#include <instance/MemoryInstrInst.h>
+#include <instances/MemoryInstrInst.h>
 }
 #undef _Bool
 

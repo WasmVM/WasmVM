@@ -1,6 +1,6 @@
 #include <core/Runtime.h>
 #include <dataTypes/Value.h>
-#include <instance/MemInst.h>
+#include <instances/MemInst.h>
 #include <stdint.h>
 #include <stdlib.h>
 #include <stdio.h>

@@ -1,6 +1,6 @@
 #include <defines.h>
 #include <dataTypes/vector_t.h>
-#include <instance/ModuleInst.h>
+#include <instances/ModuleInst.h>
 
 void module_inst_free(ModuleInst* moduleInst)
 {

@@ -4,8 +4,8 @@
 #include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <instance/FuncInst.h>
-#include <instance/TableInst.h>
+#include <instances/FuncInst.h>
+#include <instances/TableInst.h>
 
 int runtime_call_indirect(Stack stack, Store store, ControlInstrInst *control)
 {

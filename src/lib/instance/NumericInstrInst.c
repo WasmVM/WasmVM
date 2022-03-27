@@ -1,4 +1,4 @@
-#include <instance/NumericInstrInst.h>
+#include <instances/NumericInstrInst.h>
 
 #include <stdlib.h>
 #include <dataTypes/Value.h>

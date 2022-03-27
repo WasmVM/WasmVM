@@ -4,7 +4,7 @@
 #include <defines.h>
 #include <error.h>
 #include <structures/WasmModule.h>
-#include <instance/ExternType.h>
+#include <instances/ExternType.h>
 #include <Store.h>
 
 typedef vector_t(wasm_externtype) imports_vector_t;

@@ -4,7 +4,7 @@
 #include <dataTypes/Frame_.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <instance/FuncInst.h>
+#include <instances/FuncInst.h>
 
 int runtime_call(Stack stack, Store store, ControlInstrInst *control)
 {

@@ -3,7 +3,7 @@
 extern "C" {
 #include <dataTypes/Value.h>
 #include <core/Runtime.h>
-#include <instance/MemInst.h>
+#include <instances/MemInst.h>
 #include <string.h>
 #include <stdint.h>
 }

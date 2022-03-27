@@ -13,14 +13,14 @@
 #include <dataTypes/Label.h>
 #include <dataTypes/Frame_.h>
 #include <dataTypes/Entry.h>
-#include <instance/FuncInst.h>
-#include <instance/InstrInst.h>
-#include <instance/MemInst.h>
-#include <instance/ControlInstrInst.h>
-#include <instance/ParametricInstrInst.h>
-#include <instance/VariableInstrInst.h>
-#include <instance/MemoryInstrInst.h>
-#include <instance/NumericInstrInst.h>
+#include <instances/FuncInst.h>
+#include <instances/InstrInst.h>
+#include <instances/MemInst.h>
+#include <instances/ControlInstrInst.h>
+#include <instances/ParametricInstrInst.h>
+#include <instances/VariableInstrInst.h>
+#include <instances/MemoryInstrInst.h>
+#include <instances/NumericInstrInst.h>
 
 static int run_control_instr(Stack stack, Store store, ControlInstrInst* instr, uint8_t opcode)
 {

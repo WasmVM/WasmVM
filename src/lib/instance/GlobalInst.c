@@ -1,4 +1,4 @@
-#include <instance/GlobalInst.h>
+#include <instances/GlobalInst.h>
 
 #include <stdlib.h>
 

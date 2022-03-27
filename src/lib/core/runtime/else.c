@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Label.h>
-#include <instance/ControlInstrInst.h>
+#include <instances/ControlInstrInst.h>
 
 int runtime_else(Stack stack)
 {

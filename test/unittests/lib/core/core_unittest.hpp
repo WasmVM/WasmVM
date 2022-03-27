@@ -9,9 +9,9 @@ extern "C" {
 #include <core/Core_.h>
 #include <dataTypes/vector_p.h>
 #include <dataTypes/list_p.h>
-#include <instance/ModuleInst.h>
-#include <instance/FuncInst.h>
-#include <instance/NumericInstrInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/FuncInst.h>
+#include <instances/NumericInstrInst.h>
 #include <dataTypes/Value.h>
 #include <dataTypes/Frame.h>
 #include <dataTypes/Label.h>

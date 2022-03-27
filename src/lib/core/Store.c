@@ -1,10 +1,10 @@
 #include <core/Store.h>
 
 #include <stdlib.h>
-#include <instance/FuncInst.h>
-#include <instance/TableInst.h>
-#include <instance/MemInst.h>
-#include <instance/GlobalInst.h>
+#include <instances/FuncInst.h>
+#include <instances/TableInst.h>
+#include <instances/MemInst.h>
+#include <instances/GlobalInst.h>
 
 Store new_Store()
 {

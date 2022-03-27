@@ -2,12 +2,12 @@
 #define WASMVM_STORE
 
 #include <dataTypes/vector_t.h>
-#include <instance/FuncInst.h>
-#include <instance/TableInst.h>
-#include <instance/MemInst.h>
-#include <instance/GlobalInst.h>
-#include <instance/ElemInst.h>
-#include <instance/DataInst.h>
+#include <instances/FuncInst.h>
+#include <instances/TableInst.h>
+#include <instances/MemInst.h>
+#include <instances/GlobalInst.h>
+#include <instances/ElemInst.h>
+#include <instances/DataInst.h>
 
 typedef struct {
     vector_t(FuncInst) funcs;

@@ -7,7 +7,7 @@
 #include <dataTypes/Label.h>
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Frame.h>
-#include <instance/FuncInst.h>
+#include <instances/FuncInst.h>
 
 int runtime_return(Stack stack, Store store)
 {

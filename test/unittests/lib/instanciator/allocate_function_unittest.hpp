@@ -15,9 +15,9 @@ extern "C" {
 #include <dataTypes/FuncType.h>
 #include <dataTypes/Value.h>
 #include <Opcodes.h>
-#include <instance/ModuleInst.h>
-#include <instance/VariableInstrInst.h>
-#include <instance/NumericInstrInst.h>
+#include <instances/ModuleInst.h>
+#include <instances/VariableInstrInst.h>
+#include <instances/NumericInstrInst.h>
 }
 #undef _Bool
 
