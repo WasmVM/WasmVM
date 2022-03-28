@@ -171,7 +171,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
         func_args = action["args"]
         case_file.write(
             f'/** {wast_line}: assert_return invoke */\n'
-            '{\n'
+            'if(module_inst){\n'
             '  _Bool failed = 0;\n'
         )
         # Prepare args
@@ -215,17 +215,17 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '  // Invoke\n'
             f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
-            f'  wasm_externval func_addr = instance_export(module_inst, {name_size}, func_name);'
+            f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
             '  if(wasmvm_errno != ERROR_success){\n'
             f'    fprintf(stderr, "Invoke({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '    failed = 1;\n'
             '  }\n'
-            '  if(func_addr.type != Desc_Func){\n'
+            '  if(func_export.type != Desc_Func){\n'
             f'    fprintf(stderr, "Invoke({wast_line}): [Failed] export type is not function while invoke function");\n'
             '    failed = 1;\n'
             '  }\n'
             '  if(!failed){\n'
-            '    values_vector_t result = func_invoke(store, func_addr.value, func_args);\n'
+            '    values_vector_t result = func_invoke(store, module_inst->funcaddrs.data[func_export.value], func_args);\n'
             '    if(wasmvm_errno != ERROR_success){\n'
             f'      fprintf(stderr, "Invoke({wast_line}): [Failed] failed invoke function with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '      failed = 1;\n'

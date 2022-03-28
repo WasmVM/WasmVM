@@ -88,18 +88,27 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         const WasmFunc *func = module->funcs.data + i;
         FuncInst* funcInst = store->funcs.data + (store->funcs.size + i);
         funcInst->bodyType = FuncBody_Wasm;
-        funcInst->type = module->types.data + func->type;
+        funcInst->type = moduleInst->types.data + func->type;
         funcInst->body.wasm.module = moduleInst;
         funcInst->body.wasm.locals.size = func->locals.size;
-        funcInst->body.wasm.locals.data = (ValueType*) malloc_func(sizeof(ValueType) * func->locals.size);
-        memcpy_func(funcInst->body.wasm.locals.data, func->locals.data, sizeof(ValueType) * func->locals.size);
+        if(funcInst->body.wasm.locals.size > 0){
+            funcInst->body.wasm.locals.data = (ValueType*) malloc_func(sizeof(ValueType) * func->locals.size);
+            memcpy_func(funcInst->body.wasm.locals.data, func->locals.data, sizeof(ValueType) * func->locals.size);
+        }else{
+            funcInst->body.wasm.locals.data = NULL;
+        }
         size_t codeLen = get_code_size(func);
         funcInst->body.wasm.codes.size = codeLen;
-        funcInst->body.wasm.codes.data = (byte_t*) malloc_func(codeLen);
-        fill_func_body(func, funcInst->body.wasm.codes.data);
+        if(funcInst->body.wasm.codes.size){
+            funcInst->body.wasm.codes.data = (byte_t*) malloc_func(codeLen);
+            fill_func_body(func, funcInst->body.wasm.codes.data);
+        }else{
+            funcInst->body.wasm.codes.data = NULL;
+        }
         if(wasmvm_errno != ERROR_success){
             return NULL;
         }
+        moduleInst->funcaddrs.data[i] = store->funcs.size + i;
     }
     store->funcs.size += module->funcs.size;
 
