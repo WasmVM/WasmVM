@@ -17,6 +17,7 @@ add_library(WasmVM
     instance/module.c
     instantiate/instantiate.c
     instantiate/instrs.c
+    invoke/func_invoke.c
     invoke/invoke.c
     error.c
     defines.c

@@ -15,7 +15,8 @@ typedef struct {
 
 typedef struct {
     u32_t arity;
-    InstrInst* current, end;
+    InstrInst* current;
+    InstrInst* end;
 } Label;
 
 typedef enum {
