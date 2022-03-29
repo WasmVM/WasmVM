@@ -5,6 +5,7 @@
  */
 
 #include "invoke.h"
+#include "exec.h"
 #include <error.h>
 
 void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
@@ -43,6 +44,27 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         // Invoke hostfunc
         if(funcInst->body.hostcode(stack, store)){
             wasmvm_errno = ERROR_host_func;
+        }
+    }
+}
+
+void execute(wasm_stack* stack, wasm_store store){
+    // Get label
+    wasm_stack current_label = *stack;
+    if(!current_label || current_label->type != Entry_label){
+        wasmvm_errno = ERROR_type_mis;
+        return;
+    }
+    // Get frame
+    wasm_stack current_frame = current_label->next;
+    if(!current_frame || current_frame->type != Entry_frame){
+        wasmvm_errno = ERROR_type_mis;
+        return;
+    }
+    // Run instructions
+    while(current_label){
+        switch(current_label->entry.label.current->opcode){
+
         }
     }
 }

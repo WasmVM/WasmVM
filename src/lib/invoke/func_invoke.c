@@ -38,8 +38,9 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
         value->next = stack;
         stack = value;
     }
-    // Invoke
+    // Invoke & execute
     invoke(&stack, store, funcaddr);
+    execute(&stack, store);
     // TODO: Get return
     return results;
 }

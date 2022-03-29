@@ -19,6 +19,7 @@ add_library(WasmVM
     instantiate/instrs.c
     invoke/func_invoke.c
     invoke/invoke.c
+    invoke/exec.c
     error.c
     defines.c
     free.c

@@ -6,5 +6,6 @@
 #include <Store.h>
 
 void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr);
+void execute(wasm_stack* stack, wasm_store store);
 
 #endif
