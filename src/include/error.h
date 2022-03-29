@@ -76,6 +76,7 @@ enum {
     ERROR_dup_local,  // "duplicate local"
     ERROR_unknown_table,  // "unknown table"
     ERROR_i32_const_range,  // "i32 constant out of range"
+    ERROR_host_func,  // "host function error"
 };
 
 const char* wasmvm_strerror(int errnum);

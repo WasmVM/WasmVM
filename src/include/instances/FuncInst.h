@@ -7,7 +7,8 @@
 #include <instances/ModuleInst.h>
 #include <instances/InstrInst.h>
 
-typedef int (*hostfunc_t) (Stack* stack, void* data);
+struct _Store;
+typedef int (*hostfunc_t) (wasm_stack* stack, struct _Store* store);
 
 typedef struct {
     FuncType* type;

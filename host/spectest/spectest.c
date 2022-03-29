@@ -8,42 +8,42 @@
 
 #include <stdio.h>
 
-static int spectest_print(Stack* stack, void* data)
+static int spectest_print(wasm_stack* stack, Store* store)
 {
     printf("\n");
     return 0;
 }
-static int spectest_print_i32(Stack* stack, void* data)
+static int spectest_print_i32(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_i32") (param i32))
     printf("\n");
     return 0;
 }
-static int spectest_print_i64(Stack* stack, void* data)
+static int spectest_print_i64(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_i64") (param i64))
     printf("\n");
     return 0;
 }
-static int spectest_print_f32(Stack* stack, void* data)
+static int spectest_print_f32(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_f32") (param f32))
     printf("\n");
     return 0;
 }
-static int spectest_print_f64(Stack* stack, void* data)
+static int spectest_print_f64(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_f64") (param f64))
     printf("\n");
     return 0;
 }
-static int spectest_print_i32_f32(Stack* stack, void* data)
+static int spectest_print_i32_f32(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_i32_f32") (param i32 f32))
     printf("\n");
     return 0;
 }
-static int spectest_print_f64_f64(Stack* stack, void* data)
+static int spectest_print_f64_f64(wasm_stack* stack, Store* store)
 {
     // TODO: (func (export "print_f64_f64") (param f64 f64))
     printf("\n");

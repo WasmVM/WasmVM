@@ -155,6 +155,8 @@ const char* wasmvm_strerror(int errnum)
             return "unknown table";
         case ERROR_i32_const_range:
             return "i32 constant out of range";
+        case ERROR_host_func:
+            return "host function error";
         default:
             return "unknown error";
     }

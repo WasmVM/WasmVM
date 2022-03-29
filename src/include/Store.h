@@ -9,7 +9,7 @@
 #include <instances/ElemInst.h>
 #include <instances/DataInst.h>
 
-typedef struct {
+typedef struct _Store{
     vector_t(FuncInst) funcs;
     vector_t(TableInst) tables;
     vector_t(MemInst) mems;

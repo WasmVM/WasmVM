@@ -511,17 +511,15 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 blockStack->ptr->brOffset = data - begin;
                 data += sizeof(InstrInst);
                 break;
-            case Op_end:{
-                BlockStack* node = blockStack;
-                if(!node){
-                    wasmvm_errno = ERROR_mis_label;
-                    return;
+            case Op_end:
+                if(blockStack){
+                    BlockStack* node = blockStack;
+                    blockStack = blockStack->next;
+                    node->ptr->endOffset = data - begin;
+                    free_func(node);
                 }
-                blockStack = blockStack->next;
-                node->ptr->endOffset = data - begin;
-                free_func(node);
                 data += sizeof(InstrInst);
-                }break;
+                break;
             case Op_unreachable:
             case Op_nop:
             case Op_return:

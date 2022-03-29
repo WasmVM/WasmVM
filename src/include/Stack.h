@@ -9,8 +9,8 @@
 
 typedef struct {
     u32_t arity;
-    vector_t(Value) locals;
     wasm_module_inst moduleinst;
+    vector_t(Value) locals;
 } Frame;
 
 typedef struct {
@@ -27,12 +27,14 @@ typedef enum {
 
 typedef struct _Stack{
     EntryType type;
+    struct _Stack* next;
     union {
         Frame frame;
         Label label;
         Value value;
     } entry;
-    struct _Stack* next;
 } Stack;
+
+typedef Stack* wasm_stack;
 
 #endif
