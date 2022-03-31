@@ -7,16 +7,20 @@
 #include <instances/ModuleInst.h>
 #include <instances/InstrInst.h>
 
-typedef struct {
+struct _Stack;
+
+typedef struct _Frame{
     u32_t arity;
     wasm_module_inst moduleinst;
+    struct _Stack* last;
     vector_t(Value) locals;
 } Frame;
 
-typedef struct {
+typedef struct _Label{
     u32_t arity;
     InstrInst* current;
     InstrInst* end;
+    struct _Stack* last;
 } Label;
 
 typedef enum {
@@ -28,7 +32,7 @@ typedef enum {
 
 typedef struct _Stack{
     EntryType type;
-    struct _Stack* next;
+    struct _Stack *next;
     union {
         Frame frame;
         Label label;

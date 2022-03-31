@@ -7,6 +7,7 @@
 #include "invoke.h"
 #include "exec.h"
 #include <error.h>
+#include <Opcodes.h>
 
 void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
     const FuncInst* funcInst = store->funcs.data + funcaddr;
@@ -21,10 +22,6 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         // Store parameters to frame locals
         for(u32_t i = 0; i < funcInst->type->params.size; ++i){
             wasm_stack entry = *stack;
-            if(!entry || entry->type != Entry_value){
-                wasmvm_errno = ERROR_type_mis;
-                return;
-            }
             frame->entry.frame.locals.data[i] = entry->entry.value;
             *stack = entry->next;
             free_func(entry);
@@ -49,22 +46,26 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
 }
 
 void execute(wasm_stack* stack, wasm_store store){
-    // Get label
+    // Get label & frame
     wasm_stack current_label = *stack;
-    if(!current_label || current_label->type != Entry_label){
-        wasmvm_errno = ERROR_type_mis;
-        return;
-    }
-    // Get frame
+    current_label->entry.label.last = NULL;
     wasm_stack current_frame = current_label->next;
-    if(!current_frame || current_frame->type != Entry_frame){
-        wasmvm_errno = ERROR_type_mis;
-        return;
-    }
+    current_frame->entry.frame.last = NULL;
     // Run instructions
-    while(current_label){
+    while(current_frame){
         switch(current_label->entry.label.current->opcode){
-
+            case Op_local_get:
+                exec_local_get(current_label, current_frame, stack, store);
+            break;
+            case Op_i32_add:
+                exec_i32_add(current_label, stack);
+            break;
+            case Op_end:
+                exec_end(&current_label, &current_frame, stack);
+            break;
+            default:
+                // Unimplemented
+                return;
         }
     }
 }
