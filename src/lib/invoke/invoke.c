@@ -90,6 +90,21 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i32_xor:
                 exec_i32_xor(current_label, stack);
             break;
+            case Op_i32_shl:
+                exec_i32_shl(current_label, stack);
+            break;
+            case Op_i32_shr_s:
+                exec_i32_shr_s(current_label, stack);
+            break;
+            case Op_i32_shr_u:
+                exec_i32_shr_u(current_label, stack);
+            break;
+            case Op_i32_rotl:
+                exec_i32_rotl(current_label, stack);
+            break;
+            case Op_i32_rotr:
+                exec_i32_rotr(current_label, stack);
+            break;
             default:
                 // Unimplemented
                 return;

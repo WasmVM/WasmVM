@@ -104,11 +104,11 @@ void exec_i32_rem_u(wasm_stack label, wasm_stack* stack);
 void exec_i32_and(wasm_stack label, wasm_stack* stack);
 void exec_i32_or(wasm_stack label, wasm_stack* stack);
 void exec_i32_xor(wasm_stack label, wasm_stack* stack);
-void exec_i32_shl(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_shr_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_shr_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_rotl(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_rotr(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_shl(wasm_stack label, wasm_stack* stack);
+void exec_i32_shr_s(wasm_stack label, wasm_stack* stack);
+void exec_i32_shr_u(wasm_stack label, wasm_stack* stack);
+void exec_i32_rotl(wasm_stack label, wasm_stack* stack);
+void exec_i32_rotr(wasm_stack label, wasm_stack* stack);
 void exec_i64_clz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i64_ctz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i64_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
