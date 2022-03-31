@@ -81,6 +81,15 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i32_rem_u:
                 exec_i32_rem_u(current_label, stack);
             break;
+            case Op_i32_and:
+                exec_i32_and(current_label, stack);
+            break;
+            case Op_i32_or:
+                exec_i32_or(current_label, stack);
+            break;
+            case Op_i32_xor:
+                exec_i32_xor(current_label, stack);
+            break;
             default:
                 // Unimplemented
                 return;
