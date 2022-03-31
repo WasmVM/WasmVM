@@ -41,6 +41,9 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
     // Invoke & execute
     invoke(&stack, store, funcaddr);
     execute(&stack, store);
+    if(wasmvm_errno != ERROR_success){
+        return results;
+    }
     // Get return values
     results.size = funcInst->type->results.size;
     results.data = (wasm_value*) malloc_func(sizeof(wasm_value) * results.size);

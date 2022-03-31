@@ -95,10 +95,10 @@ void exec_i32_clz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_
 void exec_i32_ctz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_add(wasm_stack label, wasm_stack* stack);
-void exec_i32_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_div_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_div_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_sub(wasm_stack label, wasm_stack* stack);
+void exec_i32_mul(wasm_stack label, wasm_stack* stack);
+void exec_i32_div_s(wasm_stack label, wasm_stack* stack);
+void exec_i32_div_u(wasm_stack label, wasm_stack* stack);
 void exec_i32_rem_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_rem_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_and(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:

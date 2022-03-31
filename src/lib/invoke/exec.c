@@ -5,6 +5,7 @@
  */
 
 #include "exec.h"
+#include <error.h>
 
 void exec_unreachable(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
@@ -302,24 +303,56 @@ void exec_i32_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wa
   // TODO:
 }
 void exec_i32_add(wasm_stack label, wasm_stack* stack){
-    wasm_stack value2 = *stack;
-    wasm_stack value1 = value2->next;
-    value1->entry.value.value.i32 += value2->entry.value.value.i32;
-    *stack = value1;
-    free_func(value2);
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 += value1->entry.value.value.i32;
+    *stack = value2;
+    free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_i32_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_sub(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = value1->entry.value.value.i32 - value2->entry.value.value.i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i32_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_mul(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 *= value1->entry.value.value.i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i32_div_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_div_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.i32 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.i32 = value1->entry.value.value.i32 / value2->entry.value.value.i32;
+    if(value2->entry.value.value.i32 == 0x80000000){
+        wasmvm_errno = ERROR_int_overflow;
+        return;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i32_div_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_div_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.u32 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.u32 = value1->entry.value.value.u32 / value2->entry.value.value.u32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_i32_rem_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:

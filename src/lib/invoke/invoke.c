@@ -54,18 +54,33 @@ void execute(wasm_stack* stack, wasm_store store){
     // Run instructions
     while(current_frame){
         switch(current_label->entry.label.current->opcode){
+            case Op_end:
+                exec_end(&current_label, &current_frame, stack);
+            break;
             case Op_local_get:
                 exec_local_get(current_label, current_frame, stack, store);
             break;
             case Op_i32_add:
                 exec_i32_add(current_label, stack);
             break;
-            case Op_end:
-                exec_end(&current_label, &current_frame, stack);
+            case Op_i32_sub:
+                exec_i32_sub(current_label, stack);
+            break;
+            case Op_i32_mul:
+                exec_i32_mul(current_label, stack);
+            break;
+            case Op_i32_div_s:
+                exec_i32_div_s(current_label, stack);
+            break;
+            case Op_i32_div_u:
+                exec_i32_div_u(current_label, stack);
             break;
             default:
                 // Unimplemented
                 return;
+        }
+        if(wasmvm_errno != ERROR_success){
+            return;
         }
     }
 }
