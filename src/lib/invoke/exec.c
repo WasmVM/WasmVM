@@ -179,17 +179,23 @@ void exec_memory_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, w
 void exec_memory_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
 }
-void exec_i32_const(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_const(wasm_stack label, wasm_stack* stack){
+    ConstInstrInst* instr = (ConstInstrInst*)label->entry.label.current;
+    wasm_stack value = (wasm_stack)malloc_func(sizeof(Stack));
+    value->type = Entry_value;
+    value->next = *stack;
+    value->entry.value = instr->constant;
+    *stack = value;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_i64_const(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
-}
-void exec_f32_const(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
-}
-void exec_f64_const(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_f64_const(wasm_stack label, wasm_stack* stack){
+    ConstInstrInst* instr = (ConstInstrInst*)label->entry.label.current;
+    wasm_stack value = (wasm_stack)malloc_func(sizeof(Stack));
+    value->type = Entry_value;
+    value->next = *stack;
+    value->entry.value = instr->constant;
+    *stack = value;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_i32_eqz(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
