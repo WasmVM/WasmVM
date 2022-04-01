@@ -444,23 +444,23 @@ void exec_i32_ctz(wasm_stack label, wasm_stack* stack){
         value->entry.value.value.i32 = 32;
     }else{
         u32_t count = 0;
-        if(!(value->entry.value.value.u32 & 0x0000ffff)){
+        if(!(value->entry.value.value.u32 & 0xffff)){
             count += 16;
             value->entry.value.value.u32 >>= 16;
         }
-        if(!(value->entry.value.value.u32 & 0x000000ff)){
+        if(!(value->entry.value.value.u32 & 0xff)){
             count += 8;
             value->entry.value.value.u32 >>= 8;
         }
-        if(!(value->entry.value.value.i32 & 0x0000000f)){
+        if(!(value->entry.value.value.i32 & 0xf)){
             count += 4;
             value->entry.value.value.u32 >>= 4;
         }
-        if(!(value->entry.value.value.u32 & 0x00000003)){
+        if(!(value->entry.value.value.u32 & 0x3)){
             count += 2;
             value->entry.value.value.u32 >>= 2;
         }
-        if(!(value->entry.value.value.u32 & 0x00000001)){
+        if(!(value->entry.value.value.u32 & 0x1)){
             count += 1;
             value->entry.value.value.u32 >>= 1;
         }
@@ -601,8 +601,8 @@ void exec_i32_shr_u(wasm_stack label, wasm_stack* stack){
 void exec_i32_rotl(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;
     wasm_stack value2 = value1->next;
-    value2->entry.value.value.u32 &= 31U;
-    value2->entry.value.value.u32 = (value1->entry.value.value.u32 << value2->entry.value.value.u32) | (value1->entry.value.value.u32 >> ((-value2->entry.value.value.u32) & 31U));
+    value2->entry.value.value.u32 %= 32U;
+    value2->entry.value.value.u32 = (value1->entry.value.value.u32 << value2->entry.value.value.u32) | (value1->entry.value.value.u32 >> (32U - value2->entry.value.value.u32));
     *stack = value2;
     free_func(value1);
     label->entry.label.current += 1;
@@ -610,65 +610,228 @@ void exec_i32_rotl(wasm_stack label, wasm_stack* stack){
 void exec_i32_rotr(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;
     wasm_stack value2 = value1->next;
-    value2->entry.value.value.u32 &= 31U;
-    value2->entry.value.value.u32 = (value1->entry.value.value.u32 >> value2->entry.value.value.u32) | (value1->entry.value.value.u32 << ((-value2->entry.value.value.u32) & 31U));
+    value2->entry.value.value.u32 %= 32U;
+    value2->entry.value.value.u32 = (value1->entry.value.value.u32 >> value2->entry.value.value.u32) | (value1->entry.value.value.u32 << (32U - value2->entry.value.value.u32));
     *stack = value2;
     free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_i64_clz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_clz(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(value->entry.value.value.i64 == 0){
+        value->entry.value.value.i64 = 64;
+    }else{
+        u64_t count = 0;
+        if(!(value->entry.value.value.i64 & 0xffffffff00000000LLU)){
+            count += 32;
+            value->entry.value.value.i64 <<= 32;
+        }
+        if(!(value->entry.value.value.i64 & 0xffff000000000000LLU)){
+            count += 16;
+            value->entry.value.value.i64 <<= 16;
+        }
+        if(!(value->entry.value.value.i64 & 0xff00000000000000LLU)){
+            count += 8;
+            value->entry.value.value.i64 <<= 8;
+        }
+        if(!(value->entry.value.value.i64 & 0xf000000000000000LLU)){
+            count += 4;
+            value->entry.value.value.i64 <<= 4;
+        }
+        if(!(value->entry.value.value.i64 & 0xc000000000000000LLU)){
+            count += 2;
+            value->entry.value.value.i64 <<= 2;
+        }
+        if(!(value->entry.value.value.i64 & 0x8000000000000000LLU)){
+            count += 1;
+            value->entry.value.value.i64 <<= 1;
+        }
+        value->entry.value.value.u64 = count;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i64_ctz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_ctz(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(value->entry.value.value.i64 == 0){
+        value->entry.value.value.i64 = 64;
+    }else{
+        u64_t count = 0;
+        if(!(value->entry.value.value.u64 & 0xffffffffLLU)){
+            count += 32;
+            value->entry.value.value.u64 >>= 32;
+        }
+        if(!(value->entry.value.value.u64 & 0xffffLLU)){
+            count += 16;
+            value->entry.value.value.u64 >>= 16;
+        }
+        if(!(value->entry.value.value.u64 & 0xffLLU)){
+            count += 8;
+            value->entry.value.value.u64 >>= 8;
+        }
+        if(!(value->entry.value.value.i64 & 0xfLLU)){
+            count += 4;
+            value->entry.value.value.u64 >>= 4;
+        }
+        if(!(value->entry.value.value.u64 & 0x3LLU)){
+            count += 2;
+            value->entry.value.value.u64 >>= 2;
+        }
+        if(!(value->entry.value.value.u64 & 0x1LLU)){
+            count += 1;
+            value->entry.value.value.u64 >>= 1;
+        }
+        value->entry.value.value.u64 = count;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i64_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_popcnt(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u64 -= ((value->entry.value.value.u64 >> 1) & 0x5555555555555555LLU);
+	value->entry.value.value.u64 = (value->entry.value.value.u64 & 0x3333333333333333LLU) + (value->entry.value.value.u64 >> 2 & 0x3333333333333333LLU);
+	value->entry.value.value.u64 = ((value->entry.value.value.u64 + (value->entry.value.value.u64 >> 4)) & 0xf0f0f0f0f0f0f0fLLU) * 0x101010101010101LLU >> 56;
+    label->entry.label.current += 1;
 }
-void exec_i64_add(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_add(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 += value1->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_sub(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 - value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_mul(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 *= value1->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_div_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_div_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.i64 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 / value2->entry.value.value.i64;
+    if(value2->entry.value.value.i64 == 0x8000000000000000LLU){
+        wasmvm_errno = ERROR_int_overflow;
+        return;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_div_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_div_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.u64 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.u64 = value1->entry.value.value.u64 / value2->entry.value.value.u64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_rem_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_rem_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.i64 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 % value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_rem_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_rem_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    if(value2->entry.value.value.u64 == 0){
+        wasmvm_errno = ERROR_div_zero;
+        return;
+    }
+    value2->entry.value.value.u64 = value1->entry.value.value.u64 % value2->entry.value.value.u64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_and(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_and(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 & value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_or(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_or(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 | value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_xor(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_xor(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 ^ value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_shl(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_shl(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 << value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_shr_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_shr_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i64 = value1->entry.value.value.i64 >> value2->entry.value.value.i64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_shr_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_shr_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.u64 = value1->entry.value.value.u64 >> value2->entry.value.value.u64;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_rotl(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_rotl(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.u64 %= 64LLU;
+    value2->entry.value.value.u64 = (value1->entry.value.value.u64 << value2->entry.value.value.u64) | (value1->entry.value.value.u64 >> (64LLU - value2->entry.value.value.u64));
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_rotr(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_rotr(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.u64 %= 64LLU;
+    value2->entry.value.value.u64 = (value1->entry.value.value.u64 >> value2->entry.value.value.u64) | (value1->entry.value.value.u64 << (64LLU - value2->entry.value.value.u64));
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_abs(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
@@ -839,14 +1002,20 @@ void exec_i32_extend16_s(wasm_stack label, wasm_stack* stack){
     value->entry.value.value.i32 = (i32_t)(i16_t)value->entry.value.value.i32;
     label->entry.label.current += 1;
 }
-void exec_i64_extend8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_extend8_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i64 = (i64_t)(i8_t)value->entry.value.value.i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_extend16_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_extend16_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i64 = (i64_t)(i16_t)value->entry.value.value.i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_extend32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_extend32_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i64 = (i64_t)(i32_t)value->entry.value.value.i64;
+    label->entry.label.current += 1;
 }
 void exec_ref_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:

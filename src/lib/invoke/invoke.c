@@ -126,6 +126,7 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i64_ge_u:
                 exec_i64_ge_u(current_label, stack);
             break;
+
             case Op_i32_clz:
                 exec_i32_clz(current_label, stack);
             break;
@@ -180,11 +181,75 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i32_rotr:
                 exec_i32_rotr(current_label, stack);
             break;
+            case Op_i64_clz:
+                exec_i64_clz(current_label, stack);
+            break;
+            case Op_i64_ctz:
+                exec_i64_ctz(current_label, stack);
+            break;
+            case Op_i64_popcnt:
+                exec_i64_popcnt(current_label, stack);
+            break;
+            case Op_i64_add:
+                exec_i64_add(current_label, stack);
+            break;
+            case Op_i64_sub:
+                exec_i64_sub(current_label, stack);
+            break;
+            case Op_i64_mul:
+                exec_i64_mul(current_label, stack);
+            break;
+            case Op_i64_div_s:
+                exec_i64_div_s(current_label, stack);
+            break;
+            case Op_i64_div_u:
+                exec_i64_div_u(current_label, stack);
+            break;
+            case Op_i64_rem_s:
+                exec_i64_rem_s(current_label, stack);
+            break;
+            case Op_i64_rem_u:
+                exec_i64_rem_u(current_label, stack);
+            break;
+            case Op_i64_and:
+                exec_i64_and(current_label, stack);
+            break;
+            case Op_i64_or:
+                exec_i64_or(current_label, stack);
+            break;
+            case Op_i64_xor:
+                exec_i64_xor(current_label, stack);
+            break;
+            case Op_i64_shl:
+                exec_i64_shl(current_label, stack);
+            break;
+            case Op_i64_shr_s:
+                exec_i64_shr_s(current_label, stack);
+            break;
+            case Op_i64_shr_u:
+                exec_i64_shr_u(current_label, stack);
+            break;
+            case Op_i64_rotl:
+                exec_i64_rotl(current_label, stack);
+            break;
+            case Op_i64_rotr:
+                exec_i64_rotr(current_label, stack);
+            break;
+
             case Op_i32_extend8_s:
                 exec_i32_extend8_s(current_label, stack);
             break;
             case Op_i32_extend16_s:
                 exec_i32_extend16_s(current_label, stack);
+            break;
+            case Op_i64_extend8_s:
+                exec_i64_extend8_s(current_label, stack);
+            break;
+            case Op_i64_extend16_s:
+                exec_i64_extend16_s(current_label, stack);
+            break;
+            case Op_i64_extend32_s:
+                exec_i64_extend32_s(current_label, stack);
             break;
             default:
                 // Unimplemented
