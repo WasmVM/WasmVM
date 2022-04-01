@@ -10,6 +10,8 @@ typedef double  f64_t;
 
 typedef unsigned char   u8_t;
 typedef unsigned short  u16_t;
+typedef char   i8_t;
+typedef short  i16_t;
 typedef unsigned long   size_t;
 typedef unsigned char   byte_t;
 

@@ -714,11 +714,15 @@ void exec_f32_reinterpret_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* 
 void exec_f64_reinterpret_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
 }
-void exec_i32_extend8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_extend8_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i32 = (i32_t)(i8_t)value->entry.value.value.i32;
+    label->entry.label.current += 1;
 }
-void exec_i32_extend16_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_extend16_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i32 = (i32_t)(i16_t)value->entry.value.value.i32;
+    label->entry.label.current += 1;
 }
 void exec_i64_extend8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:

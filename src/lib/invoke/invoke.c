@@ -114,6 +114,12 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i32_rotr:
                 exec_i32_rotr(current_label, stack);
             break;
+            case Op_i32_extend8_s:
+                exec_i32_extend8_s(current_label, stack);
+            break;
+            case Op_i32_extend16_s:
+                exec_i32_extend16_s(current_label, stack);
+            break;
             default:
                 // Unimplemented
                 return;
