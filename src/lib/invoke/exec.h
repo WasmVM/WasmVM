@@ -91,9 +91,9 @@ void exec_f64_lt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_s
 void exec_f64_gt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f64_le(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f64_ge(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_clz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_ctz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_clz(wasm_stack label, wasm_stack* stack);
+void exec_i32_ctz(wasm_stack label, wasm_stack* stack);
+void exec_i32_popcnt(wasm_stack label, wasm_stack* stack);
 void exec_i32_add(wasm_stack label, wasm_stack* stack);
 void exec_i32_sub(wasm_stack label, wasm_stack* stack);
 void exec_i32_mul(wasm_stack label, wasm_stack* stack);

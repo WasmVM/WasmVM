@@ -293,14 +293,71 @@ void exec_f64_le(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_s
 void exec_f64_ge(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
 }
-void exec_i32_clz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_clz(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(value->entry.value.value.i32 == 0){
+        value->entry.value.value.i32 = 32;
+    }else{
+        u32_t count = 0;
+        if(!(value->entry.value.value.i32 & 0xffff0000)){
+            count += 16;
+            value->entry.value.value.i32 <<= 16;
+        }
+        if(!(value->entry.value.value.i32 & 0xff000000)){
+            count += 8;
+            value->entry.value.value.i32 <<= 8;
+        }
+        if(!(value->entry.value.value.i32 & 0xf0000000)){
+            count += 4;
+            value->entry.value.value.i32 <<= 4;
+        }
+        if(!(value->entry.value.value.i32 & 0xc0000000)){
+            count += 2;
+            value->entry.value.value.i32 <<= 2;
+        }
+        if(!(value->entry.value.value.i32 & 0x80000000)){
+            count += 1;
+            value->entry.value.value.i32 <<= 1;
+        }
+        value->entry.value.value.u32 = count;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i32_ctz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_ctz(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(value->entry.value.value.i32 == 0){
+        value->entry.value.value.i32 = 32;
+    }else{
+        u32_t count = 0;
+        if(!(value->entry.value.value.u32 & 0x0000ffff)){
+            count += 16;
+            value->entry.value.value.u32 >>= 16;
+        }
+        if(!(value->entry.value.value.u32 & 0x000000ff)){
+            count += 8;
+            value->entry.value.value.u32 >>= 8;
+        }
+        if(!(value->entry.value.value.i32 & 0x0000000f)){
+            count += 4;
+            value->entry.value.value.u32 >>= 4;
+        }
+        if(!(value->entry.value.value.u32 & 0x00000003)){
+            count += 2;
+            value->entry.value.value.u32 >>= 2;
+        }
+        if(!(value->entry.value.value.u32 & 0x00000001)){
+            count += 1;
+            value->entry.value.value.u32 >>= 1;
+        }
+        value->entry.value.value.u32 = count;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i32_popcnt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i32_popcnt(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u32 = value->entry.value.value.u32 - ((value->entry.value.value.u32 >> 1) & 033333333333) - ((value->entry.value.value.u32 >> 2) & 011111111111);
+    value->entry.value.value.u32 = ((value->entry.value.value.u32 + (value->entry.value.value.u32 >> 3)) & 030707070707) % 63;
+    label->entry.label.current += 1;
 }
 void exec_i32_add(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;

@@ -293,7 +293,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             '  if(failed){\n'
             '    result += 1;\n'
             '  }else{\n'
-            f'    fprintf(stderr, "Invoke ({wast_line}): [Passed]\\n");\n'
+            f'    fprintf(stderr, "Invoke({wast_line}): [Passed]\\n");\n'
             '  }\n'
             '}\n'
         )
