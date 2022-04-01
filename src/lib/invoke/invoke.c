@@ -93,6 +93,39 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i32_ge_u:
                 exec_i32_ge_u(current_label, stack);
             break;
+            case Op_i64_eqz:
+                exec_i64_eqz(current_label, stack);
+            break;
+            case Op_i64_eq:
+                exec_i64_eq(current_label, stack);
+            break;
+            case Op_i64_ne:
+                exec_i64_ne(current_label, stack);
+            break;
+            case Op_i64_lt_s:
+                exec_i64_lt_s(current_label, stack);
+            break;
+            case Op_i64_lt_u:
+                exec_i64_lt_u(current_label, stack);
+            break;
+            case Op_i64_gt_s:
+                exec_i64_gt_s(current_label, stack);
+            break;
+            case Op_i64_gt_u:
+                exec_i64_gt_u(current_label, stack);
+            break;
+            case Op_i64_le_s:
+                exec_i64_le_s(current_label, stack);
+            break;
+            case Op_i64_le_u:
+                exec_i64_le_u(current_label, stack);
+            break;
+            case Op_i64_ge_s:
+                exec_i64_ge_s(current_label, stack);
+            break;
+            case Op_i64_ge_u:
+                exec_i64_ge_u(current_label, stack);
+            break;
             case Op_i32_clz:
                 exec_i32_clz(current_label, stack);
             break;

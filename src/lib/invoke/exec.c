@@ -276,38 +276,101 @@ void exec_i32_ge_u(wasm_stack label, wasm_stack* stack){
     free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_i64_eqz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_eqz(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.i32 = (value->entry.value.value.i64 == 0);
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i64_eq(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_eq(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 == value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_ne(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_ne(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 != value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_lt_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_lt_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 < value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_lt_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_lt_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.u64 < value2->entry.value.value.u64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_gt_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_gt_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 > value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_gt_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_gt_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.u64 > value2->entry.value.value.u64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_le_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_le_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 <= value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_le_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_le_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.u64 <= value2->entry.value.value.u64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_ge_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_ge_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.i64 >= value2->entry.value.value.i64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
-void exec_i64_ge_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_i64_ge_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.i32 = (value1->entry.value.value.u64 >= value2->entry.value.value.u64);
+    value2->entry.value.type = Value_i32;
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_eq(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:

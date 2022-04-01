@@ -68,17 +68,17 @@ void exec_i32_le_s(wasm_stack label, wasm_stack* stack);
 void exec_i32_le_u(wasm_stack label, wasm_stack* stack);
 void exec_i32_ge_s(wasm_stack label, wasm_stack* stack);
 void exec_i32_ge_u(wasm_stack label, wasm_stack* stack);
-void exec_i64_eqz(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_eq(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_ne(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_lt_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_lt_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_gt_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_gt_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_le_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_le_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_ge_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_ge_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i64_eqz(wasm_stack label, wasm_stack* stack);
+void exec_i64_eq(wasm_stack label, wasm_stack* stack);
+void exec_i64_ne(wasm_stack label, wasm_stack* stack);
+void exec_i64_lt_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_lt_u(wasm_stack label, wasm_stack* stack);
+void exec_i64_gt_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_gt_u(wasm_stack label, wasm_stack* stack);
+void exec_i64_le_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_le_u(wasm_stack label, wasm_stack* stack);
+void exec_i64_ge_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_ge_u(wasm_stack label, wasm_stack* stack);
 void exec_f32_eq(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f32_ne(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f32_lt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
