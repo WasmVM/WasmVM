@@ -133,6 +133,25 @@ void execute(wasm_stack* stack, wasm_store store){
                 exec_i64_ge_u(current_label, stack);
             break;
 
+            case Op_f32_eq:
+                exec_f32_eq(current_label, stack);
+            break;
+            case Op_f32_ne:
+                exec_f32_ne(current_label, stack);
+            break;
+            case Op_f32_lt:
+                exec_f32_lt(current_label, stack);
+            break;
+            case Op_f32_le:
+                exec_f32_le(current_label, stack);
+            break;
+            case Op_f32_gt:
+                exec_f32_gt(current_label, stack);
+            break;
+            case Op_f32_ge:
+                exec_f32_ge(current_label, stack);
+            break;
+
             case Op_i32_clz:
                 exec_i32_clz(current_label, stack);
             break;
