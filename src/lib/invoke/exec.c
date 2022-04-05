@@ -212,15 +212,6 @@ void exec_const(wasm_stack label, wasm_stack* stack){
     *stack = value;
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_f64_const(wasm_stack label, wasm_stack* stack){
-    ConstInstrInst* instr = (ConstInstrInst*)label->entry.label.current;
-    wasm_stack value = (wasm_stack)malloc_func(sizeof(Stack));
-    value->type = Entry_value;
-    value->next = *stack;
-    value->entry.value = instr->constant;
-    *stack = value;
-    label->entry.label.current = (InstrInst*)(instr + 1);
-}
 void exec_i32_eqz(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     value->entry.value.value.i32 = (value->entry.value.value.i32 == 0);
@@ -1015,47 +1006,67 @@ void exec_i64_rotr(wasm_stack label, wasm_stack* stack){
     free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_f32_abs(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_abs(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u32 &= 0x7fffffff;
+    label->entry.label.current += 1;
+}
+void exec_f32_neg(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u32 ^= 0x80000000;
+    label->entry.label.current += 1;
+}
+void exec_f32_ceil(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal && (value->entry.value.value.u32 & 0x7fffffff)){
+        if(((value->entry.value.value.u32 & 0x7f800000) >> 23) < 150){
+            if(value->entry.value.value.f32 < 0){
+                value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32;
+                value->entry.value.value.u32 |= 0x80000000;
+            }else if(value->entry.value.value.f32 != (i32_t)value->entry.value.value.f32){
+                value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32 + 1;
+            }
+        }
+    }
+    label->entry.label.current += 1;
+}
+void exec_f32_floor(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_neg(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_trunc(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_ceil(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_nearest(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_floor(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_sqrt(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_trunc(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_add(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_nearest(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_sub(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_sqrt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_mul(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_add(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_div(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_min(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f32_max(wasm_stack label, wasm_stack* stack){
   // TODO:
 }
-void exec_f32_div(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
-}
-void exec_f32_min(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
-}
-void exec_f32_max(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
-}
-void exec_f32_copysign(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+void exec_f32_copysign(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.u32 = (value1->entry.value.value.u32 & 0x7fffffff) | (value2->entry.value.value.u32 & 0x80000000);
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f64_abs(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
   // TODO:
