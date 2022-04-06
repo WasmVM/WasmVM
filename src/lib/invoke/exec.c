@@ -1031,7 +1031,22 @@ void exec_f32_ceil(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f32_floor(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal && (value->entry.value.value.u32 & 0x7fffffff)){
+        if(((value->entry.value.value.u32 & 0x7f800000) >> 23) < 150){
+            if(value->entry.value.value.f32 < 0){
+                if(value->entry.value.value.f32 >= -1.0f){
+                    value->entry.value.value.f32 = -1.0f;
+                }else{
+                    value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32 - 1;
+                }
+            }else if(value->entry.value.value.f32 != (i32_t)value->entry.value.value.f32){
+                value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32;
+                value->entry.value.value.u32 &= 0x7fffffff;
+            }
+        }
+    }
+    label->entry.label.current += 1;
 }
 void exec_f32_trunc(wasm_stack label, wasm_stack* stack){
   // TODO:

@@ -285,6 +285,9 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f32_ceil:
                 exec_f32_ceil(current_label, stack);
             break;
+            case Op_f32_floor:
+                exec_f32_floor(current_label, stack);
+            break;
             case Op_f32_copysign:
                 exec_f32_copysign(current_label, stack);
             break;
