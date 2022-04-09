@@ -1056,7 +1056,30 @@ void exec_f32_trunc(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f32_nearest(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    wasm_stack value = *stack;
+    if((f32_kind(value->entry.value.value.u32) == Float_normal) && (value->entry.value.value.i32 & 0x7fffffffU)){
+        u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
+        if(expo < 150){
+            u32_t abs_value = value->entry.value.value.u32 & 0x7fffffffU;
+            if(abs_value < 0x3f800000U){
+                value->entry.value.value.u32 &= 0x80000000U;
+                if(abs_value > 0x3f000000U){
+                    value->entry.value.value.u32 |= 0x3f800000U;
+                }
+            }else{
+                u32_t mantissa = value->entry.value.value.u32 & 0x7fffffU;
+                u32_t mask = 0x7fffffU >> (expo - 127);
+                u32_t round = (mask + 1) >> 1;
+                value->entry.value.value.u32 += round;
+                if((mantissa & mask) != round){
+                    value->entry.value.value.u32 &= ~mask;
+                }else{
+                    value->entry.value.value.u32 &= ~(mask + (round << 1));
+                }
+            }
+        }
+    }
+    label->entry.label.current += 1;
 }
 void exec_f32_sqrt(wasm_stack label, wasm_stack* stack){
   // TODO:

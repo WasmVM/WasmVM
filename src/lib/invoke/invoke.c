@@ -291,6 +291,9 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f32_trunc:
                 exec_f32_trunc(current_label, stack);
             break;
+            case Op_f32_nearest:
+                exec_f32_nearest(current_label, stack);
+            break;
             case Op_f32_copysign:
                 exec_f32_copysign(current_label, stack);
             break;
