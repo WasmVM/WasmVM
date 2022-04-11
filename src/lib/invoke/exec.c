@@ -32,22 +32,22 @@ static Float_kind f64_kind(u64_t value){
 }
 
 void exec_unreachable(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_nop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_block(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_loop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_else(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results
@@ -75,31 +75,31 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     free_func(old_label);
 }
 void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_select(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_select_t(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
     UnaryInstrInst* instr = (UnaryInstrInst*)label->entry.label.current;
@@ -111,97 +111,97 @@ void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_local_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_local_tee(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_global_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_load8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_load8_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_load16_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_load16_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load8_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load16_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load16_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_load32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_store8(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_store16(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_store8(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_store16(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_store32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_memory_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_memory_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_const(wasm_stack label, wasm_stack* stack){
     ConstInstrInst* instr = (ConstInstrInst*)label->entry.label.current;
@@ -1082,25 +1082,46 @@ void exec_f32_nearest(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f32_sqrt(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // Reference: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+
+    wasm_stack value = *stack;
+    if((value->entry.value.value.u32 & 0x80000000U) && (value->entry.value.value.u32 != 0x80000000U)){
+        // Negative
+        value->entry.value.value.u32 = 0x7fffffffU;
+    }else if((f32_kind(value->entry.value.value.u32) == Float_normal) && (value->entry.value.value.u32 & 0x7fffffffU)){
+        _Bool isDenorm = (value->entry.value.value.u32 & 0x7f800000U) == 0;
+        if(isDenorm){
+            value->entry.value.value.f32 *= 0x1000000U;
+        }
+        f32_t original = value->entry.value.value.f32;
+        value->entry.value.value.u32 = 0x5f3759dfU - (value->entry.value.value.u32 >> 1); // Magic number from "Hacker's Delight"
+        value->entry.value.value.f32 = original * value->entry.value.value.f32 * (1.5f - 0.5f * original * value->entry.value.value.f32 * value->entry.value.value.f32);
+        // Two Babylonian Method
+        value->entry.value.value.f32 = 0.5 * (value->entry.value.value.f32 + original / value->entry.value.value.f32);
+        value->entry.value.value.f32 = 0.5 * (value->entry.value.value.f32 + original / value->entry.value.value.f32);
+        if(isDenorm){
+            value->entry.value.value.f32 /= 0x1000U;
+        }
+    }
+    label->entry.label.current += 1;
 }
 void exec_f32_add(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_sub(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_mul(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_div(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_min(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_max(wasm_stack label, wasm_stack* stack){
-  // TODO:
+    // TODO:
 }
 void exec_f32_copysign(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;
@@ -1111,121 +1132,121 @@ void exec_f32_copysign(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f64_abs(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_neg(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_ceil(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_floor(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_trunc(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_nearest(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_sqrt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_add(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_div(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_min(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_max(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_copysign(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_wrap_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_s_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_u_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_s_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_u_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_extend_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_extend_u_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_s_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_u_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_s_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_u_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_convert_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_convert_u_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_convert_s_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_convert_u_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_demote_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_convert_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_convert_u_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_convert_s_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_convert_u_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_promote_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_reinterpret_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_reinterpret_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f32_reinterpret_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_f64_reinterpret_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_extend8_s(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
@@ -1253,65 +1274,65 @@ void exec_i64_extend32_s(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_ref_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_ref_is_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_ref_func(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i32_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_i64_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_memory_init(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_data_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_memory_copy(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_memory_fill(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_init(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_elem_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_copy(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
 void exec_table_fill(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-  // TODO:
+    // TODO:
 }
