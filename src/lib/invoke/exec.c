@@ -1106,10 +1106,68 @@ void exec_f32_sqrt(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f32_add(wasm_stack label, wasm_stack* stack){
-    // TODO:
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f32_kind(value1->entry.value.value.u32), kind2 = f32_kind(value2->entry.value.value.u32);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if((kind1 == Float_normal) && (kind2 == Float_normal)){
+        if(
+            ((value1->entry.value.value.u32 & 0x7fffffff) == (value2->entry.value.value.u32 & 0x7fffffff))
+            && ((value1->entry.value.value.u32 & 0x80000000) != (value2->entry.value.value.u32 & 0x80000000))
+        ){
+            value2->entry.value.value.u32 = 0;
+        }else{
+            value2->entry.value.value.f32 += value1->entry.value.value.f32;
+        }
+    }else{
+        if(kind1 != Float_normal){
+            if(kind2 == Float_normal){
+                value2->entry.value.value = value1->entry.value.value;
+            }else if(kind2 != kind1){
+                value2->entry.value.value.u32 = 0x7fffffff;
+            }
+        }
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_sub(wasm_stack label, wasm_stack* stack){
-    // TODO:
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f32_kind(value1->entry.value.value.u32), kind2 = f32_kind(value2->entry.value.value.u32);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else{
+        // sub(a, b) = add(a, neg(b))
+        value2->entry.value.value.u32 ^= 0x80000000;
+        if((kind1 == Float_normal) && (kind2 == Float_normal)){
+            if(
+                ((value1->entry.value.value.u32 & 0x7fffffff) == (value2->entry.value.value.u32 & 0x7fffffff))
+                && ((value1->entry.value.value.u32 & 0x80000000) != (value2->entry.value.value.u32 & 0x80000000))
+            ){
+                value2->entry.value.value.u32 = 0;
+            }else{
+                value2->entry.value.value.f32 += value1->entry.value.value.f32;
+            }
+        }else{
+            if(kind1 != Float_normal){
+                if(kind2 == Float_normal){
+                    value2->entry.value.value = value1->entry.value.value;
+                }else if(kind2 == kind1){
+                    value2->entry.value.value.u32 = 0x7fffffff;
+                }
+            }
+        }
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_mul(wasm_stack label, wasm_stack* stack){
     // TODO:
