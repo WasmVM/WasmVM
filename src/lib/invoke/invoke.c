@@ -324,6 +324,24 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f64_neg:
                 exec_f64_neg(current_label, stack);
             break;
+            case Op_f64_add:
+                exec_f64_add(current_label, stack);
+            break;
+            case Op_f64_sub:
+                exec_f64_sub(current_label, stack);
+            break;
+            case Op_f64_mul:
+                exec_f64_mul(current_label, stack);
+            break;
+            case Op_f64_div:
+                exec_f64_div(current_label, stack);
+            break;
+            // case Op_f64_min:
+            //     exec_f64_min(current_label, stack);
+            // break;
+            // case Op_f64_max:
+            //     exec_f64_max(current_label, stack);
+            // break;
             case Op_f64_copysign:
                 exec_f64_copysign(current_label, stack);
             break;

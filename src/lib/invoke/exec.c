@@ -1289,22 +1289,123 @@ void exec_f64_nearest(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, w
 void exec_f64_sqrt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
 }
-void exec_f64_add(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f64_add(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f64_kind(value1->entry.value.value.u64), kind2 = f64_kind(value2->entry.value.value.u64);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if((kind1 == Float_normal) && (kind2 == Float_normal)){
+        if(
+            ((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == (value2->entry.value.value.u64 & 0x7fffffffffffffffLLU))
+            && ((value1->entry.value.value.u64 & 0x8000000000000000LLU) != (value2->entry.value.value.u64 & 0x8000000000000000LLU))
+        ){
+            value2->entry.value.value.u64 = 0;
+        }else{
+            value2->entry.value.value.f64 += value1->entry.value.value.f64;
+        }
+    }else{
+        if(kind1 != Float_normal){
+            if(kind2 == Float_normal){
+                value2->entry.value.value = value1->entry.value.value;
+            }else if(kind2 != kind1){
+                value2->entry.value.value.u64 = 0x7fffffffffffffffLLU;
+            }
+        }
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
+}
+void exec_f64_sub(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f64_kind(value1->entry.value.value.u64), kind2 = f64_kind(value2->entry.value.value.u64);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else{
+        // sub(a, b) = add(a, neg(b))
+        value2->entry.value.value.u64 ^= 0x8000000000000000LLU;
+        if((kind1 == Float_normal) && (kind2 == Float_normal)){
+            if(
+                ((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == (value2->entry.value.value.u64 & 0x7fffffffffffffffLLU))
+                && ((value1->entry.value.value.u64 & 0x8000000000000000LLU) != (value2->entry.value.value.u64 & 0x8000000000000000LLU))
+            ){
+                value2->entry.value.value.u64 = 0;
+            }else{
+                value2->entry.value.value.f64 += value1->entry.value.value.f64;
+            }
+        }else{
+            if(kind1 != Float_normal){
+                if(kind2 == Float_normal){
+                    value2->entry.value.value = value1->entry.value.value;
+                }else if(kind2 == kind1){
+                    value2->entry.value.value.u64 = 0x7fffffffffffffffLLU;
+                }
+            }
+        }
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
+}
+void exec_f64_mul(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f64_kind(value1->entry.value.value.u64), kind2 = f64_kind(value2->entry.value.value.u64);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if((kind1 != Float_normal) || (kind2 != Float_normal)){
+        if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) || ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0)){
+            value2->entry.value.value.u64 = 0x7fffffffffffffffLLU;
+        }else{
+            value2->entry.value.value.u64 ^= value1->entry.value.value.u64 & 0x8000000000000000LLU;
+            value2->entry.value.value.u64 &= 0xfff0000000000000LLU;
+            value2->entry.value.value.u64 |= 0x7ff0000000000000LLU;
+        }
+    }else if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0)){
+        value2->entry.value.value.u64 ^= value1->entry.value.value.u64 & 0x8000000000000000LLU;
+    }else{
+        value2->entry.value.value.f64 *= value1->entry.value.value.f64;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
+}
+void exec_f64_div(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f64_kind(value1->entry.value.value.u64), kind2 = f64_kind(value2->entry.value.value.u64);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if(((kind1 != Float_normal) && (kind2 != Float_normal)) || (((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0))){
+        value2->entry.value.value.u64 = 0x7fffffffffffffffLLU;
+    }else if((kind1 != Float_normal) || ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0)){
+        value2->entry.value.value.u64 ^= value1->entry.value.value.u64 & 0x8000000000000000LLU;
+        value2->entry.value.value.u64 &= 0xfff0000000000000LLU;
+        value2->entry.value.value.u64 |= 0x7ff0000000000000LLU;
+    }else if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) || (kind2 != Float_normal)){
+        value2->entry.value.value.u64 ^= value1->entry.value.value.u64 & 0x8000000000000000LLU;
+        value2->entry.value.value.u64 &= 0x8000000000000000LLU;
+    }else{
+        value2->entry.value.value.f64 = value1->entry.value.value.f64 / value2->entry.value.value.f64;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
+}
+void exec_f64_min(wasm_stack label, wasm_stack* stack){
     // TODO:
 }
-void exec_f64_sub(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
-}
-void exec_f64_mul(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
-}
-void exec_f64_div(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
-}
-void exec_f64_min(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
-}
-void exec_f64_max(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_f64_max(wasm_stack label, wasm_stack* stack){
     // TODO:
 }
 void exec_f64_copysign(wasm_stack label, wasm_stack* stack){
