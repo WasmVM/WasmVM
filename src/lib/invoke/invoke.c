@@ -303,6 +303,12 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f32_sub:
                 exec_f32_sub(current_label, stack);
             break;
+            case Op_f32_mul:
+                exec_f32_mul(current_label, stack);
+            break;
+            case Op_f32_div:
+                exec_f32_div(current_label, stack);
+            break;
             case Op_f32_copysign:
                 exec_f32_copysign(current_label, stack);
             break;
