@@ -140,8 +140,8 @@ void exec_f32_max(wasm_stack label, wasm_stack* stack);
 void exec_f32_copysign(wasm_stack label, wasm_stack* stack);
 void exec_f64_abs(wasm_stack label, wasm_stack* stack);
 void exec_f64_neg(wasm_stack label, wasm_stack* stack);
-void exec_f64_ceil(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_f64_floor(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_f64_ceil(wasm_stack label, wasm_stack* stack);
+void exec_f64_floor(wasm_stack label, wasm_stack* stack);
 void exec_f64_trunc(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f64_nearest(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_f64_sqrt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
