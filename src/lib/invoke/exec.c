@@ -1219,10 +1219,42 @@ void exec_f32_div(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_f32_min(wasm_stack label, wasm_stack* stack){
-    // TODO:
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f32_kind(value1->entry.value.value.u32), kind2 = f32_kind(value2->entry.value.value.u32);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if((kind1 == Float_neg_inf) || (kind2 == Float_neg_inf)){
+        value2->entry.value.value.u32 = 0xff800000;
+    }else if(((value1->entry.value.value.u32 & 0x7fffffff) == 0) && ((value2->entry.value.value.u32 & 0x7fffffff) == 0) && (value1->entry.value.value.u32 != value2->entry.value.value.u32)){
+        value2->entry.value.value.u32 = 0x80000000;
+    }else if((kind2 == Float_pos_inf) || (value1->entry.value.value.f32 <= value2->entry.value.value.f32)){
+        value2->entry.value.value = value1->entry.value.value;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_max(wasm_stack label, wasm_stack* stack){
-    // TODO:
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    Float_kind kind1 = f32_kind(value1->entry.value.value.u32), kind2 = f32_kind(value2->entry.value.value.u32);
+    if((kind1 & 1) || (kind2 & 1)){
+        if(kind1 & 1){
+            value2->entry.value.value = value1->entry.value.value;
+        }
+    }else if((kind1 == Float_pos_inf) || (kind2 == Float_pos_inf)){
+        value2->entry.value.value.u32 = 0x7f800000;
+    }else if(((value1->entry.value.value.u32 & 0x7fffffff) == 0) && ((value2->entry.value.value.u32 & 0x7fffffff) == 0) && (value1->entry.value.value.u32 != value2->entry.value.value.u32)){
+        value2->entry.value.value.u32 = 0;
+    }else if((kind2 == Float_neg_inf) || (value1->entry.value.value.f32 >= value2->entry.value.value.f32)){
+        value2->entry.value.value = value1->entry.value.value;
+    }
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_f32_copysign(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;

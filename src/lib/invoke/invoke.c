@@ -309,6 +309,12 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f32_div:
                 exec_f32_div(current_label, stack);
             break;
+            case Op_f32_min:
+                exec_f32_min(current_label, stack);
+            break;
+            case Op_f32_max:
+                exec_f32_max(current_label, stack);
+            break;
             case Op_f32_copysign:
                 exec_f32_copysign(current_label, stack);
             break;
