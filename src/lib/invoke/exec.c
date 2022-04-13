@@ -1264,11 +1264,15 @@ void exec_f32_copysign(wasm_stack label, wasm_stack* stack){
     free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_f64_abs(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_abs(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u64 &= 0x7fffffffffffffffLLU;
+    label->entry.label.current += 1;
 }
-void exec_f64_neg(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_neg(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.value.u64 ^= 0x8000000000000000LLU;
+    label->entry.label.current += 1;
 }
 void exec_f64_ceil(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
@@ -1303,8 +1307,13 @@ void exec_f64_min(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_
 void exec_f64_max(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
 }
-void exec_f64_copysign(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_copysign(wasm_stack label, wasm_stack* stack){
+    wasm_stack value1 = *stack;
+    wasm_stack value2 = value1->next;
+    value2->entry.value.value.u64 = (value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) | (value2->entry.value.value.u64 & 0x8000000000000000LLU);
+    *stack = value2;
+    free_func(value1);
+    label->entry.label.current += 1;
 }
 void exec_i32_wrap_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:

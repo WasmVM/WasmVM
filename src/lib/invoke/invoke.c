@@ -318,6 +318,15 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f32_copysign:
                 exec_f32_copysign(current_label, stack);
             break;
+            case Op_f64_abs:
+                exec_f64_abs(current_label, stack);
+            break;
+            case Op_f64_neg:
+                exec_f64_neg(current_label, stack);
+            break;
+            case Op_f64_copysign:
+                exec_f64_copysign(current_label, stack);
+            break;
             case Op_i32_extend8_s:
                 exec_i32_extend8_s(current_label, stack);
             break;
