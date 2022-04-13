@@ -330,6 +330,15 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f64_floor:
                 exec_f64_floor(current_label, stack);
             break;
+            case Op_f64_trunc:
+                exec_f64_trunc(current_label, stack);
+            break;
+            case Op_f64_nearest:
+                exec_f64_nearest(current_label, stack);
+            break;
+            case Op_f64_sqrt:
+                exec_f64_sqrt(current_label, stack);
+            break;
             case Op_f64_add:
                 exec_f64_add(current_label, stack);
             break;

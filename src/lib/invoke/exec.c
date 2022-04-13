@@ -1302,14 +1302,67 @@ void exec_f64_floor(wasm_stack label, wasm_stack* stack){
     }
     label->entry.label.current += 1;
 }
-void exec_f64_trunc(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_trunc(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        if((value->entry.value.value.f64 != (i64_t)value->entry.value.value.f64) && (((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) < 1075)){
+            i64_t ival = value->entry.value.value.i64 & 0x8000000000000000LLU;
+            value->entry.value.value.f64 = (i64_t)value->entry.value.value.f64;
+            value->entry.value.value.i64 = ival | (value->entry.value.value.i64 & 0x7fffffffffffffffLLU);
+        }
+    }
+    label->entry.label.current += 1;
 }
-void exec_f64_nearest(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_nearest(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if((f64_kind(value->entry.value.value.u64) == Float_normal) && (value->entry.value.value.i64 & 0x7fffffffffffffffLLU)){
+        u16_t expo = ((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) & 0xfff;
+        if(expo < 1075){
+            u64_t abs_value = value->entry.value.value.u64 & 0x7fffffffffffffffLLU;
+            if(abs_value < 0x3ff0000000000000LLU){
+                value->entry.value.value.u64 &= 0x8000000000000000LLU;
+                if(abs_value > 0x3fe0000000000000LLU){
+                    value->entry.value.value.u64 |= 0x3ff0000000000000LLU;
+                }
+            }else{
+                u64_t mantissa = value->entry.value.value.u64 & 0xfffffffffffffLLU;
+                u64_t mask = 0xfffffffffffffLLU >> (expo - 1023);
+                u64_t round = (mask + 1) >> 1;
+                value->entry.value.value.u64 += round;
+                if((mantissa & mask) != round){
+                    value->entry.value.value.u64 &= ~mask;
+                }else{
+                    value->entry.value.value.u64 &= ~(mask + (round << 1));
+                }
+            }
+        }
+    }
+    label->entry.label.current += 1;
 }
-void exec_f64_sqrt(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_sqrt(wasm_stack label, wasm_stack* stack){
+    // Reference: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
+
+    wasm_stack value = *stack;
+    if((value->entry.value.value.u64 & 0x8000000000000000LLU) && (value->entry.value.value.u64 != 0x8000000000000000LLU)){
+        // Negative
+        value->entry.value.value.u64 = 0x7fffffffffffffffLLU;
+    }else if((f64_kind(value->entry.value.value.u64) == Float_normal) && (value->entry.value.value.u64 & 0x7fffffffffffffffLLU)){
+        _Bool isDenorm = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) == 0;
+        if(isDenorm){
+            value->entry.value.value.f64 *= 0x10000000000000LLU;
+        }
+        f64_t original = value->entry.value.value.f64;
+        value->entry.value.value.u64 = 0x5fe6eb50c7b537a9LLU - (value->entry.value.value.u64 >> 1); // Magic number from "Hacker's Delight"
+        value->entry.value.value.f64 = original * value->entry.value.value.f64 * (1.5f - 0.5f * original * value->entry.value.value.f64 * value->entry.value.value.f64);
+        // Three Babylonian Method
+        value->entry.value.value.f64 = 0.5 * (value->entry.value.value.f64 + original / value->entry.value.value.f64);
+        value->entry.value.value.f64 = 0.5 * (value->entry.value.value.f64 + original / value->entry.value.value.f64);
+        value->entry.value.value.f64 = 0.5 * (value->entry.value.value.f64 + original / value->entry.value.value.f64);
+        if(isDenorm){
+            value->entry.value.value.f64 /= 0x4000000U;
+        }
+    }
+    label->entry.label.current += 1;
 }
 void exec_f64_add(wasm_stack label, wasm_stack* stack){
     wasm_stack value1 = *stack;
