@@ -360,6 +360,21 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_f64_copysign:
                 exec_f64_copysign(current_label, stack);
             break;
+            case Op_i32_wrap_i64:
+                exec_i32_wrap_i64(current_label, stack);
+            break;
+            case Op_i32_trunc_s_f32:
+                exec_i32_trunc_s_f32(current_label, stack);
+            break;
+            case Op_i32_trunc_u_f32:
+                exec_i32_trunc_u_f32(current_label, stack);
+            break;
+            case Op_i32_trunc_s_f64:
+                exec_i32_trunc_s_f64(current_label, stack);
+            break;
+            case Op_i32_trunc_u_f64:
+                exec_i32_trunc_u_f64(current_label, stack);
+            break;
             case Op_i32_extend8_s:
                 exec_i32_extend8_s(current_label, stack);
             break;

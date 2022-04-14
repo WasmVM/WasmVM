@@ -1523,20 +1523,42 @@ void exec_f64_copysign(wasm_stack label, wasm_stack* stack){
     free_func(value1);
     label->entry.label.current += 1;
 }
-void exec_i32_wrap_i64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_wrap_i64(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_s_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_s_f32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f32;
+        value->entry.value.type = Value_i32;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_u_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_u_f32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f32;
+        value->entry.value.type = Value_i32;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_s_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_s_f64(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f64;
+        value->entry.value.type = Value_i32;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_u_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_u_f64(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f64;
+        value->entry.value.type = Value_i32;
+    }
+    label->entry.label.current += 1;
 }
 void exec_i64_extend_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
