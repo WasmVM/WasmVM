@@ -1560,23 +1560,50 @@ void exec_i32_trunc_u_f64(wasm_stack label, wasm_stack* stack){
     }
     label->entry.label.current += 1;
 }
-void exec_i64_extend_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_extend_s_i32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(value->entry.value.value.u32 & 0x80000000U){
+        value->entry.value.value.u64 |= 0xffffffff00000000LLU;
+    }
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_extend_u_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_extend_u_i32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_s_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_s_f32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f32;
+        value->entry.value.type = Value_i64;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_u_f32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_u_f32(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f32;
+        value->entry.value.type = Value_i64;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_s_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_s_f64(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f64;
+        value->entry.value.type = Value_i64;
+    }
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_u_f64(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_u_f64(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f64;
+        value->entry.value.type = Value_i64;
+    }
+    label->entry.label.current += 1;
 }
 void exec_f32_convert_s_i32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
