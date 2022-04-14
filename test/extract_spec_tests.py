@@ -14,6 +14,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
         f'/** {wast_line}: module "{wasm_file}" */\n'
         '{\n'
         '  _Bool failed = 0;\n'
+        '  wasmvm_errno = ERROR_success;\n'
     )
     # Load module
     case_file.write(
@@ -95,6 +96,7 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             f'/** {wast_line}: assert_malformed module: {wasm_file} text: "{expected_text}"*/\n'
             '{\n'
             '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
         )
         # Load module
         case_file.write(
@@ -173,6 +175,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             f'/** {wast_line}: assert_return invoke */\n'
             'if(module_inst){\n'
             '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
         )
         # Prepare args
         if(len(func_args) > 0): 
