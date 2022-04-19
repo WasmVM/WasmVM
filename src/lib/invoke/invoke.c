@@ -393,6 +393,18 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i64_trunc_u_f64:
                 exec_i64_trunc_u_f64(current_label, stack);
             break;
+            case Op_f32_convert_s_i32:
+                exec_f32_convert_s_i32(current_label, stack);
+            break;
+            case Op_f32_convert_u_i32:
+                exec_f32_convert_u_i32(current_label, stack);
+            break;
+            case Op_f32_convert_s_i64:
+                exec_f32_convert_s_i64(current_label, stack);
+            break;
+            case Op_f32_convert_u_i64:
+                exec_f32_convert_u_i64(current_label, stack);
+            break;
             case Op_i32_extend8_s:
                 exec_i32_extend8_s(current_label, stack);
             break;
