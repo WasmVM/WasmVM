@@ -450,6 +450,31 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i64_extend32_s:
                 exec_i64_extend32_s(current_label, stack);
             break;
+
+            case Op_i32_trunc_sat_f32_s:
+                exec_i32_trunc_sat_f32_s(current_label, stack);
+            break;
+            case Op_i32_trunc_sat_f32_u:
+                exec_i32_trunc_sat_f32_u(current_label, stack);
+            break;
+            case Op_i32_trunc_sat_f64_s:
+                exec_i32_trunc_sat_f64_s(current_label, stack);
+            break;
+            case Op_i32_trunc_sat_f64_u:
+                exec_i32_trunc_sat_f64_u(current_label, stack);
+            break;
+            case Op_i64_trunc_sat_f32_s:
+                exec_i64_trunc_sat_f32_s(current_label, stack);
+            break;
+            case Op_i64_trunc_sat_f32_u:
+                exec_i64_trunc_sat_f32_u(current_label, stack);
+            break;
+            case Op_i64_trunc_sat_f64_s:
+                exec_i64_trunc_sat_f64_s(current_label, stack);
+            break;
+            case Op_i64_trunc_sat_f64_u:
+                exec_i64_trunc_sat_f64_u(current_label, stack);
+            break;
             default:
                 // Unimplemented
                 return;

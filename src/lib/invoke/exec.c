@@ -1745,29 +1745,117 @@ void exec_ref_is_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, w
 void exec_ref_func(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
 }
-void exec_i32_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
+    if((kind & 1) || (expo == 0)){
+        value->entry.value.value.u32 = 0;
+    }else if((kind == Float_normal) && !((expo < 95) || (expo > 159))){
+        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f32;
+    }else if((value->entry.value.value.u32 & 0x7fffffff) != 0){
+        value->entry.value.value.u32 = 0x7fffffff + ((value->entry.value.value.u32 & 0x80000000) != 0);
+    }
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
+    if((kind & 1) || (value->entry.value.value.u32 & 0x80000000) || (expo == 0)){
+        value->entry.value.value.u32 = 0;
+    }else if((kind == Float_pos_inf) || (expo > 159)){
+        value->entry.value.value.u32 = 0xffffffff;
+    }else{
+        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f32;
+    }
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    u16_t expo = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52;
+    if((kind & 1) || (expo == 0)){
+        value->entry.value.value.u32 = 0;
+    }else if((kind == Float_normal) && !((expo < 991) || (expo > 1055))){
+        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f64;
+    }else if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0){
+        value->entry.value.value.u32 = 0x7fffffff + ((value->entry.value.value.u64 & 0x8000000000000000LLU) != 0);
+    }
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i32_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    u16_t expo = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52;
+    if((kind & 1) || (value->entry.value.value.u64 & 0x8000000000000000LLU) || (expo == 0)){
+        value->entry.value.value.u32 = 0;
+    }else if((kind == Float_pos_inf) || (expo > 1055)){
+        value->entry.value.value.u32 = 0xffffffff;
+    }else{
+        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f64;
+    }
+    value->entry.value.type = Value_i32;
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
+    if((kind & 1) || (expo == 0)){
+        value->entry.value.value.u64 = 0;
+    }else if((kind == Float_normal) && !((expo < 63) || (expo > 191))){
+        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f32;
+    }else if((value->entry.value.value.u32 & 0x7fffffff) != 0){
+        value->entry.value.value.u64 = 0x7fffffffffffffffLLU + ((value->entry.value.value.u32 & 0x80000000) != 0);
+    }
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
+    if((kind & 1) || (value->entry.value.value.u32 & 0x80000000) || (expo == 0)){
+        value->entry.value.value.u64 = 0;
+    }else if((kind == Float_pos_inf) || (expo > 191)){
+        value->entry.value.value.u64 = 0xffffffffffffffffLLU;
+    }else{
+        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f32;
+    }
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    u16_t expo = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52;
+    if((kind & 1) || (expo == 0)){
+        value->entry.value.value.u64 = 0;
+    }else if((kind == Float_normal) && !((expo < 959) || (expo > 1087))){
+        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f64;
+    }else if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0){
+        value->entry.value.value.u64 = 0x7fffffffffffffffLLU + ((value->entry.value.value.u64 & 0x8000000000000000LLU) != 0);
+    }
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
-void exec_i64_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    u16_t expo = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52;
+    if((kind & 1) || (value->entry.value.value.u64 & 0x8000000000000000LLU) || (expo == 0)){
+        value->entry.value.value.u64 = 0;
+    }else if((kind == Float_pos_inf) || (expo > 1087)){
+        value->entry.value.value.u64 = 0xffffffffffffffffLLU;
+    }else{
+        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f64;
+    }
+    value->entry.value.type = Value_i64;
+    label->entry.label.current += 1;
 }
 void exec_memory_init(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:

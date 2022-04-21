@@ -185,14 +185,14 @@ void exec_i64_extend32_s(wasm_stack label, wasm_stack* stack);
 void exec_ref_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_ref_is_null(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_ref_func(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_trunc_sat_f32_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_trunc_sat_f32_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_trunc_sat_f64_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_trunc_sat_f64_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack);
+void exec_i32_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack);
+void exec_i32_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack);
+void exec_i32_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack);
+void exec_i64_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack);
+void exec_i64_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack);
+void exec_i64_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack);
 void exec_memory_init(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_data_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_memory_copy(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
