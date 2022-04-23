@@ -1018,7 +1018,10 @@ void exec_f32_neg(wasm_stack label, wasm_stack* stack){
 }
 void exec_f32_ceil(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    if(kind & 1){
+        value->entry.value.value.u32 |= 0x7fc00000;
+    }else if(kind == Float_normal){
         if((value->entry.value.value.f32 != (i32_t)value->entry.value.value.f32) && (((value->entry.value.value.u32 & 0x7f800000) >> 23) < 150)){
             if(value->entry.value.value.f32 < 0){
                 value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32;
@@ -1032,7 +1035,8 @@ void exec_f32_ceil(wasm_stack label, wasm_stack* stack){
 }
 void exec_f32_floor(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    if(kind == Float_normal){
         if((value->entry.value.value.f32 != (i32_t)value->entry.value.value.f32) && (((value->entry.value.value.u32 & 0x7f800000) >> 23) < 150)){
             if(value->entry.value.value.f32 < 0){
                 value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32 - 1;
@@ -1041,23 +1045,29 @@ void exec_f32_floor(wasm_stack label, wasm_stack* stack){
                 value->entry.value.value.u32 &= 0x7fffffff;
             }
         }
+    }else if(kind & 1){
+        value->entry.value.value.u32 |= 0x7fc00000;
     }
     label->entry.label.current += 1;
 }
 void exec_f32_trunc(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f32_kind(value->entry.value.value.u32) == Float_normal){
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    if(kind == Float_normal){
         if((value->entry.value.value.f32 != (i32_t)value->entry.value.value.f32) && (((value->entry.value.value.u32 & 0x7f800000) >> 23) < 150)){
             i32_t ival = value->entry.value.value.i32 & 0x80000000;
             value->entry.value.value.f32 = (i32_t)value->entry.value.value.f32;
             value->entry.value.value.i32 = ival | (value->entry.value.value.i32 & 0x7fffffff);
         }
+    }else if(kind & 1){
+        value->entry.value.value.u32 |= 0x7fc00000;
     }
     label->entry.label.current += 1;
 }
 void exec_f32_nearest(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if((f32_kind(value->entry.value.value.u32) == Float_normal) && (value->entry.value.value.i32 & 0x7fffffffU)){
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    if((kind == Float_normal) && (value->entry.value.value.i32 & 0x7fffffffU)){
         u8_t expo = (value->entry.value.value.u32 & 0x7f800000U) >> 23;
         if(expo < 150){
             u32_t abs_value = value->entry.value.value.u32 & 0x7fffffffU;
@@ -1078,6 +1088,8 @@ void exec_f32_nearest(wasm_stack label, wasm_stack* stack){
                 }
             }
         }
+    }else if(kind & 1){
+        value->entry.value.value.u32 |= 0x7fc00000;
     }
     label->entry.label.current += 1;
 }
@@ -1085,10 +1097,13 @@ void exec_f32_sqrt(wasm_stack label, wasm_stack* stack){
     // Reference: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
 
     wasm_stack value = *stack;
-    if((value->entry.value.value.u32 & 0x80000000U) && (value->entry.value.value.u32 != 0x80000000U)){
+    Float_kind kind = f32_kind(value->entry.value.value.u32);
+    if(kind & 1){
+        value->entry.value.value.u32 |= 0x7fc00000;
+    }else if((value->entry.value.value.u32 & 0x80000000U) && (value->entry.value.value.u32 != 0x80000000U)){
         // Negative
-        value->entry.value.value.u32 = 0x7fffffffU;
-    }else if((f32_kind(value->entry.value.value.u32) == Float_normal) && (value->entry.value.value.u32 & 0x7fffffffU)){
+        value->entry.value.value.u32 = 0x7fc00000;
+    }else if((kind == Float_normal) && (value->entry.value.value.u32 & 0x7fffffffU)){
         _Bool isDenorm = (value->entry.value.value.u32 & 0x7f800000U) == 0;
         if(isDenorm){
             value->entry.value.value.f32 *= 0x1000000U;
@@ -1113,6 +1128,7 @@ void exec_f32_add(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else if((kind1 == Float_normal) && (kind2 == Float_normal)){
         if(
             ((value1->entry.value.value.u32 & 0x7fffffff) == (value2->entry.value.value.u32 & 0x7fffffff))
@@ -1143,6 +1159,7 @@ void exec_f32_sub(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else{
         // sub(a, b) = add(a, neg(b))
         value2->entry.value.value.u32 ^= 0x80000000;
@@ -1177,6 +1194,7 @@ void exec_f32_mul(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else if((kind1 != Float_normal) || (kind2 != Float_normal)){
         if(((value1->entry.value.value.u32 & 0x7fffffff) == 0) || ((value2->entry.value.value.u32 & 0x7fffffff) == 0)){
             value2->entry.value.value.u32 = 0x7fc00000;
@@ -1202,6 +1220,7 @@ void exec_f32_div(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else if(((kind1 != Float_normal) && (kind2 != Float_normal)) || (((value1->entry.value.value.u32 & 0x7fffffff) == 0) && ((value2->entry.value.value.u32 & 0x7fffffff) == 0))){
         value2->entry.value.value.u32 = 0x7fc00000;
     }else if((kind1 != Float_normal) || ((value2->entry.value.value.u32 & 0x7fffffff) == 0)){
@@ -1226,6 +1245,7 @@ void exec_f32_min(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else if((kind1 == Float_neg_inf) || (kind2 == Float_neg_inf)){
         value2->entry.value.value.u32 = 0xff800000;
     }else if(((value1->entry.value.value.u32 & 0x7fffffff) == 0) && ((value2->entry.value.value.u32 & 0x7fffffff) == 0) && (value1->entry.value.value.u32 != value2->entry.value.value.u32)){
@@ -1245,6 +1265,7 @@ void exec_f32_max(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u32 |= 0x7fc00000;
     }else if((kind1 == Float_pos_inf) || (kind2 == Float_pos_inf)){
         value2->entry.value.value.u32 = 0x7f800000;
     }else if(((value1->entry.value.value.u32 & 0x7fffffff) == 0) && ((value2->entry.value.value.u32 & 0x7fffffff) == 0) && (value1->entry.value.value.u32 != value2->entry.value.value.u32)){
@@ -1276,7 +1297,8 @@ void exec_f64_neg(wasm_stack label, wasm_stack* stack){
 }
 void exec_f64_ceil(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    if(kind == Float_normal){
         if((value->entry.value.value.f64 != (i64_t)value->entry.value.value.f64) && (((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) < 1075)){
             if(value->entry.value.value.f64 < 0){
                 value->entry.value.value.f64 = (i64_t)value->entry.value.value.f64;

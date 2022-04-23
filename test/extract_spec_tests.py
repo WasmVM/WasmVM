@@ -260,12 +260,28 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                 )
             elif exp_val["type"] == "f32":
                 if(exp_val["value"].startswith("nan")):
-                    case_file.write(
-                        f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32))){{\n'
-                        f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %f) not match expected (type: %d, value: nan)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.f32, Value_f32);\n'
-                        '      failed = 1;\n'
-                        '    }\n'
-                    )
+                    nan_val = exp_val["value"][4:]
+                    if nan_val == "canonical":
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) != 0x7fc00000u))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
+                    elif nan_val == "arithmetic":
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) < 0x7fc00000u) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) > 0x7fffffffu))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
+                    else:
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) != (0x7f800000u | {nan_val}u)))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, (0x7f800000u | {nan_val}u));\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
                 else:
                     case_file.write(
                         '    {\n'
@@ -278,12 +294,28 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     )
             elif exp_val["type"] == "f64":
                 if(exp_val["value"].startswith("nan")):
-                    case_file.write(
-                        f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64))){{\n'
-                        f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %lf) not match expected (type: %d, value: nan)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.f64, Value_f64);\n'
-                        '      failed = 1;\n'
-                        '    }\n'
-                    )
+                    nan_val = exp_val["value"][4:]
+                    if nan_val == "canonical":
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) != 0x7ff8000000000000llu))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
+                    elif nan_val == "arithmetic":
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) < 0x7ff8000000000000llu) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) > 0x7fffffffffffffffllu))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
+                    else:
+                        case_file.write(
+                            f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) != (0x7ff8000000000000llu | {nan_val}llu)))){{\n'
+                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, (0x7ff8000000000000llu | {nan_val}llu));\n'
+                            '      failed = 1;\n'
+                            '    }\n'
+                        )
                 else:
                     case_file.write(
                         '    {\n'
