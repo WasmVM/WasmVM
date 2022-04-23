@@ -1718,9 +1718,8 @@ void exec_f64_promote_f32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     Float_kind kind = f32_kind(value->entry.value.value.u32);
     if(kind & 1){
-        if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0x7ff8000000000000LLU){
-            value->entry.value.value.u64 = 0x7ff8000000000001LLU;
-        }
+        value->entry.value.value.u32 &= 0x3fffff;
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if(kind == Float_normal){
         if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0){
             value->entry.value.value.f64 = (f64_t)value->entry.value.value.f32;
