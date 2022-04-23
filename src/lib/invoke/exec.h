@@ -28,10 +28,10 @@ void exec_global_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wa
 void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_table_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_table_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_f32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_f64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_f32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_f64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_i32_load8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_load8_u(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_load16_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:

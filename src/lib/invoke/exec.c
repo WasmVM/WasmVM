@@ -128,17 +128,57 @@ void exec_table_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, was
 void exec_table_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
 }
-void exec_i32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    BinaryInstrInst* instr = (BinaryInstrInst*)label->entry.label.current;
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    wasm_stack value = *stack;
+    u32_t ea = value->entry.value.value.u32 + instr->index2;
+    if((ea + sizeof(i32_t)) > mem->data.size){
+        wasmvm_errno = ERROR_mem_acc_out_bound;
+        return;
+    }
+    value->entry.value.value.i32 = *(i32_t*)(mem->data.data + ea);
+    value->entry.value.type = Value_i32;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_i64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_i64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    BinaryInstrInst* instr = (BinaryInstrInst*)label->entry.label.current;
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    wasm_stack value = *stack;
+    u32_t ea = value->entry.value.value.u32 + instr->index2;
+    if((ea + sizeof(i64_t)) > mem->data.size){
+        wasmvm_errno = ERROR_mem_acc_out_bound;
+        return;
+    }
+    value->entry.value.value.i64 = *(i64_t*)(mem->data.data + ea);
+    value->entry.value.type = Value_i64;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_f32_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    BinaryInstrInst* instr = (BinaryInstrInst*)label->entry.label.current;
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    wasm_stack value = *stack;
+    u32_t ea = value->entry.value.value.u32 + instr->index2;
+    if((ea + sizeof(f32_t)) > mem->data.size){
+        wasmvm_errno = ERROR_mem_acc_out_bound;
+        return;
+    }
+    value->entry.value.value.f32 = *(f32_t*)(mem->data.data + ea);
+    value->entry.value.type = Value_f32;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_f64_load(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_f64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    BinaryInstrInst* instr = (BinaryInstrInst*)label->entry.label.current;
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    wasm_stack value = *stack;
+    u32_t ea = value->entry.value.value.u32 + instr->index2;
+    if((ea + sizeof(f64_t)) > mem->data.size){
+        wasmvm_errno = ERROR_mem_acc_out_bound;
+        return;
+    }
+    value->entry.value.value.f64 = *(f64_t*)(mem->data.data + ea);
+    value->entry.value.type = Value_f64;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_i32_load8_s(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:

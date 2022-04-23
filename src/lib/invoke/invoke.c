@@ -60,6 +60,18 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_local_get:
                 exec_local_get(current_label, current_frame, stack, store);
             break;
+            case Op_i32_load:
+                exec_i32_load(current_label, current_frame, stack, store);
+            break;
+            case Op_i64_load:
+                exec_i64_load(current_label, current_frame, stack, store);
+            break;
+            case Op_f32_load:
+                exec_f32_load(current_label, current_frame, stack, store);
+            break;
+            case Op_f64_load:
+                exec_f64_load(current_label, current_frame, stack, store);
+            break;
             case Op_i32_const:
             case Op_i64_const:
             case Op_f32_const:
