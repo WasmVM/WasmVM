@@ -1307,12 +1307,15 @@ void exec_f64_ceil(wasm_stack label, wasm_stack* stack){
                 value->entry.value.value.f64 = (i64_t)value->entry.value.value.f64 + 1;
             }
         }
+    }else if(kind & 1){
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }
     label->entry.label.current += 1;
 }
 void exec_f64_floor(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    if(kind == Float_normal){
         if((value->entry.value.value.f64 != (i64_t)value->entry.value.value.f64) && (((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) < 1075)){
             if(value->entry.value.value.f64 < 0){
                 value->entry.value.value.f64 = (i64_t)value->entry.value.value.f64 - 1;
@@ -1321,23 +1324,29 @@ void exec_f64_floor(wasm_stack label, wasm_stack* stack){
                 value->entry.value.value.u64 &= 0x7fffffffffffffffLLU;
             }
         }
+    }else if(kind & 1){
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }
     label->entry.label.current += 1;
 }
 void exec_f64_trunc(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if(f64_kind(value->entry.value.value.u64) == Float_normal){
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    if(kind == Float_normal){
         if((value->entry.value.value.f64 != (i64_t)value->entry.value.value.f64) && (((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) < 1075)){
             i64_t ival = value->entry.value.value.i64 & 0x8000000000000000LLU;
             value->entry.value.value.f64 = (i64_t)value->entry.value.value.f64;
             value->entry.value.value.i64 = ival | (value->entry.value.value.i64 & 0x7fffffffffffffffLLU);
         }
+    }else if(kind & 1){
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }
     label->entry.label.current += 1;
 }
 void exec_f64_nearest(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
-    if((f64_kind(value->entry.value.value.u64) == Float_normal) && (value->entry.value.value.i64 & 0x7fffffffffffffffLLU)){
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    if((kind == Float_normal) && (value->entry.value.value.i64 & 0x7fffffffffffffffLLU)){
         u16_t expo = ((value->entry.value.value.u64 & 0x7ff0000000000000LLU) >> 52) & 0xfff;
         if(expo < 1075){
             u64_t abs_value = value->entry.value.value.u64 & 0x7fffffffffffffffLLU;
@@ -1358,6 +1367,8 @@ void exec_f64_nearest(wasm_stack label, wasm_stack* stack){
                 }
             }
         }
+    }else if(kind & 1){
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }
     label->entry.label.current += 1;
 }
@@ -1365,10 +1376,13 @@ void exec_f64_sqrt(wasm_stack label, wasm_stack* stack){
     // Reference: https://www.codeproject.com/Articles/69941/Best-Square-Root-Method-Algorithm-Function-Precisi
 
     wasm_stack value = *stack;
-    if((value->entry.value.value.u64 & 0x8000000000000000LLU) && (value->entry.value.value.u64 != 0x8000000000000000LLU)){
+    Float_kind kind = f64_kind(value->entry.value.value.u64);
+    if(kind & 1){
+        value->entry.value.value.u64 |= 0x7ff8000000000000LLU;
+    }else if((value->entry.value.value.u64 & 0x8000000000000000LLU) && (value->entry.value.value.u64 != 0x8000000000000000LLU)){
         // Negative
         value->entry.value.value.u64 = 0x7ff8000000000000LLU;
-    }else if((f64_kind(value->entry.value.value.u64) == Float_normal) && (value->entry.value.value.u64 & 0x7fffffffffffffffLLU)){
+    }else if((kind == Float_normal) && (value->entry.value.value.u64 & 0x7fffffffffffffffLLU)){
         _Bool isDenorm = (value->entry.value.value.u64 & 0x7ff0000000000000LLU) == 0;
         if(isDenorm){
             value->entry.value.value.f64 *= 0x10000000000000LLU;
@@ -1394,6 +1408,7 @@ void exec_f64_add(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if((kind1 == Float_normal) && (kind2 == Float_normal)){
         if(
             ((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == (value2->entry.value.value.u64 & 0x7fffffffffffffffLLU))
@@ -1424,6 +1439,7 @@ void exec_f64_sub(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else{
         // sub(a, b) = add(a, neg(b))
         value2->entry.value.value.u64 ^= 0x8000000000000000LLU;
@@ -1458,6 +1474,7 @@ void exec_f64_mul(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if((kind1 != Float_normal) || (kind2 != Float_normal)){
         if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) || ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0)){
             value2->entry.value.value.u64 = 0x7ff8000000000000LLU;
@@ -1483,6 +1500,7 @@ void exec_f64_div(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if(((kind1 != Float_normal) && (kind2 != Float_normal)) || (((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0))){
         value2->entry.value.value.u64 = 0x7ff8000000000000LLU;
     }else if((kind1 != Float_normal) || ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0)){
@@ -1507,6 +1525,7 @@ void exec_f64_min(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if((kind1 == Float_neg_inf) || (kind2 == Float_neg_inf)){
         value2->entry.value.value.u64 = 0xfff0000000000000LLU;
     }else if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && (value1->entry.value.value.u64 != value2->entry.value.value.u64)){
@@ -1526,6 +1545,7 @@ void exec_f64_max(wasm_stack label, wasm_stack* stack){
         if(kind1 & 1){
             value2->entry.value.value = value1->entry.value.value;
         }
+        value2->entry.value.value.u64 |= 0x7ff8000000000000LLU;
     }else if((kind1 == Float_pos_inf) || (kind2 == Float_pos_inf)){
         value2->entry.value.value.u64 = 0x7ff0000000000000LLU;
     }else if(((value1->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && ((value2->entry.value.value.u64 & 0x7fffffffffffffffLLU) == 0) && (value1->entry.value.value.u64 != value2->entry.value.value.u64)){
