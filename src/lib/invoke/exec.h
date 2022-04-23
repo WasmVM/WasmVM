@@ -42,15 +42,15 @@ void exec_i64_load16_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
 void exec_i64_load16_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_i64_load32_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_i64_load32_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
-void exec_i32_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_f32_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_f64_store(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_store8(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i32_store16(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_store8(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_store16(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_i64_store32(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_i32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_f32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_f64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i32_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i32_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i64_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i64_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_i64_store32(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_memory_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_memory_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_const(wasm_stack label, wasm_stack* stack);

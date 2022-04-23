@@ -102,6 +102,33 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i64_load32_u:
                 exec_i64_load32_u(current_label, current_frame, stack, store);
             break;
+            case Op_i32_store:
+                exec_i32_store(current_label, current_frame, stack, store);
+            break;
+            case Op_i64_store:
+                exec_i64_store(current_label, current_frame, stack, store);
+            break;
+            case Op_f32_store:
+                exec_f32_store(current_label, current_frame, stack, store);
+            break;
+            case Op_f64_store:
+                exec_f64_store(current_label, current_frame, stack, store);
+            break;
+            case Op_i32_store8:
+                exec_i32_store8(current_label, current_frame, stack, store);
+            break;
+            case Op_i32_store16:
+                exec_i32_store16(current_label, current_frame, stack, store);
+            break;
+            case Op_i64_store8:
+                exec_i64_store8(current_label, current_frame, stack, store);
+            break;
+            case Op_i64_store16:
+                exec_i64_store16(current_label, current_frame, stack, store);
+            break;
+            case Op_i64_store32:
+                exec_i64_store32(current_label, current_frame, stack, store);
+            break;
             case Op_i32_const:
             case Op_i64_const:
             case Op_f32_const:
