@@ -15,6 +15,8 @@ typedef short  i16_t;
 typedef unsigned long   size_t;
 typedef unsigned char   byte_t;
 
+#define page_size 65536
+
 #include <stdlib.h>
 #include <string.h>
 #define malloc_func malloc

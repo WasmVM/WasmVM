@@ -454,11 +454,32 @@ void exec_i64_store32(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_memory_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_memory_size(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    wasm_stack value = (wasm_stack)malloc_func(sizeof(Stack));
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    value->type = Entry_value;
+    value->next = *stack;
+    value->entry.value.type = Value_i32;
+    value->entry.value.value.u32 = mem->data.size / page_size;
+    *stack = value;
+    label->entry.label.current += 1;
 }
-void exec_memory_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_memory_grow(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    wasm_stack value = *stack;
+    MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
+    u32_t memsize = mem->data.size / page_size;
+    u32_t newsize = memsize + value->entry.value.value.u32;
+    value->entry.value.value.u32 = memsize;
+    if((newsize > 65536) || ((mem->max > 0) && (newsize > mem->max))){
+        value->entry.value.value.i32 = -1;
+    }else{
+        vector_resize(mem->data, byte_t, (newsize * page_size));
+        if(mem->data.data == NULL){
+            value->entry.value.value.i32 = -1;
+        }
+        mem->data.size = newsize * page_size;
+    }
+    label->entry.label.current += 1;
 }
 void exec_const(wasm_stack label, wasm_stack* stack){
     ConstInstrInst* instr = (ConstInstrInst*)label->entry.label.current;

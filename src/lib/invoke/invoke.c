@@ -129,6 +129,12 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_i64_store32:
                 exec_i64_store32(current_label, current_frame, stack, store);
             break;
+            case Op_memory_size:
+                exec_memory_size(current_label, current_frame, stack, store);
+            break;
+            case Op_memory_grow:
+                exec_memory_grow(current_label, current_frame, stack, store);
+            break;
             case Op_i32_const:
             case Op_i64_const:
             case Op_f32_const:

@@ -143,7 +143,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         memInst->max = memory->max;
         vector_init(memInst->data);
         if(memory->min > 0){
-            memInst->data.size = 65536 * memory->min;
+            memInst->data.size = page_size * memory->min;
             vector_resize(memInst->data, byte_t, memInst->data.size);
             memset_func(memInst->data.data, 0, memInst->data.size);
         }

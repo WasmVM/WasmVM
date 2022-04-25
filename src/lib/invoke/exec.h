@@ -51,8 +51,8 @@ void exec_i32_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
 void exec_i64_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_i64_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_i64_store32(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
-void exec_memory_size(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_memory_grow(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_memory_size(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
+void exec_memory_grow(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_const(wasm_stack label, wasm_stack* stack);
 void exec_i32_eqz(wasm_stack label, wasm_stack* stack);
 void exec_i32_eq(wasm_stack label, wasm_stack* stack);
