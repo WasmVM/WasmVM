@@ -22,7 +22,7 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         // Store parameters to frame locals
         for(u32_t i = 0; i < funcInst->type->params.size; ++i){
             wasm_stack entry = *stack;
-            frame->entry.frame.locals.data[i] = entry->entry.value;
+            frame->entry.frame.locals.data[funcInst->type->params.size - 1 - i] = entry->entry.value;
             *stack = entry->next;
             free_func(entry);
         }
@@ -59,6 +59,9 @@ void execute(wasm_stack* stack, wasm_store store){
             break;
             case Op_local_get:
                 exec_local_get(current_label, current_frame, stack, store);
+            break;
+            case Op_local_set:
+                exec_local_set(current_label, current_frame, stack, store);
             break;
             case Op_i32_load:
                 exec_i32_load(current_label, current_frame, stack, store);

@@ -22,7 +22,7 @@ void exec_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_sto
 void exec_select(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_select_t(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
-void exec_local_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_local_set(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_local_tee(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_global_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
