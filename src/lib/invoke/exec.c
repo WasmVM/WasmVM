@@ -118,8 +118,10 @@ void exec_local_set(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_local_tee(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_local_tee(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    UnaryInstrInst* instr = (UnaryInstrInst*)label->entry.label.current;
+    frame->entry.frame.locals.data[instr->index] = (*stack)->entry.value;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_global_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
