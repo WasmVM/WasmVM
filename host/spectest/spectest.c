@@ -124,7 +124,7 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     },
     (wasm_value) {
         .type = Value_i32,
-        .value.i32 = 0,
+        .value.i32 = 666,
     }
                                               );
     exports[0].name.size = 10;
@@ -148,7 +148,7 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     },
     (wasm_value) {
         .type = Value_i64,
-        .value.i64 = 0,
+        .value.i64 = 666,
     }
                                               );
     exports[1].name.size = 10;

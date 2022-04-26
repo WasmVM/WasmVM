@@ -72,6 +72,9 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_local_tee:
                 exec_local_tee(current_label, current_frame, stack, store);
             break;
+            case Op_global_get:
+                exec_global_get(current_label, current_frame, stack, store);
+            break;
             case Op_i32_load:
                 exec_i32_load(current_label, current_frame, stack, store);
             break;

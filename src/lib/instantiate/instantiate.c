@@ -108,7 +108,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         if(wasmvm_errno != ERROR_success){
             return NULL;
         }
-        moduleInst->funcaddrs.data[i] = store->funcs.size + i;
+        moduleInst->funcaddrs.data[offsets.funcs + i] = store->funcs.size + i;
     }
     store->funcs.size += module->funcs.size;
 
@@ -129,7 +129,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
                 tableInst->elem.data[i].isNull = 1;
             }
         }
-        moduleInst->tableaddrs.data[i] = store->tables.size + i;
+        moduleInst->tableaddrs.data[offsets.tables + i] = store->tables.size + i;
     }
     store->tables.size += module->tables.size;
 
@@ -147,7 +147,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             vector_resize(memInst->data, byte_t, memInst->data.size);
             memset_func(memInst->data.data, 0, memInst->data.size);
         }
-        moduleInst->memaddrs.data[i] = store->mems.size + i;
+        moduleInst->memaddrs.data[offsets.mems + i] = store->mems.size + i;
     }
     store->mems.size += module->mems.size;
 
@@ -158,10 +158,15 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     for(size_t i = 0; i < module->globals.size; ++i){
         const WasmGlobal *global = module->globals.data + i;
         GlobalInst* globalInst = store->globals.data + store->globals.size + i;
-        globalInst->val.type = global->valType;
         globalInst->mut = global->mut;
-        globalInst->val.value = global->init.value.value;
-        moduleInst->globaladdrs.data[i] = store->globals.size + i;
+        if(global->init.type == Const_Value){
+            globalInst->val.type = global->valType;
+            globalInst->val.value = global->init.value.value;
+        }else{
+            GlobalInst* fetched = store->globals.data + moduleInst->globaladdrs.data[global->init.value.value.u32];
+            globalInst->val = fetched->val;
+        }
+        moduleInst->globaladdrs.data[offsets.globals + i] = store->globals.size + i;
     }
     store->globals.size += module->globals.size;
     

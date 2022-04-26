@@ -81,7 +81,7 @@ static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t
         case Op_f32_const:
             expr->type = Const_Value;
             expr->value.type = Value_f32;
-            expr->value.value.f32 = toLittle32(*((u32_t*)*read_p), 0);
+            expr->value.value.u32 = toLittle32(*((u32_t*)*read_p), 0);
             if(wasmvm_errno) {
                 return -1;
             }
@@ -90,7 +90,7 @@ static int parse_const_expr(ConstExpr* expr, const byte_t **read_p, const byte_t
         case Op_f64_const:
             expr->type = Const_Value;
             expr->value.type = Value_f64;
-            expr->value.value.f64 = toLittle64(*((u64_t*)*read_p), 0);
+            expr->value.value.u64 = toLittle64(*((u64_t*)*read_p), 0);
             if(wasmvm_errno) {
                 return -1;
             }

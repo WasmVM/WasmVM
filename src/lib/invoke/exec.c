@@ -123,8 +123,15 @@ void exec_local_tee(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     frame->entry.frame.locals.data[instr->index] = (*stack)->entry.value;
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_global_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_global_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    UnaryInstrInst* instr = (UnaryInstrInst*)label->entry.label.current;
+    GlobalInst* global = store->globals.data + frame->entry.frame.moduleinst->globaladdrs.data[instr->index];
+    wasm_stack value = (wasm_stack)malloc_func(sizeof(Stack));
+    value->type = Entry_value;
+    value->next = *stack;
+    value->entry.value = global->val;
+    *stack = value;
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
