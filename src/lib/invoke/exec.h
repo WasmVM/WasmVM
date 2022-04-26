@@ -18,7 +18,7 @@ void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
-void exec_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_drop(wasm_stack label, wasm_stack* stack);
 void exec_select(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_select_t(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);

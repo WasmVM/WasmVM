@@ -93,8 +93,11 @@ void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_sto
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
 }
-void exec_drop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_drop(wasm_stack label, wasm_stack* stack){
+    wasm_stack value = *stack;
+    *stack = value->next;
+    free_func(value);
+    label->entry.label.current += 1;
 }
 void exec_select(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
