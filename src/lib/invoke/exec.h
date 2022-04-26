@@ -25,7 +25,7 @@ void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
 void exec_local_set(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_local_tee(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_global_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
-void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
+void exec_global_set(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);
 void exec_table_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_table_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:
 void exec_i32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store);

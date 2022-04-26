@@ -75,6 +75,9 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_global_get:
                 exec_global_get(current_label, current_frame, stack, store);
             break;
+            case Op_global_set:
+                exec_global_set(current_label, current_frame, stack, store);
+            break;
             case Op_i32_load:
                 exec_i32_load(current_label, current_frame, stack, store);
             break;

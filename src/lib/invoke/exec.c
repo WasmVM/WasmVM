@@ -133,8 +133,14 @@ void exec_global_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm
     *stack = value;
     label->entry.label.current = (InstrInst*)(instr + 1);
 }
-void exec_global_set(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_global_set(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
+    UnaryInstrInst* instr = (UnaryInstrInst*)label->entry.label.current;
+    GlobalInst* global = store->globals.data + frame->entry.frame.moduleinst->globaladdrs.data[instr->index];
+    wasm_stack value = *stack;
+    global->val = value->entry.value;
+    *stack = value->next;
+    free_func(value);
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_table_get(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
