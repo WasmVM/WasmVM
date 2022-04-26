@@ -220,17 +220,17 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
             f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
             '  if(wasmvm_errno != ERROR_success){\n'
-            f'    fprintf(stderr, "Invoke({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '    failed = 1;\n'
             '  }\n'
             '  if(func_export.type != Desc_Func){\n'
-            f'    fprintf(stderr, "Invoke({wast_line}): [Failed] export type is not function while invoke function");\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] export type is not function while invoke function");\n'
             '    failed = 1;\n'
             '  }\n'
             '  if(!failed){\n'
             '    values_vector_t result = func_invoke(store, module_inst->funcaddrs.data[func_export.value], func_args);\n'
             '    if(wasmvm_errno != ERROR_success){\n'
-            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] failed invoke function with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] failed invoke function with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '      failed = 1;\n'
             '    }\n'
         )
@@ -239,7 +239,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '    // Check\n'
             f'    if(result.size != {len(func_expected)}){{\n'
-            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] expected {len(func_expected)} results but we got %d\\n", result.size);\n'
+            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] expected {len(func_expected)} results but we got %d\\n", result.size);\n'
             '      failed = 1;\n'
             '    }\n'
         )
@@ -247,14 +247,14 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             if exp_val["type"] == "i32":
                 case_file.write(
                     f'    if(!failed && ((result.data[{exp_id}].type != Value_i32) || (result.data[{exp_id}].value.u32 != {exp_val["value"]}u))){{\n'
-                    f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_i32, {exp_val["value"]}u);\n'
+                    f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_i32, {exp_val["value"]}u);\n'
                     '      failed = 1;\n'
                     '    }\n'
                 )
             elif exp_val["type"] == "i64":
                 case_file.write(
                     f'    if(!failed && ((result.data[{exp_id}].type != Value_i64) || (result.data[{exp_id}].value.u64 != {exp_val["value"]}llu))){{\n'
-                    f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_i64, {exp_val["value"]}llu);\n'
+                    f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_i64, {exp_val["value"]}llu);\n'
                     '      failed = 1;\n'
                     '    }\n'
                 )
@@ -264,21 +264,21 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     if nan_val == "canonical":
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) != 0x7fc00000u))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
                     elif nan_val == "arithmetic":
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) < 0x7fc00000u) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) > 0x7fffffffu))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32);\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
                     else:
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f32) || !isnan(result.data[{exp_id}].value.f32) || ((result.data[{exp_id}].value.u32 & 0x7fffffffu) != (0x7f800000u | {nan_val}u)))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, (0x7f800000u | {nan_val}u));\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, (0x7f800000u | {nan_val}u));\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
@@ -287,7 +287,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                         '    {\n'
                         f'      u32_t diff = result.data[{exp_id}].value.u32 - {exp_val["value"]}u;\n'
                         f'      if(!failed && ((result.data[{exp_id}].type != Value_f32) || ((diff + 1) > 2))){{\n'
-                        f'        fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, {exp_val["value"]}u);\n'
+                        f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, {exp_val["value"]}u);\n'
                         '        failed = 1;\n'
                         '      }\n'
                         '    }\n'
@@ -298,21 +298,21 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     if nan_val == "canonical":
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) != 0x7ff8000000000000llu))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:canonical)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
                     elif nan_val == "arithmetic":
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) < 0x7ff8000000000000llu) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) > 0x7fffffffffffffffllu))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:arithmetic)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64);\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
                     else:
                         case_file.write(
                             f'    if(!failed && ((result.data[{exp_id}].type != Value_f64) || !isnan(result.data[{exp_id}].value.f64) || ((result.data[{exp_id}].value.u64 & 0x7fffffffffffffffllu) != (0x7ff8000000000000llu | {nan_val}llu)))){{\n'
-                            f'      fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, (0x7ff8000000000000llu | {nan_val}llu));\n'
+                            f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, (0x7ff8000000000000llu | {nan_val}llu));\n'
                             '      failed = 1;\n'
                             '    }\n'
                         )
@@ -321,7 +321,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                         '    {\n'
                         f'      u64_t diff = result.data[{exp_id}].value.u64 - {exp_val["value"]}llu;\n'
                         f'      if(!failed && ((result.data[{exp_id}].type != Value_f64) || ((diff + 1) > 2))){{\n'
-                        f'        fprintf(stderr, "Invoke({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, {exp_val["value"]}llu);\n'
+                        f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, {exp_val["value"]}llu);\n'
                         '        failed = 1;\n'
                         '      }\n'
                         '    }\n'
@@ -334,13 +334,96 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             '  if(failed){\n'
             '    result += 1;\n'
             '  }else{\n'
-            f'    fprintf(stderr, "Invoke({wast_line}): [Passed]\\n");\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Passed]\\n");\n'
             '  }\n'
             '}\n'
         )
     elif action["type"] == "get":
         pass #TODO: get
 
+def action_action(case_file: TextIO, command: dict) -> None:
+    wast_line = command["line"]
+    action = command["action"]
+    if action["type"] == "invoke":
+        # Get props
+        func_name = action["field"]
+        func_args = action["args"]
+        case_file.write(
+            f'/** {wast_line}: invoke */\n'
+            'if(module_inst){\n'
+            '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
+        )
+        # Prepare args
+        if(len(func_args) > 0): 
+            case_file.write(
+                '  // Func args\n'
+                '  values_vector_t func_args;\n'
+                f'  func_args.size = {len(func_args)};\n'
+                f'  func_args.data = malloc(sizeof(wasm_value) * {len(func_args)});\n'
+            )
+            for arg_id, arg_val in enumerate(func_args):
+                if arg_val["type"] == "i32":
+                    case_file.write(
+                        f'  func_args.data[{arg_id}].type = Value_i32;\n'
+                        f'  func_args.data[{arg_id}].value.u32 = {arg_val["value"]}u;\n'
+                    )
+                elif arg_val["type"] == "i64":
+                    case_file.write(
+                        f'  func_args.data[{arg_id}].type = Value_i64;\n'
+                        f'  func_args.data[{arg_id}].value.u64 = {arg_val["value"]}llu;\n'
+                    )
+                elif arg_val["type"] == "f32":
+                    case_file.write(
+                        f'  func_args.data[{arg_id}].type = Value_f32;\n'
+                        f'  func_args.data[{arg_id}].value.u32 = {arg_val["value"]}u;\n'
+                    )
+                elif arg_val["type"] == "f64":
+                    case_file.write(
+                        f'  func_args.data[{arg_id}].type = Value_f64;\n'
+                        f'  func_args.data[{arg_id}].value.u64 = {arg_val["value"]}llu;\n'
+                    )
+        else:
+            case_file.write(
+                '  // Func args\n'
+                '  values_vector_t func_args;\n'
+                '  vector_init(func_args);\n'
+            )
+        # Invoke
+        sanitized_name = reduce(lambda res, elem: res + "," + hex(elem), func_name.encode(), "")[1:]
+        name_size = len(func_name.encode())
+        case_file.write(
+            '  // Invoke\n'
+            f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
+            f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
+            '  if(wasmvm_errno != ERROR_success){\n'
+            f'    fprintf(stderr, "invoke({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+            '    failed = 1;\n'
+            '  }\n'
+            '  if(func_export.type != Desc_Func){\n'
+            f'    fprintf(stderr, "invoke({wast_line}): [Failed] export type is not function while invoke function");\n'
+            '    failed = 1;\n'
+            '  }\n'
+            '  if(!failed){\n'
+            '    values_vector_t result = func_invoke(store, module_inst->funcaddrs.data[func_export.value], func_args);\n'
+            '    if(wasmvm_errno != ERROR_success){\n'
+            f'      fprintf(stderr, "invoke({wast_line}): [Failed] failed invoke function with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+            '      failed = 1;\n'
+            '    }\n'
+        )
+
+        # Epilogue
+        case_file.write(
+            '  }\n'
+            '  // End\n'
+            '  if(failed){\n'
+            '    result += 1;\n'
+            '  }else{\n'
+            f'    fprintf(stderr, "invoke({wast_line}): [Passed]\\n");\n'
+            '  }\n'
+            '}\n'
+        )
+    
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:
         # Prologue
@@ -376,6 +459,8 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
                 action_register(case_file, command)
             elif command["type"] == "assert_return":
                 action_assert_return(case_file, command)
+            elif command["type"] == "action":
+                action_action(case_file, command)
 
         # Epilogue
         case_file.write(
