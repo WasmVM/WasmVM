@@ -31,11 +31,12 @@ static Float_kind f64_kind(u64_t value){
     }
 }
 
-void exec_unreachable(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_unreachable(wasm_stack label){
+    wasmvm_errno = ERROR_unreachable;
+    label->entry.label.current += 1;
 }
-void exec_nop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_nop(wasm_stack label){
+    label->entry.label.current += 1;
 }
 void exec_block(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:

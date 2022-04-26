@@ -60,6 +60,12 @@ void execute(wasm_stack* stack, wasm_store store){
     // Run instructions
     while(current_frame){
         switch(current_label->entry.label.current->opcode){
+            case Op_unreachable:
+                exec_unreachable(current_label);
+            break;
+            case Op_nop:
+                exec_nop(current_label);
+            break;
             case Op_end:
                 exec_end(&current_label, &current_frame, stack);
             break;
