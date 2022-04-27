@@ -262,6 +262,7 @@ size_t get_code_size(const WasmFunc* func){
 
 typedef struct _BlockNode{
     BlockInstrInst* ptr;
+    u64_t offset;
     struct _BlockNode* next;
 } BlockStack;
 
@@ -508,14 +509,14 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                     wasmvm_errno = ERROR_mis_label;
                     return;
                 }
-                blockStack->ptr->brOffset = data - begin;
+                blockStack->ptr->brOffset = data - begin - blockStack->offset;
                 data += sizeof(InstrInst);
                 break;
             case Op_end:
                 if(blockStack){
                     BlockStack* node = blockStack;
                     blockStack = blockStack->next;
-                    node->ptr->endOffset = data - begin;
+                    node->ptr->endOffset = data - begin - node->offset;
                     free_func(node);
                 }
                 data += sizeof(InstrInst);
@@ -533,6 +534,7 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 BlockStack* node = (BlockStack*)malloc_func(sizeof(BlockStack));
                 node->next = blockStack;
                 node->ptr = blockInstr;
+                node->offset = data - begin;
                 blockStack = node;
                 data += sizeof(BlockInstrInst);
                 }break;
@@ -544,6 +546,7 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 BlockStack* node = (BlockStack*)malloc_func(sizeof(BlockStack));
                 node->next = blockStack;
                 node->ptr = blockInstr;
+                node->offset = data - begin;
                 blockStack = node;
                 data += sizeof(BlockInstrInst);
                 }break;
