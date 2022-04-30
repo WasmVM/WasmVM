@@ -58,8 +58,8 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
             for(u32_t i = 0; i < type->params.size; ++i){
                 tail = &((*tail)->next);
             }
-            *stack = (*tail)->next;
-            (*tail)->next = new_label;
+            *stack = *tail;
+            *tail = new_label;
         }
     }else{
         new_label->entry.label.arity = (instr->blocktype != Value_unspecified);
@@ -101,7 +101,7 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     if(old_label->entry.label.end == NULL){
         wasm_stack old_frame = *frame;
         *frame = old_frame->entry.frame.last;
-        *stack = (*stack)->next; // Frame must be on top
+        *stack = old_frame->next; // Frame must be on top
         free_vector(old_frame->entry.frame.locals);
         free_func(old_frame);
     }
@@ -113,8 +113,43 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Free old label
     free_func(old_label);
 }
-void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
+    UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
+    // Args
+    wasm_stack *tail = stack;
+    // Pop args
+    for(u32_t i = 0; i < (*label)->entry.label.arity; ++i){
+        tail = &((*tail)->next);
+    }
+    // Pop label
+    wasm_stack new_head = NULL;
+    for(u32_t i = 0; i <= instr->index; ++i){
+        new_head = (*label)->next;
+        *label = (*label)->entry.label.last;
+    }
+    // Push args
+    wasm_stack cur = *tail;
+    if(*label == NULL){
+        wasm_stack old_frame = *frame;
+        *frame = old_frame->entry.frame.last;
+        if(old_frame->entry.frame.arity){
+            *tail = new_head->next;
+        }else{
+            *stack = new_head->next;
+        }
+        free_vector(old_frame->entry.frame.locals);
+        free_func(old_frame);
+    }else if((*label)->entry.label.arity != 0){
+        *tail = new_head;
+    }else{
+        *stack = new_head;
+    }
+    // Clean remained values
+    while(cur != new_head){
+        wasm_stack node = cur;
+        cur = cur->next;
+        free_func(node);
+    }
 }
 void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
@@ -383,7 +418,7 @@ void exec_i32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
         return;
     }
     *(i32_t*)(mem->data.data + ea) = value->entry.value.value.i32;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -399,7 +434,7 @@ void exec_i64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
         return;
     }
     *(i64_t*)(mem->data.data + ea) = value->entry.value.value.i64;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -415,7 +450,7 @@ void exec_f32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
         return;
     }
     *(f32_t*)(mem->data.data + ea) = value->entry.value.value.f32;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -431,7 +466,7 @@ void exec_f64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
         return;
     }
     *(f64_t*)(mem->data.data + ea) = value->entry.value.value.f64;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -447,7 +482,7 @@ void exec_i32_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm
         return;
     }
     *(i8_t*)(mem->data.data + ea) = (i8_t)value->entry.value.value.i32;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -463,7 +498,7 @@ void exec_i32_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
         return;
     }
     *(i16_t*)(mem->data.data + ea) = (i16_t)value->entry.value.value.i32;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -479,7 +514,7 @@ void exec_i64_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm
         return;
     }
     *(i8_t*)(mem->data.data + ea) = (i8_t)value->entry.value.value.i64;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -495,7 +530,7 @@ void exec_i64_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
         return;
     }
     *(i16_t*)(mem->data.data + ea) = (i16_t)value->entry.value.value.i64;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);
@@ -511,7 +546,7 @@ void exec_i64_store32(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
         return;
     }
     *(i32_t*)(mem->data.data + ea) = (i32_t)value->entry.value.value.i64;
-    *stack = value->next;
+    *stack = address->next;
     free_func(address);
     free_func(value);
     label->entry.label.current = (InstrInst*)(instr + 1);

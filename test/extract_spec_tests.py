@@ -243,7 +243,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             '      failed = 1;\n'
             '    }\n'
         )
-        for exp_id, exp_val in enumerate(func_expected):
+        for exp_id, exp_val in enumerate(reversed(func_expected)):
             if exp_val["type"] == "i32":
                 case_file.write(
                     f'    if(!failed && ((result.data[{exp_id}].type != Value_i32) || (result.data[{exp_id}].value.u32 != {exp_val["value"]}u))){{\n'
