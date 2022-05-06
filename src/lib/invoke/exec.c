@@ -85,13 +85,18 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     // Condition
     wasm_stack cond = *stack;
     *stack = (*stack)->next;
-    if(cond->entry.value.value.i32){
+    if(cond->entry.value.value.i32 || (instr->brOffset != 0)){
         // Setup label
         wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
         new_label->type = Entry_label;
-        new_label->entry.label.current = (InstrInst*)(instr + 1);
         new_label->entry.label.end = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
         new_label->entry.label.last = *label;
+        // Set jump
+        if(cond->entry.value.value.i32){
+            new_label->entry.label.current = (InstrInst*)(instr + 1);
+        }else{
+            new_label->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->brOffset)) + 1;
+        }
         // Args
         wasm_stack args = NULL;
         if(instr->blocktype == Value_index){
@@ -121,15 +126,11 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
             *stack = new_label;
         }
     }else{
-        if(instr->brOffset != 0){
-            (*label)->entry.label.current = (InstrInst*)(((byte_t*)instr) + instr->brOffset);
-        }else{
-            (*label)->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->endOffset)) + 1;
-        }
+        (*label)->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->endOffset)) + 1;
     }
 }
-void exec_else(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
-    // TODO:
+void exec_else(wasm_stack label){
+    label->entry.label.current = label->entry.label.end;
 }
 void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results

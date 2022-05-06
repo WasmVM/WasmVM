@@ -72,6 +72,9 @@ void execute(wasm_stack* stack, wasm_store store){
             case Op_if:
                 exec_if(&current_label, current_frame, stack);
             break;
+            case Op_else:
+                exec_else(current_label);
+            break;
             case Op_end:
                 exec_end(&current_label, &current_frame, stack);
             break;
