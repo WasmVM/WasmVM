@@ -543,6 +543,7 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 BlockInstrInst* blockInstr = (BlockInstrInst*)data;
                 blockInstr->blocktype = instr->imm.values.value.type;
                 blockInstr->index = instr->imm.values.index;
+                blockInstr->brOffset = 0;
                 BlockStack* node = (BlockStack*)malloc_func(sizeof(BlockStack));
                 node->next = blockStack;
                 node->ptr = blockInstr;
