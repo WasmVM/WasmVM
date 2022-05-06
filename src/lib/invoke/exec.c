@@ -197,8 +197,16 @@ void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
         free_func(node);
     }
 }
-void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
+    UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
+    // Condition
+    wasm_stack cond = *stack;
+    *stack = (*stack)->next;
+    if(cond->entry.value.value.i32){
+        exec_br(label, frame, stack);
+    }else{
+        (*label)->entry.label.current = (InstrInst*)(instr + 1);
+    }
 }
 void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
