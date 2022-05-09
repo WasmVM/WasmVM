@@ -172,7 +172,7 @@ size_t get_code_size(const WasmFunc* func){
                 code_size += sizeof(InstrInst);
                 break;
             case Op_select_t:
-                code_size += sizeof(u16_t) + sizeof(unsigned int) + (instr->imm.vec.size * sizeof(ValueType));
+                code_size += sizeof(SelectInstrInst) + (instr->imm.vec.size * sizeof(ValueType));
                 break;
             // Variable instructions
             case Op_local_get:
@@ -438,7 +438,7 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 SelectInstrInst* selectInstr = (SelectInstrInst*)data;
                 selectInstr->size = instr->imm.vec.size;
                 memcpy_func(selectInstr->params, instr->imm.vec.data, sizeof(ValueType) * selectInstr->size);
-                data += sizeof(u16_t) + sizeof(unsigned int) + (instr->imm.vec.size * sizeof(ValueType));
+                data += sizeof(SelectInstrInst) + (instr->imm.vec.size * sizeof(ValueType));
                 }break;
             // Variable instructions
             case Op_local_get:

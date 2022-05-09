@@ -286,7 +286,20 @@ void exec_select(wasm_stack label, wasm_stack* stack){
     label->entry.label.current += 1;
 }
 void exec_select_t(wasm_stack label, wasm_stack* stack){
-    // TODO:
+    SelectInstrInst* instr = (SelectInstrInst*)label->entry.label.current;
+    wasm_stack cond = *stack;
+    wasm_stack op2 = cond->next;
+    wasm_stack op1 = op2->next;
+    if(cond->entry.value.value.i32){
+        *stack = op1;
+        free_func(op2);
+    }else{
+        op2->next = op1->next;
+        *stack = op2;
+        free_func(op1);
+    }
+    free_func(cond);
+    label->entry.label.current = (InstrInst*)(instr + 1);
 }
 void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
     UnaryInstrInst* instr = (UnaryInstrInst*)label->entry.label.current;
