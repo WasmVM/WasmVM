@@ -12,6 +12,11 @@
 void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
     const FuncInst* funcInst = store->funcs.data + funcaddr;
     if(funcInst->bodyType == FuncBody_Wasm){
+        // Get last frame & last label
+        wasm_stack last_label = *stack;
+        for(; last_label && (last_label->type != Entry_label); last_label = last_label->next);
+        wasm_stack last_frame = last_label;
+        for(; last_frame && (last_frame->type != Entry_frame); last_frame = last_frame->next);
         // Setup frame
         wasm_stack frame = (wasm_stack)malloc_func(sizeof(Stack));
         frame->type = Entry_frame;
@@ -19,6 +24,7 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         frame->entry.frame.moduleinst = funcInst->body.wasm.module;
         frame->entry.frame.locals.size = funcInst->type->params.size + funcInst->body.wasm.locals.size;
         frame->entry.frame.locals.data = (Value*)malloc_func(sizeof(Value) * frame->entry.frame.locals.size);
+        frame->entry.frame.last = last_frame;
         // Store parameters to frame locals
         for(u32_t i = 0; i < funcInst->type->params.size; ++i){
             wasm_stack entry = *stack;
@@ -41,6 +47,7 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         label->entry.label.arity = funcInst->type->results.size;
         label->entry.label.current = (InstrInst*)funcInst->body.wasm.codes.data;
         label->entry.label.end = NULL;
+        label->entry.label.last = last_label;
         label->next = *stack;
         *stack = label;
     }else{
@@ -54,9 +61,9 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
 void execute(wasm_stack* stack, wasm_store store){
     // Get label & frame
     wasm_stack current_label = *stack;
-    current_label->entry.label.last = NULL;
-    wasm_stack current_frame = current_label->next;
-    current_frame->entry.frame.last = NULL;
+    for(; current_label && (current_label->type != Entry_label); current_label = current_label->next);
+    wasm_stack current_frame = current_label;
+    for(; current_frame && (current_frame->type != Entry_frame); current_frame = current_frame->next);
     // Run instructions
     while(current_frame){
         switch(current_label->entry.label.current->opcode){
@@ -86,6 +93,9 @@ void execute(wasm_stack* stack, wasm_store store){
             break;
             case Op_br_table:
                 exec_br_table(&current_label, &current_frame, stack);
+            break;
+            case Op_call:
+                exec_call(&current_label, &current_frame, stack, store);
             break;
             case Op_drop:
                 exec_drop(current_label, stack);

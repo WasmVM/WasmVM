@@ -5,6 +5,7 @@
  */
 
 #include "exec.h"
+#include "invoke.h"
 #include <error.h>
 
 typedef enum {
@@ -259,7 +260,15 @@ void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_s
     // TODO:
 }
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+    UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
+    (*label)->entry.label.current = (InstrInst*)(instr + 1);
+    invoke(stack, store, (*frame)->entry.frame.moduleinst->funcaddrs.data[instr->index]);
+    // Update label & frame
+    wasm_stack cursor = *stack;
+    for(; cursor && (cursor->type != Entry_label); cursor = cursor->next);
+    *label = cursor;
+    for(; cursor && (cursor->type != Entry_frame); cursor = cursor->next);
+    *frame = cursor;
 }
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:
