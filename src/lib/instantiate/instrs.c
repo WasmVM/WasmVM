@@ -251,7 +251,7 @@ size_t get_code_size(const WasmFunc* func){
                 code_size += sizeof(BinaryInstrInst);
                 break;
             case Op_br_table:
-                code_size += sizeof(u16_t) + sizeof(unsigned int) + (instr->imm.vec.size * sizeof(u32_t));
+                code_size += sizeof(BrTableInstrInst) + (instr->imm.vec.size * sizeof(u32_t));
                 break;
             default:
                 break;
@@ -566,8 +566,8 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
             case Op_br_table:{
                 BrTableInstrInst* brTableInstr = (BrTableInstrInst*)data;
                 brTableInstr->size = instr->imm.vec.size;
-                memcpy_func(brTableInstr->params, instr->imm.vec.data, sizeof(u32_t) * brTableInstr->size);
-                data += sizeof(u16_t) + sizeof(unsigned int) + (instr->imm.vec.size * sizeof(u32_t));
+                memcpy_func((u32_t*)brTableInstr->params, instr->imm.vec.data, sizeof(u32_t) * brTableInstr->size);
+                data += sizeof(BrTableInstrInst) + (instr->imm.vec.size * sizeof(u32_t));
                 }break;
             default:
                 break;

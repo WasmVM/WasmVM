@@ -208,8 +208,52 @@ void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
         (*label)->entry.label.current = (InstrInst*)(instr + 1);
     }
 }
-void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
+    BrTableInstrInst* instr = (BrTableInstrInst*)(*label)->entry.label.current;
+    // Index
+    wasm_stack index = *stack;
+    *stack = (*stack)->next;
+    u32_t param;
+    if(index->entry.value.value.u32 < (instr->size - 1)){
+        param = instr->params[index->entry.value.value.u32];
+    }else{
+        param = instr->params[instr->size - 1];
+    }
+    // Args
+    wasm_stack *tail = stack;
+    // Pop args
+    for(u32_t i = 0; i < (*label)->entry.label.arity; ++i){
+        tail = &((*tail)->next);
+    }
+    // Pop label
+    wasm_stack new_head = NULL;
+    for(u32_t i = 0; i <= param; ++i){
+        new_head = (*label)->next;
+        *label = (*label)->entry.label.last;
+    }
+    // Push args
+    wasm_stack cur = *tail;
+    if(*label == NULL){
+        wasm_stack old_frame = *frame;
+        *frame = old_frame->entry.frame.last;
+        if(old_frame->entry.frame.arity){
+            *tail = new_head->next;
+        }else{
+            *stack = new_head->next;
+        }
+        free_vector(old_frame->entry.frame.locals);
+        free_func(old_frame);
+    }else if((*label)->entry.label.arity != 0){
+        *tail = new_head;
+    }else{
+        *stack = new_head;
+    }
+    // Clean remained values
+    while(cur != new_head){
+        wasm_stack node = cur;
+        cur = cur->next;
+        free_func(node);
+    }
 }
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     // TODO:

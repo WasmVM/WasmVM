@@ -34,7 +34,6 @@ typedef struct {
     instrs->size += 1; \
     instrs->end->next = NULL;
 
-typedef vector_t(u32_t) br_table_imm_t;
 int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **read_p, const byte_t *end_p)
 {
     alloc_instr()
@@ -97,8 +96,7 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
             }
             instr->imm.vec.data = (u32_t*)malloc_func(instr->imm.vec.size * sizeof(u32_t));
             for(u32_t count = 0; count < instr->imm.vec.size; ++count) {
-                br_table_imm_t* immVec = (br_table_imm_t*)&(instr->imm.vec);
-                immVec->data[count] = getLeb128_u32(read_p, end_p);
+                ((u32_t*)instr->imm.vec.data)[count] = getLeb128_u32(read_p, end_p);
                 if(wasmvm_errno) {
                     return -1;
                 }
