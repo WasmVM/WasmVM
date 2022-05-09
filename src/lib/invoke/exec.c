@@ -270,10 +270,22 @@ void exec_drop(wasm_stack label, wasm_stack* stack){
     free_func(value);
     label->entry.label.current += 1;
 }
-void exec_select(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_select(wasm_stack label, wasm_stack* stack){
+    wasm_stack cond = *stack;
+    wasm_stack op2 = cond->next;
+    wasm_stack op1 = op2->next;
+    if(cond->entry.value.value.i32){
+        *stack = op1;
+        free_func(op2);
+    }else{
+        op2->next = op1->next;
+        *stack = op2;
+        free_func(op1);
+    }
+    free_func(cond);
+    label->entry.label.current += 1;
 }
-void exec_select_t(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
+void exec_select_t(wasm_stack label, wasm_stack* stack){
     // TODO:
 }
 void exec_local_get(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_store store){
