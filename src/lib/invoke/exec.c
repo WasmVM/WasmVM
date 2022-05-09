@@ -256,8 +256,36 @@ void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
         free_func(node);
     }
 }
-void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
+    // Pop results
+    wasm_stack res_begin = *stack, *res_end_ptr = stack;
+    for(u32_t i = 0; i < (*frame)->entry.frame.arity; ++i){
+        res_end_ptr = &((*stack)->next);
+        *stack = (*stack)->next;
+    }
+    // Pop remaining entries
+    while (*stack && ((*stack)->type != Entry_label) && ((*stack)->next != *frame)){
+        wasm_stack entry = *stack;
+        *stack = (*stack)->next;
+        free_func(entry);
+    }
+    // Pop label
+    wasm_stack old_label = *stack;
+    *label = old_label->entry.label.last;
+    *stack = old_label->next; // Label must be on top
+    // Pop frame
+    wasm_stack old_frame = *frame;
+    *frame = old_frame->entry.frame.last;
+    *stack = old_frame->next; // Frame must be on top
+    free_vector(old_frame->entry.frame.locals);
+    // Push results to stack
+    if(old_frame->entry.frame.arity){
+        *res_end_ptr = *stack;
+        *stack = res_begin;
+    }
+    // Clean
+    free_func(old_frame);
+    free_func(old_label);
 }
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
