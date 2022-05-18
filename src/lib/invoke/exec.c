@@ -45,7 +45,7 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
     new_label->type = Entry_label;
     new_label->entry.label.current = (InstrInst*)(instr + 1);
-    new_label->entry.label.end = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
+    new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
     new_label->entry.label.last = *label;
     // Args
     wasm_stack args = NULL;
@@ -67,7 +67,7 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     }
 
     // Push label
-    (*label)->entry.label.current = new_label->entry.label.end + 1;
+    (*label)->entry.label.current = new_label->entry.label.branch + 1;
     new_label->next = *stack;
     *label = new_label;
 
@@ -78,8 +78,44 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
         *stack = new_label;
     }
 }
-void exec_loop(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+void exec_loop(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
+    BlockInstrInst* instr = (BlockInstrInst*)(*label)->entry.label.current;
+    // Setup label
+    wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
+    new_label->type = Entry_label;
+    new_label->entry.label.current = (InstrInst*)(instr + 1);
+    new_label->entry.label.branch = (InstrInst*)instr;
+    new_label->entry.label.last = *label;
+    // Args
+    wasm_stack args = NULL;
+    if(instr->blocktype == Value_index){
+        // Pop args
+        FuncType* type = frame->entry.frame.moduleinst->types.data + instr->index;
+        new_label->entry.label.arity = type->results.size;
+        if(type->params.size > 0){
+            args = *stack;
+            wasm_stack* tail = stack;
+            for(u32_t i = 0; i < type->params.size; ++i){
+                tail = &((*tail)->next);
+            }
+            *stack = *tail;
+            *tail = new_label;
+        }
+    }else{
+        new_label->entry.label.arity = (instr->blocktype != Value_unspecified);
+    }
+
+    // Push label
+    (*label)->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->endOffset)) + 1;
+    new_label->next = *stack;
+    *label = new_label;
+
+    // Push args
+    if(args != NULL){
+        *stack = args;
+    }else{
+        *stack = new_label;
+    }
 }
 void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     BlockInstrInst* instr = (BlockInstrInst*)(*label)->entry.label.current;
@@ -90,7 +126,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
         // Setup label
         wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
         new_label->type = Entry_label;
-        new_label->entry.label.end = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
+        new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
         new_label->entry.label.last = *label;
         // Set jump
         if(cond->entry.value.value.i32){
@@ -117,7 +153,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
             new_label->entry.label.arity = (instr->blocktype != Value_unspecified);
         }
         // Push label
-        (*label)->entry.label.current = new_label->entry.label.end + 1;
+        (*label)->entry.label.current = new_label->entry.label.branch + 1;
         new_label->next = *stack;
         *label = new_label;
         // Push args
@@ -131,7 +167,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     }
 }
 void exec_else(wasm_stack label){
-    label->entry.label.current = label->entry.label.end;
+    label->entry.label.current = label->entry.label.branch;
 }
 void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results
@@ -145,10 +181,10 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     *label = old_label->entry.label.last;
     *stack = (*stack)->next; // Label must be on top
     // Pop frame if function end
-    if(old_label->entry.label.end == NULL){
+    if((*stack)->type == Entry_frame){
         wasm_stack old_frame = *frame;
         *frame = old_frame->entry.frame.last;
-        *stack = old_frame->next; // Frame must be on top
+        *stack = old_frame->next;
         free_vector(old_frame->entry.frame.locals);
         free_func(old_frame);
     }
@@ -172,7 +208,11 @@ void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     wasm_stack new_head = NULL;
     for(u32_t i = 0; i <= instr->index; ++i){
         new_head = (*label)->next;
-        *label = (*label)->entry.label.last;
+        wasm_stack last = (*label)->entry.label.last;
+        if(last){
+            last->entry.label.current = (*label)->entry.label.branch;
+        }
+        *label = last;
     }
     // Push args
     wasm_stack cur = *tail;
@@ -230,7 +270,11 @@ void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     wasm_stack new_head = NULL;
     for(u32_t i = 0; i <= param; ++i){
         new_head = (*label)->next;
-        *label = (*label)->entry.label.last;
+        wasm_stack last = (*label)->entry.label.last;
+        if(last){
+            last->entry.label.current = (*label)->entry.label.branch;
+        }
+        *label = last;
     }
     // Push args
     wasm_stack cur = *tail;

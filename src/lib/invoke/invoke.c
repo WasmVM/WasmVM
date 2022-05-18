@@ -46,7 +46,7 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         label->type = Entry_label;
         label->entry.label.arity = funcInst->type->results.size;
         label->entry.label.current = (InstrInst*)funcInst->body.wasm.codes.data;
-        label->entry.label.end = NULL;
+        label->entry.label.branch = NULL;
         label->entry.label.last = last_label;
         label->next = *stack;
         *stack = label;

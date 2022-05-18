@@ -19,7 +19,7 @@ typedef struct _Frame{
 typedef struct _Label{
     u32_t arity;
     InstrInst* current;
-    InstrInst* end;
+    InstrInst* branch;
     struct _Stack* last;
 } Label;
 
