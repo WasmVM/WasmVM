@@ -12,9 +12,9 @@ void exec_loop(wasm_stack* label, wasm_stack frame, wasm_stack* stack);
 void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack);
 void exec_else(wasm_stack label);
 void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack);
-void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack);
-void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack);
-void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack);
+void exec_br(wasm_stack* label, wasm_stack* stack);
+void exec_br_if(wasm_stack* label, wasm_stack* stack);
+void exec_br_table(wasm_stack* label, wasm_stack* stack);
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack);
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store);
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store); // TODO:

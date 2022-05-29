@@ -12,10 +12,8 @@
 void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
     const FuncInst* funcInst = store->funcs.data + funcaddr;
     if(funcInst->bodyType == FuncBody_Wasm){
-        // Get last frame & last label
-        wasm_stack last_label = *stack;
-        for(; last_label && (last_label->type != Entry_label); last_label = last_label->next);
-        wasm_stack last_frame = last_label;
+        // Get last frame
+        wasm_stack last_frame = *stack;
         for(; last_frame && (last_frame->type != Entry_frame); last_frame = last_frame->next);
         // Setup frame
         wasm_stack frame = (wasm_stack)malloc_func(sizeof(Stack));
@@ -46,8 +44,8 @@ void invoke(wasm_stack* stack, wasm_store store, u32_t funcaddr){
         label->type = Entry_label;
         label->entry.label.arity = funcInst->type->results.size;
         label->entry.label.current = (InstrInst*)funcInst->body.wasm.codes.data;
-        label->entry.label.branch = NULL;
-        label->entry.label.last = last_label;
+        label->entry.label.branch = (InstrInst*)(funcInst->body.wasm.codes.data + funcInst->body.wasm.codes.size) - 1;
+        label->entry.label.last = NULL;
         label->next = *stack;
         *stack = label;
     }else{
@@ -86,13 +84,13 @@ void execute(wasm_stack* stack, wasm_store store){
                 exec_end(&current_label, &current_frame, stack);
             break;
             case Op_br:
-                exec_br(&current_label, &current_frame, stack);
+                exec_br(&current_label, stack);
             break;
             case Op_br_if:
-                exec_br_if(&current_label, &current_frame, stack);
+                exec_br_if(&current_label, stack);
             break;
             case Op_br_table:
-                exec_br_table(&current_label, &current_frame, stack);
+                exec_br_table(&current_label, stack);
             break;
             case Op_return:
                 exec_return(&current_label, &current_frame, stack);
