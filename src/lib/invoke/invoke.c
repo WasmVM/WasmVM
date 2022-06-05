@@ -87,19 +87,22 @@ void execute(wasm_stack* stack, wasm_store store){
                 exec_end(&current_label, &current_frame, stack);
             break;
             case Op_br:
-                exec_br(&current_label, stack);
+                exec_br(&current_label, &current_frame, stack);
             break;
             case Op_br_if:
-                exec_br_if(&current_label, stack);
+                exec_br_if(&current_label, &current_frame, stack);
             break;
             case Op_br_table:
-                exec_br_table(&current_label, stack);
+                exec_br_table(&current_label, &current_frame, stack);
             break;
             case Op_return:
                 exec_return(&current_label, &current_frame, stack);
             break;
             case Op_call:
                 exec_call(&current_label, &current_frame, stack, store);
+            break;
+            case Op_call_indirect:
+                exec_call_indirect(&current_label, &current_frame, stack, store);
             break;
             case Op_drop:
                 exec_drop(current_label, stack);

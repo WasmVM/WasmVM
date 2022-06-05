@@ -31,28 +31,48 @@ static Float_kind f64_kind(u64_t value){
         return Float_normal;
     }
 }
-static void do_br(u32_t index, wasm_stack* label, wasm_stack* stack){
+static void do_br(u32_t index, wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Args
     wasm_stack *tail = stack;
-    // Pop label
+    // Pop skipped label
     for(u32_t i = 0; i < index; ++i){
         *label = (*label)->entry.label.last;
     }
-    (*label)->entry.label.current = (*label)->entry.label.branch;
     // Pop args
     for(u32_t i = 0; i < (*label)->entry.label.arity; ++i){
         tail = &((*tail)->next);
     }
-    
-    // Push args
-    wasm_stack cur = *tail;
-    if((*label)->entry.label.arity != 0){
-        *tail = *label;
+    // Pop label or frame
+    wasm_stack cur = *tail, end;
+    if((*label)->entry.label.last){
+        /** Label end */
+        // Concat args
+        if((*label)->entry.label.arity != 0){
+            *tail = (*label)->next;
+        }else{
+            *stack = (*label)->next;
+        }
+        // Pop label
+        (*label)->entry.label.last->entry.label.current = (*label)->entry.label.branch;
+        end = (*label)->next;
+        *label = (*label)->entry.label.last;
     }else{
-        *stack = *label;
+        /** Frame end */
+        // Concat args
+        if((*label)->entry.label.arity != 0){
+            *tail = (*frame)->next;
+        }else{
+            *stack = (*frame)->next;
+        }
+        // Pop frame
+        for(*label = (*frame)->next; *label && ((*label)->type != Entry_label); *label = (*label)->next);
+        free_vector((*frame)->entry.frame.locals);
+        end = (*frame)->next;
+        *frame = (*frame)->entry.frame.last;
     }
+    
     // Clean remained values
-    while(cur != *label){
+    while(cur != end){
         wasm_stack node = cur;
         cur = cur->next;
         free_func(node);
@@ -72,7 +92,7 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
     new_label->type = Entry_label;
     new_label->entry.label.current = (InstrInst*)(instr + 1);
-    new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
+    new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset) + 1;
     new_label->entry.label.last = *label;
     // Args
     wasm_stack args = NULL;
@@ -94,7 +114,7 @@ void exec_block(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     }
 
     // Push label
-    (*label)->entry.label.current = new_label->entry.label.branch + 1;
+    (*label)->entry.label.current = new_label->entry.label.branch;
     new_label->next = *stack;
     *label = new_label;
 
@@ -153,7 +173,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
         // Setup label
         wasm_stack new_label = (wasm_stack)malloc_func(sizeof(Stack));
         new_label->type = Entry_label;
-        new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset);
+        new_label->entry.label.branch = (InstrInst*)(((byte_t*)instr) + instr->endOffset) + 1;
         new_label->entry.label.last = *label;
         // Set jump
         if(cond->entry.value.value.i32){
@@ -180,7 +200,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
             new_label->entry.label.arity = (instr->blocktype != Value_unspecified);
         }
         // Push label
-        (*label)->entry.label.current = new_label->entry.label.branch + 1;
+        (*label)->entry.label.current = new_label->entry.label.branch;
         new_label->next = *stack;
         *label = new_label;
         // Push args
@@ -225,22 +245,22 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Free old label
     free_func(old_label);
 }
-void exec_br(wasm_stack* label, wasm_stack* stack){
+void exec_br(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
-    do_br(instr->index, label, stack);
+    do_br(instr->index, label, frame, stack);
 }
-void exec_br_if(wasm_stack* label, wasm_stack* stack){
+void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
     // Condition
     wasm_stack cond = *stack;
     *stack = (*stack)->next;
     if(cond->entry.value.value.i32){
-        do_br(instr->index, label, stack);
+        do_br(instr->index, label, frame, stack);
     }else{
         (*label)->entry.label.current = (InstrInst*)(instr + 1);
     }
 }
-void exec_br_table(wasm_stack* label, wasm_stack* stack){
+void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     BrTableInstrInst* instr = (BrTableInstrInst*)(*label)->entry.label.current;
     u32_t index = (*stack)->entry.value.value.u32;
     {
@@ -253,7 +273,7 @@ void exec_br_table(wasm_stack* label, wasm_stack* stack){
     }else{
         index = instr->params[instr->size - 1];
     }
-    do_br(index, label, stack);
+    do_br(index, label, frame, stack);
 }
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results
@@ -298,7 +318,38 @@ void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_sto
     *frame = cursor;
 }
 void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
-    // TODO:
+    BinaryInstrInst* instr = (BinaryInstrInst*)(*label)->entry.label.current;
+    TableInst* table = store->tables.data + (*frame)->entry.frame.moduleinst->tableaddrs.data[instr->index2];
+    FuncType* expectType = (*frame)->entry.frame.moduleinst->types.data + instr->index1;
+    u32_t index = (*stack)->entry.value.value.u32;
+    {
+        wasm_stack node = *stack;
+        *stack = (*stack)->next;
+        free_func(node);
+    }
+    if(index >= table->elem.size){
+        wasmvm_errno = ERROR_len_out_of_bound;
+        return;
+    }
+    Ref* ref = table->elem.data + index;
+    if(ref->isNull){
+        wasmvm_errno = ERROR_indir_call;
+        return;
+    }
+    u32_t funcaddr = (*frame)->entry.frame.moduleinst->funcaddrs.data[ref->addr];
+    FuncType* actualType = store->funcs.data[funcaddr].type;
+    if(!check_FuncType(expectType, actualType)){
+        wasmvm_errno = ERROR_indir_call_mis;
+        return;
+    }
+    (*label)->entry.label.current = (InstrInst*)(instr + 1);
+    invoke(stack, store, funcaddr);
+    // Update label & frame
+    wasm_stack cursor = *stack;
+    for(; cursor && (cursor->type != Entry_label); cursor = cursor->next);
+    *label = cursor;
+    for(; cursor && (cursor->type != Entry_frame); cursor = cursor->next);
+    *frame = cursor;
 }
 void exec_drop(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;

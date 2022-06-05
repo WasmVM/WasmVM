@@ -19,3 +19,20 @@ u32_t func_alloc(wasm_store store, wasm_functype* const functype, hostfunc_t hos
     funcInst->body.hostcode = hostfunc;
     return index;
 }
+
+_Bool check_FuncType(FuncType* type1, FuncType* type2){
+    if((type1->params.size != type2->params.size) || (type1->results.size != type2->results.size)){
+        return 0;
+    }
+    for(u32_t i = 0; i < type1->params.size; ++i){
+        if(type1->params.data[i] != type2->params.data[i]){
+            return 0;
+        }
+    }
+    for(u32_t i = 0; i < type1->results.size; ++i){
+        if(type1->results.data[i] != type2->results.data[i]){
+            return 0;
+        }
+    }
+    return 1;
+}

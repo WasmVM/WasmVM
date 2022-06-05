@@ -559,8 +559,8 @@ void fill_func_body(const WasmFunc* func, byte_t* data){
                 break;
             case Op_call_indirect:{
                 BinaryInstrInst* binaryInstr = (BinaryInstrInst*)data;
-                binaryInstr->index1 = instr->imm.values.index;
-                binaryInstr->index2 = instr->imm.values.value.value.u32;
+                binaryInstr->index1 = instr->imm.values.index; // typeidx
+                binaryInstr->index2 = instr->imm.values.value.value.u32; // tableidx
                 data += sizeof(BinaryInstrInst);
                 }break;
             case Op_br_table:{

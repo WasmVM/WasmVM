@@ -12,5 +12,6 @@ typedef struct {
 typedef FuncType wasm_functype;
 
 void free_FuncType(FuncType* type);
+_Bool check_FuncType(FuncType* type1, FuncType* type2);
 
 #endif
