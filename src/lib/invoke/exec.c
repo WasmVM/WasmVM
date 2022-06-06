@@ -2152,6 +2152,7 @@ void exec_f64_copysign(wasm_stack label, wasm_stack* stack){
 }
 void exec_i32_wrap_i64(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
+    value->entry.value.value.u64 &= 0x00000000ffffffffLLU;
     value->entry.value.type = Value_i32;
     label->entry.label.current += 1;
 }
@@ -2191,6 +2192,8 @@ void exec_i64_extend_s_i32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(value->entry.value.value.u32 & 0x80000000U){
         value->entry.value.value.u64 |= 0xffffffff00000000LLU;
+    }else{
+        value->entry.value.value.u64 &= 0x00000000ffffffffLLU;
     }
     value->entry.value.type = Value_i64;
     label->entry.label.current += 1;
