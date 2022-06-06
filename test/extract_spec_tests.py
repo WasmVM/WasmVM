@@ -286,7 +286,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     case_file.write(
                         '    {\n'
                         f'      u32_t diff = result.data[{exp_id}].value.u32 - {exp_val["value"]}u;\n'
-                        f'      if(!failed && ((result.data[{exp_id}].type != Value_f32) || ((diff + 1) > 2))){{\n'
+                        f'      if(!failed && ((result.data[{exp_id}].type != Value_f32) || ((diff + 2) > 4))){{\n'
                         f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, {exp_val["value"]}u);\n'
                         '        failed = 1;\n'
                         '      }\n'
@@ -320,7 +320,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     case_file.write(
                         '    {\n'
                         f'      u64_t diff = result.data[{exp_id}].value.u64 - {exp_val["value"]}llu;\n'
-                        f'      if(!failed && ((result.data[{exp_id}].type != Value_f64) || ((diff + 1) > 2))){{\n'
+                        f'      if(!failed && ((result.data[{exp_id}].type != Value_f64) || ((diff + 2) > 4))){{\n'
                         f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, {exp_val["value"]}llu);\n'
                         '        failed = 1;\n'
                         '      }\n'
