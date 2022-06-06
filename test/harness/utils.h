@@ -4,5 +4,6 @@
 #include <Stack.h>
 
 void _dump_stack(wasm_stack stack);
+void _dump_frame(wasm_stack frame);
 
 #endif

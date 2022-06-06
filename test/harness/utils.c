@@ -43,3 +43,12 @@ void _dump_stack(wasm_stack stack){
         }
     }
 }
+
+void _dump_frame(wasm_stack frame){
+    printf("[Frame] %p arity: %u, last: %p\n", frame, frame->entry.frame.arity, frame->entry.frame.last);
+    for(u32_t i = 0; i < frame->entry.frame.locals.size; ++i){
+        printf("[%u] ", i);
+        print_value(frame->entry.frame.locals.data + i);
+        printf("\n");
+    }
+}

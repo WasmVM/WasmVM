@@ -440,6 +440,7 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "#include <utils.h>\n"
             "\n"
             "void (*dump_stack)(wasm_stack stack) = _dump_stack;\n"
+            "void (*dump_frame)(wasm_stack frame) = _dump_frame;\n"
             "\n"
             "int main(void){\n"
             "int result = 0;\n"

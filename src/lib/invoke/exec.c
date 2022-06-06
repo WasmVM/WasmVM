@@ -138,7 +138,7 @@ void exec_loop(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     if(instr->blocktype == Value_index){
         // Pop args
         FuncType* type = frame->entry.frame.moduleinst->types.data + instr->index;
-        new_label->entry.label.arity = type->results.size;
+        new_label->entry.label.arity = type->params.size;
         if(type->params.size > 0){
             args = *stack;
             wasm_stack* tail = stack;
@@ -213,13 +213,13 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
         (*label)->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->endOffset)) + 1;
     }
 }
-void exec_else(wasm_stack label){
-    label->entry.label.current = label->entry.label.branch;
+void exec_else(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
+    do_br(0, label, frame, stack);
 }
 void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results
-    wasm_stack res_begin = *stack, *res_end_ptr = stack;
-    for(u32_t i = 0; i < (*label)->entry.label.arity; ++i){
+    wasm_stack res_begin = *stack, *res_end_ptr = NULL;
+    while(*stack && (*stack)->type == Entry_value){
         res_end_ptr = &((*stack)->next);
         *stack = (*stack)->next;
     }
@@ -238,7 +238,7 @@ void exec_end(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
         *label = old_label->entry.label.last;
     }
     // Push results to stack
-    if(old_label->entry.label.arity){
+    if(res_end_ptr){
         *res_end_ptr = *stack;
         *stack = res_begin;
     }
@@ -277,34 +277,28 @@ void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
 }
 void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     // Pop results
-    wasm_stack res_begin = *stack, *res_end_ptr = stack;
+    wasm_stack res_begin = *stack, *res_end_ptr = NULL;
     for(u32_t i = 0; i < (*frame)->entry.frame.arity; ++i){
         res_end_ptr = &((*stack)->next);
         *stack = (*stack)->next;
     }
-    // Pop remaining entries
-    while (*stack && ((*stack)->type != Entry_label) && ((*stack)->next != *frame)){
-        wasm_stack entry = *stack;
-        *stack = (*stack)->next;
-        free_func(entry);
-    }
-    // Pop label
-    wasm_stack old_label = *stack;
-    *label = old_label->entry.label.last;
-    *stack = old_label->next; // Label must be on top
-    // Pop frame
+    // Pop label & frame
+    wasm_stack old_label = *label;
     wasm_stack old_frame = *frame;
     *frame = old_frame->entry.frame.last;
     *stack = old_frame->next; // Frame must be on top
+    for(*label = *stack; *label && ((*label)->type != Entry_label); *label = (*label)->next);
     free_vector(old_frame->entry.frame.locals);
     // Push results to stack
-    if(old_frame->entry.frame.arity){
+    for(wasm_stack cur = old_label; cur && (cur != *stack);){
+        wasm_stack next = cur->next;
+        free_func(cur);
+        cur = next;
+    }
+    if(res_end_ptr){
         *res_end_ptr = *stack;
         *stack = res_begin;
     }
-    // Clean
-    free_func(old_frame);
-    free_func(old_label);
 }
 void exec_call(wasm_stack* label, wasm_stack* frame, wasm_stack* stack, wasm_store store){
     UnaryInstrInst* instr = (UnaryInstrInst*)(*label)->entry.label.current;
