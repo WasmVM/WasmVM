@@ -10,43 +10,65 @@
 
 static int spectest_print(wasm_stack* stack, Store* store)
 {
-    printf("\n");
+    printf("[Spectest]\n");
     return 0;
 }
 static int spectest_print_i32(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_i32") (param i32))
-    printf("\n");
+    // (func (export "print_i32") (param i32))
+    wasm_stack value = *stack;
+    *stack = (*stack)->next;
+    printf("[Spectest] (i32) %d\n", value->entry.value.value.i32);
+    free_func(value);
     return 0;
 }
 static int spectest_print_i64(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_i64") (param i64))
-    printf("\n");
+    // (func (export "print_i64") (param i64))
+    wasm_stack value = *stack;
+    *stack = (*stack)->next;
+    printf("[Spectest] (i64) %ld\n", value->entry.value.value.i64);
+    free_func(value);
     return 0;
 }
 static int spectest_print_f32(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_f32") (param f32))
-    printf("\n");
+    // (func (export "print_f32") (param f32))
+    wasm_stack value = *stack;
+    *stack = (*stack)->next;
+    printf("[Spectest] (f32) %f\n", value->entry.value.value.f32);
+    free_func(value);
     return 0;
 }
 static int spectest_print_f64(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_f64") (param f64))
-    printf("\n");
+    // (func (export "print_f64") (param f64))
+    wasm_stack value = *stack;
+    *stack = (*stack)->next;
+    printf("[Spectest] (f64) %lf\n", value->entry.value.value.f64);
+    free_func(value);
     return 0;
 }
 static int spectest_print_i32_f32(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_i32_f32") (param i32 f32))
-    printf("\n");
+    // (func (export "print_i32_f32") (param i32 f32))
+    wasm_stack value2 = *stack;
+    wasm_stack value1 = value2->next;
+    *stack = value1->next;
+    printf("[Spectest] (i32 f32) %d %lf\n", value1->entry.value.value.i32, value2->entry.value.value.f32);
+    free_func(value1);
+    free_func(value2);
     return 0;
 }
 static int spectest_print_f64_f64(wasm_stack* stack, Store* store)
 {
-    // TODO: (func (export "print_f64_f64") (param f64 f64))
-    printf("\n");
+    // (func (export "print_f64_f64") (param f64 f64))
+    wasm_stack value2 = *stack;
+    wasm_stack value1 = value2->next;
+    *stack = value1->next;
+    printf("[Spectest] (f64 f64) %lf %lf\n", value1->entry.value.value.f64, value2->entry.value.value.f64);
+    free_func(value1);
+    free_func(value2);
     return 0;
 }
 
