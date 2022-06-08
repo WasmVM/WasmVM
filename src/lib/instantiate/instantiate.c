@@ -8,6 +8,7 @@
 #include <WasmVM.h>
 
 #include "instrs.h"
+#include "../invoke/invoke.h"
 
 struct module_import_sizes {
     size_t funcs;
@@ -309,6 +310,27 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         }
     }
     
-    // TODO: Execute start function
+    // Execute start function
+    if(module->start != -1){
+        if((module->start >= moduleInst->funcaddrs.size) || (moduleInst->funcaddrs.data[module->start] >= store->funcs.size)){
+            wasmvm_errno = ERROR_unknown_func;
+            return NULL;
+        }
+        const u32_t funcAddr = moduleInst->funcaddrs.data[module->start];
+        const FuncInst* funcInst = store->funcs.data + funcAddr;
+        // Start shouldn't have params & results
+        if(funcInst->type->params.size || funcInst->type->results.size){
+            wasmvm_errno = ERROR_type_mis;
+            return NULL;
+        }
+        // Create Stack
+        wasm_stack stack = NULL;
+        invoke(&stack, store, funcAddr);
+        execute(&stack, store);
+        if(wasmvm_errno != ERROR_success){
+            return NULL;
+        }
+    }
+
     return moduleInst;
 }
