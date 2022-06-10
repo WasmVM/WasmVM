@@ -6,15 +6,6 @@ on:
     branches: [ master ]
 
 jobs:
-  style:
-    runs-on: ubuntu-latest
-    container:
-      image: wasmvm/wasmvm:ci
-    steps:
-      - uses: actions/checkout@v2
-      - name: Check coding style
-        run: ./scripts/style_check.sh
-
   build:
     runs-on: ubuntu-latest
     container:
