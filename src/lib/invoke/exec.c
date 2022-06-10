@@ -1285,7 +1285,11 @@ void exec_i32_rem_s(wasm_stack label, wasm_stack* stack){
         wasmvm_errno = ERROR_div_zero;
         return;
     }
-    value1->entry.value.value.i32 %= value2->entry.value.value.i32;
+    if(value2->entry.value.value.i32 < 0){
+        value2->entry.value.value.i32 = -value2->entry.value.value.i32;
+    }
+    i32_t result = ((value1->entry.value.value.i32 <= 0) ? (-value1->entry.value.value.i32) : value1->entry.value.value.i32) % value2->entry.value.value.i32;
+    value1->entry.value.value.i32 = (value1->entry.value.value.i32 <= 0) ? -result : result;
     *stack = value1;
     free_func(value2);
     label->entry.label.current += 1;
@@ -1502,7 +1506,11 @@ void exec_i64_rem_s(wasm_stack label, wasm_stack* stack){
         wasmvm_errno = ERROR_div_zero;
         return;
     }
-    value1->entry.value.value.i64 %= value2->entry.value.value.i64;
+    if(value2->entry.value.value.i64 < 0){
+        value2->entry.value.value.i64 = -value2->entry.value.value.i64;
+    }
+    i64_t result = ((value1->entry.value.value.i64 <= 0) ? (-value1->entry.value.value.i64) : value1->entry.value.value.i64) % value2->entry.value.value.i64;
+    value1->entry.value.value.i64 = (value1->entry.value.value.i64 <= 0) ? -result : result;
     *stack = value1;
     free_func(value2);
     label->entry.label.current += 1;
