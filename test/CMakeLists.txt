@@ -14,6 +14,7 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
 add_subdirectory(harness)
 
 # Macro for adding spec tests
+set(BUILD_MEMCHECK_TESTS ON CACHE BOOL "Build tests with Valgrind memcheck")
 macro(add_spec_test test_name)
   add_custom_command(
     OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}.c
@@ -31,10 +32,16 @@ macro(add_spec_test test_name)
   set_target_properties(spec_${test_name}
     PROPERTIES OUTPUT_NAME spec/${test_name}/${test_name}
   )
-  add_test(NAME spec_${test_name}
+  add_test(NAME spec_${test_name}_run
     COMMAND ${test_name}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}
   )
+  if(BUILD_MEMCHECK_TESTS)
+    add_test(NAME spec_${test_name}_memcheck
+      COMMAND valgrind "--leak-check=yes" "--error-exitcode=255" ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}
+      WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}
+    )
+  endif(BUILD_MEMCHECK_TESTS)
 endmacro(add_spec_test)
 
 # Spec test
