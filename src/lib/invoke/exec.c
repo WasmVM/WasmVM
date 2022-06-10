@@ -2375,7 +2375,11 @@ void exec_i32_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack){
     if((kind & 1) || (expo == 0)){
         value->entry.value.value.u32 = 0;
     }else if((kind == Float_normal) && !((expo < 95) || (expo > 159))){
-        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f32;
+        if(value->entry.value.value.f32 < 0x80000000){
+            value->entry.value.value.i32 = (i32_t)value->entry.value.value.f32;
+        }else{
+            value->entry.value.value.i32 = 0x7fffffff;
+        }
     }else if((value->entry.value.value.u32 & 0x7fffffff) != 0){
         value->entry.value.value.u32 = 0x7fffffff + ((value->entry.value.value.u32 & 0x80000000) != 0);
     }
@@ -2391,7 +2395,11 @@ void exec_i32_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack){
     }else if((kind == Float_pos_inf) || (expo > 159)){
         value->entry.value.value.u32 = 0xffffffff;
     }else{
-        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f32;
+        if(value->entry.value.value.f32 < 0x100000000){
+            value->entry.value.value.u32 = (u32_t)value->entry.value.value.f32;
+        }else{
+            value->entry.value.value.u32 = 0xffffffff;
+        }
     }
     value->entry.value.type = Value_i32;
     label->entry.label.current += 1;
@@ -2403,7 +2411,11 @@ void exec_i32_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack){
     if((kind & 1) || (expo == 0)){
         value->entry.value.value.u32 = 0;
     }else if((kind == Float_normal) && !((expo < 991) || (expo > 1055))){
-        value->entry.value.value.i32 = (i32_t)value->entry.value.value.f64;
+        if(value->entry.value.value.f64 < 0x80000000){
+            value->entry.value.value.i32 = (i32_t)value->entry.value.value.f64;
+        }else{
+            value->entry.value.value.i32 = 0x7fffffff;
+        }
     }else if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0){
         value->entry.value.value.u32 = 0x7fffffff + ((value->entry.value.value.u64 & 0x8000000000000000LLU) != 0);
     }
@@ -2419,7 +2431,11 @@ void exec_i32_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack){
     }else if((kind == Float_pos_inf) || (expo > 1055)){
         value->entry.value.value.u32 = 0xffffffff;
     }else{
-        value->entry.value.value.u32 = (u32_t)value->entry.value.value.f64;
+        if(value->entry.value.value.f64 < 0xffffffff){
+            value->entry.value.value.u32 = (u32_t)value->entry.value.value.f64;
+        }else{
+            value->entry.value.value.u32 = 0xffffffff;
+        }
     }
     value->entry.value.type = Value_i32;
     label->entry.label.current += 1;
@@ -2431,7 +2447,11 @@ void exec_i64_trunc_sat_f32_s(wasm_stack label, wasm_stack* stack){
     if((kind & 1) || (expo == 0)){
         value->entry.value.value.u64 = 0;
     }else if((kind == Float_normal) && !((expo < 63) || (expo > 191))){
-        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f32;
+        if(value->entry.value.value.f32 < 0x8000000000000000LLU){
+            value->entry.value.value.i64 = (i64_t)value->entry.value.value.f32;
+        }else{
+            value->entry.value.value.i64 = 0x7fffffffffffffffLLU;
+        }
     }else if((value->entry.value.value.u32 & 0x7fffffff) != 0){
         value->entry.value.value.u64 = 0x7fffffffffffffffLLU + ((value->entry.value.value.u32 & 0x80000000) != 0);
     }
@@ -2447,7 +2467,11 @@ void exec_i64_trunc_sat_f32_u(wasm_stack label, wasm_stack* stack){
     }else if((kind == Float_pos_inf) || (expo > 191)){
         value->entry.value.value.u64 = 0xffffffffffffffffLLU;
     }else{
-        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f32;
+        if(value->entry.value.value.f32 < (f32_t)0xffffffffffffffffLLU){
+            value->entry.value.value.u64 = (u64_t)value->entry.value.value.f32;
+        }else{
+            value->entry.value.value.u64 = 0xffffffffffffffffLLU;
+        }
     }
     value->entry.value.type = Value_i64;
     label->entry.label.current += 1;
@@ -2459,7 +2483,11 @@ void exec_i64_trunc_sat_f64_s(wasm_stack label, wasm_stack* stack){
     if((kind & 1) || (expo == 0)){
         value->entry.value.value.u64 = 0;
     }else if((kind == Float_normal) && !((expo < 959) || (expo > 1087))){
-        value->entry.value.value.i64 = (i64_t)value->entry.value.value.f64;
+        if(value->entry.value.value.f64 < 0x8000000000000000LLU){
+            value->entry.value.value.i64 = (i64_t)value->entry.value.value.f64;
+        }else{
+            value->entry.value.value.i64 = 0x7fffffffffffffffLLU;
+        }
     }else if((value->entry.value.value.u64 & 0x7fffffffffffffffLLU) != 0){
         value->entry.value.value.u64 = 0x7fffffffffffffffLLU + ((value->entry.value.value.u64 & 0x8000000000000000LLU) != 0);
     }
@@ -2475,7 +2503,11 @@ void exec_i64_trunc_sat_f64_u(wasm_stack label, wasm_stack* stack){
     }else if((kind == Float_pos_inf) || (expo > 1087)){
         value->entry.value.value.u64 = 0xffffffffffffffffLLU;
     }else{
-        value->entry.value.value.u64 = (u64_t)value->entry.value.value.f64;
+        if(value->entry.value.value.f64 < (f64_t)0xffffffffffffffffLLU){
+            value->entry.value.value.u64 = (u64_t)value->entry.value.value.f64;
+        }else{
+            value->entry.value.value.u64 = 0xffffffffffffffffLLU;
+        }
     }
     value->entry.value.type = Value_i64;
     label->entry.label.current += 1;
