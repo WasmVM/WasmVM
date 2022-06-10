@@ -2202,6 +2202,7 @@ void exec_i64_extend_s_i32(wasm_stack label, wasm_stack* stack){
 }
 void exec_i64_extend_u_i32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
+    value->entry.value.value.u64 &= 0x00000000ffffffffLLU;
     value->entry.value.type = Value_i64;
     label->entry.label.current += 1;
 }
