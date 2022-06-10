@@ -163,6 +163,13 @@ void free_hashmap(struct _hashmap* map)
             struct _hashmap* cur = map;
             map = map->root;
             free(cur);
+            if(map){
+                if(map->left == cur){
+                    map->left = NULL;
+                }else{
+                    map->right = NULL;
+                }
+            }
         }
     }
 }
