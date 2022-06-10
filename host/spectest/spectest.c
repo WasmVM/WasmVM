@@ -285,7 +285,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[6].value.value = module->funcaddrs.data[0];
 
     // (func (export "print_i32") (param i32))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
     module->funcaddrs.data[1] = func_alloc(store,
                                            module->types.data + 1,
                                            spectest_print_i32
@@ -297,8 +296,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[7].value.value = module->funcaddrs.data[1];
 
     // (func (export "print_i64") (param i64))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
-    params[0] = Value_i64;
     module->funcaddrs.data[2] = func_alloc(store,
                                            module->types.data + 2,
                                            spectest_print_i64
@@ -310,8 +307,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[8].value.value = module->funcaddrs.data[2];
 
     // (func (export "print_f32") (param f32))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
-    params[0] = Value_f32;
     module->funcaddrs.data[3] = func_alloc(store,
                                            module->types.data + 3,
                                            spectest_print_f32
@@ -323,8 +318,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[9].value.value = module->funcaddrs.data[3];
 
     // (func (export "print_f64") (param f64))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 1);
-    params[0] = Value_f64;
     module->funcaddrs.data[4] = func_alloc(store,
                                            module->types.data + 4,
                                            spectest_print_f64
@@ -336,9 +329,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[10].value.value = module->funcaddrs.data[4];
 
     // (func (export "print_i32_f32") (param i32 f32))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 2);
-    params[0] = Value_i32;
-    params[1] = Value_f32;
     module->funcaddrs.data[5] = func_alloc(store,
                                            module->types.data + 5,
                                            spectest_print_i32_f32
@@ -350,9 +340,6 @@ wasm_module_inst spectest_instanciate(wasm_store store)
     exports[11].value.value = module->funcaddrs.data[5];
 
     // (func (export "print_f64_f64") (param f64 f64))
-    params = (ValueType*) malloc_func(sizeof(ValueType) * 2);
-    params[0] = Value_f64;
-    params[1] = Value_f64;
     module->funcaddrs.data[6] = func_alloc(store,
                                            module->types.data + 5,
                                            spectest_print_f64_f64

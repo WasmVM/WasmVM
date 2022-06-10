@@ -82,6 +82,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
         '  }else{\n'
         f'    fprintf(stderr, "{wasm_file}({wast_line}): [Passed]\\n");\n'
         '  }\n'
+        '  free_vector(externVals);\n'
         '}\n'
     )
 
@@ -329,7 +330,10 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
 
         # Epilogue
         case_file.write(
+            '    free_vector(result);\n'
             '  }\n'
+            '  // Clean\n'
+            '  free_vector(func_args);\n'
             '  // End\n'
             '  if(failed){\n'
             '    result += 1;\n'
@@ -410,11 +414,14 @@ def action_action(case_file: TextIO, command: dict) -> None:
             f'      fprintf(stderr, "invoke({wast_line}): [Failed] failed invoke function with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '      failed = 1;\n'
             '    }\n'
+            '    free_vector(result);\n'
         )
 
         # Epilogue
         case_file.write(
             '  }\n'
+            '  // Clean\n'
+            '  free_vector(func_args);\n'
             '  // End\n'
             '  if(failed){\n'
             '    result += 1;\n'
@@ -472,6 +479,11 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "store_free(store);\n"
             "module_free(module);\n"
             "module_inst_free(module_inst);\n"
+            "wasm_module_inst spectest_inst;\n"
+            "hashmap_get(sizeof(char) * 8, \"spectest\", spectest_inst, moduleInsts);\n"
+            "module_inst_free(spectest_inst);\n"
+            "free_hashmap(named_modules);\n"
+            "free_hashmap(moduleInsts);\n"
             "return result;\n"
             "}\n"
         )

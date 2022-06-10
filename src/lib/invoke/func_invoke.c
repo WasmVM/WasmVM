@@ -46,16 +46,18 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
     }
     // Get return values
     results.size = funcInst->type->results.size;
-    results.data = (wasm_value*) malloc_func(sizeof(wasm_value) * results.size);
-    for(u32_t i = 0; i < results.size; ++i){
-        if((stack == NULL) || (stack->type != Entry_value) || (stack->entry.value.type != funcInst->type->results.data[results.size - 1 - i])){
-            wasmvm_errno = ERROR_type_mis;
-            return results;
+    if(results.size > 0){
+        results.data = (wasm_value*) malloc_func(sizeof(wasm_value) * results.size);
+        for(u32_t i = 0; i < results.size; ++i){
+            if((stack == NULL) || (stack->type != Entry_value) || (stack->entry.value.type != funcInst->type->results.data[results.size - 1 - i])){
+                wasmvm_errno = ERROR_type_mis;
+                return results;
+            }
+            results.data[results.size - 1 - i] = stack->entry.value;
+            wasm_stack node = stack;
+            stack = stack->next;
+            free_func(node);
         }
-        results.data[results.size - 1 - i] = stack->entry.value;
-        wasm_stack node = stack;
-        stack = stack->next;
-        free_func(node);
     }
     return results;
 }

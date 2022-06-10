@@ -162,7 +162,6 @@ void free_hashmap(struct _hashmap* map)
         } else {
             struct _hashmap* cur = map;
             map = map->root;
-            free(cur->data);
             free(cur);
         }
     }

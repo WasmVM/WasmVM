@@ -22,13 +22,21 @@ Store* store_init()
 void store_free(Store* store)
 {
     if(store != NULL) {
-        // FIXME:
-        free_vector(store->funcs);
-        free_vector(store->tables);
-        free_vector(store->mems);
-        free_vector(store->globals);
-        free_vector(store->elems);
-        free_vector(store->datas);
+        free_vector(store->funcs);        // FIXME:
+        // Tables
+        for(u32_t i = 0; i < store->tables.size; ++i){
+            free_vector(store->tables.data[i].elem);
+        }
+        free_vector(store->tables);        // FIXME:
+        free_vector(store->mems);        // FIXME:
+        free_vector(store->globals);        // FIXME:
+        free_vector(store->elems);        // FIXME:
+        // Datas
+        for(u32_t i = 0; i < store->datas.size; ++i){
+            free_vector(store->datas.data[i].data);
+        }
+        free_vector(store->datas);        // FIXME:
+        // Store
         free_func(store);
     }
 }
