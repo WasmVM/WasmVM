@@ -117,3 +117,74 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
     }
     return externals;
 }
+
+struct _hashmap {
+    u64_t key[2];
+    void* data;
+    _Bool isRed;
+    struct _hashmap *root, *left, *right;
+};
+
+void free_moduleInst_maps(hashmap_t(wasm_module_inst) named, hashmap_t(wasm_module_inst) map){
+    // Flatten named & calculate size
+    hashmap_t(wasm_module_inst) flattened = NULL;
+    size_t named_count = 0;
+    while(named != NULL){
+        if(named->left != NULL) {
+            named = named->left;
+        } else if(named->right != NULL) {
+            named = named->right;
+        } else {
+            named_count += 1;
+            named->left = flattened;
+            flattened = named;
+            named = named->root;
+            flattened->right = NULL;
+            if(named){
+                if(named->left == flattened){
+                    named->left = NULL;
+                }else{
+                    named->right = NULL;
+                }
+            }
+        }
+    }
+    // Free flattened & record pointers
+    wasm_module_inst named_insts[named_count];
+    for (size_t i = 0; i < named_count; ++i){
+        named_insts[i] = (wasm_module_inst)(flattened->data);
+        module_inst_free(flattened->data);
+        hashmap_t(wasm_module_inst) node = flattened;
+        flattened = flattened->left;
+        free_func(node);
+    }
+    // Free map and bypass recorded pointers
+    while(map != NULL){
+        if(map->left != NULL) {
+            map = map->left;
+        } else if(map->right != NULL) {
+            map = map->right;
+        } else {
+            wasm_module_inst moduleInst = (wasm_module_inst)(map->data);
+            for (size_t i = 0; i < named_count; ++i){
+                if(moduleInst == named_insts[i]){
+                    moduleInst = NULL;
+                    break;
+                }
+            }
+            if(moduleInst){
+                module_inst_free(moduleInst);
+            }
+            hashmap_t(wasm_module_inst) node = map;
+            map = map->root;
+            free_func(node);
+            if(map){
+                if(map->left == node){
+                    map->left = NULL;
+                }else{
+                    map->right = NULL;
+                }
+            }
+        }
+    }
+}

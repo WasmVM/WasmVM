@@ -107,6 +107,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             funcInst->body.wasm.codes.data = NULL;
         }
         if(wasmvm_errno != ERROR_success){
+            module_inst_free(moduleInst);
             return NULL;
         }
         moduleInst->funcaddrs.data[offsets.funcs + i] = store->funcs.size + i;
@@ -180,6 +181,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
         ElemInst* elemInst = store->elems.data + store->elems.size + i;
         if(elem->type != Value_funcref){
             wasmvm_errno = ERROR_unknown_type;
+            module_inst_free(moduleInst);
             return NULL;
         }
         elemInst->type = Ref_func;
@@ -288,6 +290,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
             u32_t offset = elem->mode.offset.value.value.u32;
             if((offset + elem->init.size) > tableInst->elem.size){
                 wasmvm_errno = ERROR_len_out_of_bound;
+                module_inst_free(moduleInst);
                 return NULL;
             }
             const ElemInst* elemInst = store->elems.data + moduleInst->elemaddrs.data[i];
@@ -303,6 +306,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
             u32_t offset = data->mode.offset.value.value.u32;
             if((offset + data->init.size) > memInst->data.size){
                 wasmvm_errno = ERROR_len_out_of_bound;
+                module_inst_free(moduleInst);
                 return NULL;
             }
             const DataInst* dataInst = store->datas.data + moduleInst->dataaddrs.data[i];
@@ -314,6 +318,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
     if(module->start != -1){
         if((module->start >= moduleInst->funcaddrs.size) || (moduleInst->funcaddrs.data[module->start] >= store->funcs.size)){
             wasmvm_errno = ERROR_unknown_func;
+            module_inst_free(moduleInst);
             return NULL;
         }
         const u32_t funcAddr = moduleInst->funcaddrs.data[module->start];
@@ -321,6 +326,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         // Start shouldn't have params & results
         if(funcInst->type->params.size || funcInst->type->results.size){
             wasmvm_errno = ERROR_type_mis;
+            module_inst_free(moduleInst);
             return NULL;
         }
         // Create Stack
@@ -328,6 +334,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         invoke(&stack, store, funcAddr);
         execute(&stack, store);
         if(wasmvm_errno != ERROR_success){
+            module_inst_free(moduleInst);
             return NULL;
         }
     }

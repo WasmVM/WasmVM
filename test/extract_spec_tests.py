@@ -98,6 +98,8 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '{\n'
             '  _Bool failed = 0;\n'
             '  wasmvm_errno = ERROR_success;\n'
+            '  module_inst_free(module_inst);\n'
+            '  module_inst = NULL;\n'
         )
         # Load module
         case_file.write(
@@ -479,11 +481,7 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "store_free(store);\n"
             "module_free(module);\n"
             "module_inst_free(module_inst);\n"
-            "wasm_module_inst spectest_inst;\n"
-            "hashmap_get(sizeof(char) * 8, \"spectest\", spectest_inst, moduleInsts);\n"
-            "module_inst_free(spectest_inst);\n"
-            "free_hashmap(named_modules);\n"
-            "free_hashmap(moduleInsts);\n"
+            "free_moduleInst_maps(named_modules, moduleInsts);\n"
             "return result;\n"
             "}\n"
         )
