@@ -45,7 +45,11 @@ void store_free(Store* store)
         }
         free_vector(store->mems);
         free_vector(store->globals);        // FIXME:
-        free_vector(store->elems);        // FIXME:
+        // Elems
+        for(u32_t i = 0; i < store->elems.size; ++i){
+            free_vector(store->elems.data[i].elem);
+        }
+        free_vector(store->elems);
         // Datas
         for(u32_t i = 0; i < store->datas.size; ++i){
             free_vector(store->datas.data[i].data);

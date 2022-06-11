@@ -15,7 +15,7 @@ typedef vector_t(wasm_value) values_vector_t;
 wasm_module module_decode(const bytes_vector_t bytes);
 void module_free(wasm_module module);
 wasm_store store_init();
-void store_free(wasm_store store); // FIXME:
+void store_free(wasm_store store);
 imports_vector_t module_imports(wasm_module module);
 u32_t func_alloc(wasm_store store, wasm_functype* const functype, hostfunc_t hostfunc);
 u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref);

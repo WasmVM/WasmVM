@@ -260,6 +260,7 @@ void exec_br_if(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     }else{
         (*label)->entry.label.current = (InstrInst*)(instr + 1);
     }
+    free_func(cond);
 }
 void exec_br_table(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     BrTableInstrInst* instr = (BrTableInstrInst*)(*label)->entry.label.current;
@@ -291,10 +292,10 @@ void exec_return(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     for(*label = *stack; *label && ((*label)->type != Entry_label); *label = (*label)->next);
     free_vector(old_frame->entry.frame.locals);
     // Push results to stack
-    for(wasm_stack cur = old_label; cur && (cur != *stack);){
-        wasm_stack next = cur->next;
-        free_func(cur);
-        cur = next;
+    for(wasm_stack cur = (res_end_ptr ? (*res_end_ptr) : res_begin); cur != *stack;){
+        wasm_stack node = cur;
+        cur = cur->next;
+        free_func(node);
     }
     if(res_end_ptr){
         *res_end_ptr = *stack;

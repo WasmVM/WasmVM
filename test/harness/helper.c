@@ -62,6 +62,18 @@ static _Bool name_compare(
     return 1;
 }
 
+static void free_imports(imports_vector_t imports){
+    for(size_t i = 0; i < imports.size; ++i){
+        free_vector(imports.data[i].module);
+        free_vector(imports.data[i].name);
+        if(imports.data[i].descType == Desc_Func){
+            free_vector(imports.data[i].desc.func.params);
+            free_vector(imports.data[i].desc.func.results);
+        }
+    }
+    free_vector(imports);
+}
+
 externval_vector_t match_imports(const wasm_module module, const struct _hashmap* module_insts)
 {
     externval_vector_t externals;
@@ -70,6 +82,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
     imports_vector_t imports = module_imports(module);
     if(wasmvm_errno) {
         wasmvm_errno = ERROR_unknown_import;
+        free_imports(imports);
         return externals;
     }
     // Allocate externVals
@@ -90,6 +103,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
             free_vector(externals);
             vector_init(externals);
             wasmvm_errno = ERROR_unknown_import;
+            free_imports(imports);
             return externals;
         }
         // Get export
@@ -115,6 +129,7 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
             externals.data[impIdx] = *exportValPtr;
         }
     }
+    free_imports(imports);
     return externals;
 }
 
