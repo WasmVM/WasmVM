@@ -212,6 +212,7 @@ void exec_if(wasm_stack* label, wasm_stack frame, wasm_stack* stack){
     }else{
         (*label)->entry.label.current = ((InstrInst*)(((byte_t*)instr) + instr->endOffset)) + 1;
     }
+    free_func(cond);
 }
 void exec_else(wasm_stack* label, wasm_stack* frame, wasm_stack* stack){
     do_br(0, label, frame, stack);
