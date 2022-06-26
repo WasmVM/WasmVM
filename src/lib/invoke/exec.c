@@ -1259,11 +1259,11 @@ void exec_i32_div_s(wasm_stack label, wasm_stack* stack){
         wasmvm_errno = ERROR_div_zero;
         return;
     }
-    value1->entry.value.value.i32 /= value2->entry.value.value.i32;
-    if(value1->entry.value.value.i32 == 0x80000000){
+    if((value1->entry.value.value.i32 == 0x80000000) && (value2->entry.value.value.i32 == -1)){
         wasmvm_errno = ERROR_int_overflow;
         return;
     }
+    value1->entry.value.value.i32 /= value2->entry.value.value.i32;
     *stack = value1;
     free_func(value2);
     label->entry.label.current += 1;
@@ -1480,11 +1480,11 @@ void exec_i64_div_s(wasm_stack label, wasm_stack* stack){
         wasmvm_errno = ERROR_div_zero;
         return;
     }
-    value1->entry.value.value.i64 /= value2->entry.value.value.i64;
-    if(value1->entry.value.value.i64 == 0x8000000000000000LLU){
+    if((value1->entry.value.value.i64 == 0x8000000000000000LLU) && (value2->entry.value.value.i64 == -1)){
         wasmvm_errno = ERROR_int_overflow;
         return;
     }
+    value1->entry.value.value.i64 /= value2->entry.value.value.i64;
     *stack = value1;
     free_func(value2);
     label->entry.label.current += 1;
@@ -2163,6 +2163,10 @@ void exec_i32_wrap_i64(wasm_stack label, wasm_stack* stack){
 void exec_i32_trunc_s_f32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        if((value->entry.value.value.f32 >= 2147483648.0F) || (value->entry.value.value.f32 < -2147483648.0F)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.i32 = (i32_t)value->entry.value.value.f32;
         value->entry.value.type = Value_i32;
     }
@@ -2171,6 +2175,10 @@ void exec_i32_trunc_s_f32(wasm_stack label, wasm_stack* stack){
 void exec_i32_trunc_u_f32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        if((value->entry.value.value.f32 >= 4294967296.0F) || (value->entry.value.value.f32 == -1.0F)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.u32 = (u32_t)value->entry.value.value.f32;
         value->entry.value.type = Value_i32;
     }
@@ -2179,6 +2187,10 @@ void exec_i32_trunc_u_f32(wasm_stack label, wasm_stack* stack){
 void exec_i32_trunc_s_f64(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        if((value->entry.value.value.f64 >= 2147483648.0) || (value->entry.value.value.f64 <= -2147483649.0)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.i32 = (i32_t)value->entry.value.value.f64;
         value->entry.value.type = Value_i32;
     }
@@ -2187,6 +2199,10 @@ void exec_i32_trunc_s_f64(wasm_stack label, wasm_stack* stack){
 void exec_i32_trunc_u_f64(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        if((value->entry.value.value.f64 >= 4294967296.0) || (value->entry.value.value.f64 == -1.0)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.u32 = (u32_t)value->entry.value.value.f64;
         value->entry.value.type = Value_i32;
     }
@@ -2211,6 +2227,10 @@ void exec_i64_extend_u_i32(wasm_stack label, wasm_stack* stack){
 void exec_i64_trunc_s_f32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        if((value->entry.value.value.f32 >= 9223372036854775808.0F) || (value->entry.value.value.f32 < -9223372036854775808.0F)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.i64 = (i64_t)value->entry.value.value.f32;
         value->entry.value.type = Value_i64;
     }
@@ -2219,6 +2239,10 @@ void exec_i64_trunc_s_f32(wasm_stack label, wasm_stack* stack){
 void exec_i64_trunc_u_f32(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f32_kind(value->entry.value.value.u32) == Float_normal){
+        if((value->entry.value.value.f32 >= 18446744073709551616.0F) || (value->entry.value.value.f32 == -1.0F)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.u64 = (u64_t)value->entry.value.value.f32;
         value->entry.value.type = Value_i64;
     }
@@ -2227,6 +2251,10 @@ void exec_i64_trunc_u_f32(wasm_stack label, wasm_stack* stack){
 void exec_i64_trunc_s_f64(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        if((value->entry.value.value.f64 >= 9223372036854775808.0) || (value->entry.value.value.f64 < -9223372036854775808.0)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.i64 = (i64_t)value->entry.value.value.f64;
         value->entry.value.type = Value_i64;
     }
@@ -2235,6 +2263,10 @@ void exec_i64_trunc_s_f64(wasm_stack label, wasm_stack* stack){
 void exec_i64_trunc_u_f64(wasm_stack label, wasm_stack* stack){
     wasm_stack value = *stack;
     if(f64_kind(value->entry.value.value.u64) == Float_normal){
+        if((value->entry.value.value.f64 >= 18446744073709551616.0) || (value->entry.value.value.f64 == -1.0)){
+            wasmvm_errno = ERROR_int_overflow;
+            return;
+        }
         value->entry.value.value.u64 = (u64_t)value->entry.value.value.f64;
         value->entry.value.type = Value_i64;
     }
