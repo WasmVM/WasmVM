@@ -216,7 +216,22 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
     moduleInst->exports.data = malloc_func(sizeof(ExportInst) * module->exports.size);
     for(size_t i = 0; i < module->exports.size; ++i){
         moduleInst->exports.data[i].value.type = module->exports.data[i].descType;
-        moduleInst->exports.data[i].value.value = module->exports.data[i].descIdx;
+        switch (module->exports.data[i].descType){
+        case Desc_Func:
+            moduleInst->exports.data[i].value.value = moduleInst->funcaddrs.data[module->exports.data[i].descIdx];
+            break;
+        case Desc_Table:
+            moduleInst->exports.data[i].value.value = moduleInst->tableaddrs.data[module->exports.data[i].descIdx];
+            break;
+        case Desc_Mem:
+            moduleInst->exports.data[i].value.value = moduleInst->memaddrs.data[module->exports.data[i].descIdx];
+            break;
+        case Desc_Global:
+            moduleInst->exports.data[i].value.value = moduleInst->globaladdrs.data[module->exports.data[i].descIdx];
+            break;
+        default:
+            break;
+        }
         moduleInst->exports.data[i].name.size = module->exports.data[i].name.size;
         moduleInst->exports.data[i].name.data = malloc_func(sizeof(byte_t) * module->exports.data[i].name.size);
         memcpy_func(moduleInst->exports.data[i].name.data, module->exports.data[i].name.data, sizeof(byte_t) * module->exports.data[i].name.size);

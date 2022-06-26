@@ -87,7 +87,9 @@ externval_vector_t match_imports(const wasm_module module, const struct _hashmap
     }
     // Allocate externVals
     externals.size = imports.size;
-    externals.data = (wasm_externval*) malloc_func(sizeof(wasm_externval) * imports.size);
+    if(externals.size){
+        externals.data = (wasm_externval*) malloc_func(sizeof(wasm_externval) * imports.size);
+    }
     // Retrieve externvals
     for(size_t impIdx = 0; impIdx < imports.size; ++impIdx) {
         // Get module_inst
