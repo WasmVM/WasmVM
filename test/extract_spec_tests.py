@@ -287,7 +287,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                         )
                 else:
                     case_file.write(
-                        '    {\n'
+                        '    if(!failed){\n'
                         f'      u32_t diff = result.data[{exp_id}].value.u32 - {exp_val["value"]}u;\n'
                         f'      if(!failed && ((result.data[{exp_id}].type != Value_f32) || ((diff + 2) > 4))){{\n'
                         f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u32, Value_f32, {exp_val["value"]}u);\n'
@@ -321,7 +321,7 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                         )
                 else:
                     case_file.write(
-                        '    {\n'
+                        '    if(!failed){\n'
                         f'      u64_t diff = result.data[{exp_id}].value.u64 - {exp_val["value"]}llu;\n'
                         f'      if(!failed && ((result.data[{exp_id}].type != Value_f64) || ((diff + 2) > 4))){{\n'
                         f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.data[{exp_id}].type, result.data[{exp_id}].value.u64, Value_f64, {exp_val["value"]}llu);\n'
@@ -346,6 +346,90 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
         )
     elif action["type"] == "get":
         pass #TODO: get
+
+def action_assert_trap(case_file: TextIO, command: dict) -> None:
+    wast_line = command["line"]
+    action = command["action"]
+    # Get props
+    func_name = action["field"]
+    func_args = action["args"]
+    case_file.write(
+        f'/** {wast_line}: assert_trap */\n'
+        'if(module_inst){\n'
+        '  _Bool failed = 0;\n'
+        '  wasmvm_errno = ERROR_success;\n'
+    )
+    # Prepare args
+    if(len(func_args) > 0): 
+        case_file.write(
+            '  // Func args\n'
+            '  values_vector_t func_args;\n'
+            f'  func_args.size = {len(func_args)};\n'
+            f'  func_args.data = malloc(sizeof(wasm_value) * {len(func_args)});\n'
+        )
+        for arg_id, arg_val in enumerate(func_args):
+            if arg_val["type"] == "i32":
+                case_file.write(
+                    f'  func_args.data[{arg_id}].type = Value_i32;\n'
+                    f'  func_args.data[{arg_id}].value.u32 = {arg_val["value"]}u;\n'
+                )
+            elif arg_val["type"] == "i64":
+                case_file.write(
+                    f'  func_args.data[{arg_id}].type = Value_i64;\n'
+                    f'  func_args.data[{arg_id}].value.u64 = {arg_val["value"]}llu;\n'
+                )
+            elif arg_val["type"] == "f32":
+                case_file.write(
+                    f'  func_args.data[{arg_id}].type = Value_f32;\n'
+                    f'  func_args.data[{arg_id}].value.u32 = {arg_val["value"]}u;\n'
+                )
+            elif arg_val["type"] == "f64":
+                case_file.write(
+                    f'  func_args.data[{arg_id}].type = Value_f64;\n'
+                    f'  func_args.data[{arg_id}].value.u64 = {arg_val["value"]}llu;\n'
+                )
+    else:
+        case_file.write(
+            '  // Func args\n'
+            '  values_vector_t func_args;\n'
+            '  vector_init(func_args);\n'
+        )
+    # Invoke
+    sanitized_name = reduce(lambda res, elem: res + "," + hex(elem), func_name.encode(), "")[1:]
+    name_size = len(func_name.encode())
+    case_file.write(
+        '  // Invoke\n'
+        f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
+        f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
+        '  if(wasmvm_errno != ERROR_success){\n'
+        f'    fprintf(stderr, "assert_trap({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+        '    failed = 1;\n'
+        '  }\n'
+        '  if(func_export.type != Desc_Func){\n'
+        f'    fprintf(stderr, "assert_trap({wast_line}): [Failed] export type is not function while invoke function");\n'
+        '    failed = 1;\n'
+        '  }\n'
+        '  if(!failed){\n'
+        '    values_vector_t result = func_invoke(store, func_export.value, func_args);\n'
+        '    if(wasmvm_errno == ERROR_success){\n'
+        f'      fprintf(stderr, "assert_trap({wast_line}): [Failed] assert_trap should not exit success\\n");\n'
+        '      failed = 1;\n'
+        '    }\n'
+    )
+    # Epilogue
+    case_file.write(
+        '    free_vector(result);\n'
+        '  }\n'
+        '  // Clean\n'
+        '  free_vector(func_args);\n'
+        '  // End\n'
+        '  if(failed){\n'
+        '    result += 1;\n'
+        '  }else{\n'
+        f'    fprintf(stderr, "assert_trap({wast_line}): [Passed]\\n");\n'
+        '  }\n'
+        '}\n'
+    )
 
 def action_action(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
@@ -472,6 +556,8 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
                 action_register(case_file, command)
             elif command["type"] == "assert_return":
                 action_assert_return(case_file, command)
+            elif command["type"] == "assert_trap":
+                action_assert_trap(case_file, command)
             elif command["type"] == "action":
                 action_action(case_file, command)
 

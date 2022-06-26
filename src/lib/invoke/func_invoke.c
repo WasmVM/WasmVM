@@ -42,6 +42,14 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
     invoke(&stack, store, funcaddr);
     execute(&stack, store);
     if(wasmvm_errno != ERROR_success){
+        while(stack){
+            wasm_stack node = stack;
+            stack = stack->next;
+            if(node->type == Entry_frame){
+                free_func(node->entry.frame.locals.data);
+            }
+            free_func(node);
+        }
         return results;
     }
     // Get return values

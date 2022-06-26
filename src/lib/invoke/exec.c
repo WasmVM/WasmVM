@@ -436,7 +436,7 @@ void exec_i32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_s
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i32_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -449,7 +449,7 @@ void exec_i64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_s
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i64_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i64_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -462,7 +462,7 @@ void exec_f32_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_s
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(f32_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(f32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -475,7 +475,7 @@ void exec_f64_load(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_s
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(f64_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(f64_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -488,7 +488,7 @@ void exec_i32_load8_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i8_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -501,7 +501,7 @@ void exec_i32_load8_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(u8_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(u8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -514,7 +514,7 @@ void exec_i32_load16_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i16_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -527,7 +527,7 @@ void exec_i32_load16_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(u16_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(u16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -540,7 +540,7 @@ void exec_i64_load8_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i8_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -553,7 +553,7 @@ void exec_i64_load8_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(u8_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(u8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -566,7 +566,7 @@ void exec_i64_load16_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i16_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -579,7 +579,7 @@ void exec_i64_load16_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(u16_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(u16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -592,7 +592,7 @@ void exec_i64_load32_s(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i32_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -605,7 +605,7 @@ void exec_i64_load32_u(wasm_stack label, wasm_stack frame, wasm_stack* stack, wa
     MemInst* mem = store->mems.data + (frame->entry.frame.moduleinst->memaddrs.data[0]);
     wasm_stack value = *stack;
     u32_t ea = value->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(u32_t)) > mem->data.size){
+    if((ea < value->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(u32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -619,7 +619,7 @@ void exec_i32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i32_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -635,7 +635,7 @@ void exec_i64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i64_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i64_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -651,7 +651,7 @@ void exec_f32_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(f32_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(f32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -667,7 +667,7 @@ void exec_f64_store(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm_
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(f64_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(f64_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -683,7 +683,7 @@ void exec_i32_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i8_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -699,7 +699,7 @@ void exec_i32_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i16_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -715,7 +715,7 @@ void exec_i64_store8(wasm_stack label, wasm_stack frame, wasm_stack* stack, wasm
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i8_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i8_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -731,7 +731,7 @@ void exec_i64_store16(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i16_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i16_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
@@ -747,7 +747,7 @@ void exec_i64_store32(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     wasm_stack value = *stack;
     wasm_stack address = value->next;
     u32_t ea = address->entry.value.value.u32 + instr->index2;
-    if((ea + sizeof(i32_t)) > mem->data.size){
+    if((ea < address->entry.value.value.u32) || (ea < instr->index2) || ((ea + sizeof(i32_t)) > mem->data.size)){
         wasmvm_errno = ERROR_mem_acc_out_bound;
         return;
     }
