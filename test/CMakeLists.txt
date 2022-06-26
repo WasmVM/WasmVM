@@ -38,7 +38,7 @@ macro(add_spec_test test_name)
   )
   if(BUILD_MEMCHECK_TESTS)
     add_test(NAME spec_${test_name}_memcheck
-      COMMAND valgrind "--leak-check=yes" "--error-exitcode=255" ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}
+      COMMAND valgrind "--leak-check=yes" "--error-exitcode=255" "--track-origins=yes" ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}
       WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}
     )
   endif(BUILD_MEMCHECK_TESTS)
