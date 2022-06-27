@@ -780,6 +780,10 @@ void exec_memory_grow(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
         if(mem->data.data == NULL){
             value->entry.value.value.i32 = -1;
         }
+        u64_t* data = (u64_t*)(mem->data.data + mem->data.size);
+        for(u32_t i = 0; i < ((newsize - memsize) * (page_size / sizeof(u64_t))); ++i){
+            data[i] = 0;
+        } 
         mem->data.size = newsize * page_size;
     }
     label->entry.label.current += 1;
