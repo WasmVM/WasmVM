@@ -71,6 +71,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '  if(!failed){\n'
             f'    hashmap_set(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst, named_modules);\n'
+            '    last_regist_module_inst = module_inst;\n'
             '    module_inst = NULL;\n'
             '  }\n'
         )
@@ -161,6 +162,7 @@ def action_register(case_file: TextIO, command: dict) -> None:
         case_file.write(
             f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", module_inst, named_modules);\n'
             f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", module_inst, moduleInsts);\n'
+            '  last_regist_module_inst = module_inst;\n'
             '  module_inst = NULL;\n'
         )
     case_file.write(
@@ -345,7 +347,140 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
             '}\n'
         )
     elif action["type"] == "get":
-        pass #TODO: get
+        # Get props
+        field_name = action["field"]
+        module_name = (action["module"] if "module" in action else None)
+        # Prologue
+        case_file.write(f'/** {wast_line}: assert_return get */\n')
+        if module_name:
+            case_file.write('{\n'
+                '  _Bool failed = 0;\n'
+                '  wasmvm_errno = ERROR_success;\n'
+                '  wasm_module_inst module_inst = NULL;\n'
+                f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst, named_modules);\n'
+            )
+        else:
+            case_file.write('if(module_inst == NULL){\n'
+                '  wasm_module_inst module_inst = last_regist_module_inst;\n'
+                '  _Bool failed = 0;\n'
+                '  wasmvm_errno = ERROR_success;\n'
+            )
+        # Get
+        sanitized_name = reduce(lambda res, elem: res + "," + hex(elem), field_name.encode(), "")[1:]
+        name_size = len(field_name.encode())
+        case_file.write(
+            '  // Get\n'
+            f'  byte_t export_name[{name_size}] = {{{sanitized_name}}};\n'
+            f'  wasm_externval export = instance_export(module_inst, {name_size}, export_name);\n'
+            '  if(wasmvm_errno != ERROR_success){\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+            '    failed = 1;\n'
+            '  }\n'
+            '  if(export.type != Desc_Global){\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] export type is not global while get");\n'
+            '    failed = 1;\n'
+            '  }\n'
+        )
+        # Check expected
+        case_file.write(
+            '  // Check\n'
+            '  if(!failed){\n'
+            '    Value result = store->globals.data[export.value].val;\n'
+        )
+        exp_val = command["expected"][0]
+        if exp_val["type"] == "i32":
+            case_file.write(
+                f'    if((result.type != Value_i32) || (result.value.u32 != {exp_val["value"]}u)){{\n'
+                f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.type, result.value.u32, Value_i32, {exp_val["value"]}u);\n'
+                '      failed = 1;\n'
+                '    }\n'
+            )
+        elif exp_val["type"] == "i64":
+            case_file.write(
+                f'    if((result.type != Value_i64) || (result.value.u64 != {exp_val["value"]}llu)){{\n'
+                f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.type, result.value.u64, Value_i64, {exp_val["value"]}llu);\n'
+                '      failed = 1;\n'
+                '    }\n'
+            )
+        elif exp_val["type"] == "f32":
+            if(exp_val["value"].startswith("nan")):
+                nan_val = exp_val["value"][4:]
+                if nan_val == "canonical":
+                    case_file.write(
+                        f'    if((result.type != Value_f32) || !isnan(result.value.f32) || ((result.value.u32 & 0x7fffffffu) != 0x7fc00000u)){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result (type: %d, value: %u) not match expected (type: %d, value: nan:canonical)\\n", result.type, result.value.u32, Value_f32);\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+                elif nan_val == "arithmetic":
+                    case_file.write(
+                        f'    if((result.type != Value_f32) || !isnan(result.value.f32) || ((result.value.u32 & 0x7fffffffu) < 0x7fc00000u) || ((result.value.u32 & 0x7fffffffu) > 0x7fffffffu)){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: nan:arithmetic)\\n", result.type, result.value.u32, Value_f32);\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+                else:
+                    case_file.write(
+                        f'    if((result.type != Value_f32) || !isnan(result.value.f32) || ((result.value.u32 & 0x7fffffffu) != (0x7f800000u | {nan_val}u))){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.type, result.value.u32, Value_f32, (0x7f800000u | {nan_val}u));\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+            else:
+                case_file.write(
+                    '    {\n'
+                    f'      u32_t diff = result.value.u32 - {exp_val["value"]}u;\n'
+                    f'      if((result.type != Value_f32) || ((diff + 2) > 4)){{\n'
+                    f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %u) not match expected (type: %d, value: %u)\\n", result.type, result.value.u32, Value_f32, {exp_val["value"]}u);\n'
+                    '        failed = 1;\n'
+                    '      }\n'
+                    '    }\n'
+                )
+        elif exp_val["type"] == "f64":
+            if(exp_val["value"].startswith("nan")):
+                nan_val = exp_val["value"][4:]
+                if nan_val == "canonical":
+                    case_file.write(
+                        f'    if((result.type != Value_f64) || !isnan(result.value.f64) || ((result.value.u64 & 0x7fffffffffffffffllu) != 0x7ff8000000000000llu)){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:canonical)\\n", result.type, result.value.u64, Value_f64);\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+                elif nan_val == "arithmetic":
+                    case_file.write(
+                        f'    if((result.type != Value_f64) || !isnan(result.value.f64) || ((result.value.u64 & 0x7fffffffffffffffllu) < 0x7ff8000000000000llu) || ((result.value.u64 & 0x7fffffffffffffffllu) > 0x7fffffffffffffffllu)){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: nan:arithmetic)\\n", result.type, result.value.u64, Value_f64);\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+                else:
+                    case_file.write(
+                        f'    if((result.type != Value_f64) || !isnan(result.value.f64) || ((result.value.u64 & 0x7fffffffffffffffllu) != (0x7ff8000000000000llu | {nan_val}llu))){{\n'
+                        f'      fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.type, result.value.u64, Value_f64, (0x7ff8000000000000llu | {nan_val}llu));\n'
+                        '      failed = 1;\n'
+                        '    }\n'
+                    )
+            else:
+                case_file.write(
+                    '    if(!failed){\n'
+                    f'      u64_t diff = result.value.u64 - {exp_val["value"]}llu;\n'
+                    f'      if((result.type != Value_f64) || ((diff + 2) > 4)){{\n'
+                    f'        fprintf(stderr, "assert_return({wast_line}): [Failed] result[{exp_id}] (type: %d, value: %llu) not match expected (type: %d, value: %llu)\\n", result.type, result.value.u64, Value_f64, {exp_val["value"]}llu);\n'
+                    '        failed = 1;\n'
+                    '      }\n'
+                    '    }\n'
+                )
+        # Epilogue
+        case_file.write(
+            '  }\n'
+            '  // End\n'
+            '  if(failed){\n'
+            '    result += 1;\n'
+            '  }else{\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Passed]\\n");\n'
+            '  }\n'
+            '}\n'
+        )
 
 def action_assert_trap(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
@@ -541,6 +676,7 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
             "hashmap_t(wasm_module_inst) named_modules = NULL;\n"
             "wasm_module module = NULL;\n"
             "wasm_module_inst module_inst = NULL;\n"
+            "wasm_module_inst last_regist_module_inst = NULL;\n"
             "wasm_store store = store_init();\n"
             "hashmap_set(sizeof(char) * 8, \"spectest\", spectest_instanciate(store), moduleInsts);\n"
             "\n"

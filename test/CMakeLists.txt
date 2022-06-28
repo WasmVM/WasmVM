@@ -24,6 +24,9 @@ macro(add_spec_test test_name)
   add_executable(spec_${test_name}
     ${CMAKE_CURRENT_BINARY_DIR}/spec/${test_name}/${test_name}.c
   )
+  add_dependencies(spec_${test_name}
+    spec_test_extract
+  )
   target_link_libraries(spec_${test_name}
     harness
     WasmVM

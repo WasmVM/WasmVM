@@ -170,6 +170,12 @@ void free_moduleInst_maps(hashmap_t(wasm_module_inst) named, hashmap_t(wasm_modu
     wasm_module_inst named_insts[named_count];
     for (size_t i = 0; i < named_count; ++i){
         named_insts[i] = (wasm_module_inst)(flattened->data);
+        for (size_t j = 0; j < i; ++j){
+            if(named_insts[j] == named_insts[i]){
+                flattened->data = NULL;
+                break;
+            }
+        }
         module_inst_free(flattened->data);
         hashmap_t(wasm_module_inst) node = flattened;
         flattened = flattened->left;
