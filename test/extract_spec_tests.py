@@ -99,8 +99,6 @@ def action_assert_malformed(case_file: TextIO, command: dict) -> None:
             '{\n'
             '  _Bool failed = 0;\n'
             '  wasmvm_errno = ERROR_success;\n'
-            '  module_inst_free(module_inst);\n'
-            '  module_inst = NULL;\n'
         )
         # Load module
         case_file.write(
@@ -150,11 +148,11 @@ def action_register(case_file: TextIO, command: dict) -> None:
     case_file.write(
         f'/** {wast_line}: register "{module_as}" */\n'
         '{\n'
-        f'  wasm_module_inst regist_inst;\n'
     )
     if "name" in command:
         module_name = command["name"]
         case_file.write(
+            '  wasm_module_inst regist_inst;\n'
             f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", regist_inst, named_modules);\n'
             f'  hashmap_set(sizeof(char) * {len(module_as)}, \"{module_as}\", regist_inst, moduleInsts);\n'
         )
@@ -172,16 +170,26 @@ def action_register(case_file: TextIO, command: dict) -> None:
 def action_assert_return(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
     action = command["action"]
-    if action["type"] == "invoke":
-        # Get props
-        func_name = action["field"]
-        func_args = action["args"]
-        case_file.write(
-            f'/** {wast_line}: assert_return invoke */\n'
-            'if(module_inst){\n'
+    # Prologue
+    module_name = (action["module"] if "module" in action else None)
+    case_file.write(f'/** {wast_line}: assert_return {action["type"]} */\n')
+    if module_name:
+        case_file.write('{\n'
             '  _Bool failed = 0;\n'
             '  wasmvm_errno = ERROR_success;\n'
+            '  wasm_module_inst module_inst_local = NULL;\n'
+            f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst_local, named_modules);\n'
         )
+    else:
+        case_file.write('{\n'
+            '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
+            '  wasm_module_inst module_inst_local = (module_inst) ? module_inst : last_regist_module_inst;\n'
+        )
+    if action["type"] == "invoke":
+        # Props
+        func_name = action["field"]
+        func_args = action["args"]
         # Prepare args
         if(len(func_args) > 0): 
             case_file.write(
@@ -223,13 +231,13 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '  // Invoke\n'
             f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
-            f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
+            f'  wasm_externval func_export = instance_export(module_inst_local, {name_size}, func_name);'
             '  if(wasmvm_errno != ERROR_success){\n'
             f'    fprintf(stderr, "assert_return({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '    failed = 1;\n'
             '  }\n'
             '  if(func_export.type != Desc_Func){\n'
-            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] export type is not function while invoke function");\n'
+            f'    fprintf(stderr, "assert_return({wast_line}): [Failed] export type is not function while invoke function\\n");\n'
             '    failed = 1;\n'
             '  }\n'
             '  if(!failed){\n'
@@ -332,46 +340,23 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                         '    }\n'
                     )
 
-        # Epilogue
+        # Clean
         case_file.write(
             '    free_vector(result);\n'
             '  }\n'
             '  // Clean\n'
             '  free_vector(func_args);\n'
-            '  // End\n'
-            '  if(failed){\n'
-            '    result += 1;\n'
-            '  }else{\n'
-            f'    fprintf(stderr, "assert_return({wast_line}): [Passed]\\n");\n'
-            '  }\n'
-            '}\n'
         )
     elif action["type"] == "get":
-        # Get props
+        # Props
         field_name = action["field"]
-        module_name = (action["module"] if "module" in action else None)
-        # Prologue
-        case_file.write(f'/** {wast_line}: assert_return get */\n')
-        if module_name:
-            case_file.write('{\n'
-                '  _Bool failed = 0;\n'
-                '  wasmvm_errno = ERROR_success;\n'
-                '  wasm_module_inst module_inst = NULL;\n'
-                f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst, named_modules);\n'
-            )
-        else:
-            case_file.write('if(module_inst == NULL){\n'
-                '  wasm_module_inst module_inst = last_regist_module_inst;\n'
-                '  _Bool failed = 0;\n'
-                '  wasmvm_errno = ERROR_success;\n'
-            )
         # Get
         sanitized_name = reduce(lambda res, elem: res + "," + hex(elem), field_name.encode(), "")[1:]
         name_size = len(field_name.encode())
         case_file.write(
             '  // Get\n'
             f'  byte_t export_name[{name_size}] = {{{sanitized_name}}};\n'
-            f'  wasm_externval export = instance_export(module_inst, {name_size}, export_name);\n'
+            f'  wasm_externval export = instance_export(module_inst_local, {name_size}, export_name);\n'
             '  if(wasmvm_errno != ERROR_success){\n'
             f'    fprintf(stderr, "assert_return({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '    failed = 1;\n'
@@ -470,17 +455,17 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
                     '      }\n'
                     '    }\n'
                 )
-        # Epilogue
-        case_file.write(
-            '  }\n'
-            '  // End\n'
-            '  if(failed){\n'
-            '    result += 1;\n'
-            '  }else{\n'
-            f'    fprintf(stderr, "assert_return({wast_line}): [Passed]\\n");\n'
-            '  }\n'
-            '}\n'
-        )
+        case_file.write('  }\n')
+    # Epilogue
+    case_file.write(
+        '  // End\n'
+        '  if(failed){\n'
+        '    result += 1;\n'
+        '  }else{\n'
+        f'    fprintf(stderr, "assert_return({wast_line}): [Passed]\\n");\n'
+        '  }\n'
+        '}\n'
+    )
 
 def action_assert_trap(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
@@ -490,9 +475,10 @@ def action_assert_trap(case_file: TextIO, command: dict) -> None:
     func_args = action["args"]
     case_file.write(
         f'/** {wast_line}: assert_trap */\n'
-        'if(module_inst){\n'
+        '{\n'
         '  _Bool failed = 0;\n'
         '  wasmvm_errno = ERROR_success;\n'
+        '  wasm_module_inst module_inst_local = ((module_inst) ? module_inst : last_regist_module_inst);\n'
     )
     # Prepare args
     if(len(func_args) > 0): 
@@ -535,7 +521,7 @@ def action_assert_trap(case_file: TextIO, command: dict) -> None:
     case_file.write(
         '  // Invoke\n'
         f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
-        f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
+        f'  wasm_externval func_export = instance_export(module_inst_local, {name_size}, func_name);\n'
         '  if(wasmvm_errno != ERROR_success){\n'
         f'    fprintf(stderr, "assert_trap({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
         '    failed = 1;\n'
@@ -575,9 +561,10 @@ def action_action(case_file: TextIO, command: dict) -> None:
         func_args = action["args"]
         case_file.write(
             f'/** {wast_line}: invoke */\n'
-            'if(module_inst){\n'
+            '{\n'
             '  _Bool failed = 0;\n'
             '  wasmvm_errno = ERROR_success;\n'
+            '  wasm_module_inst module_inst_local = ((module_inst) ? module_inst : last_regist_module_inst);\n'
         )
         # Prepare args
         if(len(func_args) > 0): 
@@ -620,7 +607,7 @@ def action_action(case_file: TextIO, command: dict) -> None:
         case_file.write(
             '  // Invoke\n'
             f'  byte_t func_name[{name_size}] = {{{sanitized_name}}};\n'
-            f'  wasm_externval func_export = instance_export(module_inst, {name_size}, func_name);'
+            f'  wasm_externval func_export = instance_export(module_inst_local, {name_size}, func_name);'
             '  if(wasmvm_errno != ERROR_success){\n'
             f'    fprintf(stderr, "invoke({wast_line}): [Failed] failed retrieve export with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
             '    failed = 1;\n'

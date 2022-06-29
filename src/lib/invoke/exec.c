@@ -332,14 +332,13 @@ void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack,
         wasmvm_errno = ERROR_indir_call;
         return;
     }
-    u32_t funcaddr = (*frame)->entry.frame.moduleinst->funcaddrs.data[ref->addr];
-    FuncType* actualType = store->funcs.data[funcaddr].type;
+    FuncType* actualType = store->funcs.data[ref->addr].type;
     if(!check_FuncType(expectType, actualType)){
         wasmvm_errno = ERROR_indir_call_mis;
         return;
     }
     (*label)->entry.label.current = (InstrInst*)(instr + 1);
-    invoke(stack, store, funcaddr);
+    invoke(stack, store, ref->addr);
     // Update label & frame
     wasm_stack cursor = *stack;
     for(; cursor && (cursor->type != Entry_label); cursor = cursor->next);
