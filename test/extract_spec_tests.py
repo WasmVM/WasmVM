@@ -470,16 +470,25 @@ def action_assert_return(case_file: TextIO, command: dict) -> None:
 def action_assert_trap(case_file: TextIO, command: dict) -> None:
     wast_line = command["line"]
     action = command["action"]
+    # Prologue
+    module_name = (action["module"] if "module" in action else None)
+    case_file.write(f'/** {wast_line}: assert_trap */\n')
+    if module_name:
+        case_file.write('{\n'
+            '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
+            '  wasm_module_inst module_inst_local = NULL;\n'
+            f'  hashmap_get(sizeof(char) * {len(module_name)}, \"{module_name}\", module_inst_local, named_modules);\n'
+        )
+    else:
+        case_file.write('{\n'
+            '  _Bool failed = 0;\n'
+            '  wasmvm_errno = ERROR_success;\n'
+            '  wasm_module_inst module_inst_local = (module_inst) ? module_inst : last_regist_module_inst;\n'
+        )
     # Get props
     func_name = action["field"]
     func_args = action["args"]
-    case_file.write(
-        f'/** {wast_line}: assert_trap */\n'
-        '{\n'
-        '  _Bool failed = 0;\n'
-        '  wasmvm_errno = ERROR_success;\n'
-        '  wasm_module_inst module_inst_local = ((module_inst) ? module_inst : last_regist_module_inst);\n'
-    )
     # Prepare args
     if(len(func_args) > 0): 
         case_file.write(

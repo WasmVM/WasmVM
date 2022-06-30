@@ -143,6 +143,7 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             const WasmTable *table = module->tables.data + i;
             TableInst* tableInst = store->tables.data + store->tables.size + i;
             tableInst->max = table->max;
+            tableInst->type = table->refType;
             vector_init(tableInst->elem);
             if(table->min > 0) {
                 tableInst->elem.size = table->min;
