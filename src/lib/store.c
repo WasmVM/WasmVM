@@ -20,6 +20,8 @@ Store* store_init()
 }
 
 static void free_FuncInst(FuncInst func){
+    free_vector(func.type.params);
+    free_vector(func.type.results);
     if(func.bodyType == FuncBody_Wasm){
         free_vector(func.body.wasm.locals);
         free_vector(func.body.wasm.codes);
@@ -44,7 +46,8 @@ void store_free(Store* store)
             free_vector(store->mems.data[i].data);
         }
         free_vector(store->mems);
-        free_vector(store->globals);        // FIXME:
+        // Globals
+        free_vector(store->globals);
         // Elems
         for(u32_t i = 0; i < store->elems.size; ++i){
             free_vector(store->elems.data[i].elem);

@@ -648,6 +648,78 @@ def action_action(case_file: TextIO, command: dict) -> None:
             '}\n'
         )
     
+def action_assert_uninstantiable(case_file: TextIO, command: dict) -> None:
+    # Get wasm file name
+    wasm_file = command["filename"]
+    wast_line = command["line"]
+    # Begin
+    case_file.write(
+        f'/** {wast_line}: action_assert_uninstantiable "{wasm_file}" */\n'
+        '{\n'
+        '  _Bool failed = 0;\n'
+        '  wasmvm_errno = ERROR_success;\n'
+    )
+    # Load module
+    case_file.write(
+        '  // Load\n'
+        f'  bytes_vector_t bin_data = load_file("{wasm_file}");\n'
+        '  if(bin_data.data == NULL){\n'
+        f'    fprintf(stderr, "{wasm_file}({wast_line})[uninstantiable]: [Error] cannot load module\\n");\n'
+        '    failed = 1;\n'
+        '  }\n'
+    )
+    # Decode module
+    case_file.write(
+        '  // Decode\n'
+        '  wasm_module module_local = NULL;\n'
+        '  if(!failed){\n'
+        '    module_local = module_decode(bin_data);\n'
+        '    if(wasmvm_errno != ERROR_success){\n'
+        f'      fprintf(stderr, "{wasm_file}({wast_line})[uninstantiable]: [Failed] failed decoding module with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+        '      failed = 1;\n'
+        '    }\n'
+        '    free_vector(bin_data);\n'
+        '  }\n'
+    )
+    # Import matching
+    case_file.write(
+        '  // Get import\n'
+        '  externval_vector_t externVals;\n'
+        '  if(!failed){\n'
+        '    externVals = match_imports(module_local, moduleInsts);\n'
+        '    if(wasmvm_errno != ERROR_success){\n'
+        f'      fprintf(stderr, "{wasm_file}({wast_line})[uninstantiable]: [Failed] failed match imports with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+        '      failed = 1;\n'
+        '      free_vector(externVals);\n'
+        '    }\n'
+        '  }\n'
+    )
+    # Instantiate module
+    case_file.write(
+        '  // Instantiate\n'
+        '  wasm_module_inst module_inst_local = NULL;\n'
+        '  if(!failed){\n'
+        '    module_inst_local = module_instantiate(store, module_local, externVals);\n'
+        '    if(wasmvm_errno == ERROR_success){\n'
+        f'      fprintf(stderr, "{wasm_file}({wast_line})[uninstantiable]: [Failed] assert_uninstantiable should not success\\n");\n'
+        '      failed = 1;\n'
+        '    }\n'
+        '  }\n'
+    )
+    # End
+    case_file.write(
+        '  // End\n'
+        '  if(failed){\n'
+        '    result += 1;\n'
+        '  }else{\n'
+        f'    fprintf(stderr, "{wasm_file}({wast_line})[uninstantiable]: [Passed]\\n");\n'
+        '  }\n'
+        "  module_free(module_local);\n"
+        "  module_inst_free(module_inst_local);\n"
+        '  free_vector(externVals);\n'
+        '}\n'
+    )
+    
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:
         # Prologue
@@ -692,6 +764,8 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
                 action_assert_trap(case_file, command)
             elif command["type"] == "action":
                 action_action(case_file, command)
+            elif command["type"] == "assert_uninstantiable":
+                action_assert_uninstantiable(case_file, command)
 
         # Epilogue
         case_file.write(

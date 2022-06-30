@@ -332,7 +332,7 @@ void exec_call_indirect(wasm_stack* label, wasm_stack* frame, wasm_stack* stack,
         wasmvm_errno = ERROR_indir_call;
         return;
     }
-    FuncType* actualType = store->funcs.data[ref->addr].type;
+    FuncType* actualType = &(store->funcs.data[ref->addr].type);
     if(!check_FuncType(expectType, actualType)){
         wasmvm_errno = ERROR_indir_call_mis;
         return;

@@ -108,8 +108,22 @@ static wasm_module_inst module_alloc(wasm_store store, const wasm_module module,
             const WasmFunc *func = module->funcs.data + i;
             FuncInst* funcInst = store->funcs.data + (store->funcs.size + i);
             funcInst->bodyType = FuncBody_Wasm;
-            funcInst->type = moduleInst->types.data + func->type;
             funcInst->body.wasm.module = moduleInst;
+            // FuncType
+            FuncType* funcType = moduleInst->types.data + func->type;
+            vector_init(funcInst->type.params);
+            if(funcType->params.size > 0){
+                funcInst->type.params.size = funcType->params.size;
+                vector_resize(funcInst->type.params, ValueType, sizeof(ValueType) * funcInst->type.params.size);
+                memcpy_func(funcInst->type.params.data, funcType->params.data, sizeof(ValueType) * funcInst->type.params.size);
+            }
+            vector_init(funcInst->type.results);
+            if(funcType->results.size > 0){
+                funcInst->type.results.size = funcType->results.size;
+                vector_resize(funcInst->type.results, ValueType, sizeof(ValueType) * funcInst->type.results.size);
+                memcpy_func(funcInst->type.results.data, funcType->results.data, sizeof(ValueType) * funcInst->type.results.size);
+            }
+            // Locals
             funcInst->body.wasm.locals.size = func->locals.size;
             if(funcInst->body.wasm.locals.size > 0){
                 funcInst->body.wasm.locals.data = (ValueType*) malloc_func(sizeof(ValueType) * func->locals.size);
@@ -372,7 +386,7 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         const u32_t funcAddr = moduleInst->funcaddrs.data[module->start];
         const FuncInst* funcInst = store->funcs.data + funcAddr;
         // Start shouldn't have params & results
-        if(funcInst->type->params.size || funcInst->type->results.size){
+        if(funcInst->type.params.size || funcInst->type.results.size){
             wasmvm_errno = ERROR_type_mis;
             module_inst_free(moduleInst);
             return NULL;
@@ -382,6 +396,14 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
         invoke(&stack, store, funcAddr);
         execute(&stack, store);
         if(wasmvm_errno != ERROR_success){
+            while(stack){
+                wasm_stack node = stack;
+                stack = stack->next;
+                if(node->type == Entry_frame){
+                    free_vector(node->entry.frame.locals);
+                }
+                free_func(node);
+            }
             module_inst_free(moduleInst);
             return NULL;
         }

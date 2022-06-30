@@ -18,12 +18,12 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
     }
     const FuncInst* funcInst = store->funcs.data + funcaddr;
     // Check args
-    if(args.size != funcInst->type->params.size){
+    if(args.size != funcInst->type.params.size){
         wasmvm_errno = ERROR_type_mis;
         return results;
     }
-    for(u32_t i = 0; i < funcInst->type->params.size; ++i){
-        if(args.data[i].type != funcInst->type->params.data[i]){
+    for(u32_t i = 0; i < funcInst->type.params.size; ++i){
+        if(args.data[i].type != funcInst->type.params.data[i]){
             wasmvm_errno = ERROR_type_mis;
             return results;
         }
@@ -53,11 +53,11 @@ values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t ar
         return results;
     }
     // Get return values
-    results.size = funcInst->type->results.size;
+    results.size = funcInst->type.results.size;
     if(results.size > 0){
         results.data = (wasm_value*) malloc_func(sizeof(wasm_value) * results.size);
         for(u32_t i = 0; i < results.size; ++i){
-            if((stack == NULL) || (stack->type != Entry_value) || (stack->entry.value.type != funcInst->type->results.data[results.size - 1 - i])){
+            if((stack == NULL) || (stack->type != Entry_value) || (stack->entry.value.type != funcInst->type.results.data[results.size - 1 - i])){
                 wasmvm_errno = ERROR_type_mis;
                 return results;
             }

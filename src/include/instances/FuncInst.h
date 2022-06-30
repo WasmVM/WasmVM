@@ -11,7 +11,7 @@ struct _Store;
 typedef int (*hostfunc_t) (wasm_stack* stack, struct _Store* store);
 
 typedef struct {
-    FuncType* type;
+    FuncType type;
     enum {
         FuncBody_Wasm,
         FuncBody_Host,
