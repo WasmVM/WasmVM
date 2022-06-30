@@ -40,18 +40,3 @@ jobs:
           key: ${{ github.sha }}
       - name: Run CTest
         run: cd build && ctest
-  
-  memcheck:
-    runs-on: ubuntu-latest
-    container:
-      image: wasmvm/wasmvm:ci
-    needs: build
-    steps:
-      - uses: actions/checkout@v2
-      - uses: actions/cache@v2
-        with:
-          path:
-            ${{ github.workspace }}/build
-          key: ${{ github.sha }}
-      - name: Run memory check
-        run: ./scripts/memory_check.sh
