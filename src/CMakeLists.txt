@@ -1,7 +1,7 @@
 add_subdirectory(lib)
 # add_subdirectory(exec)
 
-# install(DIRECTORY include
-#     DESTINATION include/WasmVM
-#     FILES_MATCHING PATTERN "*.h"
-# )
+install(DIRECTORY include/
+    TYPE INCLUDE
+    FILES_MATCHING PATTERN "*.h"
+)

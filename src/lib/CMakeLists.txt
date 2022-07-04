@@ -1,13 +1,3 @@
-# target_link_libraries(wasmvm_core
-#     ${CMAKE_THREAD_LIBS_INIT}
-#     m
-# )
-
-# install(TARGETS wasmvm_core
-#     ARCHIVE DESTINATION lib
-#     LIBRARY DESTINATION lib
-# )
-
 add_library(WasmVM
     decode/decode.c
     decode/sections.c
@@ -30,4 +20,9 @@ add_library(WasmVM
     mem.c
     global.c
     instance.c
+)
+
+install(TARGETS WasmVM
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
 )
