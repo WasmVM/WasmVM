@@ -720,6 +720,9 @@ def action_assert_uninstantiable(case_file: TextIO, command: dict) -> None:
         '}\n'
     )
     
+def action_assert_invalid(case_file: TextIO, command: dict) -> None:
+    pass #TODO:
+
 def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
     with open(str(case_dir.joinpath(f"{case_name}.c")), "w") as case_file:
         # Prologue
@@ -766,6 +769,8 @@ def generate_case_main(case_name: str, case_dir: Path, case_json: dict) -> None:
                 action_action(case_file, command)
             elif command["type"] == "assert_uninstantiable":
                 action_assert_uninstantiable(case_file, command)
+            elif command["type"] == "assert_invalid":
+                action_assert_invalid(case_file, command)
 
         # Epilogue
         case_file.write(

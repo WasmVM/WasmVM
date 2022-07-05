@@ -10,6 +10,8 @@ add_library(WasmVM
     invoke/func_invoke.c
     invoke/invoke.c
     invoke/exec.c
+    validate/validate.c
+    validate/func.c
     error.c
     defines.c
     free.c
