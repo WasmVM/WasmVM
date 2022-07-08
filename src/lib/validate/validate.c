@@ -10,7 +10,7 @@
 _Bool module_validate(wasm_module module){
     // Functions
     for(size_t i = 0; i < module->funcs.size; ++i){
-        if(!func_validate(module->funcs.data + i)){
+        if(!func_validate(module->funcs.data + i, module)){
             return 0;
         }
     }

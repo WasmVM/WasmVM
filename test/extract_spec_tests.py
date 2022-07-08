@@ -43,6 +43,7 @@ def action_module(case_file: TextIO, command: dict) -> None:
     case_file.write(
         '  // Get import\n'
         '  externval_vector_t externVals;\n'
+        '  vector_init(externVals);\n'
         '  if(!failed){\n'
         '    externVals = match_imports(module, moduleInsts);\n'
         '    if(wasmvm_errno != ERROR_success){\n'
@@ -75,6 +76,14 @@ def action_module(case_file: TextIO, command: dict) -> None:
             '    module_inst = NULL;\n'
             '  }\n'
         )
+    # Validate module
+    case_file.write(
+        '  // Validate\n'
+        '  if(!failed && !module_validate(module)){\n'
+        f'    fprintf(stderr, "{wasm_file}({wast_line}): [Failed] module is invalid with error \'%s\'\\n",  wasmvm_strerror(wasmvm_errno));\n'
+        '    failed = 1;\n'
+        '  }\n'
+    )
     # End
     case_file.write(
         '  // End\n'

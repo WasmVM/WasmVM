@@ -3,6 +3,6 @@
 
 #include <WasmVM.h>
 
-_Bool func_validate(WasmFunc* func);
+_Bool func_validate(WasmFunc* func, WasmModule* module);
 
 #endif
