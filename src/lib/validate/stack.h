@@ -44,5 +44,4 @@ void set_unreachable(value_stack_t vals, ctrl_stack_t ctrls);
 
 typedef vector_t(ValueType)* label_type_t;
 label_type_t label_types(ctrl_stack_t ctrls, size_t index);
-
 #endif

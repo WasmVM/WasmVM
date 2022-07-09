@@ -110,7 +110,7 @@ int parseControlInstr(u16_t opcode, instr_list_t* const instrs, const byte_t **r
             }
             // tableidx
             if(*((*read_p)++) != 0x00) {
-                // typeidx should be zero now
+                // tableidx should be zero now
                 wasmvm_errno = ERROR_zero_expected;
                 return -1;
             }

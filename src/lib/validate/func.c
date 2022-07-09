@@ -8,13 +8,58 @@
 #include "stack.h"
 #include <Opcodes.h>
 
+#define check_errno(Expr) \
+    Expr; \
+    if(wasmvm_errno != ERROR_success){ \
+        free_value_stack(value_stack); \
+        free_ctrl_stack(ctrl_stack); \
+        return 0; \
+    }
+
+#define expect_check(T) check_errno(expect_val(value_stack, ctrl_stack, T))
+#define return_clean() \
+    free_value_stack(value_stack); \
+    free_ctrl_stack(ctrl_stack); \
+    return 0;
+
+static _Bool is_num(ValueType type){
+    switch (type){
+    case Value_unspecified:
+    case Value_i32:
+    case Value_i64:
+    case Value_f32:
+    case Value_f64:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
+static _Bool is_ref(ValueType type){
+    switch (type){
+    case Value_unspecified:
+    case Value_funcref:
+    case Value_externref:
+        return 1;
+    default:
+        return 0;
+    }
+}
+
 _Bool func_validate(WasmFunc* func, WasmModule* module){
+    // Validate type
+    if(func->type >= module->types.size){
+        wasmvm_errno = ERROR_unknown_type;
+        return 0;
+    }
+    // Validate expr
     value_stack_t value_stack = (value_stack_t)malloc_func(sizeof(ValueStack));
     value_stack->size = 0;
     value_stack->data = NULL;
     ctrl_stack_t ctrl_stack = (ctrl_stack_t)malloc_func(sizeof(CtrlStack));
     ctrl_stack->size = 0;
     ctrl_stack->data = NULL;
+    FuncType funcType = module->types.data[func->type];
     push_ctrl(value_stack, ctrl_stack, Op_block, module->types.data[func->type]);
     for(size_t instrIdx = 0; instrIdx < func->body.size; ++instrIdx){
         WasmInstr* instr = func->body.data + instrIdx;
@@ -28,17 +73,11 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 if(instr->imm.values.value.type == Value_index){
                     FuncType* type = module->types.data + instr->imm.values.index;
                     for(size_t i = 0; i < type->params.size; ++i){
-                        expect_val(value_stack, ctrl_stack, type->params.data[i]);
-                        if(wasmvm_errno != ERROR_success){
-                            return 0;
-                        }
+                        expect_check(type->params.data[i]);
                     }
                     push_ctrl(value_stack, ctrl_stack, Op_block, *type);
                 }else if(instr->imm.values.value.type != Value_unspecified){
-                    expect_val(value_stack, ctrl_stack, instr->imm.values.value.type);
-                    if(wasmvm_errno != ERROR_success){
-                        return 0;
-                    }
+                    expect_check(instr->imm.values.value.type);
                     FuncType type;
                     vector_init(type.params);
                     type.results.size = 1;
@@ -51,17 +90,11 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 if(instr->imm.values.value.type == Value_index){
                     FuncType* type = module->types.data + instr->imm.values.index;
                     for(size_t i = 0; i < type->params.size; ++i){
-                        expect_val(value_stack, ctrl_stack, type->params.data[i]);
-                        if(wasmvm_errno != ERROR_success){
-                            return 0;
-                        }
+                        expect_check(type->params.data[i]);
                     }
                     push_ctrl(value_stack, ctrl_stack, Op_block, *type);
                 }else if(instr->imm.values.value.type != Value_unspecified){
-                    expect_val(value_stack, ctrl_stack, instr->imm.values.value.type);
-                    if(wasmvm_errno != ERROR_success){
-                        return 0;
-                    }
+                    expect_check(instr->imm.values.value.type);
                     FuncType type;
                     vector_init(type.params);
                     type.results.size = 1;
@@ -71,24 +104,15 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 }
             break;
             case Op_if:
-                expect_val(value_stack, ctrl_stack, Value_i32);
-                if(wasmvm_errno != ERROR_success){
-                    return 0;
-                }
+                expect_check(Value_i32);
                 if(instr->imm.values.value.type == Value_index){
                     FuncType* type = module->types.data + instr->imm.values.index;
                     for(size_t i = 0; i < type->params.size; ++i){
-                        expect_val(value_stack, ctrl_stack, type->params.data[i]);
-                        if(wasmvm_errno != ERROR_success){
-                            return 0;
-                        }
+                        expect_check(type->params.data[i]);
                     }
                     push_ctrl(value_stack, ctrl_stack, Op_block, *type);
                 }else if(instr->imm.values.value.type != Value_unspecified){
-                    expect_val(value_stack, ctrl_stack, instr->imm.values.value.type);
-                    if(wasmvm_errno != ERROR_success){
-                        return 0;
-                    }
+                    expect_check(instr->imm.values.value.type);
                     FuncType type;
                     vector_init(type.params);
                     type.results.size = 1;
@@ -96,22 +120,22 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                     type.results.data[0] = instr->imm.values.value.type;
                     push_ctrl(value_stack, ctrl_stack, Op_if, type);
                 }
-            break;
+                break;
             case Op_else:{
                 ctrl_frame frame = pop_ctrl(value_stack, ctrl_stack);
                 if(wasmvm_errno != ERROR_success){
-                    return 0;
+                    return_clean();
                 }
                 if(frame.opcode == Op_if){
                     wasmvm_errno = ERROR_type_mis;
-                    return 0;
+                    return_clean();
                 }
                 push_ctrl(value_stack, ctrl_stack, Op_else, frame.types);
             }break;
             case Op_end:{
                 ctrl_frame frame = pop_ctrl(value_stack, ctrl_stack);
                 if(wasmvm_errno != ERROR_success){
-                    return 0;
+                    return_clean();
                 }
                 for(size_t i = 0; i < frame.types.results.size; ++i){
                     push_val(value_stack, frame.types.results.data[i]);
@@ -120,40 +144,97 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_br:{
                 if(ctrl_stack->size < instr->imm.values.index){
                     wasmvm_errno = ERROR_type_mis;
-                    return 0;
+                    return_clean();
                 }
                 label_type_t type = label_types(ctrl_stack, instr->imm.values.index);
                 for(size_t i = 0; i < type->size; ++i){
-                    expect_val(value_stack, ctrl_stack, type->data[i]);
-                    if(wasmvm_errno != ERROR_success){
-                        return 0;
-                    }
+                    expect_check(type->data[i]);
                 }
                 set_unreachable(value_stack, ctrl_stack);
             }break;
             case Op_br_if:{
                 if(ctrl_stack->size < instr->imm.values.index){
                     wasmvm_errno = ERROR_type_mis;
-                    return 0;
+                    return_clean();
                 }
-                expect_val(value_stack, ctrl_stack, Value_i32);
-                if(wasmvm_errno != ERROR_success){
-                    return 0;
-                }
+                expect_check(Value_i32);
                 label_type_t type = label_types(ctrl_stack, instr->imm.values.index);
                 for(size_t i = 0; i < type->size; ++i){
-                    expect_val(value_stack, ctrl_stack, type->data[i]);
-                    if(wasmvm_errno != ERROR_success){
-                        return 0;
-                    }
+                    expect_check(type->data[i]);
                 }
                 set_unreachable(value_stack, ctrl_stack);
             }break;
-            case Op_br_table:
+            case Op_br_table:{
+                expect_check(Value_i32);
+                u32_t* indices = (u32_t*)instr->imm.vec.data;
+                u32_t m = instr->imm.vec.size - 1;
+                if(ctrl_stack->size < indices[m]){
+                    wasmvm_errno = ERROR_type_mis;
+                    return_clean();
+                }
+                label_type_t defaultType = label_types(ctrl_stack, indices[m]);
+                for(size_t n = 0; n < m; ++n){
+                    if(ctrl_stack->size < indices[n]){
+                        wasmvm_errno = ERROR_type_mis;
+                        return_clean();
+                    }
+                    label_type_t nType = label_types(ctrl_stack, indices[n]);
+                    if(nType->size != defaultType->size){
+                        wasmvm_errno = ERROR_type_mis;
+                        return_clean();
+                    }
+                    for(size_t i = 0; i < nType->size; ++i){
+                        push_val(value_stack, expect_val(value_stack, ctrl_stack, nType->data[i]));
+                        if(wasmvm_errno != ERROR_success){
+                            return_clean();
+                        }
+                    }
+                }
+                for(size_t i = 0; i < defaultType->size; ++i){
+                    expect_check(defaultType->data[i]);
+                }
+                set_unreachable(value_stack, ctrl_stack);
+            }break;
             case Op_return:
-            case Op_call:
+                for(size_t i = 0; i < funcType.results.size; ++i){
+                    expect_check(funcType.results.data[i]);
+                }
+                set_unreachable(value_stack, ctrl_stack);
+            break;
+            case Op_call:{
+                if(instr->imm.values.index >= module->funcs.size){
+                    wasmvm_errno = ERROR_unknown_func;
+                    return_clean();
+                }
+                FuncType* type = module->types.data + module->funcs.data[instr->imm.values.index].type;
+                for(size_t i = 0; i < type->params.size; ++i){
+                    expect_check(type->params.data[i]);
+                }
+                for(size_t i = 0; i < type->results.size; ++i){
+                    push_val(value_stack, type->results.data[i]);
+                }
+            }break;
             case Op_call_indirect:
-                // TODO:
+                if(instr->imm.values.value.value.u32 >= module->tables.size){
+                    wasmvm_errno = ERROR_unknown_table;
+                    return_clean();
+                }
+                if(module->tables.data[instr->imm.values.value.value.u32].refType != Ref_func){
+                    wasmvm_errno = ERROR_type_mis;
+                    return_clean();
+                }
+                if(instr->imm.values.index >= module->types.size){
+                    wasmvm_errno = ERROR_unknown_type;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                FuncType* type = module->types.data + instr->imm.values.index;
+                for(size_t i = 0; i < type->params.size; ++i){
+                    expect_check(type->params.data[i]);
+                }
+                for(size_t i = 0; i < type->results.size; ++i){
+                    push_val(value_stack, type->results.data[i]);
+                }
                 break;
             case Op_ref_null:
             case Op_ref_is_null:
@@ -161,17 +242,82 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 // TODO:
                 break;
             case Op_drop:
-            case Op_select:
-            case Op_select_t:
-                // TODO:
-                break;
+                pop_val(value_stack, ctrl_stack);
+            break;
+            case Op_select:{
+                expect_check(Value_i32);
+                ValueType op1 = pop_val(value_stack, ctrl_stack);
+                ValueType op2 = pop_val(value_stack, ctrl_stack);
+                if(!is_num(op1) || !is_num(op2)){
+                    wasmvm_errno = ERROR_type_mis;
+                    return_clean();
+                }
+                if((op1 != op2) && (op1 != Value_unspecified) && (op2 != Value_unspecified)){
+                    wasmvm_errno = ERROR_type_mis;
+                    return_clean();
+                }
+                push_val(value_stack, (op1 == Value_unspecified) ? op2 : op1);
+            }break;
+            case Op_select_t:{
+                expect_check(Value_i32);
+                ValueType op1 = pop_val(value_stack, ctrl_stack);
+                ValueType op2 = pop_val(value_stack, ctrl_stack);
+                if((op1 != op2) && (op1 != Value_unspecified) && (op2 != Value_unspecified)){
+                    wasmvm_errno = ERROR_type_mis;
+                    return_clean();
+                }
+                ValueType actual = (op1 == Value_unspecified) ? op2 : op1;
+                if(actual != Value_unspecified){
+                    _Bool checked = 0;
+                    ValueType* types = (ValueType*)instr->imm.vec.data;
+                    for(size_t i = 0; i < instr->imm.vec.size; ++i){
+                        if(actual == types[i]){
+                            checked = 1;
+                        }
+                    }
+                    if(!checked){
+                        wasmvm_errno = ERROR_type_mis;
+                        return_clean();
+                    }
+                }
+                push_val(value_stack, Value_unspecified);
+            }break;
             case Op_local_get:
+                if(instr->imm.values.index >= func->locals.size){
+                    wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                push_val(value_stack, func->locals.data[instr->imm.values.index]);
+            break;
             case Op_local_set:
+                if(instr->imm.values.index >= func->locals.size){
+                    wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                expect_check(func->locals.data[instr->imm.values.index]);
+            break;
             case Op_local_tee:
+                if(instr->imm.values.index >= func->locals.size){
+                    wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                expect_check(func->locals.data[instr->imm.values.index]);
+                push_val(value_stack, func->locals.data[instr->imm.values.index]);
+            break;
             case Op_global_get:
+                if(instr->imm.values.index >= module->globals.size){
+                    wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                push_val(value_stack, module->globals.data[instr->imm.values.index].valType);
+            break;
             case Op_global_set:
-                // TODO:
-                break;
+                if(instr->imm.values.index >= module->globals.size){
+                    wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                expect_check(module->globals.data[instr->imm.values.index].valType);
+            break;
             case Op_table_set:
             case Op_table_get:
             case Op_table_init:
@@ -183,28 +329,34 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 // TODO:
                 break;
             case Op_i32_load:
-            case Op_i64_load:
-            case Op_f32_load:
-            case Op_f64_load:
             case Op_i32_load8_s:
             case Op_i32_load8_u:
             case Op_i32_load16_s:
             case Op_i32_load16_u:
+
+            case Op_i64_load:
             case Op_i64_load8_s:
             case Op_i64_load8_u:
             case Op_i64_load16_s:
             case Op_i64_load16_u:
             case Op_i64_load32_s:
             case Op_i64_load32_u:
+
+            case Op_f32_load:
+
+            case Op_f64_load:
+
             case Op_i32_store:
-            case Op_i64_store:
-            case Op_f32_store:
-            case Op_f64_store:
             case Op_i32_store8:
             case Op_i32_store16:
+            
+            case Op_i64_store:
             case Op_i64_store8:
             case Op_i64_store16:
             case Op_i64_store32:
+            
+            case Op_f32_store:
+            case Op_f64_store:
             case Op_memory_size:
             case Op_memory_grow:
             case Op_memory_init:
@@ -217,6 +369,7 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i64_const:
             case Op_f32_const:
             case Op_f64_const:
+
             case Op_i32_eqz:
             case Op_i32_eq:
             case Op_i32_ne:
@@ -228,6 +381,7 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i32_le_u:
             case Op_i32_ge_s:
             case Op_i32_ge_u:
+
             case Op_i64_eqz:
             case Op_i64_eq:
             case Op_i64_ne:
@@ -239,21 +393,25 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i64_le_u:
             case Op_i64_ge_s:
             case Op_i64_ge_u:
+
             case Op_f32_eq:
             case Op_f32_ne:
             case Op_f32_lt:
             case Op_f32_gt:
             case Op_f32_le:
             case Op_f32_ge:
+
             case Op_f64_eq:
             case Op_f64_ne:
             case Op_f64_lt:
             case Op_f64_gt:
             case Op_f64_le:
             case Op_f64_ge:
+
             case Op_i32_clz:
             case Op_i32_ctz:
             case Op_i32_popcnt:
+
             case Op_i32_add:
             case Op_i32_sub:
             case Op_i32_mul:
@@ -269,6 +427,7 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i32_shr_u:
             case Op_i32_rotl:
             case Op_i32_rotr:
+
             case Op_i64_clz:
             case Op_i64_ctz:
             case Op_i64_popcnt:
@@ -287,6 +446,7 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i64_shr_u:
             case Op_i64_rotl:
             case Op_i64_rotr:
+
             case Op_f32_abs:
             case Op_f32_neg:
             case Op_f32_ceil:
@@ -315,6 +475,7 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_f64_min:
             case Op_f64_max:
             case Op_f64_copysign:
+
             case Op_i32_wrap_i64:
             case Op_i32_trunc_s_f32:
             case Op_i32_trunc_u_f32:
@@ -357,8 +518,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             break;
             default:
                 wasmvm_errno = ERROR_unknown_operator;
-                return 0;
+                return_clean();
         }
     }
+    free_value_stack(value_stack);
+    free_ctrl_stack(ctrl_stack);
     return 1;
 }
