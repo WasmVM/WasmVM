@@ -59,8 +59,20 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
     ctrl_stack_t ctrl_stack = (ctrl_stack_t)malloc_func(sizeof(CtrlStack));
     ctrl_stack->size = 0;
     ctrl_stack->data = NULL;
+
     FuncType funcType = module->types.data[func->type];
-    push_ctrl(value_stack, ctrl_stack, Op_block, module->types.data[func->type]);
+
+    // Locals & params
+    ValueType locals[funcType.params.size + func->locals.size];
+    size_t local_size = funcType.params.size + func->locals.size;
+    memcpy_func(locals, funcType.params.data, sizeof(ValueType) * funcType.params.size);
+    memcpy_func(locals + funcType.params.size, func->locals.data, sizeof(ValueType) * func->locals.size);
+
+    size_t paramSize = funcType.params.size;
+    funcType.params.size = 0;
+    push_ctrl(value_stack, ctrl_stack, Op_block, funcType);
+    funcType.params.size = paramSize;
+
     for(size_t instrIdx = 0; instrIdx < func->body.size; ++instrIdx){
         WasmInstr* instr = func->body.data + instrIdx;
         switch(instr->opcode){
@@ -283,26 +295,26 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 push_val(value_stack, Value_unspecified);
             }break;
             case Op_local_get:
-                if(instr->imm.values.index >= func->locals.size){
+                if(instr->imm.values.index >= local_size){
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return_clean();
                 }
-                push_val(value_stack, func->locals.data[instr->imm.values.index]);
+                push_val(value_stack, locals[instr->imm.values.index]);
             break;
             case Op_local_set:
-                if(instr->imm.values.index >= func->locals.size){
+                if(instr->imm.values.index >= local_size){
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return_clean();
                 }
-                expect_check(func->locals.data[instr->imm.values.index]);
+                expect_check(locals[instr->imm.values.index]);
             break;
             case Op_local_tee:
-                if(instr->imm.values.index >= func->locals.size){
+                if(instr->imm.values.index >= local_size){
                     wasmvm_errno = ERROR_len_out_of_bound;
                     return_clean();
                 }
-                expect_check(func->locals.data[instr->imm.values.index]);
-                push_val(value_stack, func->locals.data[instr->imm.values.index]);
+                expect_check(locals[instr->imm.values.index]);
+                push_val(value_stack, locals[instr->imm.values.index]);
             break;
             case Op_global_get:
                 if(instr->imm.values.index >= module->globals.size){
@@ -328,37 +340,170 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_table_fill:
                 // TODO:
                 break;
-            case Op_i32_load:
             case Op_i32_load8_s:
             case Op_i32_load8_u:
+                if(instr->imm.memarg.align > 0){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i32_load16_s:
             case Op_i32_load16_u:
-
-            case Op_i64_load:
+                if(instr->imm.memarg.align > 1){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
+            case Op_i32_load:
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_load8_s:
             case Op_i64_load8_u:
+                if(instr->imm.memarg.align > 0){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_i64_load16_s:
             case Op_i64_load16_u:
+                if(instr->imm.memarg.align > 1){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_i64_load32_s:
             case Op_i64_load32_u:
-
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i64);
+            break;
+            case Op_i64_load:
+                if(instr->imm.memarg.align > 3){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_f32_load:
-
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f64_load:
-
-            case Op_i32_store:
+                if(instr->imm.memarg.align > 3){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_i32_store8:
+                if(instr->imm.memarg.align > 0){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                expect_check(Value_i32);
+            break;
             case Op_i32_store16:
-            
+                if(instr->imm.memarg.align > 1){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                expect_check(Value_i32);
+            break;
+            case Op_i32_store:
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                expect_check(Value_i32);
+            break;
             case Op_i64_store:
+                if(instr->imm.memarg.align > 3){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i64);
+                expect_check(Value_i32);
+            break;
             case Op_i64_store8:
+                if(instr->imm.memarg.align > 0){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i64);
+                expect_check(Value_i32);
+            break;
             case Op_i64_store16:
+                if(instr->imm.memarg.align > 1){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i64);
+                expect_check(Value_i32);
+            break;
             case Op_i64_store32:
-            
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_i64);
+                expect_check(Value_i32);
+            break;
             case Op_f32_store:
+                if(instr->imm.memarg.align > 2){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_f32);
+                expect_check(Value_i32);
+            break;
             case Op_f64_store:
+                if(instr->imm.memarg.align > 3){
+                    wasmvm_errno = ERROR_align_gt_natural;
+                    return_clean();
+                }
+                expect_check(Value_f64);
+                expect_check(Value_i32);
+            break;
             case Op_memory_size:
+                if(module->mems.size <= 0){
+                    wasmvm_errno = ERROR_unknown_mem;
+                    return_clean();
+                }
+                push_val(value_stack, Value_i32);
+            break;
             case Op_memory_grow:
+                if(module->mems.size <= 0){
+                    wasmvm_errno = ERROR_unknown_mem;
+                    return_clean();
+                }
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_memory_init:
             case Op_data_drop:
             case Op_memory_copy:
@@ -366,10 +511,17 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 // TODO:
                 break;
             case Op_i32_const:
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_const:
+                push_val(value_stack, Value_i64);
+            break;
             case Op_f32_const:
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f64_const:
-
+                push_val(value_stack, Value_f64);
+            break;
             case Op_i32_eqz:
             case Op_i32_eq:
             case Op_i32_ne:
@@ -381,7 +533,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i32_le_u:
             case Op_i32_ge_s:
             case Op_i32_ge_u:
-
+                expect_check(Value_i32);
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_eqz:
             case Op_i64_eq:
             case Op_i64_ne:
@@ -393,25 +548,36 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i64_le_u:
             case Op_i64_ge_s:
             case Op_i64_ge_u:
-
+                expect_check(Value_i64);
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_f32_eq:
             case Op_f32_ne:
             case Op_f32_lt:
             case Op_f32_gt:
             case Op_f32_le:
             case Op_f32_ge:
-
+                expect_check(Value_f32);
+                expect_check(Value_f32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_f64_eq:
             case Op_f64_ne:
             case Op_f64_lt:
             case Op_f64_gt:
             case Op_f64_le:
             case Op_f64_ge:
-
+                expect_check(Value_f64);
+                expect_check(Value_f64);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i32_clz:
             case Op_i32_ctz:
             case Op_i32_popcnt:
-
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i32_add:
             case Op_i32_sub:
             case Op_i32_mul:
@@ -427,10 +593,16 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i32_shr_u:
             case Op_i32_rotl:
             case Op_i32_rotr:
-
+                expect_check(Value_i32);
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_clz:
             case Op_i64_ctz:
             case Op_i64_popcnt:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_i64_add:
             case Op_i64_sub:
             case Op_i64_mul:
@@ -446,7 +618,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_i64_shr_u:
             case Op_i64_rotl:
             case Op_i64_rotr:
-
+                expect_check(Value_i64);
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_f32_abs:
             case Op_f32_neg:
             case Op_f32_ceil:
@@ -461,6 +636,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_f32_min:
             case Op_f32_max:
             case Op_f32_copysign:
+                expect_check(Value_f32);
+                expect_check(Value_f32);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f64_abs:
             case Op_f64_neg:
             case Op_f64_ceil:
@@ -475,46 +654,101 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_f64_min:
             case Op_f64_max:
             case Op_f64_copysign:
-
+                expect_check(Value_f64);
+                expect_check(Value_f64);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_i32_wrap_i64:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i32_trunc_s_f32:
             case Op_i32_trunc_u_f32:
+            case Op_i32_trunc_sat_f32_s:
+            case Op_i32_trunc_sat_f32_u:
+                expect_check(Value_f32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i32_trunc_s_f64:
             case Op_i32_trunc_u_f64:
+            case Op_i32_trunc_sat_f64_s:
+            case Op_i32_trunc_sat_f64_u:
+                expect_check(Value_f64);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_extend_s_i32:
             case Op_i64_extend_u_i32:
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_i64_trunc_s_f32:
             case Op_i64_trunc_u_f32:
+            case Op_i64_trunc_sat_f32_s:
+            case Op_i64_trunc_sat_f32_u:
+                expect_check(Value_f32);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_i64_trunc_s_f64:
             case Op_i64_trunc_u_f64:
+            case Op_i64_trunc_sat_f64_s:
+            case Op_i64_trunc_sat_f64_u:
+                expect_check(Value_f64);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_f32_convert_s_i32:
             case Op_f32_convert_u_i32:
+                expect_check(Value_i32);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f32_convert_s_i64:
             case Op_f32_convert_u_i64:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f32_demote_f64:
+                expect_check(Value_f64);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f64_convert_s_i32:
             case Op_f64_convert_u_i32:
+                expect_check(Value_i32);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_f64_convert_s_i64:
             case Op_f64_convert_u_i64:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_f64_promote_f32:
+                expect_check(Value_f32);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_i32_reinterpret_f32:
+                expect_check(Value_f32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_reinterpret_f64:
+                expect_check(Value_f64);
+                push_val(value_stack, Value_i64);
+            break;
             case Op_f32_reinterpret_i32:
+                expect_check(Value_i32);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f64_reinterpret_i64:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_i32_extend8_s:
             case Op_i32_extend16_s:
+                expect_check(Value_i32);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_extend8_s:
             case Op_i64_extend16_s:
             case Op_i64_extend32_s:
-            case Op_i32_trunc_sat_f32_s:
-            case Op_i32_trunc_sat_f32_u:
-            case Op_i32_trunc_sat_f64_s:
-            case Op_i32_trunc_sat_f64_u:
-            case Op_i64_trunc_sat_f32_s:
-            case Op_i64_trunc_sat_f32_u:
-            case Op_i64_trunc_sat_f64_s:
-            case Op_i64_trunc_sat_f64_u:
-                // TODO:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i64);
             break;
             default:
                 wasmvm_errno = ERROR_unknown_operator;
