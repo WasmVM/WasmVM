@@ -43,5 +43,6 @@ void free_frame(ctrl_frame frame);
 void set_unreachable(value_stack_t vals, ctrl_stack_t ctrls);
 
 typedef vector_t(ValueType)* label_type_t;
-label_type_t label_types(ctrl_stack_t ctrls, size_t index);
+label_type_t label_types(ctrl_stack_t ctrls, FuncType* funcType, size_t index);
+_Bool peek_vals(value_stack_t vals, ctrl_stack_t ctrls, label_type_t expects);
 #endif

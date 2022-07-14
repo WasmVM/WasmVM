@@ -62,8 +62,43 @@ ValueType expect_val(value_stack_t vals, ctrl_stack_t ctrls, ValueType expect){
     if((expect == Value_unspecified) || (actual == expect)){
         return actual;
     }
+
     wasmvm_errno = ERROR_type_mis;
     return Value_index;
+}
+
+_Bool peek_vals(value_stack_t vals, ctrl_stack_t ctrls, label_type_t expects){
+    if(ctrls->size == 0){
+        wasmvm_errno = ERROR_type_mis;
+        return 0;
+    }
+    if(vals->size < (ctrls->data->frame.height + expects->size)){
+        if(ctrls->data->frame.unreachable){
+            while(vals->size > ctrls->data->frame.height){
+                pop_val(vals, ctrls);
+            }
+            for(size_t i = 0; i < expects->size; ++i){
+                push_val(vals, Value_unspecified);
+            }
+            return 1;
+        }else{
+            wasmvm_errno = ERROR_type_mis;
+            return 0;
+        }
+    }
+    value_node_t node = vals->data;
+    if(vals->size < expects->size){
+        wasmvm_errno = ERROR_type_mis;
+        return 0;
+    }
+    for(size_t i = expects->size; i > 0; --i){
+        if((node->val != expects->data[i - 1]) && (node->val != Value_unspecified) && (expects->data[i - 1] != Value_unspecified)){
+            wasmvm_errno = ERROR_type_mis;
+            return 0;
+        }
+        node = node->next;
+    }
+    return 1;
 }
 
 void push_ctrl(value_stack_t vals, ctrl_stack_t ctrls, u16_t opcode, wasm_functype types){
@@ -73,11 +108,19 @@ void push_ctrl(value_stack_t vals, ctrl_stack_t ctrls, u16_t opcode, wasm_functy
     node->frame.unreachable = 0;
     node->frame.height = vals->size;
     node->frame.types.params.size = types.params.size;
-    node->frame.types.params.data = (ValueType*)malloc_func(sizeof(ValueType) * types.params.size);
-    memcpy_func(node->frame.types.params.data, types.params.data, sizeof(ValueType) * types.params.size);
+    if(types.params.size > 0){
+        node->frame.types.params.data = (ValueType*)malloc_func(sizeof(ValueType) * types.params.size);
+        memcpy_func(node->frame.types.params.data, types.params.data, sizeof(ValueType) * types.params.size);
+    }else{
+        node->frame.types.params.data = NULL;
+    }
     node->frame.types.results.size = types.results.size;
-    node->frame.types.results.data = (ValueType*)malloc_func(sizeof(ValueType) * types.results.size);
-    memcpy_func(node->frame.types.results.data, types.results.data, sizeof(ValueType) * types.results.size);
+    if(types.results.size > 0){
+        node->frame.types.results.data = (ValueType*)malloc_func(sizeof(ValueType) * types.results.size);
+        memcpy_func(node->frame.types.results.data, types.results.data, sizeof(ValueType) * types.results.size);
+    }else{
+        node->frame.types.results.data = NULL;
+    }
     // Push node
     node->next = ctrls->data;
     ctrls->data = node;
@@ -105,8 +148,8 @@ ctrl_frame pop_ctrl(value_stack_t vals, ctrl_stack_t ctrls){
     ctrl_node_t node = ctrls->data;
     frame = node->frame;
     // Pop values
-    for(size_t i = 0; i < frame.types.results.size; ++i){
-        expect_val(vals, ctrls, frame.types.results.data[i]);
+    for(size_t i = frame.types.results.size; i > 0; --i){
+        expect_val(vals, ctrls, frame.types.results.data[i - 1]);
     }
     if(vals->size != frame.height){
         wasmvm_errno = ERROR_type_mis;
@@ -152,10 +195,13 @@ void free_frame(ctrl_frame frame){
     free_vector(frame.types.results);
 }
 
-label_type_t label_types(ctrl_stack_t ctrls, size_t index){
+label_type_t label_types(ctrl_stack_t ctrls, FuncType* funcType, size_t index){
     ctrl_node_t node = ctrls->data;
     for(size_t i = 0; i < index; ++i){
         node = node->next;
     }
-    return (node->frame.opcode == Op_loop) ? (label_type_t)&node->frame.types.params : (label_type_t)&node->frame.types.results;
+    if(node == NULL){
+        return (label_type_t)&(funcType->results);
+    }
+    return (node->frame.opcode == Op_loop) ? (label_type_t)&(node->frame.types.params) : (label_type_t)&(node->frame.types.results);
 }
