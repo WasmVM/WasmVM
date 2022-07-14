@@ -196,13 +196,13 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 expect_check(Value_i32);
                 u32_t* indices = (u32_t*)instr->imm.vec.data;
                 u32_t m = instr->imm.vec.size - 1;
-                if(ctrl_stack->size < indices[m]){
+                if(ctrl_stack->size <= indices[m]){
                     wasmvm_errno = ERROR_type_mis;
                     return_clean();
                 }
                 label_type_t defaultType = label_types(ctrl_stack, &funcType, indices[m]);
                 for(size_t n = 0; n < m; ++n){
-                    if(ctrl_stack->size < indices[n]){
+                    if(ctrl_stack->size <= indices[n]){
                         wasmvm_errno = ERROR_type_mis;
                         return_clean();
                     }
