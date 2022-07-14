@@ -233,8 +233,8 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                     return_clean();
                 }
                 FuncType* type = module->types.data + module->funcs.data[instr->imm.values.index].type;
-                for(size_t i = 0; i < type->params.size; ++i){
-                    expect_check(type->params.data[i]);
+                for(size_t i = type->params.size; i > 0; --i){
+                    expect_check(type->params.data[i - 1]);
                 }
                 for(size_t i = 0; i < type->results.size; ++i){
                     push_val(value_stack, type->results.data[i]);
@@ -255,8 +255,8 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 }
                 expect_check(Value_i32);
                 FuncType* type = module->types.data + instr->imm.values.index;
-                for(size_t i = 0; i < type->params.size; ++i){
-                    expect_check(type->params.data[i]);
+                for(size_t i = type->params.size; i > 0; --i){
+                    expect_check(type->params.data[i - 1]);
                 }
                 for(size_t i = 0; i < type->results.size; ++i){
                     push_val(value_stack, type->results.data[i]);
@@ -611,6 +611,9 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 push_val(value_stack, Value_i32);
             break;
             case Op_i64_eqz:
+                expect_check(Value_i64);
+                push_val(value_stack, Value_i32);
+            break;
             case Op_i64_clz:
             case Op_i64_ctz:
             case Op_i64_popcnt:
@@ -643,6 +646,9 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_f32_trunc:
             case Op_f32_nearest:
             case Op_f32_sqrt:
+                expect_check(Value_f32);
+                push_val(value_stack, Value_f32);
+            break;
             case Op_f32_add:
             case Op_f32_sub:
             case Op_f32_mul:
@@ -661,6 +667,9 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
             case Op_f64_trunc:
             case Op_f64_nearest:
             case Op_f64_sqrt:
+                expect_check(Value_f64);
+                push_val(value_stack, Value_f64);
+            break;
             case Op_f64_add:
             case Op_f64_sub:
             case Op_f64_mul:
