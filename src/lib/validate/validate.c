@@ -14,5 +14,15 @@ _Bool module_validate(wasm_module module){
             return 0;
         }
     }
+    // Tables
+    for(size_t i = 0; i < module->tables.size; ++i){
+        if(!table_validate(module->tables.data + i, module)){
+            return 0;
+        }
+    }
     return 1;
+}
+
+_Bool table_validate(WasmTable* table, WasmModule* module){
+    return table->min <= table->max;
 }

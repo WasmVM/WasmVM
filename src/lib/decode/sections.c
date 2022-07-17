@@ -443,7 +443,7 @@ int parse_table_section(WasmModule *module, const byte_t **read_p, const byte_t 
                 return -1;
             }
         } else {
-            module->tables.data[index].max = 0;
+            module->tables.data[index].max = -1;
         }
     }
     SECTION_EPILOGUE(4)
