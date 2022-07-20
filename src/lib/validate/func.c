@@ -46,7 +46,7 @@ static _Bool is_ref(ValueType type){
     }
 }
 
-_Bool func_validate(WasmFunc* func, WasmModule* module){
+_Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context){
     // Validate type
     if(func->type >= module->types.size){
         wasmvm_errno = ERROR_unknown_type;
@@ -228,11 +228,16 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 set_unreachable(value_stack, ctrl_stack);
             break;
             case Op_call:{
-                if(instr->imm.values.index >= module->funcs.size){
+                if(instr->imm.values.index >= (module->funcs.size + context->funcs.size)){
                     wasmvm_errno = ERROR_unknown_func;
                     return_clean();
                 }
-                FuncType* type = module->types.data + module->funcs.data[instr->imm.values.index].type;
+                FuncType* type = NULL;
+                if(instr->imm.values.index >= module->funcs.size){
+                    type = module->types.data + context->funcs.data[instr->imm.values.index];
+                }else{
+                    type = module->types.data + module->funcs.data[instr->imm.values.index].type;
+                }
                 for(size_t i = type->params.size; i > 0; --i){
                     expect_check(type->params.data[i - 1]);
                 }
@@ -241,11 +246,16 @@ _Bool func_validate(WasmFunc* func, WasmModule* module){
                 }
             }break;
             case Op_call_indirect:
-                if(instr->imm.values.value.value.u32 >= module->tables.size){
+                if(instr->imm.values.value.value.u32 >= (module->tables.size + context->tables.size)){
                     wasmvm_errno = ERROR_unknown_table;
                     return_clean();
                 }
-                if(module->tables.data[instr->imm.values.value.value.u32].refType != Ref_func){
+                if(instr->imm.values.value.value.u32 >= module->tables.size){
+                    if(context->tables.data[instr->imm.values.value.value.u32 - module->tables.size].refType != Ref_func){
+                        wasmvm_errno = ERROR_type_mis;
+                        return_clean();
+                    }
+                }else if(module->tables.data[instr->imm.values.value.value.u32].refType != Ref_func){
                     wasmvm_errno = ERROR_type_mis;
                     return_clean();
                 }

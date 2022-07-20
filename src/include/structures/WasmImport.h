@@ -5,6 +5,7 @@
 #include <dataTypes/Value.h>
 #include <dataTypes/DescType.h>
 #include <dataTypes/vector_t.h>
+#include <dataTypes/RefType.h>
 
 typedef struct {
     vector_t(byte_t) module;
@@ -15,6 +16,7 @@ typedef struct {
         struct {
             u32_t min;
             u32_t max;
+            RefType type;
         } limits; // table, memory
         struct {
             _Bool mut;

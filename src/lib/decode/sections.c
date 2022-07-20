@@ -310,8 +310,13 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                         return -1;
                     }
                     break;
-                case IMPORT_Table:
-                    if((*((*read_p)++) != REF_funcref) && (*((*read_p)++) != REF_externref)) {
+                case IMPORT_Table:{
+                    byte_t bin = *((*read_p)++);
+                    if(bin == REF_funcref){
+                        import->desc.limits.type = Ref_func;
+                    }else if(bin == REF_externref){
+                        import->desc.limits.type = Ref_extern;
+                    }else{
                         wasmvm_errno = ERROR_malform_import;
                         return -1;
                     }
@@ -320,7 +325,7 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                         wasmvm_errno = ERROR_malform_import;
                         return -1;
                     }
-                    break;
+                }break;
                 case IMPORT_Mem:
                     import->descType = Desc_Mem;
                     if(read_limits(import, read_p, end_p)) {

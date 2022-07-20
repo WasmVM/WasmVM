@@ -3,7 +3,17 @@
 
 #include <WasmVM.h>
 
-_Bool func_validate(WasmFunc* func, WasmModule* module);
-_Bool table_validate(WasmTable* table, WasmModule* module);
+typedef struct {
+    vector_t(u32_t) funcs;
+    vector_t(WasmTable) tables;
+    vector_t(WasmMemory) mems;
+    vector_t(ValueType) globals;
+} ValidateContext;
+
+
+_Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context);
+_Bool table_validate(WasmTable* table);
+_Bool memory_validate(WasmMemory* memory);
+_Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* context);
 
 #endif
