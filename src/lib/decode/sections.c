@@ -745,7 +745,7 @@ int parse_element_section(WasmModule *module, const byte_t **read_p, const byte_
             // Get funcIdx
             for(u32_t idx = 0; idx < idxNum; ++idx) {
                 newElem->init.data[idx].type = Const_Value;
-                newElem->init.data[idx].value.type = Value_i32;
+                newElem->init.data[idx].value.type = Value_funcref;
                 newElem->init.data[idx].value.value.u32 = getLeb128_u32(read_p, end_p);
                 if(wasmvm_errno) {
                     return -1;

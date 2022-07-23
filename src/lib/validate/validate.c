@@ -103,6 +103,12 @@ _Bool module_validate(wasm_module module){
             return 0;
         }
     }
+    // Elems
+    for(size_t i = 0; i < module->elems.size; ++i){
+        if(!elem_validate(module->elems.data + i, module, &context)){
+            return 0;
+        }
+    }
     return 1;
 }
 
@@ -122,13 +128,13 @@ _Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* c
                 wasmvm_errno = ERROR_len_out_of_bound;
                 return 0;
             }
-            if(index >= module->globals.size){
-                if(context->globals.data[index - module->globals.size] != global->valType){
+            if(index >= context->globals.size){
+                if(module->globals.data[index - context->globals.size].valType != global->valType){
                     wasmvm_errno = ERROR_type_mis;
                     return 0;
                 }
             }else{
-                if(module->globals.data[index].valType != global->valType){
+                if(context->globals.data[index] != global->valType){
                     wasmvm_errno = ERROR_type_mis;
                     return 0;
                 }
@@ -143,6 +149,86 @@ _Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* c
         default:
             wasmvm_errno = ERROR_req_const_expr;
             return 0;
+    }
+    return 1;
+}
+
+_Bool elem_validate(WasmElem* elem, WasmModule* module, ValidateContext* context){
+    // Type
+    if(elem->type != Value_funcref && elem->type != Value_externref){
+        wasmvm_errno = ERROR_type_mis;
+        return 0;
+    }
+    // Inits
+    for(size_t i = 0; i < elem->init.size; ++i){
+        ConstExpr* init = elem->init.data + i;
+        switch (init->type){
+            case Const_GlobalIndex:
+                if(init->value.value.u32 >= (context->globals.size + module->globals.size)){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                if(init->value.value.u32 >= context->globals.size){
+                    // Global
+                    if(module->globals.data[init->value.value.u32 - context->globals.size].valType != elem->type){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }else{
+                    // Import
+                    if(context->globals.data[init->value.value.u32] != elem->type){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }
+                break;
+            case Const_Value:
+                if(init->value.type != elem->type){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                break;
+            default:
+                wasmvm_errno = ERROR_type_mis;
+                return 0;
+        }
+    }
+    // Mode
+    if(elem->mode.mode == Elem_active){
+        if(elem->mode.tableidx >= (context->tables.size + module->tables.size)){
+            wasmvm_errno = ERROR_unknown_table;
+            return 0;
+        }
+        switch (elem->mode.offset.type){
+            case Const_GlobalIndex:
+                if(elem->mode.offset.value.value.u32 >= (context->globals.size + module->globals.size)){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                if(elem->mode.offset.value.value.u32 >= context->globals.size){
+                    // Global
+                    if(module->globals.data[elem->mode.offset.value.value.u32 - context->globals.size].valType != Value_i32){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }else{
+                    // Import
+                    if(context->globals.data[elem->mode.offset.value.value.u32] != Value_i32){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }
+                break;
+            case Const_Value:
+                if(elem->mode.offset.value.type != Value_i32){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                break;
+            default:
+                wasmvm_errno = ERROR_type_mis;
+                return 0;
+        }
     }
     return 1;
 }
