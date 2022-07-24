@@ -16,5 +16,8 @@ _Bool table_validate(WasmTable* table);
 _Bool memory_validate(WasmMemory* memory);
 _Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* context);
 _Bool elem_validate(WasmElem* elem, WasmModule* module, ValidateContext* context);
+_Bool data_validate(WasmData* data, WasmModule* module, ValidateContext* context);
+_Bool import_validate(WasmImport* import, WasmModule* module, ValidateContext* context);
+_Bool export_validate(WasmExport* export, WasmModule* module, ValidateContext* context);
 
 #endif

@@ -467,12 +467,6 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
     module->mems.size = memNum;
     // Get all memories
     for(u32_t index = 0; index < memNum; ++index) {
-        // Only one memory supported
-        if(memNum > 1) {
-            wasmvm_errno = ERROR_multi_mem;
-            return -1;
-        }
-
         // Handle unexpected end
         if(*read_p >= end_p) {
             wasmvm_errno = ERROR_unexpect_end;

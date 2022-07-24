@@ -54,6 +54,10 @@ _Bool module_validate(wasm_module module){
         WasmImport* import = module->imports.data + i;
         switch (import->descType){
             case Desc_Func:
+                if(import->desc.typeidx >= module->types.size){
+                    wasmvm_errno = ERROR_unknown_type;
+                    return 0;
+                }
                 context.funcs.data[context.funcs.size] = import->desc.typeidx;
                 context.funcs.size += 1;
                 break;
@@ -109,6 +113,44 @@ _Bool module_validate(wasm_module module){
             return 0;
         }
     }
+    // Datas
+    for(size_t i = 0; i < module->datas.size; ++i){
+        if(!data_validate(module->datas.data + i, module, &context)){
+            return 0;
+        }
+    }
+    // Start
+    if(module->start != -1){
+        if(module->start >= (context.funcs.size + module->funcs.size)){
+            wasmvm_errno = ERROR_start_func;
+            return 0;
+        }
+        if(module->start >= context.funcs.size){
+            FuncType* funcType = module->types.data + module->funcs.data[module->start - context.funcs.size].type;
+            if((funcType->params.size != 0) || (funcType->results.size != 0)){
+                wasmvm_errno = ERROR_start_func;
+                return 0;
+            }
+        }else{
+            FuncType* funcType = module->types.data + context.funcs.data[module->start];
+            if((funcType->params.size != 0) || (funcType->results.size != 0)){
+                wasmvm_errno = ERROR_start_func;
+                return 0;
+            }
+        }
+    }
+    // Imports
+    for(size_t i = 0; i < module->imports.size; ++i){
+        if(!import_validate(module->imports.data + i, module, &context)){
+            return 0;
+        }
+    }
+    // Exports
+    for(size_t i = 0; i < module->exports.size; ++i){
+        if(!export_validate(module->exports.data + i, module, &context)){
+            return 0;
+        }
+    }
     return 1;
 }
 
@@ -117,7 +159,7 @@ _Bool table_validate(WasmTable* table){
 }
 
 _Bool memory_validate(WasmMemory* memory){
-    return (!memory->max) || (memory->min <= memory->max);
+    return ((memory->max <= 0x10000) && (memory->min <= 0x10000)) && ((!memory->max) || (memory->min <= memory->max));
 }
 
 _Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* context){
@@ -229,6 +271,108 @@ _Bool elem_validate(WasmElem* elem, WasmModule* module, ValidateContext* context
                 wasmvm_errno = ERROR_type_mis;
                 return 0;
         }
+    }
+    return 1;
+}
+
+_Bool data_validate(WasmData* data, WasmModule* module, ValidateContext* context){
+    if(data->mode.mode == Data_active){
+        if(data->mode.memidx >= (context->mems.size + module->mems.size)){
+            wasmvm_errno = ERROR_unknown_mem;
+            return 0;
+        }
+        switch (data->mode.offset.type){
+            case Const_GlobalIndex:
+                if(data->mode.offset.value.value.u32 >= (context->globals.size + module->globals.size)){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                if(data->mode.offset.value.value.u32 >= context->globals.size){
+                    // Global
+                    if(module->globals.data[data->mode.offset.value.value.u32 - context->globals.size].valType != Value_i32){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }else{
+                    // Import
+                    if(context->globals.data[data->mode.offset.value.value.u32] != Value_i32){
+                        wasmvm_errno = ERROR_type_mis;
+                        return 0;
+                    }
+                }
+                break;
+            case Const_Value:
+                if(data->mode.offset.value.type != Value_i32){
+                    wasmvm_errno = ERROR_unknown_global;
+                    return 0;
+                }
+                break;
+            default:
+                wasmvm_errno = ERROR_type_mis;
+                return 0;
+        }
+    }
+    return 1;
+}
+
+_Bool import_validate(WasmImport* import, WasmModule* module, ValidateContext* context){
+    switch (import->descType){
+        case Desc_Func:
+            if(import->desc.typeidx >= module->types.size){
+                wasmvm_errno = ERROR_unknown_type;
+                return 0;
+            }
+            break;
+        case Desc_Table:
+            if(import->desc.limits.max && (import->desc.limits.min > import->desc.limits.max)){
+                wasmvm_errno = ERROR_len_out_of_bound;
+                return 0;
+            }
+            break;
+        case Desc_Mem:
+            if((import->desc.limits.min > 0x1000) || (import->desc.limits.max > 0x1000) || (import->desc.limits.max && (import->desc.limits.min > import->desc.limits.max))){
+                wasmvm_errno = ERROR_len_out_of_bound;
+                return 0;
+            }
+            break;
+        case Desc_Global:
+            break;
+        default:
+            wasmvm_errno = ERROR_unknown_import;
+            return 0;
+    }
+    return 1;
+}
+
+_Bool export_validate(WasmExport* export, WasmModule* module, ValidateContext* context){
+    switch (export->descType){
+        case Desc_Func:
+            if(export->descIdx >= (context->funcs.size + module->funcs.size)){
+                wasmvm_errno = ERROR_unknown_func;
+                return 0;
+            }
+            break;
+        case Desc_Table:
+            if(export->descIdx >= (context->tables.size + module->tables.size)){
+                wasmvm_errno = ERROR_unknown_table;
+                return 0;
+            }
+            break;
+        case Desc_Mem:
+            if(export->descIdx >= (context->mems.size + module->mems.size)){
+                wasmvm_errno = ERROR_unknown_func;
+                return 0;
+            }
+            break;
+        case Desc_Global:
+            if(export->descIdx >= (context->globals.size + module->globals.size)){
+                wasmvm_errno = ERROR_unknown_func;
+                return 0;
+            }
+            break;
+        default:
+            wasmvm_errno = ERROR_type_mis;
+            return 0;
     }
     return 1;
 }

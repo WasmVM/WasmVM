@@ -233,10 +233,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context
                     return_clean();
                 }
                 FuncType* type = NULL;
-                if(instr->imm.values.index >= module->funcs.size){
-                    type = module->types.data + context->funcs.data[instr->imm.values.index];
+                if(instr->imm.values.index >= context->funcs.size){
+                    type = module->types.data + module->funcs.data[instr->imm.values.index - context->funcs.size].type;
                 }else{
-                    type = module->types.data + module->funcs.data[instr->imm.values.index].type;
+                    type = module->types.data + context->funcs.data[instr->imm.values.index];
                 }
                 for(size_t i = type->params.size; i > 0; --i){
                     expect_check(type->params.data[i - 1]);
@@ -250,12 +250,12 @@ _Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context
                     wasmvm_errno = ERROR_unknown_table;
                     return_clean();
                 }
-                if(instr->imm.values.value.value.u32 >= module->tables.size){
-                    if(context->tables.data[instr->imm.values.value.value.u32 - module->tables.size].refType != Ref_func){
+                if(instr->imm.values.value.value.u32 >= context->tables.size){
+                    if(module->tables.data[instr->imm.values.value.value.u32 - context->tables.size].refType != Ref_func){
                         wasmvm_errno = ERROR_type_mis;
                         return_clean();
                     }
-                }else if(module->tables.data[instr->imm.values.value.value.u32].refType != Ref_func){
+                }else if(context->tables.data[instr->imm.values.value.value.u32].refType != Ref_func){
                     wasmvm_errno = ERROR_type_mis;
                     return_clean();
                 }
