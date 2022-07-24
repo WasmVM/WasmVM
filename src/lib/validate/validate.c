@@ -7,6 +7,25 @@
 #include <WasmVM.h>
 #include "validate.h"
 
+static void clean_context(ValidateContext* context){
+    free_vector(context->funcs);
+    free_vector(context->tables);
+    free_vector(context->mems);
+    free_vector(context->globals);
+}
+
+static _Bool string_equal(bytes_vector_t* a, bytes_vector_t* b){
+    if(a->size != b->size){
+        return 0;
+    }
+    for(size_t i = a->size; i < a->size; ++i){
+        if(a->data[i] != b->data[i]){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 _Bool module_validate(wasm_module module){
     // Initialize context
     ValidateContext context;
@@ -56,6 +75,7 @@ _Bool module_validate(wasm_module module){
             case Desc_Func:
                 if(import->desc.typeidx >= module->types.size){
                     wasmvm_errno = ERROR_unknown_type;
+                    clean_context(&context);
                     return 0;
                 }
                 context.funcs.data[context.funcs.size] = import->desc.typeidx;
@@ -78,12 +98,14 @@ _Bool module_validate(wasm_module module){
                 break;
             default:
                 wasmvm_errno = ERROR_unknown_import;
+                clean_context(&context);
                 return 0;
         }
     }
     // Functions
     for(size_t i = 0; i < module->funcs.size; ++i){
         if(!func_validate(module->funcs.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
@@ -91,6 +113,7 @@ _Bool module_validate(wasm_module module){
     for(size_t i = 0; i < module->tables.size; ++i){
         if(!table_validate(module->tables.data + i)){
             wasmvm_errno = ERROR_len_out_of_bound;
+            clean_context(&context);
             return 0;
         }
     }
@@ -98,24 +121,28 @@ _Bool module_validate(wasm_module module){
     for(size_t i = 0; i < module->mems.size; ++i){
         if(!memory_validate(module->mems.data + i)){
             wasmvm_errno = ERROR_len_out_of_bound;
+            clean_context(&context);
             return 0;
         }
     }
     // Globals
     for(size_t i = 0; i < module->globals.size; ++i){
         if(!global_validate(module->globals.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
     // Elems
     for(size_t i = 0; i < module->elems.size; ++i){
         if(!elem_validate(module->elems.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
     // Datas
     for(size_t i = 0; i < module->datas.size; ++i){
         if(!data_validate(module->datas.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
@@ -123,18 +150,21 @@ _Bool module_validate(wasm_module module){
     if(module->start != -1){
         if(module->start >= (context.funcs.size + module->funcs.size)){
             wasmvm_errno = ERROR_start_func;
+            clean_context(&context);
             return 0;
         }
         if(module->start >= context.funcs.size){
             FuncType* funcType = module->types.data + module->funcs.data[module->start - context.funcs.size].type;
             if((funcType->params.size != 0) || (funcType->results.size != 0)){
                 wasmvm_errno = ERROR_start_func;
+                clean_context(&context);
                 return 0;
             }
         }else{
             FuncType* funcType = module->types.data + context.funcs.data[module->start];
             if((funcType->params.size != 0) || (funcType->results.size != 0)){
                 wasmvm_errno = ERROR_start_func;
+                clean_context(&context);
                 return 0;
             }
         }
@@ -142,15 +172,36 @@ _Bool module_validate(wasm_module module){
     // Imports
     for(size_t i = 0; i < module->imports.size; ++i){
         if(!import_validate(module->imports.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
     // Exports
     for(size_t i = 0; i < module->exports.size; ++i){
         if(!export_validate(module->exports.data + i, module, &context)){
+            clean_context(&context);
             return 0;
         }
     }
+    // Export names
+    if(module->exports.size > 0){
+        vector_t(bytes_vector_t) names;
+        vector_init(names);
+        names.size = 0;
+        vector_resize(names, bytes_vector_t, module->exports.size);
+        for(size_t i = 0; i < module->exports.size; ++i){
+            bytes_vector_t* export_name = (bytes_vector_t*)&(module->exports.data[i].name);
+            if(string_equal(export_name, names.data + i)){
+                wasmvm_errno = ERROR_dup_export;
+                free_vector(names);
+                return 0;
+            }
+            names.data[names.size++] = *export_name;
+        }
+        free_vector(names);
+    }
+    // Clean
+    clean_context(&context);
     return 1;
 }
 
