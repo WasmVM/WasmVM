@@ -18,7 +18,7 @@ static _Bool string_equal(bytes_vector_t* a, bytes_vector_t* b){
     if(a->size != b->size){
         return 0;
     }
-    for(size_t i = a->size; i < a->size; ++i){
+    for(size_t i = 0; i < a->size; ++i){
         if(a->data[i] != b->data[i]){
             return 0;
         }
@@ -127,7 +127,7 @@ _Bool module_validate(wasm_module module){
     }
     // Globals
     for(size_t i = 0; i < module->globals.size; ++i){
-        if(!global_validate(module->globals.data + i, module, &context)){
+        if(!global_validate(module->globals.data + i, i, module, &context)){
             clean_context(&context);
             return 0;
         }
@@ -191,10 +191,12 @@ _Bool module_validate(wasm_module module){
         vector_resize(names, bytes_vector_t, module->exports.size);
         for(size_t i = 0; i < module->exports.size; ++i){
             bytes_vector_t* export_name = (bytes_vector_t*)&(module->exports.data[i].name);
-            if(string_equal(export_name, names.data + i)){
-                wasmvm_errno = ERROR_dup_export;
-                free_vector(names);
-                return 0;
+            for(size_t j = 0; j < names.size; ++j){
+                if(string_equal(export_name, names.data + j)){
+                    wasmvm_errno = ERROR_dup_export;
+                    free_vector(names);
+                    return 0;
+                }
             }
             names.data[names.size++] = *export_name;
         }
@@ -206,17 +208,21 @@ _Bool module_validate(wasm_module module){
 }
 
 _Bool table_validate(WasmTable* table){
-    return (!table->max) || (table->min <= table->max);
+    return table->min <= table->max;
 }
 
 _Bool memory_validate(WasmMemory* memory){
-    return ((memory->max <= 0x10000) && (memory->min <= 0x10000)) && ((!memory->max) || (memory->min <= memory->max));
+    return (memory->max <= 0x10000) && (memory->min <= memory->max);
 }
 
-_Bool global_validate(WasmGlobal* global, WasmModule* module, ValidateContext* context){
+_Bool global_validate(WasmGlobal* global, size_t idx, WasmModule* module, ValidateContext* context){
     switch(global->init.type){
         case Const_GlobalIndex:{
             u32_t index = global->init.value.value.u32;
+            if(index >= idx){
+                wasmvm_errno = ERROR_unknown_global;
+                return 0;
+            }
             if(index >= (module->globals.size + context->globals.size)){
                 wasmvm_errno = ERROR_len_out_of_bound;
                 return 0;
@@ -375,13 +381,13 @@ _Bool import_validate(WasmImport* import, WasmModule* module, ValidateContext* c
             }
             break;
         case Desc_Table:
-            if(import->desc.limits.max && (import->desc.limits.min > import->desc.limits.max)){
+            if(import->desc.limits.min > import->desc.limits.max){
                 wasmvm_errno = ERROR_len_out_of_bound;
                 return 0;
             }
             break;
         case Desc_Mem:
-            if((import->desc.limits.min > 0x1000) || (import->desc.limits.max > 0x1000) || (import->desc.limits.max && (import->desc.limits.min > import->desc.limits.max))){
+            if((import->desc.limits.max > 0x10000) || (import->desc.limits.min > import->desc.limits.max)){
                 wasmvm_errno = ERROR_len_out_of_bound;
                 return 0;
             }

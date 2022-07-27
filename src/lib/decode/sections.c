@@ -35,7 +35,7 @@
         } \
     }
 
-static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p)
+static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t * const end_p, const u32_t max_value)
 {
     if(**read_p == 0x01) {
         *read_p += 1;
@@ -50,6 +50,7 @@ static int read_limits(WasmImport *import, const byte_t **read_p, const byte_t *
     } else if(**read_p == 0x00) {
         *read_p += 1;
         import->desc.limits.min = getLeb128_u32(read_p, end_p);
+        import->desc.limits.max = max_value;
         if(wasmvm_errno) {
             return -1;
         }
@@ -321,14 +322,14 @@ int parse_import_section(WasmModule *module, const byte_t **read_p, const byte_t
                         return -1;
                     }
                     import->descType = Desc_Table;
-                    if(read_limits(import, read_p, end_p)) {
+                    if(read_limits(import, read_p, end_p, -1)) {
                         wasmvm_errno = ERROR_malform_import;
                         return -1;
                     }
                 }break;
                 case IMPORT_Mem:
                     import->descType = Desc_Mem;
-                    if(read_limits(import, read_p, end_p)) {
+                    if(read_limits(import, read_p, end_p, 0x10000)) {
                         wasmvm_errno = ERROR_malform_import;
                         return -1;
                     }
@@ -493,7 +494,7 @@ int parse_memory_section(WasmModule *module, const byte_t **read_p, const byte_t
                 return -1;
             }
         } else if(flags == 0) {
-            module->mems.data[index].max = 0;
+            module->mems.data[index].max = 0x10000;
         } else {
             wasmvm_errno = ERROR_int_too_large;
             return -1;

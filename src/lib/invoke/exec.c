@@ -772,7 +772,7 @@ void exec_memory_grow(wasm_stack label, wasm_stack frame, wasm_stack* stack, was
     u32_t memsize = mem->data.size / page_size;
     u32_t newsize = memsize + value->entry.value.value.u32;
     value->entry.value.value.u32 = memsize;
-    if((newsize > 65536) || ((mem->max > 0) && (newsize > mem->max))){
+    if((newsize > 65536) || (newsize > mem->max)){
         value->entry.value.value.i32 = -1;
     }else{
         vector_resize(mem->data, byte_t, (newsize * page_size));

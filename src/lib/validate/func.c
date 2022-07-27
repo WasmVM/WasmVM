@@ -222,8 +222,8 @@ _Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context
                 set_unreachable(value_stack, ctrl_stack);
             }break;
             case Op_return:
-                for(size_t i = 0; i < funcType.results.size; ++i){
-                    expect_check(funcType.results.data[i]);
+                for(size_t i = funcType.results.size; i > 0; --i){
+                    expect_check(funcType.results.data[i - 1]);
                 }
                 set_unreachable(value_stack, ctrl_stack);
             break;
@@ -350,6 +350,10 @@ _Bool func_validate(WasmFunc* func, WasmModule* module, ValidateContext* context
             case Op_global_set:
                 if(instr->imm.values.index >= module->globals.size){
                     wasmvm_errno = ERROR_len_out_of_bound;
+                    return_clean();
+                }
+                if(!module->globals.data[instr->imm.values.index].mut){
+                    wasmvm_errno = ERROR_immut_global;
                     return_clean();
                 }
                 expect_check(module->globals.data[instr->imm.values.index].valType);
