@@ -26,8 +26,6 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
 wasm_externval instance_export(wasm_module_inst module_inst, const unsigned name_size, const byte_t name[name_size]);
 values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t args);
 
-_Bool module_validate(wasm_module module); // True: valid, False: invalid
-
 // TODO: module_exports()
 // TODO: func_type()
 // TODO: table_type()
