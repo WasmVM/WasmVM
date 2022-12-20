@@ -10,4 +10,6 @@ typedef struct {
     u32_t            descIdx;
 } WasmExport;
 
+typedef WasmExport wasm_export;
+
 #endif

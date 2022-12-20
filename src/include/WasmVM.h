@@ -11,6 +11,7 @@ typedef vector_t(wasm_externtype) imports_vector_t;
 typedef vector_t(wasm_externval) externval_vector_t;
 typedef vector_t(byte_t) bytes_vector_t;
 typedef vector_t(wasm_value) values_vector_t;
+typedef vector_t(wasm_export) exports_vector_t;
 
 wasm_module module_decode(const bytes_vector_t bytes);
 void module_free(wasm_module module);
@@ -26,8 +27,8 @@ wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, 
 wasm_externval instance_export(wasm_module_inst module_inst, const unsigned name_size, const byte_t name[name_size]);
 values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t args);
 
-// TODO: module_exports()
-// TODO: func_type()
+exports_vector_t module_exports(wasm_module module);
+wasm_functype func_type(wasm_store store, u32_t address);
 // TODO: table_type()
 // TODO: table_read()
 // TODO: table_write()
