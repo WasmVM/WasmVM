@@ -29,3 +29,16 @@ u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref)
     }
     return index;
 }
+
+wasm_table table_type(wasm_store store, u32_t address){
+    wasm_table result;
+    TableInst* table = store->tables.data + address;
+    result.min = table->elem.size;
+    result.max = table->max;
+    result.refType = table->type;
+    return result;
+}
+
+wasm_ref table_read(wasm_store store, u32_t address, u32_t index){
+    return store->tables.data[address].elem.data[index];
+}

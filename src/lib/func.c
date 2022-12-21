@@ -47,3 +47,7 @@ _Bool check_FuncType(FuncType* type1, FuncType* type2){
     }
     return 1;
 }
+
+wasm_functype func_type(wasm_store store, u32_t address){
+    return store->funcs.data[address].type;
+}

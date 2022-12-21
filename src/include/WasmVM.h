@@ -23,14 +23,12 @@ u32_t table_alloc(wasm_store store, wasm_table tabletype, wasm_ref ref);
 u32_t mem_alloc(wasm_store store, wasm_memory memtype);
 u32_t global_alloc(wasm_store store, wasm_global global, wasm_value val);
 wasm_module_inst module_instantiate(wasm_store store, const wasm_module module, externval_vector_t externval);
-
 wasm_externval instance_export(wasm_module_inst module_inst, const unsigned name_size, const byte_t name[name_size]);
 values_vector_t func_invoke(wasm_store store, u32_t funcaddr, values_vector_t args);
-
 exports_vector_t module_exports(wasm_module module);
 wasm_functype func_type(wasm_store store, u32_t address);
-// TODO: table_type()
-// TODO: table_read()
+wasm_table table_type(wasm_store store, u32_t address);
+wasm_ref table_read(wasm_store store, u32_t address, u32_t index);
 // TODO: table_write()
 // TODO: table_size()
 // TODO: table_grow()
