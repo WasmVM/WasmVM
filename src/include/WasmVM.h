@@ -29,9 +29,9 @@ exports_vector_t module_exports(wasm_module module);
 wasm_functype func_type(wasm_store store, u32_t address);
 wasm_table table_type(wasm_store store, u32_t address);
 wasm_ref table_read(wasm_store store, u32_t address, u32_t index);
-// TODO: table_write()
-// TODO: table_size()
-// TODO: table_grow()
+wasm_store table_write(wasm_store store, u32_t address, u32_t index, wasm_ref ref);
+u32_t table_size(wasm_store store, u32_t address);
+u32_t table_grow(wasm_store store, u32_t address, u32_t num, wasm_ref ref);
 // TODO: mem_type()
 // TODO: mem_read()
 // TODO: mem_write()
