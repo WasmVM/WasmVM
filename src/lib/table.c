@@ -61,15 +61,17 @@ u32_t table_size(wasm_store store, u32_t address){
     return store->tables.data[address].elem.size;
 }
 
-u32_t table_grow(wasm_store store, u32_t address, u32_t num, wasm_ref ref){
+wasm_store table_grow(wasm_store store, u32_t address, u32_t num, wasm_ref ref){
     TableInst* table = store->tables.data + address;
     u32_t old_size = table->elem.size;
     u32_t new_size = table->elem.size + num;
     if((new_size > table->max) || (new_size < old_size) || (new_size == -1)){
-        return -1;
+        wasmvm_errno = ERROR_len_out_of_bound;
+        return NULL;
     }
     vector_resize(table->elem, wasm_ref, new_size);
     for(u32_t i = old_size; i < new_size; ++i){
         table->elem.data[i] = ref;
     }
+    return store;
 }

@@ -31,10 +31,10 @@ wasm_table table_type(wasm_store store, u32_t address);
 wasm_ref table_read(wasm_store store, u32_t address, u32_t index);
 wasm_store table_write(wasm_store store, u32_t address, u32_t index, wasm_ref ref);
 u32_t table_size(wasm_store store, u32_t address);
-u32_t table_grow(wasm_store store, u32_t address, u32_t num, wasm_ref ref);
-// TODO: mem_type()
-// TODO: mem_read()
-// TODO: mem_write()
+wasm_store table_grow(wasm_store store, u32_t address, u32_t num, wasm_ref ref);
+wasm_memory mem_type(wasm_store store, u32_t address);
+byte_t mem_read(wasm_store store, u32_t address, u32_t index);
+wasm_store mem_write(wasm_store store, u32_t address, u32_t index, byte_t data);
 // TODO: mem_size()
 // TODO: mem_grow()
 // TODO: global_type()
