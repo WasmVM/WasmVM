@@ -8,4 +8,6 @@ typedef struct {
     Value val;
 } GlobalInst;
 
+typedef GlobalInst wasm_global_type;
+
 #endif
