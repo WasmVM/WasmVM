@@ -2,8 +2,19 @@ include_directories(${PROJECT_ROOT}/src/include)
 include_directories(${PROJECT_ROOT}/src/lib)
 include_directories(${PROJECT_ROOT}/host)
 
+# harness
+include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
+add_subdirectory(harness)
+
+add_subdirectory(suite)
+
+# === Spec test ===
+set(BUILD_spec_test ON CACHE BOOL "Build spec tests")
+
+if(BUILD_spec_test)
+
 if(NOT BUILD_HOST_spectest)
-  message(SEND_ERROR "spectest should be ON while building tests")
+  message(SEND_ERROR "spectest should be ON while building spec tests")
 endif(NOT BUILD_HOST_spectest)
 
 # Extract spec test cases
@@ -12,10 +23,6 @@ add_custom_target(spec_test_extract
   WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/
   DEPENDS wabt
 )
-
-# harness
-include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
-add_subdirectory(harness)
 
 # Macro for adding spec tests
 set(BUILD_MEMCHECK_TESTS ON CACHE BOOL "Build tests with Valgrind memcheck")
@@ -125,3 +132,5 @@ add_spec_test(unwind)
 # add_spec_test(utf8-import-field)
 # add_spec_test(utf8-import-module)
 # add_spec_test(utf8-invalid-encoding)
+
+endif(BUILD_spec_test)

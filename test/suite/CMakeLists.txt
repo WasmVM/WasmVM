@@ -1,0 +1,20 @@
+set(BUILD_suite_test ON CACHE BOOL "Build spec tests")
+
+if(BUILD_suite_test)
+
+macro(add_test_suite suite_name)
+  add_executable(suite_${suite_name}_target
+    ${suite_name}/${suite_name}.cpp
+  )
+  set_target_properties(suite_${suite_name}_target
+    PROPERTIES OUTPUT_NAME ${suite_name}/${suite_name}
+  )
+  add_test(NAME suite_${suite_name}
+    COMMAND ${suite_name}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${suite_name}
+  )
+endmacro(add_test_suite)
+
+add_test_suite(comments)
+
+endif(BUILD_suite_test)
