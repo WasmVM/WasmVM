@@ -19,3 +19,21 @@ u32_t global_alloc(wasm_store store, wasm_global global, wasm_value val)
     globalInst->val.value = val.value;
     return index;
 }
+
+wasm_global_type global_type(wasm_store store, u32_t address){
+    return store->globals.data[address];
+}
+
+wasm_value global_read(wasm_store store, u32_t address){
+    return store->globals.data[address].val;
+}
+
+wasm_store global_write(wasm_store store, u32_t address, wasm_value val){
+    if(store->globals.data[address].mut){
+        store->globals.data[address].val = val;
+        return store;
+    }else{
+        wasmvm_errno = ERROR_immut_global;
+        return NULL;
+    }
+}
