@@ -2,6 +2,10 @@ include_directories(${PROJECT_ROOT}/src/include)
 include_directories(${PROJECT_ROOT}/src/lib)
 include_directories(${PROJECT_ROOT}/host)
 
+if(NOT BUILD_HOST_spectest)
+  message(SEND_ERROR "spectest should be ON while building tests")
+endif(NOT BUILD_HOST_spectest)
+
 # Extract spec test cases
 add_custom_target(spec_test_extract
   COMMAND python3 ${CMAKE_CURRENT_LIST_DIR}/extract_spec_tests.py ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_BINARY_DIR}/third_party/wabt/wast2json
@@ -30,7 +34,7 @@ macro(add_spec_test test_name)
   target_link_libraries(spec_${test_name}
     harness
     WasmVM
-    wasmvm_spectest
+    WasmVM_host
   )
   set_target_properties(spec_${test_name}
     PROPERTIES OUTPUT_NAME spec/${test_name}/${test_name}

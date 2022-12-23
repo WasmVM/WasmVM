@@ -1,4 +1,4 @@
-add_library(WasmVM
+add_library(WasmVM_core SHARED
     decode/decode.c
     decode/sections.c
     decode/utils.c
@@ -22,7 +22,7 @@ add_library(WasmVM
     instance.c
 )
 
-install(TARGETS WasmVM
+install(TARGETS WasmVM_core
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
