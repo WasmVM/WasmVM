@@ -33,7 +33,7 @@ macro(add_spec_test test_name)
   )
   target_link_libraries(spec_${test_name}
     harness
-    WasmVM
+    WasmVM_core
     WasmVM_host
   )
   set_target_properties(spec_${test_name}
