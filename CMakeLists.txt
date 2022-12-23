@@ -2,9 +2,16 @@ cmake_minimum_required(VERSION 3.16)
 project(WasmVM)
 set(PROJECT_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_C_STANDARD 11)
+set(CMAKE_C_STANDARD_REQUIRED 11)
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED 20)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
 
+set(INSTALL_C ON CACHE BOOL "Install C implementations")
+set(INSTALL_CPP ON CACHE BOOL "Install C++ implementations")
+
+set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")
 add_subdirectory(src)
 
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")

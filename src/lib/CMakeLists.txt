@@ -22,7 +22,9 @@ add_library(WasmVM_core SHARED
     instance.c
 )
 
+if(INSTALL_C)
 install(TARGETS WasmVM_core
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
+endif(INSTALL_C)
