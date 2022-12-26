@@ -22,6 +22,10 @@ add_library(WasmVM_core SHARED
     instance.c
 )
 
+add_library(WasmVM
+    parse/parse.cpp
+)
+
 if(INSTALL_C)
 install(TARGETS WasmVM_core
     ARCHIVE DESTINATION lib

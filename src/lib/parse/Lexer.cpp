@@ -2,11 +2,13 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "TextInput.hpp"
+#include "Lexer.hpp"
 
 #include <exception.hpp>
 
-TextInput::TextInput(std::istream& stream) : stream(stream){}
+using namespace WasmVM;
+
+Stream::Stream(std::istream& stream) : stream(stream){}
 
 static char _get(std::stack<char> &buf, std::istream &stream){
     if(buf.empty()){
@@ -94,22 +96,62 @@ static void skip_comment(std::stack<char> &buf, std::istream &stream){
     }
 }
 
-char TextInput::get(){
+char Stream::get(){
     skip_comment(buf, stream);
     return _get(buf, stream);
 }
 
-char TextInput::peek(){
+char Stream::peek(){
     skip_comment(buf, stream);
     return _peek(buf, stream);
 }
 
-bool TextInput::eof(){
-    skip_comment(buf, stream);
-    return _eof(buf, stream);
+Slicer::Slicer(std::istream& stream) : Stream(stream){
+    operator++();
 }
 
-TextInput& TextInput::putback(char ch){
-    buf.push(ch);
+const std::string& Slicer::operator*() const{
+    return current;
+}
+
+Slicer::operator bool(){
+    return !current.empty();
+}
+
+Slicer& Slicer::operator++(){
+    static const int eof_char = std::char_traits<char>::eof();
+    current.clear();
+    char ch = get();
+    // Trim leading spaces
+    while((ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n')){
+        ch = get();
+    }
+    // Parenthesis
+    if((ch == '(') || (ch == ')')){
+        current = ch;
+        return *this;
+    }
+    // Other characters
+    while(ch != eof_char){
+        switch(ch){
+            case ' ':
+            case '\t':
+            case '\r':
+            case '\n':
+            case '(':
+            case ')':
+                return *this;
+            default:
+                current += ch;
+            break;
+        }
+        ch = get();
+    }
     return *this;
+}
+
+Slicer Slicer::operator++(int){
+    Slicer res = *this;
+    ++(*this);
+    return res;
 }
