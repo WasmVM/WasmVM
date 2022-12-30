@@ -22,7 +22,7 @@ add_library(WasmVM_core SHARED
     instance.c
 )
 
-add_library(WasmVM
+add_library(WasmVM SHARED
     parse/parse.cpp
 )
 
