@@ -1,15 +1,11 @@
-FROM ubuntu:focal
+FROM ubuntu:22.04
 
 RUN apt update \
-    && DEBIAN_FRONTEND=noninteractive apt install -y gcc g++ cmake binutils git vim zsh ninja-build curl gdb valgrind astyle python3 \
+    && DEBIAN_FRONTEND=noninteractive apt install -y gcc g++ cmake binutils git vim ninja-build curl gdb valgrind astyle python3 \
     && rm -rf /var/lib/apt/lists/*
-
-RUN sh -c "$(curl -fsSL https://raw.githubusercontent.com/robbyrussell/oh-my-zsh/master/tools/install.sh)"
 
 RUN git clone --recursive --depth=1 https://github.com/WasmVM/wabt.git
 
 RUN cd wabt && mkdir build && cd build && cmake -G Ninja .. && cmake --build . && cmake --install . && cd /root && rm -rf /wabt
 
 WORKDIR /root
-
-CMD ["zsh"]
