@@ -1,5 +1,5 @@
-#ifndef WASMVM_PP_DATATYPES_VALUE_DEF
-#define WASMVM_PP_DATATYPES_VALUE_DEF
+#ifndef WASMVM_PP_TYPES_DEF
+#define WASMVM_PP_TYPES_DEF
 
 #include <vector>
 #include <variant>

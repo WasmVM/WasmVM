@@ -3,7 +3,8 @@
 
 #include <exception>
 #include <utility>
-#include <algorithm>
+
+#include <Util.hpp>
 
 #define define_exception(NAME, MSG) \
     struct NAME : Exception<MSG>{NAME(std::pair<size_t, size_t> loc) : Exception<MSG>(loc){}};
@@ -11,17 +12,9 @@
 namespace WasmVM {
 namespace Exception{
 
-    template <size_t N>
-    struct MsgStr {
-        constexpr MsgStr(const char (&arg)[N]) {
-            std::copy_n(arg, N, msg);
-        }
-        char msg[N];
-    };
-
-    template <MsgStr M>
+    template <conststr M>
     struct Exception : std::runtime_error {
-        Exception(std::pair<size_t, size_t> loc) : std::runtime_error(M.msg), location(loc){}
+        Exception(std::pair<size_t, size_t> loc) : std::runtime_error(M.value), location(loc){}
         std::pair<size_t, size_t> location;
     };
 
