@@ -6,8 +6,10 @@
 #include <string>
 #include <vector>
 #include <forward_list>
+#include <initializer_list>
 #include <ranges>
 #include <iterator>
+#include <variant>
 
 #include "Token.hpp"
 
@@ -15,7 +17,9 @@ namespace WasmVM {
 
 using TokenVar = std::variant<
     Token::Paren<'('>,
-    Token::Paren<')'>
+    Token::Paren<')'>,
+    Token::Id,
+    Token::String
 >;
 
 struct Cursor {
@@ -51,7 +55,7 @@ private:
 };
 static_assert(std::input_iterator<Cursor>);
 
-struct Lexer {
+struct Lexer : std::ranges::view_interface<Lexer> {
 
     struct iterator {
 
@@ -80,6 +84,7 @@ struct Lexer {
 
     iterator begin();
     iterator end();
+    bool empty();
 
 private:
     Cursor cursor;
@@ -88,7 +93,7 @@ private:
 
     friend iterator;
 };
-static_assert(std::forward_iterator<Lexer::iterator>);
+static_assert(std::ranges::viewable_range<Lexer> && std::ranges::forward_range<Lexer>);
 
 }
 

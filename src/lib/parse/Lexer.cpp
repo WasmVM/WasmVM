@@ -6,6 +6,7 @@
 
 #include <exception.hpp>
 #include <sstream>
+#include <string>
 
 using namespace WasmVM;
 
@@ -40,6 +41,12 @@ Cursor& Cursor::operator++(){
         }
     }
     return *this;
+}
+
+Cursor Cursor::operator++(int){
+    Cursor res(*this);
+    operator++();
+    return res;
 }
 
 std::pair<size_t, size_t>& Cursor::location(){
@@ -155,7 +162,37 @@ void Lexer::advance(std::forward_list<TokenVar>::iterator& it){
     switch(*cursor){
         case '(':
             buf.emplace_after(it, Token::Paren<'('>(cursor.location()));
+            ++cursor;
         break;
+        case ')':
+            buf.emplace_after(it, Token::Paren<')'>(cursor.location()));
+            ++cursor;
+        break;
+        case '$':{
+            Token::Location loc = cursor.location();
+            std::string seq;
+            for(; cursor && (*cursor != ' ') && (*cursor != '(') && (*cursor != ')'); ++cursor){
+                seq += *cursor;
+            }
+            buf.emplace_after(it, Token::Id(loc, seq));
+        }break;
+        case '\"':{
+            Token::Location loc = cursor.location();
+            std::string seq;
+            seq += *(cursor++);
+            for(bool escape = false; cursor && (escape || (*cursor != '\"')); ++cursor){
+                if((*cursor == '\\') && !escape){
+                    escape = true;
+                }else{
+                    escape = false;
+                }
+                seq += *cursor;
+            }
+            if(cursor){
+                seq += *(cursor++);
+            }
+            buf.emplace_after(it, Token::String(loc, seq));
+        }break;
     }
     it = std::next(it);
 }
@@ -175,7 +212,6 @@ Lexer::iterator& Lexer::iterator::operator++() {
     if(std::next(it) == lexer.buf.end()){
         lexer.advance(it);
     }
-    ++it;
     return *this;
 }
 Lexer::iterator Lexer::iterator::operator++(int) {
@@ -197,4 +233,8 @@ Lexer::iterator Lexer::begin(){
 
 Lexer::iterator Lexer::end(){
     return Lexer::iterator(*this, buf.end());
+}
+
+bool Lexer::empty(){
+    return buf.empty();
 }

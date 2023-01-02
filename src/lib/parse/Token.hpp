@@ -5,7 +5,6 @@
 #include <functional>
 #include <utility>
 
-#include <Types.hpp>
 #include <Util.hpp>
 
 namespace WasmVM {
@@ -27,17 +26,17 @@ struct Paren : public TokenBase {
 };
 
 struct Id : public TokenBase {
-    Id(Location loc) : TokenBase(loc){}
+    Id(Location loc, std::string value) : TokenBase(loc), value(value){}
     std::string value;
 };
 
 struct Number : public TokenBase {
     Number(Location loc) : TokenBase(loc){}
-    Value value;
+    std::string value;
 };
 
 struct String : public TokenBase {
-    String(Location loc) : TokenBase(loc){}
+    String(Location loc, std::string value) : TokenBase(loc), value(value){}
     std::string value;
 };
 
