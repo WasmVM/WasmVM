@@ -10,25 +10,28 @@
 using namespace WasmVM;
 
 static std::istringstream null_str;
+static Lexer null_lexer;
 
-Lexer::SourceIter::SourceIter() : stream(null_str), pos(end_pos), lineno(0), colno(0), newline(false){}
+Cursor::Cursor() : stream(null_str), pos(end_pos), lineno(0), colno(0), newline(false){}
 
-Lexer::SourceIter::SourceIter(std::istream& stream) : stream(stream), pos(0), lineno(1), colno(0), newline(false){
+Cursor::Cursor(std::istream& stream) : stream(stream), pos(0), lineno(1), colno(0), newline(false){
     advance();
 }
 
-Lexer::SourceIter::reference Lexer::SourceIter::operator*() const {
+Cursor::Cursor(const Cursor& cur) : stream(cur.stream), pos(cur.pos), buf(cur.buf), lineno(cur.lineno), colno(cur.colno), newline(cur.newline){}
+
+Cursor::value_type Cursor::operator*() const {
     if(pos == end_pos){
-        return eof;
+        return Cursor::traits_type::eof();
     }
     return buf.front().first;
 }
 
-Lexer::SourceIter::operator bool(){
+Cursor::operator bool(){
     return pos != end_pos;
 }
 
-Lexer::SourceIter& Lexer::SourceIter::operator++(){
+Cursor& Cursor::operator++(){
     if(pos != end_pos){
         pos += 1;
         buf.pop();
@@ -39,11 +42,11 @@ Lexer::SourceIter& Lexer::SourceIter::operator++(){
     return *this;
 }
 
-std::pair<size_t, size_t>& Lexer::SourceIter::location(){
+std::pair<size_t, size_t>& Cursor::location(){
     return buf.front().second;
 }
 
-void Lexer::SourceIter::advance(){
+void Cursor::advance(){
     std::istream& str = stream.get();
     for (traits_type::int_type ch = get(); ch != traits_type::eof(); ){
         switch(ch){
@@ -65,7 +68,7 @@ void Lexer::SourceIter::advance(){
                 }else{
                     throw Exception::string_not_close({lineno, colno});
                 }
-            }break;
+            } break;
             // Block comment
             case '(':
                 if(str.peek() == ';'){
@@ -101,10 +104,12 @@ void Lexer::SourceIter::advance(){
             case '\n':
             case '\t':
             case '\r':
-                buf.emplace(' ', std::pair<size_t, size_t>{lineno, colno});
-                do{
+                while((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r')){
                     ch = get();
-                }while((ch == ' ') || (ch == '\n') || (ch == '\t') || (ch == '\r'));
+                };
+                if((ch != '(') && (ch != ';')){
+                    buf.emplace(' ', std::pair<size_t, size_t>{lineno, colno});
+                }
             break;
             default:
                 buf.emplace(ch, std::pair<size_t, size_t>{lineno, colno});
@@ -114,15 +119,15 @@ void Lexer::SourceIter::advance(){
     pos = end_pos;
 }
 
-bool Lexer::SourceIter::operator==(const SourceIter& it) const {
+bool Cursor::operator==(const Cursor& it) const {
     return pos == it.pos;
 }
-bool Lexer::SourceIter::operator!=(const SourceIter& it) const {
+bool Cursor::operator!=(const Cursor& it) const {
     return pos != it.pos;
 }
 
-Lexer::SourceIter::traits_type::int_type Lexer::SourceIter::get(){
-    Lexer::SourceIter::traits_type::int_type ch = stream.get().get();
+Cursor::traits_type::int_type Cursor::get(){
+    Cursor::traits_type::int_type ch = stream.get().get();
     if(newline){
         lineno += 1;
         colno = 0;
@@ -137,16 +142,59 @@ Lexer::SourceIter::traits_type::int_type Lexer::SourceIter::get(){
     return ch;
 }
 
-// Lexer::Lexer(std::istream& stream) : LexerSlicer(stream){}
+Lexer::Lexer(std::istream& stream) : cursor(stream){
+    std::forward_list<TokenVar>::iterator it = buf.before_begin();
+    advance(it);
+}
 
-// std::optional<std::reference_wrapper<Token>> Lexer::operator[](size_t index) {
-//     if(tokens.size() <= index){
-//         for()
-//     }else{
-//         return tokens[index];
-//     }
-// }
+void Lexer::advance(std::forward_list<TokenVar>::iterator& it){
+    // Skip leading space
+    if(*cursor == ' '){
+        ++cursor;
+    }
+    switch(*cursor){
+        case '(':
+            buf.emplace_after(it, Token::Paren<'('>(cursor.location()));
+        break;
+    }
+    it = std::next(it);
+}
 
-// std::vector<Token> Lexer::consume(size_t index) {
-//     return std::vector<Token>();
-// }
+Lexer::iterator::iterator() : lexer(null_lexer), it(null_lexer.buf.end()){}
+
+Lexer::iterator::iterator(Lexer& lexer, std::forward_list<TokenVar>::iterator it) : lexer(lexer), it(it){}
+
+Lexer::iterator::iterator(const Lexer::iterator& it) : lexer(it.lexer), it(it.it){}
+
+TokenVar Lexer::iterator::operator*() const {
+    return *it;
+}
+
+Lexer::iterator& Lexer::iterator::operator++() {
+    Lexer& lexer = this->lexer.get();
+    if(std::next(it) == lexer.buf.end()){
+        lexer.advance(it);
+    }
+    ++it;
+    return *this;
+}
+Lexer::iterator Lexer::iterator::operator++(int) {
+    Lexer::iterator res(*this);
+    operator++();
+    return res;
+}
+
+bool Lexer::iterator::operator==(const Lexer::iterator& iter) const {
+    return iter.it == it;
+}
+bool Lexer::iterator::operator!=(const Lexer::iterator& iter) const {
+    return iter.it != it;
+}
+
+Lexer::iterator Lexer::begin(){
+    return Lexer::iterator(*this, buf.begin());
+}
+
+Lexer::iterator Lexer::end(){
+    return Lexer::iterator(*this, buf.end());
+}
