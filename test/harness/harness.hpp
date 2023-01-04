@@ -1,37 +1,57 @@
 #ifndef WASMVM_TEST_HARNESS_DEF
 #define WASMVM_TEST_HARNESS_DEF
 
+#include <initializer_list>
+#include <list>
+#include <variant>
+#include <optional>
+#include <functional>
 #include <iostream>
-#include <exception>
 
-#define SUITE_Begin(SUITE_NAME) \
-    int main(void){ \
-        int total_num = 0, passed_num = 0; \
-        const char * SUITE_Name = # SUITE_NAME;
+#include <Util.hpp>
+#include <WasmVM.hpp>
 
-#define SUITE_End \
-        return total_num - passed_num; \
-    }
+namespace Testing {
 
-#define TEST_Success(STMTS) \
-    {total_num += 1; \
-    try { \
-        STMTS \
-        passed_num += 1; \
-        std::cerr << SUITE_Name << "(" << __LINE__ << "): [Passed]" << std::endl; \
-    } catch (const std::exception& e) { \
-        std::cerr << SUITE_Name << "(" << __LINE__ << "): [Failed]" << std::endl; \
-        std::cerr << e.what(); \
-    }}
+struct TestType;
+struct CategoryType;
 
-#define TEST_Error(EXCEPTION_TYPE, STMTS) \
-    total_num += 1; \
-    try { \
-        STMTS \
-        std::cerr << SUITE_Name << "(" << __LINE__ << "): [Failed]" << std::endl; \
-    } catch (const EXCEPTION_TYPE &) { \
-        passed_num += 1; \
-        std::cerr << SUITE_Name << "(" << __LINE__ << "): [Passed]" << std::endl; \
-    }
+using SuiteItem = std::variant<CategoryType, TestType>;
+using TestFuncType = std::function<void(bool&)>;
+
+struct TestType {
+    TestType(std::string name, TestFuncType func);
+    std::string name;
+    TestFuncType func;
+    bool passed;
+};
+
+struct CategoryType {
+    CategoryType(std::string name, std::initializer_list<SuiteItem> items);
+
+    std::list<SuiteItem> items;
+    std::string name;
+    size_t total, failed;
+}; 
+
+struct Suite {
+    
+    Suite(std::initializer_list<SuiteItem> items);
+
+    static std::optional<Suite> suite;
+
+    std::list<SuiteItem> items;
+    size_t total, failed;
+};
+
+}
+
+#define Test(NAME, STMT) Testing::TestType(NAME, [](bool& _is_passed) STMT),
+
+#define Category(NAME, TESTS) Testing::CategoryType(NAME, TESTS),
+
+#define Expect(EXPR) if(!(EXPR)) { _is_passed = false; }
+
+#define Assert(EXPR) if(!(EXPR)) { _is_passed = false; return;}
 
 #endif

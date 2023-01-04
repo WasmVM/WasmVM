@@ -1,10 +1,13 @@
-set(BUILD_suite_test ON CACHE BOOL "Build spec tests")
+set(BUILD_suite_test ON CACHE BOOL "Build test suites")
 
 if(BUILD_suite_test)
 
 macro(add_test_suite suite_name)
   add_executable(suite_${suite_name}_target
     ${suite_name}/${suite_name}.cpp
+  )
+  target_link_libraries(suite_${suite_name}_target
+    harness_cpp
   )
   set_target_properties(suite_${suite_name}_target
     PROPERTIES OUTPUT_NAME ${suite_name}/${suite_name}

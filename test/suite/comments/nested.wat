@@ -8,3 +8,11 @@
 (module
   (;comment(;nested(;further;)nested;)comment;)
 )
+(;comment;;comment;)
+
+(;comment;;comment
+;)
+
+(module
+  (;comment;;comment(;nested;)comment;)
+)
