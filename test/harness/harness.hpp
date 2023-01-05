@@ -7,6 +7,7 @@
 #include <optional>
 #include <functional>
 #include <iostream>
+#include <filesystem>
 
 #include <Util.hpp>
 #include <WasmVM.hpp>
@@ -44,6 +45,8 @@ struct Suite {
     size_t total, failed;
 };
 
+WasmVM::WasmModule parse_module(std::filesystem::path path);
+
 }
 
 #define Test(NAME, STMT) Testing::TestType(NAME, [](bool& _is_passed) STMT),
@@ -53,5 +56,7 @@ struct Suite {
 #define Expect(EXPR) if(!(EXPR)) { _is_passed = false; }
 
 #define Assert(EXPR) if(!(EXPR)) { _is_passed = false; return;}
+
+#define Parse(NAME, FILEPATH) WasmVM::WasmModule NAME = Testing::parse_module(FILEPATH)
 
 #endif

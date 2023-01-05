@@ -7,8 +7,7 @@
 
 namespace WasmVM {
 
-WasmModule module_parse(std::string text);
-WasmModule module_parse(std::istream& stream);
+WasmModule module_parse(std::string src);
 
 }
 

@@ -4,12 +4,12 @@
 
 #include "harness.hpp"
 
-#include <iostream>
-#include <stdexcept>
+#include <fstream>
 
 using namespace Testing;
 
 template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
+
 std::optional<Suite> Suite::suite = std::nullopt;
 
 Suite::Suite(std::initializer_list<SuiteItem> items) :
@@ -46,3 +46,13 @@ CategoryType::CategoryType(std::string name, std::initializer_list<SuiteItem> it
 TestType::TestType(std::string name, TestFuncType func) :
     name(name), func(func), passed(true)
 {}
+
+WasmVM::WasmModule Testing::parse_module(std::filesystem::path path) {
+    // Text file
+    std::ifstream fin(path);
+    size_t fsize = std::filesystem::file_size(path);
+    std::string src(fsize, ' ');
+    fin.read(src.data(), fsize);
+    fin.close();
+    return WasmVM::module_parse(src);
+}

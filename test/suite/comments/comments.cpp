@@ -8,33 +8,14 @@ using namespace Testing;
 
 Suite comments {
     Test("Line comments", {
-        // Parse(module_line,
-        //     ";; Test comment syntax
-
-        //     ;;comment
-
-        //     ;;;;;;;;;;;
-
-        //         ;;comment
-
-        //     ( ;;comment
-        //     module ;;comment
-        //     );;comment"
-        // );
+        Parse(module_line, "line.wat");
     })
 
-    Category("Blocked", {
-        Test("Block comments", {
-            Expect(false)
-            Assert(true)
-            Expect(false)
-            // Load(module_block, "block.wat");
-        })
-
-        Test("Nested comments", {
-            Expect(true)
-            Assert(true)
-            // Load(module_block, "nested.wat");
-        })
+    Test("Block comments", {
+        Parse(module_block, "block.wat");
+    })
+    
+    Test("Nested comments", {
+        Parse(module_block, "nested.wat");
     })
 };

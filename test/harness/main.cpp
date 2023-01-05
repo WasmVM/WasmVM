@@ -4,6 +4,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 #include <exception>
 
 #include "harness.hpp"
@@ -49,6 +50,7 @@ struct Runner {
         for(SuiteItem item : category.items){
             std::visit(Runner(indent + 2, category.failed), item);
         }
+        std::cout << std::string(indent + 3, ' ') << category.name << " : " << (category.total - category.failed) << " tests passed, " << category.failed << " tests failed out of "<< category.total << std::endl;
         failed += category.failed;
     }
     size_t indent;
@@ -60,6 +62,7 @@ int main(void){
         std::cerr << "=== " COLOR_Warning " Empty testsuite ===" << std::endl;
         return 0;
     }
+
     Suite& suite = *Suite::suite;
 
     std::cout << "=== Start suite ===" << std::endl;
