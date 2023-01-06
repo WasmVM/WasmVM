@@ -192,6 +192,6 @@ WasmVM 測試套件是一套 C++ 函式庫，提供簡便的語法定義 WasmVM 
 
 + `*` 開頭的是 category
 + `-` 開頭的是 test
-+ [Pass] 表示通過
-+ [Fail] 表示失敗
-+ [Fault] 表示出現沒被 `Throw` 捕捉的例外而中止
++ `[Pass]` 表示通過
++ `[Fail]` 表示失敗
++ `[Fault]` 表示出現沒被 `Throw` 捕捉的例外而中止
