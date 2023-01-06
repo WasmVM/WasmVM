@@ -19,13 +19,20 @@ Id::Id(Location loc, std::string value) : TokenBase(loc), value(value){}
 Number::Number(Location loc, Value value) : TokenBase(loc), value(value){}
 
 std::optional<Number> Number::create(Location loc, std::string str){
+    // Sign
+    bool positive = true;
+    switch(str.front()){
+        case '-':
+            positive = false;
+        case '+':
+            str = str.substr(1);
+        default:
+        break;
+    }
+
     return std::nullopt;
 }
 
 String::String(Location loc, std::string value) : TokenBase(loc), value(value){}
 
-Keyword::Keyword(Location loc, std::string value) : TokenBase(loc), value(std::hash<std::string>{}(value)){}
-
-std::optional<Keyword> Keyword::create(Location loc, std::string str){
-    return std::nullopt;
-}
+Keyword::Keyword(Location loc, std::string value) : TokenBase(loc), value(value){}

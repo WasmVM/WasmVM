@@ -44,10 +44,8 @@ struct String : public TokenBase {
 };
 
 struct Keyword : public TokenBase {
-    static std::optional<Keyword> create(Location loc, std::string str);
-    size_t value;
-private:
     Keyword(Location loc, std::string value);
+    std::string value;
 };
 
 }
