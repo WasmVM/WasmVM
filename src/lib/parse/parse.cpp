@@ -11,35 +11,8 @@
 
 namespace WasmVM {
 
-struct TokenVisitor {
-    template<char C>
-    void operator()(Token::Paren<C>& tok){
-        std::cout << "[" << tok.location.first << "," << tok.location.second << "] Paren " << tok.value << std::endl; 
-    }
-
-    void operator()(Token::Id& tok){
-        std::cout << "[" << tok.location.first << "," << tok.location.second << "] Id " << tok.value << std::endl; 
-    }
-
-    void operator()(Token::String& tok){
-        std::cout << "[" << tok.location.first << "," << tok.location.second << "] String " << tok.value << std::endl; 
-    }
-
-    void operator()(Token::Number& tok){
-        std::cout << "[" << tok.location.first << "," << tok.location.second << "] Number " << std::endl; 
-    }
-
-    void operator()(Token::Keyword& tok){
-        std::cout << "[" << tok.location.first << "," << tok.location.second << "] Keyword " << tok.value << std::endl; 
-    }
-};
-
 WasmModule module_parse(std::string src){
     std::list<TokenVar> tokens = tokenize(src);
-    std::cout << "\n--- Tokens ---" << std::endl;
-    for(TokenVar v : tokens){
-        std::visit(TokenVisitor(), v);
-    }
     return WasmModule();
 }
 
@@ -62,6 +35,8 @@ std::list<TokenVar> tokenize(std::string_view src){
             case ';':
                 if(*std::next(it) == ';'){
                     for(next_char(it, current); (it != src.end()) && (*it != '\n'); next_char(it, current));
+                }else{
+                    throw Exception::unknown_token(location, ";");
                 }
             break;
             // Block comment
@@ -83,14 +58,20 @@ std::list<TokenVar> tokenize(std::string_view src){
                         throw Exception::block_comment_not_close(location);
                     }
                 }else{
+                    // Left parenthesis
                     tokens.emplace_back(Token::Paren<'('>(location));
                     next_char(it, current);
                 }
             break;
+            // Right parenthesis
+            case ')':
+                tokens.emplace_back(Token::Paren<')'>(location));
+                next_char(it, current);
+            break;
             // Id
             case '$':{
                 std::string seq {*it};
-                for(next_char(it, current); (it != src.end()) && (*it != ' ') && (*it != '(') && (*it != ')'); next_char(it, location)){
+                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) != std::string::npos); next_char(it, location)){
                     seq += *it;
                 }
                 tokens.emplace_back(Token::Id(location, seq));
@@ -123,10 +104,20 @@ std::list<TokenVar> tokenize(std::string_view src){
                 next_char(it, current);
             break;
             // Others
-            default:
-                std::cout << *it;
-                next_char(it, current);
-            break;
+            default:{
+                std::string seq {*it};
+                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) != std::string::npos); next_char(it, location)){
+                    seq += *it;
+                }
+                std::optional<Token::Number> number = Token::Number::create(location, seq);
+                if(number){
+                    tokens.emplace_back(*number);
+                // }else if(Token::Keyword::validate(seq)){
+                //     // TODO:
+                }else{
+                    throw Exception::unknown_token(location, seq);
+                }
+            }break;
         }
     }
     return tokens;

@@ -45,11 +45,11 @@ struct Suite {
     size_t total, failed;
 };
 
-WasmVM::WasmModule parse_module(std::filesystem::path path);
+std::string read_text(std::filesystem::path path);
 
 }
 
-#define Test(NAME, STMT) Testing::TestType(NAME, [](bool& _is_passed) STMT),
+#define Test(NAME, STMT) Testing::TestType(NAME, [](bool& _is_passed) { STMT }),
 
 #define Category(NAME, TESTS) Testing::CategoryType(NAME, TESTS),
 
@@ -57,6 +57,10 @@ WasmVM::WasmModule parse_module(std::filesystem::path path);
 
 #define Assert(EXPR) if(!(EXPR)) { _is_passed = false; return;}
 
-#define Parse(NAME, FILEPATH) WasmVM::WasmModule NAME = Testing::parse_module(FILEPATH)
+#define Throw(EXCEPTION, STMT) try { STMT; _is_passed = false;} catch( EXCEPTION ){ _is_passed = true; }
+
+#define ParseFile(NAME, FILEPATH) WasmVM::WasmModule NAME = WasmVM::module_parse(read_text(FILEPATH))
+
+#define DecodeFile(NAME, FILEPATH) // TODO:
 
 #endif

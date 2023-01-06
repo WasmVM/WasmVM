@@ -30,27 +30,27 @@ struct Runner {
     Runner(size_t indent, size_t& failed) : indent(indent), failed(failed){}
 
     void operator()(Testing::TestType test){
-        std::cout << std::string(indent + 1, ' ') <<  "- Run test: " << test.name << " ......" << std::endl;
+        std::cout << std::string(indent + 1, ' ') <<  "- Run test: " << test.name << " ... ";
         try{
             test.func(test.passed);
         }catch(...){
-            std::cout << std::string(indent + 1, ' ') <<  "  " COLOR_Fault ": " << test.name << " got uncaught exception" << std::endl;
+            std::cout << COLOR_Fault " uncaught exception" << std::endl;
             failed += 1;
             return;
         }
         if(test.passed){
-            std::cout << std::string(indent + 1, ' ') <<  "  " COLOR_Pass ": " << test.name << " passed" << std::endl;
+            std::cout << COLOR_Pass << std::endl;
         }else{
-            std::cout << std::string(indent + 1, ' ') <<  "  " COLOR_Fail ": " << test.name << " failed" << std::endl;
+            std::cout << COLOR_Fail << std::endl;
             failed += 1;
         }
     }
     void operator()(Testing::CategoryType category){
-        std::cout << std::string(indent + 1, ' ') << "* " << category.name << " :" << std::endl;
+        std::cout << std::endl << std::string(indent + 1, ' ') << "* " << category.name << " :" << std::endl;
         for(SuiteItem item : category.items){
             std::visit(Runner(indent + 2, category.failed), item);
         }
-        std::cout << std::string(indent + 3, ' ') << category.name << " : " << (category.total - category.failed) << " tests passed, " << category.failed << " tests failed out of "<< category.total << std::endl;
+        std::cout << std::endl << std::string(indent + 3, ' ') << category.name << " : " << (category.total - category.failed) << " tests passed, " << category.failed << " tests failed out of "<< category.total << std::endl << std::endl;
         failed += category.failed;
     }
     size_t indent;
@@ -64,8 +64,6 @@ int main(void){
     }
 
     Suite& suite = *Suite::suite;
-
-    std::cout << "=== Start suite ===" << std::endl;
 
     for(SuiteItem item : suite.items){
         std::visit(Runner(0, suite.failed), item);

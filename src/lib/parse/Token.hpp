@@ -3,6 +3,7 @@
 
 #include <string>
 #include <utility>
+#include <optional>
 
 #include <Util.hpp>
 #include <Types.hpp>
@@ -31,9 +32,10 @@ struct Id : public TokenBase {
 };
 
 struct Number : public TokenBase {
-    Number(Location loc, std::string str);
-    static bool validate(std::string);
+    static std::optional<Number> create(Location loc, std::string str);
     Value value;
+private:
+    Number(Location loc, Value value);
 };
 
 struct String : public TokenBase {
@@ -42,9 +44,10 @@ struct String : public TokenBase {
 };
 
 struct Keyword : public TokenBase {
-    Keyword(Location loc, std::string str);
-    static bool validate(std::string);
+    static std::optional<Keyword> create(Location loc, std::string str);
     size_t value;
+private:
+    Keyword(Location loc, std::string value);
 };
 
 }

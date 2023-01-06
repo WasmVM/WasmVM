@@ -47,12 +47,11 @@ TestType::TestType(std::string name, TestFuncType func) :
     name(name), func(func), passed(true)
 {}
 
-WasmVM::WasmModule Testing::parse_module(std::filesystem::path path) {
-    // Text file
+std::string Testing::read_text(std::filesystem::path path){
     std::ifstream fin(path);
     size_t fsize = std::filesystem::file_size(path);
     std::string src(fsize, ' ');
     fin.read(src.data(), fsize);
     fin.close();
-    return WasmVM::module_parse(src);
+    return src;
 }

@@ -12,7 +12,7 @@
 
 * CMake >= 3.16
 
-* 支援 C11 及標準函式庫的 C 編譯器
+* 支援 C11 和 C++20 的 C/C++ 編譯器
 
 ### 開發者建置
 
@@ -36,4 +36,10 @@ mkdir build && cd build && cmake ..
 
 ```shell
 make -j4
+```
+
+## 測試
+
+```shell
+cd build && ctest
 ```

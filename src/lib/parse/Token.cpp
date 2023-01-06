@@ -5,7 +5,6 @@
 #include "Token.hpp"
 
 #include <functional>
-#include <regex>
 
 using namespace WasmVM;
 using namespace Token;
@@ -17,18 +16,16 @@ template<> Paren<')'>::Paren(Location loc) : TokenBase(loc){}
 
 Id::Id(Location loc, std::string value) : TokenBase(loc), value(value){}
 
-Number::Number(Location loc, std::string str) : TokenBase(loc){
+Number::Number(Location loc, Value value) : TokenBase(loc), value(value){}
 
-}
-
-bool Number::validate(std::string str) {
-    return true; // TODO:
+std::optional<Number> Number::create(Location loc, std::string str){
+    return std::nullopt;
 }
 
 String::String(Location loc, std::string value) : TokenBase(loc), value(value){}
 
 Keyword::Keyword(Location loc, std::string value) : TokenBase(loc), value(std::hash<std::string>{}(value)){}
 
-bool Keyword::validate(std::string str) {
-    return true; // TODO:
+std::optional<Keyword> Keyword::create(Location loc, std::string str){
+    return std::nullopt;
 }

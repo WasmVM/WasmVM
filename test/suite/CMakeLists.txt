@@ -19,6 +19,8 @@ macro(add_test_suite suite_name)
   )
 endmacro(add_test_suite)
 
+# Add tests under here
 add_test_suite(comments)
+add_test_suite(token)
 
 endif(BUILD_suite_test)
