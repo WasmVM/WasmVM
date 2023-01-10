@@ -12,6 +12,8 @@
 #include <string>
 #include <utility>
 
+#include <iostream>
+
 namespace WasmVM {
 
 WasmModule module_parse(std::string src){
@@ -112,6 +114,7 @@ std::list<TokenVar> tokenize(std::string_view src){
                 for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
                     seq += *it;
                 }
+                std::cout << seq << std::endl;
                 std::optional<Token::Number> number = Token::Number::create(location, seq);
                 if(number){
                     tokens.emplace_back(*number);

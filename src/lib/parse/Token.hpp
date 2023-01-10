@@ -33,9 +33,9 @@ struct Id : public TokenBase {
 
 struct Number : public TokenBase {
     static std::optional<Number> create(Location loc, std::string str);
-    Value value;
+    std::string value;
 private:
-    Number(Location loc, Value value);
+    Number(Location loc, std::string value);
 };
 
 struct String : public TokenBase {
