@@ -14,18 +14,24 @@ std::list<TokenType> tokenize(std::string_view src);
 
 namespace Exception {
     struct string_not_close : public Parse {
-        string_not_close(std::pair<size_t, size_t> location) : Parse("string not close", location) {}
+        string_not_close(Token::Location location);
     };
     struct block_comment_not_close : public Parse {
-        block_comment_not_close(std::pair<size_t, size_t> location) : Parse("block comment not close", location) {}
+        block_comment_not_close(Token::Location location);
     };
     struct unknown_token : public Parse {
-        unknown_token(std::pair<size_t, size_t> location, std::string token) : Parse(std::string("unknown token '") + token + "'", location) {}
+        unknown_token(Token::Location location, std::string token);
     };
 }
 
-template<class T>
-std::optional<T> get(std::list<TokenType>::iterator begin, std::list<TokenType>::iterator end);
+template<typename... T>
+class Rule : public std::tuple<std::optional<T>...> {
+    Rule(std::optional<T>... values) : std::tuple<std::optional<T>...>(values...){}
+public:
+    static Rule<T...> get(TokenIter begin, TokenIter end){
+        return Rule<T...>(T::get(begin, end)...);
+    }
+};
 
 }
 

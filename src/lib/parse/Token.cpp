@@ -13,8 +13,9 @@ using namespace Token;
 
 TokenBase::TokenBase(Location& loc, std::string value) : location(loc), value(value){}
 
-template<> Paren<'('>::Paren(Location loc) : TokenBase(loc, "("){}
-template<> Paren<')'>::Paren(Location loc) : TokenBase(loc, ")"){}
+ParenL::ParenL(Location loc) : TokenBase(loc, "("){}
+
+ParenR::ParenR(Location loc) : TokenBase(loc, ")"){}
 
 Id::Id(Location loc, std::string value) : TokenBase(loc, value){}
 
@@ -40,9 +41,7 @@ String::String(Location loc, std::string value) : TokenBase(loc, value){}
 
 Keyword::Keyword(Location loc, std::string value) : TokenBase(loc, value){}
 
-using TokenIter = std::list<TokenType>::iterator;
-
-#define TokenGet(TOKEN) template<> std::optional<TOKEN> WasmVM::get(TokenIter begin, TokenIter end){ \
+#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter begin, TokenIter end){ \
     if(begin != end && std::holds_alternative<TOKEN>(*begin)){ \
         return std::get<TOKEN>(*begin); \
     }else{ \
@@ -50,8 +49,8 @@ using TokenIter = std::list<TokenType>::iterator;
     } \
 }
 
-TokenGet(Token::Paren<'('>)
-TokenGet(Token::Paren<')'>)
+TokenGet(Token::ParenL)
+TokenGet(Token::ParenR)
 TokenGet(Token::Id)
 TokenGet(Token::Number)
 TokenGet(Token::String)

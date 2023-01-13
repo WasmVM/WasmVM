@@ -11,6 +11,26 @@
 namespace WasmVM {
 
 namespace Token {
+    struct Id;
+    struct String;
+    struct Number;
+    struct Keyword;
+    struct ParenL;
+    struct ParenR;
+}
+
+using TokenType = std::variant<
+    Token::ParenL,
+    Token::ParenR,
+    Token::Id,
+    Token::String,
+    Token::Number,
+    Token::Keyword
+>;
+
+using TokenIter = std::list<TokenType>::iterator;
+
+namespace Token {
 
 using Location = std::pair<size_t, size_t>;
 
@@ -20,40 +40,39 @@ struct TokenBase {
     std::string value;
 };
 
-template<char C>
-    requires ((C == '(') || (C == ')'))
-struct Paren : public TokenBase {
-    Paren(Location loc);
+struct ParenL : public TokenBase {
+    ParenL(Location loc);
+    static std::optional<ParenL> get(TokenIter begin, TokenIter end);
+};
+
+struct ParenR : public TokenBase {
+    ParenR(Location loc);
+    static std::optional<ParenR> get(TokenIter begin, TokenIter end);
 };
 
 struct Id : public TokenBase {
     Id(Location loc, std::string value);
+    static std::optional<Id> get(TokenIter begin, TokenIter end);
 };
 
 struct Number : public TokenBase {
     static std::optional<Number> create(Location loc, std::string str);
+    std::optional<Number> get(TokenIter begin, TokenIter end);
 private:
     Number(Location loc, std::string value);
 };
 
 struct String : public TokenBase {
     String(Location loc, std::string value);
+    static std::optional<String> get(TokenIter begin, TokenIter end);
 };
 
 struct Keyword : public TokenBase {
     Keyword(Location loc, std::string value);
+    static std::optional<Keyword> get(TokenIter begin, TokenIter end);
 };
 
 }
-
-using TokenType = std::variant<
-    Token::Paren<'('>,
-    Token::Paren<')'>,
-    Token::Id,
-    Token::String,
-    Token::Number,
-    Token::Keyword
->;
 
 }
 

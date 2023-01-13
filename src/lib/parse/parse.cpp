@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 
-namespace WasmVM {
+using namespace WasmVM;
 
 WasmModule module_parse(std::string src){
     std::list<TokenType> tokens = tokenize(src);
@@ -29,7 +29,7 @@ static void next_char(std::string_view::const_iterator& it, Token::Location& loc
     ++it;
 }
 
-std::list<TokenType> tokenize(std::string_view src){
+std::list<TokenType> WasmVM::tokenize(std::string_view src){
     std::list<TokenType> tokens;
     Token::Location current {1, 1};
     for(auto it = src.begin(); it != src.end(); ){
@@ -62,13 +62,13 @@ std::list<TokenType> tokenize(std::string_view src){
                     }
                 }else{
                     // Left parenthesis
-                    tokens.emplace_back(Token::Paren<'('>(location));
+                    tokens.emplace_back(Token::ParenL(location));
                     next_char(it, current);
                 }
             break;
             // Right parenthesis
             case ')':
-                tokens.emplace_back(Token::Paren<')'>(location));
+                tokens.emplace_back(Token::ParenR(location));
                 next_char(it, current);
             break;
             // Id
@@ -128,4 +128,7 @@ std::list<TokenType> tokenize(std::string_view src){
     return tokens;
 }
 
-}
+using namespace Exception;
+string_not_close::string_not_close(Token::Location location) : Parse("string not close", location) {}
+block_comment_not_close::block_comment_not_close(Token::Location location) : Parse("block comment not close", location) {}
+unknown_token::unknown_token(Token::Location location, std::string token) : Parse(std::string("unknown token '") + token + "'", location) {}
