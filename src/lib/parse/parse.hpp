@@ -3,23 +3,14 @@
 
 #include <string>
 #include <list>
-#include <variant>
+#include <utility>
 #include <exception.hpp>
 
 #include "Token.hpp"
 
 namespace WasmVM {
 
-using TokenVar = std::variant<
-    Token::Paren<'('>,
-    Token::Paren<')'>,
-    Token::Id,
-    Token::String,
-    Token::Number,
-    Token::Keyword
->;
-
-std::list<TokenVar> tokenize(std::string_view src);
+std::list<TokenType> tokenize(std::string_view src);
 
 namespace Exception {
     struct string_not_close : public Parse {
@@ -32,6 +23,9 @@ namespace Exception {
         unknown_token(std::pair<size_t, size_t> location, std::string token) : Parse(std::string("unknown token '") + token + "'", location) {}
     };
 }
+
+template<class T>
+std::optional<T> get(std::list<TokenType>::iterator begin, std::list<TokenType>::iterator end);
 
 }
 

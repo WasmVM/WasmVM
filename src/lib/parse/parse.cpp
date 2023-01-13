@@ -12,12 +12,10 @@
 #include <string>
 #include <utility>
 
-#include <iostream>
-
 namespace WasmVM {
 
 WasmModule module_parse(std::string src){
-    std::list<TokenVar> tokens = tokenize(src);
+    std::list<TokenType> tokens = tokenize(src);
     return WasmModule();
 }
 
@@ -31,8 +29,8 @@ static void next_char(std::string_view::const_iterator& it, Token::Location& loc
     ++it;
 }
 
-std::list<TokenVar> tokenize(std::string_view src){
-    std::list<TokenVar> tokens;
+std::list<TokenType> tokenize(std::string_view src){
+    std::list<TokenType> tokens;
     Token::Location current {1, 1};
     for(auto it = src.begin(); it != src.end(); ){
         switch(Token::Location location = current; *it){
@@ -114,7 +112,6 @@ std::list<TokenVar> tokenize(std::string_view src){
                 for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
                     seq += *it;
                 }
-                std::cout << seq << std::endl;
                 std::optional<Token::Number> number = Token::Number::create(location, seq);
                 if(number){
                     tokens.emplace_back(*number);
