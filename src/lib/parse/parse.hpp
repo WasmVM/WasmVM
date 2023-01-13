@@ -28,27 +28,29 @@ namespace Exception {
 namespace Parse {
 
 template<typename... T>
-class Rule : public std::tuple<std::optional<T>...> {
-    Rule(std::optional<T>... values) : std::tuple<std::optional<T>...>(values...){}
+class Rule : public std::tuple<T...> {
+    Rule(T... values) : std::tuple<T...>(values...){}
 public:
-    static Rule<T...> get(TokenIter& begin, const TokenIter& end){
-        return Rule<T...>(T::get(begin, end)...);
+    static std::optional<Rule<T...>> get(TokenIter& begin, const TokenIter& end){
+        TokenIter it = begin;
+        if((T::get(it, end).has_value() && ...)){
+            return Rule<T...>(*(T::get(begin, end))...);
+        }else{
+            return std::optional<Rule<T...>>();
+        }
     }
 };
 
 template<typename T>
-class Optional : public std::optional<T> {
-    Optional(T value) : std::optional<T>(value){}
-    Optional(std::optional<T> value) : std::optional<T>(value){}
-    Optional(std::nullopt_t = std::nullopt) : std::optional<T>(){}
-public:
-    static Optional<T> get(TokenIter& begin, const TokenIter& end){
+struct Optional : public std::optional<T> {
+
+    static std::optional<Optional<T>> get(TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
-        Optional<T> result(T::get(begin, end));
+        auto result = T::get(it, end);
         if(result){
             begin = it;
         }
-        return result;
+        return Optional<T>(result);
     }
 };
 
