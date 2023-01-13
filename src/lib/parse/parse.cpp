@@ -2,8 +2,6 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include <WasmVM.hpp>
-
 #include <exception.hpp>
 #include "parse.hpp"
 #include "Keywords.hpp"
@@ -13,11 +11,6 @@
 #include <utility>
 
 using namespace WasmVM;
-
-WasmModule module_parse(std::string src){
-    std::list<TokenType> tokens = tokenize(src);
-    return WasmModule();
-}
 
 static void next_char(std::string_view::const_iterator& it, Token::Location& loc){
     if(*it == '\n'){

@@ -24,7 +24,8 @@ add_library(WasmVM_core SHARED
 
 add_library(WasmVM SHARED
     parse/parse.cpp
-    parse/Token.cpp
+    parse/token.cpp
+    parse/nodes/module.cpp
 )
 
 if(INSTALL_C)
