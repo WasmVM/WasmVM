@@ -4,6 +4,7 @@
 #include <string>
 #include <list>
 #include <utility>
+#include <vector>
 
 #include <exception.hpp>
 #include <structures/WasmModule.hpp>
@@ -31,6 +32,7 @@ template<typename... T>
 class Rule : public std::tuple<T...> {
     Rule(T... values) : std::tuple<T...>(values...){}
 public:
+
     static std::optional<Rule<T...>> get(TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
         if((T::get(it, end).has_value() && ...)){
@@ -43,7 +45,6 @@ public:
 
 template<typename T>
 struct Optional : public std::optional<T> {
-
     static std::optional<Optional<T>> get(TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
         auto result = T::get(it, end);
@@ -51,6 +52,27 @@ struct Optional : public std::optional<T> {
             begin = it;
         }
         return Optional<T>(result);
+    }
+};
+
+template<typename T, size_t Max = SIZE_MAX, size_t Min = 0>
+struct Repeat : public std::vector<T> {
+    static std::optional<Repeat<T, Max, Min>> get(TokenIter& begin, const TokenIter& end){
+        Repeat<T, Max, Min> result;
+        for(size_t i = 0; i < Max; ++i){
+            TokenIter it = begin;
+            std::optional<T> item = T::get(it, end);
+            if(item){
+                begin = it;
+                result.emplace_back(*item);
+            }else{
+                break;
+            }
+        }
+        if(result.size() < Min){
+            return std::nullopt;
+        }
+        return result;
     }
 };
 
