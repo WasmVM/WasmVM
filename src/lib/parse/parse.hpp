@@ -55,10 +55,11 @@ struct Optional : public std::optional<T> {
     }
 };
 
-template<typename T, size_t Max = SIZE_MAX, size_t Min = 0>
+template<typename T, size_t Min = 0, size_t Max = SIZE_MAX>
+    requires (Min <= Max)
 struct Repeat : public std::vector<T> {
-    static std::optional<Repeat<T, Max, Min>> get(TokenIter& begin, const TokenIter& end){
-        Repeat<T, Max, Min> result;
+    static std::optional<Repeat<T, Min, Max>> get(TokenIter& begin, const TokenIter& end){
+        Repeat<T, Min, Max> result;
         for(size_t i = 0; i < Max; ++i){
             TokenIter it = begin;
             std::optional<T> item = T::get(it, end);
@@ -75,6 +76,9 @@ struct Repeat : public std::vector<T> {
         return result;
     }
 };
+
+template<typename T, size_t N>
+using Repeat_N = Repeat<T, N, N>;
 
 }
 

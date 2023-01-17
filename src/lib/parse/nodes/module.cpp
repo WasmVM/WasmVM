@@ -5,16 +5,25 @@
 #include <WasmVM.hpp>
 #include "../parse.hpp"
 
-#include <iostream> // FIXME:
+#include "../print.hpp" // FIXME:
 
 using namespace WasmVM;
 
 WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType> tokens = tokenize(src);
     std::list<TokenType>::iterator it = tokens.begin();
-    auto module_rule = Parse::Rule<Token::ParenL, Parse::Optional<Token::Keyword>, Token::ParenR>::get(it, tokens.end());
-    
-    std::cout << std::get<0>(module_rule).has_value() << " " << std::get<1>(module_rule).has_value() << std::endl;
+
+    auto module_rule = Parse::Rule<
+        Token::ParenL,
+        Token::Keyword,
+        Parse::Optional<Token::Id>,
+        Token::ParenR
+    >::get(it, tokens.end());`
+
+    if(module_rule){
+        auto rule = module_rule.value();
+        Printer()(rule);
+    }
     
     return WasmModule();
 }
