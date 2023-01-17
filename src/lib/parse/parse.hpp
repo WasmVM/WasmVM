@@ -80,6 +80,35 @@ struct Repeat : public std::vector<T> {
 template<typename T, size_t N>
 using Repeat_N = Repeat<T, N, N>;
 
+template<typename... T>
+struct OneOf : public std::variant<T...>{
+
+    template <class U>
+    OneOf(U arg) : std::variant<T...>(arg){}
+
+    static std::optional<OneOf<T...>> get(TokenIter& begin, const TokenIter& end){
+        std::optional<OneOf<T...>> result;
+        if((attempt<T>(result, begin, end) || ...)){
+           return result; 
+        }else{
+            return std::nullopt;
+        }
+    }
+private:
+    template<typename U>
+    static bool attempt(std::optional<OneOf<T...>>& res, TokenIter& begin, const TokenIter& end){
+        TokenIter it = begin;
+        std::optional<U> result = U::get(it, end);
+        if(result){
+            begin = it;
+            res.emplace(OneOf<T...>(*result));
+            return true;
+        }else{
+            return false;
+        }
+    }
+};
+
 }
 
 }

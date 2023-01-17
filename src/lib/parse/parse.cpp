@@ -67,7 +67,7 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
             // Id
             case '$':{
                 std::string seq {*it};
-                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) != std::string::npos); next_char(it, location)){
+                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, location)){
                     seq += *it;
                 }
                 tokens.emplace_back(Token::Id(location, seq));
