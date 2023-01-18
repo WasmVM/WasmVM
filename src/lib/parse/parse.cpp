@@ -125,3 +125,5 @@ using namespace Exception;
 string_not_close::string_not_close(Token::Location location) : Parse("string not close", location) {}
 block_comment_not_close::block_comment_not_close(Token::Location location) : Parse("block comment not close", location) {}
 unknown_token::unknown_token(Token::Location location, std::string token) : Parse(std::string("unknown token '") + token + "'", location) {}
+unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string keyword) :
+    Parse(std::string("expected keyword '") + keyword + "' but got '" + token + "'", location) {}

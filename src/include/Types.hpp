@@ -5,6 +5,7 @@
 #include <variant>
 #include <optional>
 #include <utility>
+#include <cstdint>
 
 namespace WasmVM {
 

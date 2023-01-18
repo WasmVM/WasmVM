@@ -5,6 +5,7 @@
 #include <list>
 #include <utility>
 #include <vector>
+#include <concepts>
 
 #include <exception.hpp>
 #include <structures/WasmModule.hpp>
@@ -24,26 +25,34 @@ namespace Exception {
     struct unknown_token : public Parse {
         unknown_token(Token::Location location, std::string token);
     };
+    struct unexpected_keyword : public Parse {
+        unexpected_keyword(Token::Location location, std::string token, std::string keyword);
+    };
 }
 
 namespace Parse {
 
-template<typename... T>
+template <typename T>
+concept parseable = requires(TokenIter& begin, const TokenIter& end) {
+    {T::get(begin, end)} -> std::convertible_to<std::optional<T>>;
+};
+
+template<parseable... T>
 class Rule : public std::tuple<T...> {
     Rule(T... values) : std::tuple<T...>(values...){}
 public:
 
     static std::optional<Rule<T...>> get(TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
-        if((T::get(it, end).has_value() && ...)){
-            return Rule<T...>(*(T::get(begin, end))...);
+        if(((T::get(it, end).has_value()) && ...)){
+            return Rule<T...>((*T::get(begin, end))...);
         }else{
             return std::optional<Rule<T...>>();
         }
     }
 };
 
-template<typename T>
+template<parseable T>
 struct Optional : public std::optional<T> {
     static std::optional<Optional<T>> get(TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
@@ -55,7 +64,7 @@ struct Optional : public std::optional<T> {
     }
 };
 
-template<typename T, size_t Min = 0, size_t Max = SIZE_MAX>
+template<parseable T, size_t Min = 0, size_t Max = SIZE_MAX>
     requires (Min <= Max)
 struct Repeat : public std::vector<T> {
     static std::optional<Repeat<T, Min, Max>> get(TokenIter& begin, const TokenIter& end){
@@ -77,10 +86,10 @@ struct Repeat : public std::vector<T> {
     }
 };
 
-template<typename T, size_t N>
+template<parseable T, size_t N>
 using Repeat_N = Repeat<T, N, N>;
 
-template<typename... T>
+template<parseable... T>
 struct OneOf : public std::variant<T...>{
 
     template <class U>
@@ -95,7 +104,7 @@ struct OneOf : public std::variant<T...>{
         }
     }
 private:
-    template<typename U>
+    template<parseable U>
     static bool attempt(std::optional<OneOf<T...>>& res, TokenIter& begin, const TokenIter& end){
         TokenIter it = begin;
         std::optional<U> result = U::get(it, end);
