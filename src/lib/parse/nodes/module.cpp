@@ -4,6 +4,7 @@
 
 #include <WasmVM.hpp>
 #include "../parse.hpp"
+#include "../nodes.hpp"
 
 #include "../print.hpp" // FIXME:
 
@@ -13,16 +14,25 @@ WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType> tokens = tokenize(src);
     std::list<TokenType>::iterator it = tokens.begin();
 
-    auto module_rule = Parse::Rule<
+    using modulefields = Parse::OneOf<
+        Parse::FuncType
+    >;
+
+    auto syntax = Parse::Rule<
         Token::ParenL,
         Token::Keyword,
         Parse::Optional<Token::Id>,
+        modulefields,
         Token::ParenR
-    >::get(it, tokens.end());`
+    >::get(it, tokens.end());
 
-    if(module_rule){
-        auto rule = module_rule.value();
-        Printer()(rule);
+    if(syntax){
+        auto rule = syntax.value();
+        Token::Keyword module_keyword = std::get<1>(rule);
+        if(module_keyword.value != "module"){
+            throw Exception::unexpected_keyword(module_keyword.location, module_keyword.value, "module");
+        }
+        Printer()(rule); // FIXME:
     }
     
     return WasmModule();

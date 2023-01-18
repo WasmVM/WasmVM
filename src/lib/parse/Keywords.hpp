@@ -5,7 +5,8 @@
 #include <string>
 
 static std::unordered_set<std::string> keywords = {
-    "module"
+    "module",
+    "func"
 };
 
 #endif
