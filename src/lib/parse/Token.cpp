@@ -8,6 +8,8 @@
 #include <ranges>
 #include <algorithm>
 
+#include "Keywords.hpp"
+
 using namespace WasmVM;
 using namespace Token;
 
@@ -39,7 +41,11 @@ std::optional<Number> Number::create(Location loc, std::string str){
 
 String::String(Location loc, std::string value) : TokenBase(loc, value){}
 
-Keyword::Keyword(Location loc, std::string value) : TokenBase(loc, value){}
+KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value){
+    if(!keywords.contains(value)){
+        throw Exception::unknown_token(loc, value);
+    }
+}
 
 #define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter& begin, const TokenIter& end){ \
     if(begin != end && std::holds_alternative<TOKEN>(*begin)){ \
@@ -54,4 +60,3 @@ TokenGet(Token::ParenR)
 TokenGet(Token::Id)
 TokenGet(Token::Number)
 TokenGet(Token::String)
-TokenGet(Token::Keyword)

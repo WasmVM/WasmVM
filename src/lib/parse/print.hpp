@@ -27,7 +27,7 @@ struct Printer {
         std::cout << "[" << tok.location.first << "," << tok.location.second << "] Number " << tok.value << std::endl; 
     }
 
-    void operator()(Token::Keyword& tok){
+    void operator()(Token::KeywordBase& tok){
         std::cout << "[" << tok.location.first << "," << tok.location.second << "] Keyword " << tok.value << std::endl; 
     }
 

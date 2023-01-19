@@ -14,9 +14,9 @@ namespace Token {
     struct Id;
     struct String;
     struct Number;
-    struct Keyword;
     struct ParenL;
     struct ParenR;
+    struct KeywordBase;
 }
 
 using TokenType = std::variant<
@@ -25,7 +25,7 @@ using TokenType = std::variant<
     Token::Id,
     Token::String,
     Token::Number,
-    Token::Keyword
+    Token::KeywordBase
 >;
 
 using TokenIter = std::list<TokenType>::iterator;
@@ -67,9 +67,23 @@ struct String : public TokenBase {
     static std::optional<String> get(TokenIter& begin, const TokenIter& end);
 };
 
-struct Keyword : public TokenBase {
-    Keyword(Location loc, std::string value);
-    static std::optional<Keyword> get(TokenIter& begin, const TokenIter& end);
+struct KeywordBase : public TokenBase {
+    KeywordBase(Location loc, std::string value);
+};
+
+template <conststr K>
+struct Keyword : public KeywordBase {
+    Keyword(Location loc) : KeywordBase(loc, K.value){}
+
+    static std::optional<Keyword> get(TokenIter& begin, const TokenIter& end){
+        if(begin != end && std::holds_alternative<KeywordBase>(*begin)){
+            KeywordBase& keyword = std::get<KeywordBase>(*(begin++));
+            if(keyword.value == K.value){
+                return Keyword(keyword.location);
+            }
+        }
+        return std::nullopt;
+    }
 };
 
 }

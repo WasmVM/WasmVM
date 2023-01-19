@@ -8,8 +8,6 @@
 
 using namespace Testing;
 
-template<class... Ts> struct overloaded : Ts... { using Ts::operator()...; };
-
 std::optional<Suite> Suite::suite = std::nullopt;
 
 Suite::Suite(std::initializer_list<SuiteItem> items) :

@@ -20,7 +20,7 @@ WasmModule WasmVM::module_parse(std::string src){
 
     auto syntax = Parse::Rule<
         Token::ParenL,
-        Token::Keyword,
+        Token::Keyword<"module">,
         Parse::Optional<Token::Id>,
         modulefields,
         Token::ParenR
@@ -28,10 +28,6 @@ WasmModule WasmVM::module_parse(std::string src){
 
     if(syntax){
         auto rule = syntax.value();
-        Token::Keyword module_keyword = std::get<1>(rule);
-        if(module_keyword.value != "module"){
-            throw Exception::unexpected_keyword(module_keyword.location, module_keyword.value, "module");
-        }
         Printer()(rule); // FIXME:
     }
     

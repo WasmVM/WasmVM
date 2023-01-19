@@ -4,7 +4,6 @@
 
 #include <exception.hpp>
 #include "parse.hpp"
-#include "Keywords.hpp"
 
 #include <list>
 #include <string>
@@ -109,11 +108,7 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
                 if(number){
                     tokens.emplace_back(*number);
                 }else{
-                    if(keywords.contains(seq)){
-                        tokens.emplace_back(Token::Keyword(location, seq));
-                    }else{
-                        throw Exception::unknown_token(location, seq);
-                    }
+                    tokens.emplace_back(Token::KeywordBase(location, seq));
                 }
             }break;
         }
