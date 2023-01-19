@@ -1,0 +1,3 @@
+Makefile
+parser_test*
+*.wat

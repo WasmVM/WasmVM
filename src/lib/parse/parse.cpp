@@ -122,8 +122,13 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
 }
 
 using namespace Exception;
-string_not_close::string_not_close(Token::Location location) : Parse("string not close", location) {}
-block_comment_not_close::block_comment_not_close(Token::Location location) : Parse("block comment not close", location) {}
-unknown_token::unknown_token(Token::Location location, std::string token) : Parse(std::string("unknown token '") + token + "'", location) {}
+string_not_close::string_not_close(Token::Location location) : 
+    Parse("string not close", location) {}
+block_comment_not_close::block_comment_not_close(Token::Location location) : 
+    Parse("block comment not close", location) {}
+unknown_token::unknown_token(Token::Location location, std::string token) : 
+    Parse(std::string("unknown token '") + token + "'", location) {}
 unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string keyword) :
     Parse(std::string("expected keyword '") + keyword + "' but got '" + token + "'", location) {}
+invalid_functype::invalid_functype(Token::Location location, std::string message) : 
+    Parse(std::string("invalid functype" + message), location) {}

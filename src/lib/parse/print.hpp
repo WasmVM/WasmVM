@@ -43,8 +43,9 @@ struct Printer {
 
     template <typename... T>
     void operator()(Parse::Rule<T...>& op){
-        std::cout << "Rule "; 
+        std::cout << "Rule {" << std::endl; 
         print_tuple(op, std::make_index_sequence<sizeof...(T)>());
+        std::cout << "}" << std::endl; 
     }
 
     template <typename T, size_t Min, size_t Max>
@@ -62,7 +63,45 @@ struct Printer {
     }
 
     void operator()(Parse::FuncType& op){
-        std::cout << "FuncType" << std::endl;
+        std::cout << "FuncType {" << std::endl;
+        std::cout << "  * param: ";
+        for(auto param : op.params){
+            if(!param.first.empty()){
+                std::cout << param.first << ":";
+            }
+            this->operator()(param.second);
+            std::cout << " ";
+        }
+        std::cout << std::endl; 
+        std::cout << "  * result: ";
+        for(auto result : op.results){
+            this->operator()(result);
+            std::cout << " ";
+        }
+        std::cout << std::endl;
+    }
+
+    void operator()(ValueType& val){
+        switch(val){
+            case ValueType::i32:
+                std::cout << "i32";
+            break;
+            case ValueType::i64:
+                std::cout << "i64";
+            break;
+            case ValueType::f32:
+                std::cout << "f32";
+            break;
+            case ValueType::f64:
+                std::cout << "f64";
+            break;
+            case ValueType::funcref:
+                std::cout << "funcref";
+            break;
+            case ValueType::externref:
+                std::cout << "externref";
+            break;
+        }
     }
 
 private:

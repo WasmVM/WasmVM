@@ -28,6 +28,9 @@ namespace Exception {
     struct unexpected_keyword : public Parse {
         unexpected_keyword(Token::Location location, std::string token, std::string keyword);
     };
+    struct invalid_functype : public Parse {
+        invalid_functype(Token::Location location, std::string message);
+    };
 }
 
 namespace Parse {
@@ -69,11 +72,12 @@ template<parseable T, size_t Min = 0, size_t Max = SIZE_MAX>
 struct Repeat : public std::vector<T> {
     static std::optional<Repeat<T, Min, Max>> get(TokenIter& begin, const TokenIter& end){
         Repeat<T, Min, Max> result;
+        TokenIter it = begin;
         for(size_t i = 0; i < Max; ++i){
-            TokenIter it = begin;
-            std::optional<T> item = T::get(it, end);
+            TokenIter iter_in = it;
+            std::optional<T> item = T::get(iter_in, end);
             if(item){
-                begin = it;
+                it = iter_in;
                 result.emplace_back(*item);
             }else{
                 break;
@@ -82,6 +86,7 @@ struct Repeat : public std::vector<T> {
         if(result.size() < Min){
             return std::nullopt;
         }
+        begin = it;
         return result;
     }
 };
