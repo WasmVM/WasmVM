@@ -20,7 +20,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
         >>,
         // result
         Parse::Repeat<Parse::Rule<
-            Token::ParenL, Token::Keyword<"result">, 
+            Token::ParenL, Token::Keyword<"result", true>, 
             Parse::Repeat<Parse::ValueType>,
             Token::ParenR
         >>,

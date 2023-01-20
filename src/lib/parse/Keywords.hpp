@@ -5,7 +5,7 @@
 #include <string>
 
 static std::unordered_set<std::string> keywords = {
-    "module",
+    "module", "type",
     "param", "result",
     "func", "funcref", "extern", "externref",
     "i32", "i64", "f32", "f64",

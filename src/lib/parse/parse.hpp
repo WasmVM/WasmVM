@@ -26,7 +26,7 @@ namespace Exception {
         unknown_token(Token::Location location, std::string token);
     };
     struct unexpected_keyword : public Parse {
-        unexpected_keyword(Token::Location location, std::string token, std::string keyword);
+        unexpected_keyword(Token::Location location, std::string token, std::string expected);
     };
     struct invalid_functype : public Parse {
         invalid_functype(Token::Location location, std::string message);

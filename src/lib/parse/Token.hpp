@@ -10,6 +10,10 @@
 
 namespace WasmVM {
 
+namespace Exception {
+    struct unexpected_keyword;
+}
+
 namespace Token {
     struct Id;
     struct String;
@@ -71,7 +75,7 @@ struct KeywordBase : public TokenBase {
     KeywordBase(Location loc, std::string value);
 };
 
-template <conststr K>
+template <conststr K, bool Required = false>
 struct Keyword : public KeywordBase {
     Keyword(Location loc) : KeywordBase(loc, K.value){}
 
@@ -80,6 +84,8 @@ struct Keyword : public KeywordBase {
             KeywordBase& keyword = std::get<KeywordBase>(*(begin++));
             if(keyword.value == K.value){
                 return Keyword(keyword.location);
+            }else if (Required){
+                throw Exception::unexpected_keyword(keyword.location, keyword.value, K.value);
             }
         }
         return std::nullopt;

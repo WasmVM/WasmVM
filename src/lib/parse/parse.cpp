@@ -123,7 +123,7 @@ block_comment_not_close::block_comment_not_close(Token::Location location) :
     Parse("block comment not close", location) {}
 unknown_token::unknown_token(Token::Location location, std::string token) : 
     Parse(std::string("unknown token '") + token + "'", location) {}
-unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string keyword) :
-    Parse(std::string("expected keyword '") + keyword + "' but got '" + token + "'", location) {}
+unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string expected) :
+    Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
 invalid_functype::invalid_functype(Token::Location location, std::string message) : 
     Parse(std::string("invalid functype" + message), location) {}
