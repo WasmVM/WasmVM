@@ -31,6 +31,9 @@ namespace Exception {
     struct invalid_functype : public Parse {
         invalid_functype(Token::Location location, std::string message);
     };
+    struct syntax_error : public Exception {
+        syntax_error(std::string message = "");
+    };
 }
 
 namespace Parse {

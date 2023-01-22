@@ -14,22 +14,34 @@ WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType> tokens = tokenize(src);
     std::list<TokenType>::iterator it = tokens.begin();
 
-    using modulefields = Parse::OneOf<
-        Parse::FuncType
+    // ( type id? functype )
+    using Type = Parse::Rule<
+        Token::ParenL, Token::Keyword<"type", true>, Parse::Optional<Token::Id>, Parse::FuncType, Token::ParenR
     >;
 
+    using modulefields = Parse::OneOf<
+        Type
+    >;
+
+    // ( module id? modulefields* )
     auto syntax = Parse::Rule<
         Token::ParenL,
         Token::Keyword<"module">,
         Parse::Optional<Token::Id>,
-        modulefields,
+        Parse::Repeat<modulefields>,
         Token::ParenR
     >::get(it, tokens.end());
 
     if(syntax){
         auto rule = syntax.value();
-        Printer()(rule); // FIXME:
+        WasmModule mod;
+        auto id = std::get<2>(rule);
+        if(id){
+            mod.id = id->value;
+        }
+        
+        // Printer()(rule); // FIXME:
+        return mod;
     }
-    
-    return WasmModule();
+    throw Exception::syntax_error();
 }
