@@ -35,6 +35,7 @@ static_assert(Value(std::in_place_type<funcref_t>).index() == ValueType::funcref
 static_assert(Value(std::in_place_type<externref_t>).index() == ValueType::externref);
 
 struct FuncType {
+    std::string id;
     std::vector<std::pair<std::string, ValueType>> params;
     std::vector<ValueType> results;
 };

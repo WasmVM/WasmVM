@@ -28,6 +28,7 @@ add_library(WasmVM SHARED
     parse/nodes/module.cpp
     parse/nodes/FuncType.cpp
     parse/nodes/ValueType.cpp
+    dump/dump.cpp
 )
 
 if(INSTALL_C)

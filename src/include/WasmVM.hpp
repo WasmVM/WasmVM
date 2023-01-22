@@ -8,6 +8,7 @@
 namespace WasmVM {
 
 WasmModule module_parse(std::string src);
+std::string module_dump(WasmModule& module);
 
 }
 
