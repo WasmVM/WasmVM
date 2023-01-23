@@ -4,12 +4,14 @@
 #include <vector>
 #include <string>
 #include <Types.hpp>
+#include <structures/WasmImport.hpp>
 
 namespace WasmVM {
 
 struct WasmModule {
     std::string id;
     std::vector<FuncType> types;
+    std::vector<WasmImport> imports;
 };
 
 }
