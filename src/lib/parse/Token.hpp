@@ -61,7 +61,7 @@ struct Id : public TokenBase {
 
 struct Number : public TokenBase {
     static std::optional<Number> create(Location loc, std::string str);
-    std::optional<Number> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Number> get(TokenIter& begin, const TokenIter& end);
 private:
     Number(Location loc, std::string value);
 };

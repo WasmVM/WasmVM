@@ -4,6 +4,7 @@
 
 #include <WasmVM.hpp>
 #include "../syntax.hpp"
+#include "visitor.hpp"
 
 #include "../print.hpp" // FIXME:
 
@@ -14,7 +15,8 @@ WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType>::iterator it = tokens.begin();
 
     using modulefields = Parse::OneOf<
-        Syntax::FuncType
+        Syntax::FuncType,
+        Parse::Import
     >;
 
     // ( module id? modulefields* )
@@ -38,7 +40,7 @@ WasmModule WasmVM::module_parse(std::string src){
 
         // sections
         for(auto section : std::get<3>(rule)){
-            std::visit(Syntax::Visitor(mod), section);
+            std::visit(ModuleVisitor(mod), section);
         }
         
         // Printer()(rule); // FIXME:

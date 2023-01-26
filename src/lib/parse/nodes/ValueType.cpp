@@ -8,6 +8,10 @@
 
 using namespace WasmVM;
 
+Parse::ValueType::operator WasmVM::ValueType(){
+    return type;
+}
+
 std::optional<Parse::ValueType> Parse::ValueType::get(TokenIter& begin, const TokenIter& end){
 
     std::list<TokenType>::iterator it = begin;

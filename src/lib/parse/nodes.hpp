@@ -15,13 +15,13 @@ struct FuncType : public WasmVM::FuncType {
 struct ValueType {
     ValueType(WasmVM::ValueType type) : type(type){}
     static std::optional<ValueType> get(TokenIter& begin, const TokenIter& end);
+    operator WasmVM::ValueType();
+private:
     WasmVM::ValueType type;
 };
 
-struct Import {
-    Import(WasmVM::WasmImport import) : import(import){}
+struct Import : public WasmVM::WasmImport {
     static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
-    WasmVM::WasmImport import;
 };
 
 }

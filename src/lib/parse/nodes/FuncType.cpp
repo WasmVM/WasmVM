@@ -3,10 +3,11 @@
 // license that can be found in the LICENSE file.
 
 #include "../syntax.hpp"
+#include "visitor.hpp"
 
 using namespace WasmVM;
 
-void Syntax::Visitor::operator()(Syntax::FuncType& type){
+void ModuleVisitor::operator()(Syntax::FuncType& type){
     auto id = std::get<2>(type);
     WasmVM::FuncType& functype = module.types.emplace_back(std::get<3>(type));
     functype.id = id ? id.value().value : "";
@@ -53,10 +54,10 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
                     default:
                         throw Exception::invalid_functype(location, ": an identifier can only bind to one parameter");
                 }
-                func_type.params.emplace_back(id.value().value, types.front().type);
+                func_type.params.emplace_back(id.value().value, types.front());
             }else{
                 for(Parse::ValueType type : types){
-                    func_type.params.emplace_back("", type.type);
+                    func_type.params.emplace_back("", type);
                 }
             }
         }
@@ -66,7 +67,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
         for(auto result : results){
             auto types = std::get<2>(result);
             for(Parse::ValueType type : types){
-                func_type.results.emplace_back(type.type);
+                func_type.results.emplace_back(type);
             }
         }
 

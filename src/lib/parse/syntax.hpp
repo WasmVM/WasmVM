@@ -8,15 +8,20 @@ namespace WasmVM {
 namespace Syntax {
 
 using FuncType = Parse::Rule<
-    Token::ParenL, Token::Keyword<"type", true>, Parse::Optional<Token::Id>, Parse::FuncType, Token::ParenR
+    Token::ParenL, Token::Keyword<"type">, Parse::Optional<Token::Id>, Parse::FuncType, Token::ParenR
 >;
 
-struct Visitor {
-    Visitor(WasmModule& module) : module(module){}
-    WasmModule& module;
-
-    void operator()(FuncType& type);
-};
+using TypeUse = Parse::Rule<
+    Parse::Optional<
+        Parse::Rule<Token::ParenL, Token::Keyword<"type">, Token::Number, Token::ParenR>
+    >,
+    Parse::Repeat<
+        Parse::Rule<Token::ParenL, Token::Keyword<"param">, Parse::Repeat<Parse::ValueType>, Token::ParenR>
+    >,
+    Parse::Repeat<
+        Parse::Rule<Token::ParenL, Token::Keyword<"result">, Parse::Repeat<Parse::ValueType>, Token::ParenR>
+    >
+>;
 
 }
 }
