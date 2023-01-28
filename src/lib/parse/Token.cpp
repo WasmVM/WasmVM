@@ -47,7 +47,7 @@ KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value
     }
 }
 
-#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter& begin, const TokenIter& end){ \
+#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(WasmModule&, TokenIter& begin, const TokenIter& end){ \
     if(begin != end && std::holds_alternative<TOKEN>(*begin)){ \
         return std::get<TOKEN>(*(begin++)); \
     }else{ \

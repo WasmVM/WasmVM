@@ -19,6 +19,8 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Import
     >;
 
+    WasmModule module;
+
     // ( module id? modulefields* )
     auto syntax = Parse::Rule<
         Token::ParenL,
@@ -26,25 +28,24 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Optional<Token::Id>,
         Parse::Repeat<modulefields>,
         Token::ParenR
-    >::get(it, tokens.end());
+    >::get(module, it, tokens.end());
 
     if(syntax){
         auto rule = syntax.value();
-        WasmModule mod;
 
         // id
         auto id = std::get<2>(rule);
         if(id){
-            mod.id = id->value;
+            module.id = id->value;
         }
 
         // sections
         for(auto section : std::get<3>(rule)){
-            std::visit(ModuleVisitor(mod), section);
+            std::visit(ModuleVisitor(module), section);
         }
         
         // Printer()(rule); // FIXME:
-        return mod;
+        return module;
     }
     throw Exception::syntax_error();
 }

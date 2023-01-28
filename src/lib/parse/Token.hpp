@@ -46,29 +46,29 @@ struct TokenBase {
 
 struct ParenL : public TokenBase {
     ParenL(Location loc);
-    static std::optional<ParenL> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ParenL> get(WasmModule&, TokenIter& begin, const TokenIter& end);
 };
 
 struct ParenR : public TokenBase {
     ParenR(Location loc);
-    static std::optional<ParenR> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ParenR> get(WasmModule&, TokenIter& begin, const TokenIter& end);
 };
 
 struct Id : public TokenBase {
     Id(Location loc, std::string value);
-    static std::optional<Id> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Id> get(WasmModule&, TokenIter& begin, const TokenIter& end);
 };
 
 struct Number : public TokenBase {
     static std::optional<Number> create(Location loc, std::string str);
-    static std::optional<Number> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Number> get(WasmModule&, TokenIter& begin, const TokenIter& end);
 private:
     Number(Location loc, std::string value);
 };
 
 struct String : public TokenBase {
     String(Location loc, std::string value);
-    static std::optional<String> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<String> get(WasmModule&, TokenIter& begin, const TokenIter& end);
 };
 
 struct KeywordBase : public TokenBase {
@@ -79,7 +79,7 @@ template <conststr K, bool Required = false>
 struct Keyword : public KeywordBase {
     Keyword(Location loc) : KeywordBase(loc, K.value){}
 
-    static std::optional<Keyword> get(TokenIter& begin, const TokenIter& end){
+    static std::optional<Keyword> get(WasmModule&, TokenIter& begin, const TokenIter& end){
         if(begin != end && std::holds_alternative<KeywordBase>(*begin)){
             KeywordBase& keyword = std::get<KeywordBase>(*(begin++));
             if(keyword.value == K.value){

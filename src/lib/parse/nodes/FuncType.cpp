@@ -13,7 +13,7 @@ void ModuleVisitor::operator()(Syntax::FuncType& type){
     functype.id = id ? id.value().value : "";
 }
 
-std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::FuncType> Parse::FuncType::get(WasmModule& module, TokenIter& begin, const TokenIter& end){
 
     std::list<TokenType>::iterator it = begin;
 
@@ -32,7 +32,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
             Token::ParenR
         >>,
         Token::ParenR
-    >::get(it, end);
+    >::get(module, it, end);
 
     if(syntax){
         Parse::FuncType func_type;

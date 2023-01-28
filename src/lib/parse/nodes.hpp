@@ -9,19 +9,19 @@ namespace WasmVM {
 namespace Parse {
 
 struct FuncType : public WasmVM::FuncType {
-    static std::optional<FuncType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<FuncType> get(WasmModule& module, TokenIter& begin, const TokenIter& end);
 };
 
 struct ValueType {
     ValueType(WasmVM::ValueType type) : type(type){}
-    static std::optional<ValueType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ValueType> get(WasmModule& module, TokenIter& begin, const TokenIter& end);
     operator WasmVM::ValueType();
 private:
     WasmVM::ValueType type;
 };
 
 struct Import : public WasmVM::WasmImport {
-    static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Import> get(WasmModule& module, TokenIter& begin, const TokenIter& end);
 };
 
 }

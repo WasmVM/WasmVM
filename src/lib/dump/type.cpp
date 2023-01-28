@@ -4,7 +4,9 @@
 
 #include "dump.hpp"
 
-std::ostream& operator<<(std::ostream& stream, ValueType& type){
+using namespace WasmVM;
+
+std::ostream& WasmVM::operator<<(std::ostream& stream, ValueType& type){
     switch(type){
         case ValueType::i32:
             stream << "i32";
@@ -28,7 +30,7 @@ std::ostream& operator<<(std::ostream& stream, ValueType& type){
     return stream;
 }
 
-std::ostream& operator<<(std::ostream& stream, FuncType& type){
+std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
     stream << "  (type " << (type.id.empty() ? "" : type.id + " ") << "(func ";
     for(auto& param : type.params){
         stream << "(param " << (param.first.empty() ? "" : param.first + " ") << param.second << ") ";
