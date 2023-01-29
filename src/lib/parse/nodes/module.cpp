@@ -28,7 +28,7 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Optional<Token::Id>,
         Parse::Repeat<modulefields>,
         Token::ParenR
-    >::get(module, it, tokens.end());
+    >::get(it, tokens.end());
 
     if(syntax){
         auto rule = syntax.value();

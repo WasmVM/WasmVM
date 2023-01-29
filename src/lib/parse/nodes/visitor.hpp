@@ -14,6 +14,13 @@ struct ModuleVisitor {
     void operator()(Parse::Import& import);
 };
 
+struct ImportVisitor {
+    ImportVisitor(Parse::Import& import) : import(import){}
+    Parse::Import& import;
+
+    void operator()(Syntax::ImportDesc::Func& desc);
+};
+
 }
 
 #endif

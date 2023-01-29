@@ -16,12 +16,18 @@ using TypeUse = Parse::Rule<
         Parse::Rule<Token::ParenL, Token::Keyword<"type">, Token::Number, Token::ParenR>
     >,
     Parse::Repeat<
-        Parse::Rule<Token::ParenL, Token::Keyword<"param">, Parse::Repeat<Parse::ValueType>, Token::ParenR>
+        Parse::Rule<Token::ParenL, Token::Keyword<"param">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::ValueType>, Token::ParenR>
     >,
     Parse::Repeat<
         Parse::Rule<Token::ParenL, Token::Keyword<"result">, Parse::Repeat<Parse::ValueType>, Token::ParenR>
     >
 >;
+
+namespace ImportDesc {
+
+using Func = Parse::Rule<Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Syntax::TypeUse, Token::ParenR>;
+
+}
 
 }
 }

@@ -44,6 +44,11 @@ struct FuncType {
     std::string id;
     std::vector<std::pair<std::string, ValueType>> params;
     std::vector<ValueType> results;
+
+    bool operator==(const FuncType&);
+    bool operator!=(const FuncType& op) {
+        return !operator==(op);
+    }
 };
 
 struct Limits {

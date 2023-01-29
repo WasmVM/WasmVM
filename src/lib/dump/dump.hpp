@@ -4,9 +4,12 @@
 #include <ostream>
 #include <WasmVM.hpp>
 
-using namespace WasmVM;
+namespace WasmVM {
 
 std::ostream& operator<<(std::ostream& stream, ValueType& type);
 std::ostream& operator<<(std::ostream& stream, FuncType& type);
+std::ostream& operator<<(std::ostream& stream, WasmImport& import);
+
+}
 
 #endif

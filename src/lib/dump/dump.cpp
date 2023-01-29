@@ -12,17 +12,15 @@
 
 using namespace WasmVM;
 
-static std::ostream& operator<<(std::ostream& stream, WasmModule& module){
+std::string WasmVM::module_dump(WasmModule& module){
+    std::stringstream stream;
     stream << "(module " << module.id << std::endl;
     for(FuncType& type : module.types){
         stream << type;
     }
+    for(WasmImport& import : module.imports){
+        stream << import;
+    }
     stream << ")" << std::endl;
-    return stream;
-}
-
-std::string WasmVM::module_dump(WasmModule& module){
-    std::stringstream stream;
-    stream << module;
     return stream.str();
 }

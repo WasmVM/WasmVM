@@ -47,7 +47,7 @@ KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value
     }
 }
 
-#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(WasmModule&, TokenIter& begin, const TokenIter& end){ \
+#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter& begin, const TokenIter& end){ \
     if(begin != end && std::holds_alternative<TOKEN>(*begin)){ \
         return std::get<TOKEN>(*(begin++)); \
     }else{ \
@@ -60,3 +60,27 @@ TokenGet(Token::ParenR)
 TokenGet(Token::Id)
 TokenGet(Token::Number)
 TokenGet(Token::String)
+
+template<> u32_t Token::Number::unpack<u32_t>(){
+    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+}
+
+template<> u64_t Token::Number::unpack<u64_t>(){
+    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+}
+
+template<> i32_t Token::Number::unpack<i32_t>(){
+    return std::stoi(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+}
+
+template<> i64_t Token::Number::unpack<i64_t>(){
+    return std::stol(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+}
+
+template<> f32_t Token::Number::unpack<f32_t>(){
+    return std::stof(value);
+}
+
+template<> f64_t Token::Number::unpack<f64_t>(){
+    return std::stod(value);
+}
