@@ -10,7 +10,7 @@
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Import& import){
-    //module.imports.emplace_back(import);
+    
 }
 
 std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIter& end){
@@ -45,10 +45,12 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Func& desc){
     import.id = id ? id.value().value : "";
     auto typeuse = std::get<3>(desc);
     auto index = std::get<0>(typeuse);
-    FuncType func_type;
+    Parse::FuncType func_type;
     // param
-    for(auto param : std::get<1>(typeuse)){
+    auto params = std::get<1>(typeuse);
+    for(index_t i = 0; i < params.size(); ++i){
         // location
+        auto param = params[i];
         Token::Location location = std::get<0>(param).location;
         auto id = std::get<2>(param);
         auto types = std::get<3>(param);
@@ -61,10 +63,11 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Func& desc){
                 default:
                     throw Exception::invalid_functype(location, ": an identifier can only bind to one parameter");
             }
-            func_type.params.emplace_back(id.value().value, types.front());
+            func_type.id_map[id->value] = i;
+            func_type.params.emplace_back(types.front());
         }else{
             for(Parse::ValueType type : types){
-                func_type.params.emplace_back("", type);
+                func_type.params.emplace_back(type);
             }
         }
     }
@@ -77,10 +80,4 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Func& desc){
         }
     }
 
-    if(index){
-        auto typeidx = std::get<2>(index.value());
-        import.desc.emplace<Parse::Import::FuncDesc>(typeidx.unpack<index_t>(), func_type);
-    }else{
-        import.desc.emplace<Parse::Import::FuncDesc>(std::nullopt, func_type);
-    }
 }

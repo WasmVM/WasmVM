@@ -7,18 +7,11 @@
 
 using namespace WasmVM;
 
-void ModuleVisitor::operator()(Syntax::FuncType& type){
-    auto id = std::get<2>(type);
-    WasmVM::FuncType& functype = module.types.emplace_back(std::get<3>(type));
-    functype.id = id ? id.value().value : "";
-}
-
 std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const TokenIter& end){
 
     std::list<TokenType>::iterator it = begin;
 
     auto syntax = Parse::Rule<
-        Token::ParenL, Token::Keyword<"func">,
         // param
         Parse::Repeat<Parse::Rule<
             Token::ParenL, Token::Keyword<"param">, Parse::Optional<Token::Id>, 
@@ -30,8 +23,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
             Token::ParenL, Token::Keyword<"result", true>, 
             Parse::Repeat<Parse::ValueType>,
             Token::ParenR
-        >>,
-        Token::ParenR
+        >>
     >::get(it, end);
 
     if(syntax){
@@ -39,8 +31,9 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
         auto rule = syntax.value();
 
         // param
-        auto params = std::get<2>(rule);
-        for(auto param : params){
+        auto params = std::get<0>(rule);
+        for(index_t i = 0; i < params.size(); ++i){
+            auto param = params[i];
             // location
             Token::Location location = std::get<0>(param).location;
             auto id = std::get<2>(param);
@@ -54,16 +47,17 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
                     default:
                         throw Exception::invalid_functype(location, ": an identifier can only bind to one parameter");
                 }
-                func_type.params.emplace_back(id.value().value, types.front());
+                func_type.id_map[id->value] = i;
+                func_type.params.emplace_back(types.front());
             }else{
                 for(Parse::ValueType type : types){
-                    func_type.params.emplace_back("", type);
+                    func_type.params.emplace_back(type);
                 }
             }
         }
 
         // result
-        auto results = std::get<3>(rule);
+        auto results = std::get<1>(rule);
         for(auto result : results){
             auto types = std::get<2>(result);
             for(Parse::ValueType type : types){

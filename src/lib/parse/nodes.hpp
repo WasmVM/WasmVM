@@ -5,11 +5,25 @@
 #include "parse.hpp"
 #include <structures/WasmImport.hpp>
 
+#include <map>
+
 namespace WasmVM {
 namespace Parse {
 
+struct Index : public OneOf<Token::Number, Token::Id> {
+    template <typename T>
+    T& retrieve(std::vector<T>& container);
+};
+
 struct FuncType : public WasmVM::FuncType {
     static std::optional<FuncType> get(TokenIter& begin, const TokenIter& end);
+    std::map<std::string, index_t> id_map;
+};
+
+struct Type {
+    static std::optional<Type> get(TokenIter& begin, const TokenIter& end);
+    std::variant<std::string, index_t> id;
+    FuncType func;
 };
 
 struct ValueType {
@@ -22,9 +36,8 @@ private:
 
 struct Import {
     static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
-    using FuncDesc = std::pair<std::optional<index_t>, WasmVM::FuncType>;
     std::variant<
-        FuncDesc
+        Type
     > desc;
     std::string module;
     std::string name;

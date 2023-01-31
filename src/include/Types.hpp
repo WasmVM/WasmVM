@@ -41,8 +41,7 @@ enum class RefType {
 };
 
 struct FuncType {
-    std::string id;
-    std::vector<std::pair<std::string, ValueType>> params;
+    std::vector<ValueType> params;
     std::vector<ValueType> results;
 
     bool operator==(const FuncType&);
@@ -57,7 +56,6 @@ struct Limits {
 };
 
 struct TableType {
-    std::string id;
     Limits limits;
     RefType reftype;
 };

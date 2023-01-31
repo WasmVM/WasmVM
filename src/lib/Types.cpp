@@ -12,7 +12,7 @@ bool FuncType::operator==(const FuncType& op){
         return false;
     }
     for(size_t i = 0; i < params.size(); ++i){
-        if((params[i].second != op.params[i].second) || (params[i].first != op.params[i].first)){
+        if(params[i] != op.params[i]){
             return false;
         }
     }

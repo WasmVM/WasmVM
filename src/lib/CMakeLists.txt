@@ -26,6 +26,7 @@ add_library(WasmVM_obj OBJECT
     parse/parse.cpp
     parse/token.cpp
     parse/nodes/module.cpp
+    parse/nodes/Type.cpp
     parse/nodes/FuncType.cpp
     parse/nodes/ValueType.cpp
     parse/nodes/Import.cpp

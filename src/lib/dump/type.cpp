@@ -31,9 +31,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, ValueType& type){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
-    stream << "  (type " << (type.id.empty() ? "" : type.id + " ") << "(func ";
+    stream << "  (type (func ";
     for(auto& param : type.params){
-        stream << "(param " << (param.first.empty() ? "" : param.first + " ") << param.second << ") ";
+        stream << "(param " << param << ") ";
     }
     for(auto& result : type.results){
         stream << "(result " << result << ") ";

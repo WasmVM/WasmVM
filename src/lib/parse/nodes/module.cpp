@@ -6,8 +6,6 @@
 #include "../syntax.hpp"
 #include "visitor.hpp"
 
-#include "../print.hpp" // FIXME:
-
 using namespace WasmVM;
 
 WasmModule WasmVM::module_parse(std::string src){
@@ -15,13 +13,12 @@ WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType>::iterator it = tokens.begin();
 
     using modulefields = Parse::OneOf<
-        Syntax::FuncType,
+        Parse::Type,
         Parse::Import
     >;
 
     WasmModule module;
 
-    // ( module id? modulefields* )
     auto syntax = Parse::Rule<
         Token::ParenL,
         Token::Keyword<"module">,
@@ -40,11 +37,11 @@ WasmModule WasmVM::module_parse(std::string src){
         }
 
         // sections
+        ModuleVisitor visitor(module);
         for(auto section : std::get<3>(rule)){
-            std::visit(ModuleVisitor(module), section);
+            std::visit(visitor, section);
         }
         
-        // Printer()(rule); // FIXME:
         return module;
     }
     throw Exception::syntax_error();
