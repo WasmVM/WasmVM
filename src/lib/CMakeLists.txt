@@ -39,6 +39,7 @@ set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(WasmVM SHARED $<TARGET_OBJECTS:WasmVM_obj>)
 add_library(WasmVM_static STATIC $<TARGET_OBJECTS:WasmVM_obj>)
+set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 if(INSTALL_C)
 install(TARGETS WasmVM_core
@@ -46,3 +47,10 @@ install(TARGETS WasmVM_core
     LIBRARY DESTINATION lib
 )
 endif(INSTALL_C)
+
+if(INSTALL_CPP)
+install(TARGETS WasmVM WasmVM_static 
+    ARCHIVE DESTINATION lib
+    LIBRARY DESTINATION lib
+)
+endif(INSTALL_CPP)
