@@ -25,11 +25,20 @@ namespace Exception {
     struct unknown_token : public Parse {
         unknown_token(Token::Location location, std::string token);
     };
+    struct unknown_identifier : public Parse {
+        unknown_identifier(Token::Location location, std::string message);
+    };
     struct unexpected_keyword : public Parse {
         unexpected_keyword(Token::Location location, std::string token, std::string expected);
     };
     struct invalid_functype : public Parse {
         invalid_functype(Token::Location location, std::string message);
+    };
+    struct duplicated_identifier : public Parse {
+        duplicated_identifier(Token::Location location, std::string message);
+    };
+    struct index_out_of_range : public Parse {
+        index_out_of_range(Token::Location location, std::string message);
     };
     struct syntax_error : public Exception {
         syntax_error(std::string message = "");

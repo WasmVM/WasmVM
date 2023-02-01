@@ -11,6 +11,9 @@ void ModuleVisitor::operator()(Parse::Type& type){
     // id
     std::string id = std::get<std::string>(type.id);
     if(!id.empty()){
+        if(typeid_map.contains(id)){
+            throw Exception::duplicated_identifier(type.location, std::string(" : type ") + id);
+        }
         typeid_map[id] = module.types.size();
     }
     // functype
@@ -35,6 +38,7 @@ std::optional<Parse::Type> Parse::Type::get(TokenIter& begin, const TokenIter& e
         auto rule = syntax.value();
         auto id = std::get<2>(rule);
         type.id = id ? id->value : "";
+        type.location = id->location;
         type.func = std::get<5>(rule);
         begin = it;
         return type;

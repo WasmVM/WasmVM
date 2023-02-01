@@ -25,7 +25,8 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
     std::list<TokenType> tokens;
     Token::Location current {1, 1};
     for(auto it = src.begin(); it != src.end(); ){
-        switch(Token::Location location = current; *it){
+        Token::Location location = current;
+        switch(*it){
             // Line comment
             case ';':
                 if(*std::next(it) == ';'){
@@ -66,7 +67,7 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
             // Id
             case '$':{
                 std::string seq {*it};
-                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, location)){
+                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
                     seq += *it;
                 }
                 tokens.emplace_back(Token::Id(location, seq));
@@ -123,9 +124,15 @@ block_comment_not_close::block_comment_not_close(Token::Location location) :
     Parse("block comment not close", location) {}
 unknown_token::unknown_token(Token::Location location, std::string token) : 
     Parse(std::string("unknown token '") + token + "'", location) {}
+unknown_identifier::unknown_identifier(Token::Location location, std::string message) : 
+    Parse(std::string("unknown identifier") + message, location) {}
 unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string expected) :
     Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
 invalid_functype::invalid_functype(Token::Location location, std::string message) : 
-    Parse(std::string("invalid functype" + message), location) {}
+    Parse(std::string("invalid functype") + message, location) {}
 syntax_error::syntax_error(std::string message) : 
-    Exception(std::string("syntax error" + message)) {}
+    Exception(std::string("syntax error") + message) {}
+duplicated_identifier::duplicated_identifier(Token::Location location, std::string message) :
+    Parse(std::string("duplicated identifier") + message, location) {}
+index_out_of_range::index_out_of_range(Token::Location location, std::string message) :
+    Parse(std::string("index out of range") + message, location) {}

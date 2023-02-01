@@ -15,6 +15,7 @@ struct ModuleVisitor {
     ModuleVisitor(WasmModule& module) : module(module){}
     WasmModule& module;
     std::map<std::string, index_t> typeid_map;
+    std::map<std::string, index_t> funcid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
     // ~ModuleVisitor(){

@@ -24,6 +24,7 @@ struct Type {
     static std::optional<Type> get(TokenIter& begin, const TokenIter& end);
     std::variant<std::string, index_t> id;
     FuncType func;
+    Token::Location location;
 };
 
 struct ValueType {
@@ -42,6 +43,7 @@ struct Import {
     std::string module;
     std::string name;
     std::string id;
+    Token::Location location;
 };
 
 }
