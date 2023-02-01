@@ -24,13 +24,14 @@ add_library(WasmVM_core SHARED
 
 add_library(WasmVM_obj OBJECT
     parse/parse.cpp
-    parse/token.cpp
+    parse/Token.cpp
     parse/nodes/module.cpp
     parse/nodes/Type.cpp
     parse/nodes/FuncType.cpp
     parse/nodes/ValueType.cpp
     parse/nodes/Import.cpp
     parse/nodes/TableType.cpp
+    parse/nodes/MemType.cpp
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp
