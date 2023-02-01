@@ -11,7 +11,6 @@ namespace WasmVM {
 struct WasmImport {
     std::string module;
     std::string name;
-    std::string id;
     std::variant<
         index_t, TableType, MemType, GlobalType
     > desc;

@@ -10,6 +10,7 @@ using namespace WasmVM;
 void ModuleVisitor::operator()(Parse::Import& node){
     WasmImport& import = module.imports.emplace_back();
     std::visit(overloaded {
+        // Type
         [&](Parse::Type type){
             index_t idx = std::visit(overloaded {
                 [&](std::string id){
@@ -41,11 +42,28 @@ void ModuleVisitor::operator()(Parse::Import& node){
             functype.results.insert(functype.results.end(), type.func.results.begin(), type.func.results.end());
             import.desc.emplace<index_t>(module.types.size());
             module.types.emplace_back(functype);
+            if(!node.id.empty()){
+                if(funcid_map.contains(node.id)){
+                    throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
+                }
+                funcid_map[node.id] = funcidx;
+            }
+            funcidx += 1;
+        },
+        // Table
+        [&](Parse::TableType tabletype){
+            import.desc.emplace<WasmVM::TableType>(tabletype);
+            if(!node.id.empty()){
+                if(tableid_map.contains(node.id)){
+                    throw Exception::duplicated_identifier(node.location, std::string(" : import table ") + node.id);
+                }
+                tableid_map[node.id] = tableidx;
+            }
+            tableidx += 1;
         }
     }, node.desc);
     import.module = node.module;
     import.name = node.name;
-    import.id = node.id;
 }
 
 std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIter& end){
@@ -54,8 +72,8 @@ std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIte
     auto syntax = Parse::Rule<
         Token::ParenL, Token::Keyword<"import">, Token::String, Token::String, 
         Parse::OneOf<
-            Syntax::ImportDesc::Func
-            // Parse::Rule<Token::ParenL, Token::Keyword<"table">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>,
+            Syntax::ImportDesc::Func,
+            Syntax::ImportDesc::Table
             // Parse::Rule<Token::ParenL, Token::Keyword<"memory">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>,
             // Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>
         >,
@@ -132,4 +150,11 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Func& desc){
             importdesc.func.results.emplace_back(type);
         }
     }
+}
+
+void ImportVisitor::operator()(Syntax::ImportDesc::Table& desc){
+    auto id = std::get<2>(desc);
+    import.id = id ? id->value : "";
+    import.location = id->location;
+    import.desc.emplace<Parse::TableType>(std::get<3>(desc));
 }

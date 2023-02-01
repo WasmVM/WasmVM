@@ -11,7 +11,22 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
     stream << "  (import " << import.module << " " << import.name;
     std::visit(overloaded {
         [&](index_t typeidx){
-            stream << " (func " << (import.id.empty() ? "" : (import.id + " ")) << "(type " << typeidx << " ) )";
+            stream << " (func (type " << typeidx << " ) )";
+        },
+        [&](WasmVM::TableType table){
+            stream << " (table " << table.limits.min;
+            if(table.limits.max){
+                stream << " " << table.limits.max.value();
+            }
+            switch(table.reftype){
+                case RefType::funcref :
+                    stream << " funcref";
+                break;
+                case RefType::externref :
+                    stream << " externref";
+                break;
+            }
+            stream << " )";
         },
         [&](auto){
             // TODO:

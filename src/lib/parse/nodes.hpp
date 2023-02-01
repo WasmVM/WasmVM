@@ -35,11 +35,13 @@ private:
     WasmVM::ValueType type;
 };
 
+struct TableType : public WasmVM::TableType {
+    static std::optional<TableType> get(TokenIter& begin, const TokenIter& end);
+};
+
 struct Import {
     static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
-    std::variant<
-        Type
-    > desc;
+    std::variant<Type, TableType> desc;
     std::string module;
     std::string name;
     std::string id;
