@@ -21,6 +21,9 @@ std::optional<Parse::TableType> Parse::TableType::get(TokenIter& begin, const To
         auto max_value = std::get<1>(limits);
         if(max_value){
             table_type.limits.max = max_value->unpack<u32_t>();
+            if(table_type.limits.min > table_type.limits.max){
+                throw Exception::invalid_limit(std::get<0>(limits).location, ": min can't be greater than max");
+            }
         }
         // reftype
         std::visit(overloaded {

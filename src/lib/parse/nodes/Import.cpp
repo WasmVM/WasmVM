@@ -28,19 +28,30 @@ void ModuleVisitor::operator()(Parse::Import& node){
             }, type.id);
 
             FuncType functype;
+            std::map<std::string, index_t> paramid_map;
             if(idx != -1){
-                if(type.func.params.empty() && type.func.results.empty()){
-                    import.desc.emplace<index_t>(idx);
-                    return;
-                }
                 if(idx >= module.types.size()){
                     throw Exception::index_out_of_range(node.location, " : type not found");
                 }
+                if(type.func.params.empty() && type.func.results.empty()){
+                    import.desc.emplace<index_t>(idx);
+                    paramid_maps.emplace_back(paramid_maps[idx]);
+                    return;
+                }
                 functype = module.types[idx];
+                paramid_map = paramid_maps[idx];
+            }
+            size_t param_count = functype.params.size();
+            for(auto id_pair : type.func.id_map){
+                if(paramid_map.contains(id_pair.first)){
+                    throw Exception::duplicated_identifier(node.location, std::string(" : import func param ") + id_pair.first);
+                }
+                paramid_map[id_pair.first] = id_pair.second + param_count;
             }
             functype.params.insert(functype.params.end(), type.func.params.begin(), type.func.params.end());
             functype.results.insert(functype.results.end(), type.func.results.begin(), type.func.results.end());
             import.desc.emplace<index_t>(module.types.size());
+            paramid_maps.emplace_back(paramid_map);
             module.types.emplace_back(functype);
             if(!node.id.empty()){
                 if(funcid_map.contains(node.id)){
@@ -60,6 +71,17 @@ void ModuleVisitor::operator()(Parse::Import& node){
                 tableid_map[node.id] = tableidx;
             }
             tableidx += 1;
+        },
+        // Memory
+        [&](Parse::MemType memtype){
+            import.desc.emplace<WasmVM::MemType>(memtype);
+            if(!node.id.empty()){
+                if(memid_map.contains(node.id)){
+                    throw Exception::duplicated_identifier(node.location, std::string(" : import memory ") + node.id);
+                }
+                memid_map[node.id] = memidx;
+            }
+            memidx += 1;
         }
     }, node.desc);
     import.module = node.module;
@@ -73,8 +95,8 @@ std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIte
         Token::ParenL, Token::Keyword<"import">, Token::String, Token::String, 
         Parse::OneOf<
             Syntax::ImportDesc::Func,
-            Syntax::ImportDesc::Table
-            // Parse::Rule<Token::ParenL, Token::Keyword<"memory">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>,
+            Syntax::ImportDesc::Table,
+            Syntax::ImportDesc::Memory
             // Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>
         >,
         Token::ParenR
@@ -157,4 +179,11 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Table& desc){
     import.id = id ? id->value : "";
     import.location = id->location;
     import.desc.emplace<Parse::TableType>(std::get<3>(desc));
+}
+
+void ImportVisitor::operator()(Syntax::ImportDesc::Memory& desc){
+    auto id = std::get<2>(desc);
+    import.id = id ? id->value : "";
+    import.location = id->location;
+    import.desc.emplace<Parse::MemType>(std::get<3>(desc));
 }

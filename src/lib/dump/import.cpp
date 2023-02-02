@@ -28,6 +28,13 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
             }
             stream << " )";
         },
+        [&](WasmVM::MemType mem){
+            stream << " (memory " << mem.min;
+            if(mem.max){
+                stream << " " << mem.max.value();
+            }
+            stream << " )";
+        },
         [&](auto){
             // TODO:
         }

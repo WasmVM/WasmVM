@@ -34,6 +34,9 @@ namespace Exception {
     struct invalid_functype : public Parse {
         invalid_functype(Token::Location location, std::string message);
     };
+    struct invalid_limit : public Parse {
+        invalid_limit(Token::Location location, std::string message);
+    };
     struct duplicated_identifier : public Parse {
         duplicated_identifier(Token::Location location, std::string message);
     };

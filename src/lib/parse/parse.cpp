@@ -130,6 +130,8 @@ unexpected_keyword::unexpected_keyword(Token::Location location, std::string tok
     Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
 invalid_functype::invalid_functype(Token::Location location, std::string message) : 
     Parse(std::string("invalid functype") + message, location) {}
+invalid_limit::invalid_limit(Token::Location location, std::string message) : 
+    Parse(std::string("invalid limit") + message, location) {}
 syntax_error::syntax_error(std::string message) : 
     Exception(std::string("syntax error") + message) {}
 duplicated_identifier::duplicated_identifier(Token::Location location, std::string message) :
