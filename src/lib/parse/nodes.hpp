@@ -43,9 +43,13 @@ struct MemType : public WasmVM::MemType {
     static std::optional<MemType> get(TokenIter& begin, const TokenIter& end);
 };
 
+struct GlobalType : public WasmVM::GlobalType {
+    static std::optional<GlobalType> get(TokenIter& begin, const TokenIter& end);
+};
+
 struct Import {
     static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
-    std::variant<Type, TableType, MemType> desc;
+    std::variant<Type, TableType, MemType, GlobalType> desc;
     std::string module;
     std::string name;
     std::string id;

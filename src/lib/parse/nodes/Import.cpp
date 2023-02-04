@@ -7,6 +7,8 @@
 
 using namespace WasmVM;
 
+
+
 void ModuleVisitor::operator()(Parse::Import& node){
     WasmImport& import = module.imports.emplace_back();
     std::visit(overloaded {
@@ -82,6 +84,17 @@ void ModuleVisitor::operator()(Parse::Import& node){
                 memid_map[node.id] = memidx;
             }
             memidx += 1;
+        },
+        // Global
+        [&](Parse::GlobalType globaltype){
+            import.desc.emplace<WasmVM::GlobalType>(globaltype);
+            if(!node.id.empty()){
+                if(globalid_map.contains(node.id)){
+                    throw Exception::duplicated_identifier(node.location, std::string(" : import global ") + node.id);
+                }
+                globalid_map[node.id] = globalidx;
+            }
+            globalidx += 1;
         }
     }, node.desc);
     import.module = node.module;
@@ -96,8 +109,8 @@ std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIte
         Parse::OneOf<
             Syntax::ImportDesc::Func,
             Syntax::ImportDesc::Table,
-            Syntax::ImportDesc::Memory
-            // Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optional<Token::Id>, TypeUse, Token::ParenR>
+            Syntax::ImportDesc::Memory,
+            Syntax::ImportDesc::Global
         >,
         Token::ParenR
     >::get(it, end);
@@ -186,4 +199,11 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Memory& desc){
     import.id = id ? id->value : "";
     import.location = id->location;
     import.desc.emplace<Parse::MemType>(std::get<3>(desc));
+}
+
+void ImportVisitor::operator()(Syntax::ImportDesc::Global& desc){
+    auto id = std::get<2>(desc);
+    import.id = id ? id->value : "";
+    import.location = id->location;
+    import.desc.emplace<Parse::GlobalType>(std::get<3>(desc));
 }

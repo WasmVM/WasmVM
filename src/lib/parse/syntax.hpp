@@ -31,6 +31,7 @@ namespace ImportDesc {
 using Func = Parse::Rule<Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Syntax::TypeUse, Token::ParenR>;
 using Table = Parse::Rule<Token::ParenL, Token::Keyword<"table">, Parse::Optional<Token::Id>, Parse::TableType, Token::ParenR>;
 using Memory = Parse::Rule<Token::ParenL, Token::Keyword<"memory">, Parse::Optional<Token::Id>, Parse::MemType, Token::ParenR>;
+using Global = Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optional<Token::Id>, Parse::GlobalType, Token::ParenR>;
 }
 
 }

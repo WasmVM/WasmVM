@@ -19,6 +19,7 @@ struct ModuleVisitor {
     std::map<std::string, index_t> funcid_map;
     std::map<std::string, index_t> tableid_map;
     std::map<std::string, index_t> memid_map;
+    std::map<std::string, index_t> globalid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
     ~ModuleVisitor(){
@@ -46,6 +47,10 @@ struct ModuleVisitor {
         for(auto mem_id : memid_map){
             std::cout << "  " << mem_id.first << "(" << mem_id.second << ")" << std::endl;
         }
+        std::cout << "== globalid map ==" << std::endl;
+        for(auto global_id : globalid_map){
+            std::cout << "  " << global_id.first << "(" << global_id.second << ")" << std::endl;
+        }
     }
 
     void operator()(Parse::Type& type);
@@ -54,6 +59,7 @@ private:
     index_t funcidx;
     index_t tableidx;
     index_t memidx;
+    index_t globalidx;
 };
 
 struct ImportVisitor {
@@ -63,6 +69,7 @@ struct ImportVisitor {
     void operator()(Syntax::ImportDesc::Func& desc);
     void operator()(Syntax::ImportDesc::Table& desc);
     void operator()(Syntax::ImportDesc::Memory& desc);
+    void operator()(Syntax::ImportDesc::Global& desc);
 };
 
 }
