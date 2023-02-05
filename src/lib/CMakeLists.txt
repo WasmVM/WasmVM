@@ -33,9 +33,11 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/TableType.cpp
     parse/nodes/MemType.cpp
     parse/nodes/GlobalType.cpp
+    parse/nodes/Func.cpp
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp
+    dump/func.cpp
     Types.cpp
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)

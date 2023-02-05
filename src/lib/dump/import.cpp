@@ -11,7 +11,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
     stream << "  (import " << import.module << " " << import.name;
     std::visit(overloaded {
         [&](index_t typeidx){
-            stream << " (func (type " << typeidx << " ) )";
+            stream << " (func (type " << typeidx << ") )";
         },
         [&](WasmVM::TableType table){
             stream << " (table " << table.limits.min;
@@ -26,17 +26,17 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
                     stream << " externref";
                 break;
             }
-            stream << " )";
+            stream << ")";
         },
         [&](WasmVM::MemType mem){
             stream << " (memory " << mem.min;
             if(mem.max){
                 stream << " " << mem.max.value();
             }
-            stream << " )";
+            stream << ")";
         },
         [&](WasmVM::GlobalType global){
-            stream << " (global " << ((global.mut == WasmVM::GlobalType::Mut::constant) ? "" : "mut ") << global.type << " )" << std::endl;
+            stream << " (global " << ((global.mut == WasmVM::GlobalType::Mut::constant) ? "" : "mut ") << global.type << " )";
         }
     }, import.desc);
     stream << " )" << std::endl;

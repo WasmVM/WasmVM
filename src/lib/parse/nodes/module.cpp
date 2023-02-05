@@ -14,7 +14,8 @@ WasmModule WasmVM::module_parse(std::string src){
 
     using modulefields = Parse::OneOf<
         Parse::Type,
-        Parse::Import
+        Parse::Import,
+        Parse::Func
     >;
 
     WasmModule module;

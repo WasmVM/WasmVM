@@ -21,6 +21,9 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(WasmImport& import : module.imports){
         stream << import;
     }
+    for(WasmFunc& func : module.funcs){
+        stream << func;
+    }
     stream << ")" << std::endl;
     return stream.str();
 }

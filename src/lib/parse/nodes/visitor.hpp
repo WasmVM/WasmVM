@@ -13,7 +13,7 @@ namespace WasmVM {
 
 struct ModuleVisitor {
     ModuleVisitor(WasmModule& module) :
-        module(module), funcidx(0), tableidx(0), memidx(0){}
+        module(module), typeidx(0), tableidx(0), memidx(0), globalidx(0){}
     WasmModule& module;
     std::map<std::string, index_t> typeid_map;
     std::map<std::string, index_t> funcid_map;
@@ -22,6 +22,7 @@ struct ModuleVisitor {
     std::map<std::string, index_t> globalid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
+    // FIXME:
     ~ModuleVisitor(){
         std::cout << "== typeid map ==" << std::endl;
         for(auto type_id : typeid_map){
@@ -55,8 +56,9 @@ struct ModuleVisitor {
 
     void operator()(Parse::Type& type);
     void operator()(Parse::Import& import);
+    void operator()(Parse::Func& func);
 private:
-    index_t funcidx;
+    index_t typeidx;
     index_t tableidx;
     index_t memidx;
     index_t globalidx;

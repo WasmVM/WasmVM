@@ -47,6 +47,9 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
                     default:
                         throw Exception::invalid_functype(location, ": an identifier can only bind to one parameter");
                 }
+                if(func_type.id_map.contains(id->value)){
+                    throw Exception::duplicated_identifier(location, std::string(": param ") + id->value);
+                }
                 func_type.id_map[id->value] = i;
                 func_type.params.emplace_back(types.front());
             }else{
