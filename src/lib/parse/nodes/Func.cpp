@@ -72,13 +72,22 @@ void ModuleVisitor::operator()(Parse::Func& node){
     for(Parse::ValueType local : node.locals){
         func.locals.emplace_back(local);
     }
+
+    // Body
+    for(Parse::Func::Instr instrnode : node.body){
+        std::visit(overloaded {
+            [&](auto instr){
+                func.body.emplace_back(instr);
+            }
+        }, instrnode);
+    }
 }
 
 std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, const TokenIter& end){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Parse::TypeUse,
-        Parse::Repeat<Syntax::Local>,
+        Parse::Repeat<Syntax::Local>, Parse::Repeat<Parse::OneOf<Syntax::PlainInstr>>,
         Token::ParenR
     >::get(it, end);
 
@@ -117,7 +126,16 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, const TokenIter& e
             }
             local_idx += 1;
         }
-
+        // Instr
+        for(auto instr : std::get<5>(rule)){
+            std::visit(overloaded {
+                [&](Syntax::PlainInstr plain){
+                    std::visit([&](auto ins){
+                        func.body.emplace_back(ins);
+                    }, plain);
+                }
+            }, instr);
+        }
         begin = it;
         return func;
     }

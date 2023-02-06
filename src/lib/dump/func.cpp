@@ -12,6 +12,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmFunc& func){
         stream << " (local " << local << ")";
     }
     stream << std::endl;
+    for(WasmInstr& instr : func.body){
+        stream << "    " << instr << std::endl;
+    }
     stream << "  )" << std::endl;
     return stream;
 }

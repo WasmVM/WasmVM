@@ -10,6 +10,7 @@ std::ostream& operator<<(std::ostream& stream, ValueType& type);
 std::ostream& operator<<(std::ostream& stream, FuncType& type);
 std::ostream& operator<<(std::ostream& stream, WasmImport& import);
 std::ostream& operator<<(std::ostream& stream, WasmFunc& func);
+std::ostream& operator<<(std::ostream& stream, WasmInstr& instr);
 
 }
 

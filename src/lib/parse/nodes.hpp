@@ -4,8 +4,10 @@
 #include <Types.hpp>
 #include "parse.hpp"
 #include <structures/WasmImport.hpp>
+#include <structures/WasmInstr.hpp>
 
 #include <map>
+#include <type_traits>
 
 namespace WasmVM {
 namespace Parse {
@@ -70,12 +72,35 @@ struct Import {
     Token::Location location;
 };
 
+namespace Instr {
+
+template<typename I, conststr S>
+    requires (std::is_base_of<WasmVM::Instr::Base, I>::value)
+struct Atomic : public I {
+    static std::optional<Atomic<I, S>> get(TokenIter& begin, const TokenIter& end){
+        std::list<TokenType>::iterator it = begin;
+        if(Token::Keyword<S>::get(it, end)){
+            begin = it;
+            return Atomic<I, S>();
+        }
+        return std::nullopt;
+    }
+};
+
+using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
+
+}
+
 struct Func {
+    using Instr = std::variant <
+        Instr::Unreachable
+    >;
     static std::optional<Func> get(TokenIter& begin, const TokenIter& end);
     Type type;
     std::string id;
     std::vector<ValueType> locals;
     std::map<std::string, index_t> local_id_map;
+    std::vector<Instr> body;
     Token::Location location;
 };
 

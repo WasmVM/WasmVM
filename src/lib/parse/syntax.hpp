@@ -26,6 +26,10 @@ using Memory = Parse::Rule<Token::ParenL, Token::Keyword<"memory">, Parse::Optio
 using Global = Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optional<Token::Id>, Parse::GlobalType, Token::ParenR>;
 }
 
+using PlainInstr = Parse::OneOf<
+    Parse::Instr::Unreachable
+>;
+
 }
 }
 

@@ -11,6 +11,7 @@ static std::unordered_set<std::string> keywords = {
     "i32", "i64", "f32", "f64",
     "func", "table", "memory", "global",
     "mut", "local",
+    "unreachable",
 };
 
 #endif

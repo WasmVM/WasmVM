@@ -38,6 +38,7 @@ add_library(WasmVM_obj OBJECT
     dump/type.cpp
     dump/import.cpp
     dump/func.cpp
+    dump/instr.cpp
     Types.cpp
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
