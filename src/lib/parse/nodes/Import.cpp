@@ -15,7 +15,7 @@ void ModuleVisitor::operator()(Parse::Import& node){
             index_t idx = std::visit(overloaded {
                 [&](std::string id){
                     if(id.empty()){
-                        return (index_t) -1;
+                        return index_npos;
                     }else if(typeid_map.contains(id)){
                         return typeid_map[id];
                     }else{
@@ -29,13 +29,20 @@ void ModuleVisitor::operator()(Parse::Import& node){
 
             FuncType functype;
             std::map<std::string, index_t> paramid_map;
-            if(idx != -1){
+            if(idx != index_npos){
                 if(idx >= module.types.size()){
                     throw Exception::index_out_of_range(node.location, " : type not found");
                 }
                 if(type.func.params.empty() && type.func.results.empty()){
                     import.desc.emplace<index_t>(idx);
                     paramid_maps.emplace_back(paramid_maps[idx]);
+                    if(!node.id.empty()){
+                        if(funcid_map.contains(node.id)){
+                            throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
+                        }
+                        funcid_map[node.id] = funcidx;
+                    }
+                    funcidx += 1;
                     return;
                 }
                 functype = module.types[idx];
@@ -53,13 +60,15 @@ void ModuleVisitor::operator()(Parse::Import& node){
             import.desc.emplace<index_t>(module.types.size());
             paramid_maps.emplace_back(paramid_map);
             module.types.emplace_back(functype);
+            // id
             if(!node.id.empty()){
                 if(funcid_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
                 }
-                funcid_map[node.id] = typeidx;
+                funcid_map[node.id] = funcidx;
             }
             typeidx += 1;
+            funcidx += 1;
         },
         // Table
         [&](Parse::TableType tabletype){

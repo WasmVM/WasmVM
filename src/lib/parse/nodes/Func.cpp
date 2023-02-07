@@ -13,7 +13,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
         if(funcid_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, std::string(" : func ") + node.id);
         }
-        funcid_map[node.id] = module.funcs.size();
+        funcid_map[node.id] = funcidx;
     }
 
     WasmFunc& func = module.funcs.emplace_back();
@@ -23,7 +23,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
         index_t idx = std::visit(overloaded {
             [&](std::string id){
                 if(id.empty()){
-                    return (index_t) -1;
+                    return index_npos;
                 }else if(typeid_map.contains(id)){
                     return typeid_map[id];
                 }else{
@@ -38,7 +38,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
         FuncType functype;
         std::map<std::string, index_t> paramid_map;
         bool create_type = true;
-        if(idx != -1){
+        if(idx != index_npos){
             if(idx >= module.types.size()){
                 throw Exception::index_out_of_range(node.location, " : type not found");
             }
@@ -75,12 +75,10 @@ void ModuleVisitor::operator()(Parse::Func& node){
 
     // Body
     for(Parse::Func::Instr instrnode : node.body){
-        std::visit(overloaded {
-            [&](auto instr){
-                func.body.emplace_back(instr);
-            }
-        }, instrnode);
+        std::visit(InstrVisitor(*this, func), instrnode);
     }
+
+    funcidx += 1;
 }
 
 std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, const TokenIter& end){

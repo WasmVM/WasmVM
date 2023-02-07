@@ -34,6 +34,7 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/MemType.cpp
     parse/nodes/GlobalType.cpp
     parse/nodes/Func.cpp
+    parse/nodes/instr.cpp
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp

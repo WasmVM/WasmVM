@@ -12,6 +12,12 @@ struct InstrVisitor {
     std::ostream& operator()(WasmVM::Instr::Unreachable&){
         return stream << "unreachable";
     }
+    std::ostream& operator()(WasmVM::Instr::Nop&){
+        return stream << "nop";
+    }
+    std::ostream& operator()(WasmVM::Instr::Call& instr){
+        return stream << "call " << instr.index;
+    }
 
 private:
     std::ostream& stream;

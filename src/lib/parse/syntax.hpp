@@ -27,7 +27,9 @@ using Global = Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optio
 }
 
 using PlainInstr = Parse::OneOf<
-    Parse::Instr::Unreachable
+    Parse::Instr::Unreachable,
+    Parse::Instr::Nop,
+    Parse::Instr::Call
 >;
 
 }

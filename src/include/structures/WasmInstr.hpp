@@ -14,16 +14,27 @@ struct Base {
 };
 
 template<Opcode::Opcode OP>
-struct Core : public Base {
-    Core() : Base(OP) {}
+struct Atomic : public Base {
+    Atomic() : Base(OP) {}
 };
 
-using Unreachable = Core<Opcode::Unreachable>;
+template<Opcode::Opcode OP>
+struct OneIndex : public Base {
+    OneIndex() : Base(OP) {}
+    OneIndex(index_t index) : Base(OP), index(index){}
+    index_t index;
+};
+
+using Unreachable = Atomic<Opcode::Unreachable>;
+using Nop = Atomic<Opcode::Nop>;
+using Call = OneIndex<Opcode::Call>;
 
 }
 
 using WasmInstr = std::variant<
-    Instr::Unreachable
+    Instr::Unreachable,
+    Instr::Nop,
+    Instr::Call
 >;
 
 }

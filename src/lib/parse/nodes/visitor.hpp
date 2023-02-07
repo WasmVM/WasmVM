@@ -13,7 +13,7 @@ namespace WasmVM {
 
 struct ModuleVisitor {
     ModuleVisitor(WasmModule& module) :
-        module(module), typeidx(0), tableidx(0), memidx(0), globalidx(0){}
+        module(module), typeidx(0), tableidx(0), memidx(0), globalidx(0), funcidx(0){}
     WasmModule& module;
     std::map<std::string, index_t> typeid_map;
     std::map<std::string, index_t> funcid_map;
@@ -62,6 +62,7 @@ private:
     index_t tableidx;
     index_t memidx;
     index_t globalidx;
+    index_t funcidx;
 };
 
 struct ImportVisitor {
@@ -72,6 +73,19 @@ struct ImportVisitor {
     void operator()(Syntax::ImportDesc::Table& desc);
     void operator()(Syntax::ImportDesc::Memory& desc);
     void operator()(Syntax::ImportDesc::Global& desc);
+};
+
+
+struct InstrVisitor {
+    InstrVisitor(ModuleVisitor& module, WasmFunc& func) : module(module), func(func){}
+    ModuleVisitor& module;
+    WasmFunc& func;
+
+    template<typename T> void operator()(T& instr){
+        func.body.emplace_back(instr);
+    }
+
+    void operator()(Parse::Instr::Call& instr);
 };
 
 }

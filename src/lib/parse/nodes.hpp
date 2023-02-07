@@ -13,8 +13,40 @@ namespace WasmVM {
 namespace Parse {
 
 struct Index : public OneOf<Token::Number, Token::Id> {
+    static std::optional<Index> get(TokenIter& begin, const TokenIter& end){
+        std::list<TokenType>::iterator it = begin;
+        auto syntax = OneOf<Token::Number, Token::Id>::get(it, end);
+        if(syntax){
+            begin = it;
+            return Index(syntax.value());
+        }
+        return std::nullopt;
+    }
+
     template <typename T>
     T& retrieve(std::vector<T>& container);
+
+    struct Visitor {
+        Visitor(std::map<std::string, index_t>& idmap, bool check = true) : idmap(idmap), check(check){}
+        std::map<std::string, index_t>& idmap;
+        bool check;
+
+        index_t operator()(Token::Number& token){
+            return token.unpack<index_t>();
+        }
+        index_t operator()(Token::Id& token){
+            if(token.value.empty()){
+                return index_npos;
+            }else if(idmap.contains(token.value)){
+                return idmap[token.value];
+            }else if(check){
+                throw Exception::unknown_identifier(token.location, ": index '" + token.value + "' not found");
+            }
+            return index_npos;
+        }
+    };
+
+    Token::Location location;
 };
 
 struct FuncType : public WasmVM::FuncType {
@@ -87,13 +119,42 @@ struct Atomic : public I {
     }
 };
 
+namespace OneIndex {
+
+struct Base {
+    Base(Index index) : index(index){}
+    Index index;
+};
+
+template<conststr S>
+struct Class : public Base {
+    Class(const Class&) = default;
+    Class(Index& index) : Base(index){}
+
+    static std::optional<Class<S>> get(TokenIter& begin, const TokenIter& end){
+        std::list<TokenType>::iterator it = begin;
+        auto syntax = Rule<Token::Keyword<S>, Index>::get(it, end);
+        if(syntax){
+            begin = it;
+            return Class<S>(std::get<1>(syntax.value()));
+        }
+        return std::nullopt;
+    }
+};
+
+}
+
 using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
+using Nop = Atomic<WasmVM::Instr::Nop, "nop">;
+using Call = OneIndex::Class<"call">;
 
 }
 
 struct Func {
     using Instr = std::variant <
-        Instr::Unreachable
+        Instr::Unreachable,
+        Instr::Nop,
+        Instr::Call
     >;
     static std::optional<Func> get(TokenIter& begin, const TokenIter& end);
     Type type;

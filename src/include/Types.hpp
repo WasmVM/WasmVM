@@ -17,6 +17,7 @@ using i64_t = int64_t;
 using f32_t = float;
 using f64_t = double;
 using index_t = uint32_t;
+constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
 static_assert(sizeof(f32_t) == sizeof(i32_t));
