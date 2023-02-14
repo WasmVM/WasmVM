@@ -25,8 +25,15 @@ struct OneIndex : public Base {
     index_t index;
 };
 
+struct Block {
+    Block(index_t type): type(type){}
+    Block(std::optional<ValueType> type): type(type){}
+    std::variant<std::optional<ValueType>, index_t> type;
+};
+
 using Unreachable = Atomic<Opcode::Unreachable>;
 using Nop = Atomic<Opcode::Nop>;
+using End = Atomic<Opcode::End>;
 using Call = OneIndex<Opcode::Call>;
 
 }
@@ -34,6 +41,8 @@ using Call = OneIndex<Opcode::Call>;
 using WasmInstr = std::variant<
     Instr::Unreachable,
     Instr::Nop,
+    Instr::Block,
+    Instr::End,
     Instr::Call
 >;
 

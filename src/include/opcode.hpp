@@ -13,6 +13,8 @@ using opcode_t = uint16_t;
 enum Opcode : opcode_t {
     Unreachable = 0x00,
     Nop = 0x01,
+    Block = 0x02,
+    End = 0x0b,
     Call = 0x10,
 };
 

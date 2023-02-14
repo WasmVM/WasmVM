@@ -78,6 +78,8 @@ struct Type {
     static std::optional<Type> get(TokenIter& begin, const TokenIter& end);
     Type() = default;
     Type(TypeUse& typeuse);
+    index_t index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps);
+
     std::variant<std::string, index_t> id;
     FuncType func;
     Token::Location location;
@@ -147,21 +149,29 @@ struct Class : public Base {
 using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
 using Nop = Atomic<WasmVM::Instr::Nop, "nop">;
 using Call = OneIndex::Class<"call">;
+struct Block;
+
+using Instrction = std::variant <
+    Unreachable, Nop, Call, Block
+>;
+
+struct Block {
+    static std::optional<Block> get(TokenIter& begin, const TokenIter& end);
+    std::vector<Instrction> instrs;
+    std::string id;
+    std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
+    Token::Location location;
+};
 
 }
 
 struct Func {
-    using Instr = std::variant <
-        Instr::Unreachable,
-        Instr::Nop,
-        Instr::Call
-    >;
     static std::optional<Func> get(TokenIter& begin, const TokenIter& end);
     Type type;
     std::string id;
     std::vector<ValueType> locals;
     std::map<std::string, index_t> local_id_map;
-    std::vector<Instr> body;
+    std::vector<Instr::Instrction> body;
     Token::Location location;
 };
 

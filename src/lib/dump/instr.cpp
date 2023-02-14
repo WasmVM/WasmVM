@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include "dump.hpp"
+#include <Util.hpp>
 
 using namespace WasmVM;
 
@@ -17,6 +18,23 @@ struct InstrVisitor {
     }
     std::ostream& operator()(WasmVM::Instr::Call& instr){
         return stream << "call " << instr.index;
+    }
+    std::ostream& operator()(WasmVM::Instr::Block& instr){
+        stream << "block ";
+        std::visit(overloaded {
+            [&](index_t& idx) {
+                stream << idx;
+            },
+            [&](std::optional<ValueType>& type) {
+                if(type){
+                    stream << type.value();
+                }
+            }
+        }, instr.type);
+        return stream;
+    }
+    std::ostream& operator()(WasmVM::Instr::End&){
+        return stream << "end";
     }
 
 private:

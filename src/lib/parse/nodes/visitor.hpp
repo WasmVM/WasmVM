@@ -13,7 +13,7 @@ namespace WasmVM {
 
 struct ModuleVisitor {
     ModuleVisitor(WasmModule& module) :
-        module(module), typeidx(0), tableidx(0), memidx(0), globalidx(0), funcidx(0){}
+        module(module), tableidx(0), memidx(0), globalidx(0), funcidx(0){}
     WasmModule& module;
     std::map<std::string, index_t> typeid_map;
     std::map<std::string, index_t> funcid_map;
@@ -57,8 +57,8 @@ struct ModuleVisitor {
     void operator()(Parse::Type& type);
     void operator()(Parse::Import& import);
     void operator()(Parse::Func& func);
+
 private:
-    index_t typeidx;
     index_t tableidx;
     index_t memidx;
     index_t globalidx;
@@ -75,9 +75,10 @@ struct ImportVisitor {
     void operator()(Syntax::ImportDesc::Global& desc);
 };
 
+namespace InstrVisitor{
 
-struct InstrVisitor {
-    InstrVisitor(ModuleVisitor& module, WasmFunc& func) : module(module), func(func){}
+struct Sema {
+    Sema(ModuleVisitor& module, WasmFunc& func) : module(module), func(func){}
     ModuleVisitor& module;
     WasmFunc& func;
 
@@ -86,7 +87,22 @@ struct InstrVisitor {
     }
 
     void operator()(Parse::Instr::Call& instr);
+    void operator()(Parse::Instr::Block& instr);
 };
+
+struct Syntax {
+
+    Syntax(std::vector<Parse::Instr::Instrction>& body) : body(body){}
+    std::vector<Parse::Instr::Instrction>& body;
+
+    void operator()(WasmVM::Syntax::PlainInstr&);
+    void operator()(Parse::Instr::Block&);
+
+};
+
+}
+
+
 
 }
 

@@ -32,6 +32,8 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Call
 >;
 
+using Instr = Parse::OneOf<Syntax::PlainInstr, Parse::Instr::Block>;
+
 }
 }
 

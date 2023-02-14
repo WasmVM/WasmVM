@@ -3,6 +3,8 @@
 
 #include <ostream>
 #include <exception>
+#include <optional>
+#include <functional>
 #include <utility>
 
 #include <Util.hpp>
@@ -19,7 +21,23 @@ namespace Exception{
         std::pair<size_t, size_t> location;
     };
 
+    struct Warning {
+        Warning(std::string msg){
+            if(handler){
+                handler->operator()(msg);
+            }
+        }
+        Warning(const char* msg){
+            Warning(std::string(msg));
+        }
+        static void regist(std::function<void(std::string)> handler){
+            Warning::handler.emplace(handler);
+        };
+    private:
+        static std::optional<std::function<void(std::string)>> handler;
+    };
 }
+
 }
 
 #undef define_exception

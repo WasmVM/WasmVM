@@ -12,54 +12,7 @@ void ModuleVisitor::operator()(Parse::Import& node){
     std::visit(overloaded {
         // Type
         [&](Parse::Type type){
-            index_t idx = std::visit(overloaded {
-                [&](std::string id){
-                    if(id.empty()){
-                        return index_npos;
-                    }else if(typeid_map.contains(id)){
-                        return typeid_map[id];
-                    }else{
-                        throw Exception::unknown_identifier(node.location, std::string(" import type '") + id + "' not found");
-                    }
-                },
-                [&](index_t id){
-                    return id;
-                }
-            }, type.id);
-
-            FuncType functype;
-            std::map<std::string, index_t> paramid_map;
-            if(idx != index_npos){
-                if(idx >= module.types.size()){
-                    throw Exception::index_out_of_range(node.location, " : type not found");
-                }
-                if(type.func.params.empty() && type.func.results.empty()){
-                    import.desc.emplace<index_t>(idx);
-                    paramid_maps.emplace_back(paramid_maps[idx]);
-                    if(!node.id.empty()){
-                        if(funcid_map.contains(node.id)){
-                            throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
-                        }
-                        funcid_map[node.id] = funcidx;
-                    }
-                    funcidx += 1;
-                    return;
-                }
-                functype = module.types[idx];
-                paramid_map = paramid_maps[idx];
-            }
-            size_t param_count = functype.params.size();
-            for(auto id_pair : type.func.id_map){
-                if(paramid_map.contains(id_pair.first)){
-                    throw Exception::duplicated_identifier(node.location, std::string(" : import func param ") + id_pair.first);
-                }
-                paramid_map[id_pair.first] = id_pair.second + param_count;
-            }
-            functype.params.insert(functype.params.end(), type.func.params.begin(), type.func.params.end());
-            functype.results.insert(functype.results.end(), type.func.results.begin(), type.func.results.end());
-            import.desc.emplace<index_t>(module.types.size());
-            paramid_maps.emplace_back(paramid_map);
-            module.types.emplace_back(functype);
+            import.desc.emplace<index_t>(type.index(module, typeid_map, paramid_maps));
             // id
             if(!node.id.empty()){
                 if(funcid_map.contains(node.id)){
@@ -67,7 +20,6 @@ void ModuleVisitor::operator()(Parse::Import& node){
                 }
                 funcid_map[node.id] = funcidx;
             }
-            typeidx += 1;
             funcidx += 1;
         },
         // Table

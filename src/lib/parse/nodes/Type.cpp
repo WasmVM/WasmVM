@@ -18,9 +18,11 @@ Parse::Type::Type(Parse::TypeUse& typeuse){
         std::visit(overloaded {
             [&](Token::Number token){
                 id.emplace<index_t>(token.unpack<index_t>());
+                location = token.location;
             },
             [&](Token::Id token){
                 id.emplace<std::string>(token.value);
+                location = token.location;
             }
         }, typeidx);
     }
@@ -101,4 +103,49 @@ std::optional<Parse::Type> Parse::Type::get(TokenIter& begin, const TokenIter& e
     }
 
     return std::nullopt;
+}
+
+index_t Parse::Type::index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps){
+    index_t idx = std::visit(overloaded {
+        [&](std::string ind){
+            if(ind.empty()){
+                return index_npos;
+            }else if(typeid_map.contains(ind)){
+                return typeid_map[ind];
+            }else{
+                throw Exception::unknown_identifier(location, std::string(" type '") + ind + "' not found");
+            }
+        },
+        [&](index_t ind){
+            return ind;
+        }
+    }, id);
+
+    WasmVM::FuncType functype;
+    std::map<std::string, index_t> paramid_map;
+    if(idx != index_npos){
+        if(idx >= module.types.size()){
+            throw Exception::index_out_of_range(location, " : type not found");
+        }
+        if(func.params.empty() && func.results.empty()){
+            paramid_maps.emplace_back(paramid_maps[idx]);
+            return idx;
+        }
+        functype = module.types[idx];
+        paramid_map = paramid_maps[idx];
+    }
+
+    size_t param_count = functype.params.size();
+    for(auto id_pair : func.id_map){
+        if(paramid_map.contains(id_pair.first)){
+            throw Exception::duplicated_identifier(location, std::string(" : func param ") + id_pair.first);
+        }
+        paramid_map[id_pair.first] = id_pair.second + param_count;
+    }
+    functype.params.insert(functype.params.end(), func.params.begin(), func.params.end());
+    functype.results.insert(functype.results.end(), func.results.begin(), func.results.end());
+    paramid_maps.emplace_back(paramid_map);
+    idx = module.types.size();
+    module.types.emplace_back(functype);
+    return idx;
 }
