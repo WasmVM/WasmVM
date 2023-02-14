@@ -33,6 +33,20 @@ struct InstrVisitor {
         }, instr.type);
         return stream;
     }
+    std::ostream& operator()(WasmVM::Instr::Loop& instr){
+        stream << "loop ";
+        std::visit(overloaded {
+            [&](index_t& idx) {
+                stream << idx;
+            },
+            [&](std::optional<ValueType>& type) {
+                if(type){
+                    stream << type.value();
+                }
+            }
+        }, instr.type);
+        return stream;
+    }
     std::ostream& operator()(WasmVM::Instr::End&){
         return stream << "end";
     }

@@ -34,7 +34,28 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
     }
     func.body.emplace_back(WasmVM::Instr::End());
 }
-
+void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
+    WasmVM::Instr::Loop instr(std::nullopt);
+    if(node.blocktype){
+        instr = std::visit(overloaded {
+            [&](ValueType& type) {
+                return WasmVM::Instr::Loop(std::optional<ValueType>(type));
+            },
+            [&](Parse::TypeUse& typeuse) {
+                Parse::Type type(typeuse);
+                if(!type.func.id_map.empty()){
+                    Exception::Warning("param ids in loop are ignored");
+                }
+                return WasmVM::Instr::Loop(type.index(module.module, module.typeid_map, module.paramid_maps));
+            },
+        }, node.blocktype.value());
+    }
+    func.body.emplace_back(instr);
+    for(Parse::Instr::Instrction instrnode : node.instrs){
+        std::visit(InstrVisitor::Sema(module, func), instrnode);
+    }
+    func.body.emplace_back(WasmVM::Instr::End());
+}
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     std::visit(overloaded {
         [&](auto&& instr){
@@ -43,6 +64,9 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     }, plain);
 }
 void InstrVisitor::Syntax::operator()(Parse::Instr::Block& block){
+    body.emplace_back(block);
+}
+void InstrVisitor::Syntax::operator()(Parse::Instr::Loop& block){
     body.emplace_back(block);
 }
 
@@ -81,6 +105,45 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, co
         }
         begin = it;
         return block;
+    }
+    return std::nullopt;
+}
+
+std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, const TokenIter& end){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::Rule<
+        Token::Keyword<"loop">, Parse::Optional<Token::Id>,
+        Parse::Optional<Parse::OneOf<Parse::ValueType, Parse::TypeUse>>,
+        Parse::Repeat<Syntax::Instr>,
+        Token::Keyword<"end">, Parse::Optional<Token::Id>
+    >::get(it, end);
+
+    if(syntax){
+        auto rule = syntax.value();
+        Parse::Instr::Loop loop;
+        // id
+        auto id = std::get<1>(rule);
+        loop.id = id ? id->value : "";
+        // blocktype
+        auto blocktype = std::get<2>(rule);
+        if(blocktype){
+            std::variant<WasmVM::ValueType, Parse::TypeUse> type;
+            std::visit(overloaded {
+                [&](Parse::ValueType& value){
+                    type.emplace<WasmVM::ValueType>(value);
+                },
+                [&](Parse::TypeUse& value){
+                    type.emplace<Parse::TypeUse>(value);
+                }
+            }, blocktype.value());
+            loop.blocktype.emplace(type);
+        }
+        // instrs
+        for(auto instr : std::get<3>(rule)){
+            std::visit(InstrVisitor::Syntax(loop.instrs), instr);
+        }
+        begin = it;
+        return loop;
     }
     return std::nullopt;
 }

@@ -150,13 +150,22 @@ using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
 using Nop = Atomic<WasmVM::Instr::Nop, "nop">;
 using Call = OneIndex::Class<"call">;
 struct Block;
+struct Loop;
 
 using Instrction = std::variant <
-    Unreachable, Nop, Call, Block
+    Unreachable, Nop, Call, Block, Loop
 >;
 
 struct Block {
     static std::optional<Block> get(TokenIter& begin, const TokenIter& end);
+    std::vector<Instrction> instrs;
+    std::string id;
+    std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
+    Token::Location location;
+};
+
+struct Loop {
+    static std::optional<Loop> get(TokenIter& begin, const TokenIter& end);
     std::vector<Instrction> instrs;
     std::string id;
     std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;

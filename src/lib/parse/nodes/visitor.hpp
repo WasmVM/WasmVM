@@ -88,6 +88,7 @@ struct Sema {
 
     void operator()(Parse::Instr::Call& instr);
     void operator()(Parse::Instr::Block& instr);
+    void operator()(Parse::Instr::Loop& instr);
 };
 
 struct Syntax {
@@ -97,6 +98,7 @@ struct Syntax {
 
     void operator()(WasmVM::Syntax::PlainInstr&);
     void operator()(Parse::Instr::Block&);
+    void operator()(Parse::Instr::Loop&);
 
 };
 
