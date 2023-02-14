@@ -43,6 +43,9 @@ namespace Exception {
     struct index_out_of_range : public Parse {
         index_out_of_range(Token::Location location, std::string message);
     };
+    struct block_id_mismatch : public Parse {
+        block_id_mismatch(Token::Location location, std::string message);
+    };
     struct syntax_error : public Exception {
         syntax_error(std::string message = "");
     };

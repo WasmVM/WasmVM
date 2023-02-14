@@ -136,5 +136,7 @@ syntax_error::syntax_error(std::string message) :
     Exception(std::string("syntax error") + message) {}
 duplicated_identifier::duplicated_identifier(Token::Location location, std::string message) :
     Parse(std::string("duplicated identifier") + message, location) {}
+block_id_mismatch::block_id_mismatch(Token::Location location, std::string message) :
+    Parse(std::string("block id mismatch") + message, location) {}
 index_out_of_range::index_out_of_range(Token::Location location, std::string message) :
     Parse(std::string("index out of range") + message, location) {}

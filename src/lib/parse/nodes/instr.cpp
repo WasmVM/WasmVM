@@ -82,6 +82,7 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, co
     if(syntax){
         auto rule = syntax.value();
         Parse::Instr::Block block;
+        block.location = std::get<0>(rule).location;
         // id
         auto id = std::get<1>(rule);
         block.id = id ? id->value : "";
@@ -103,6 +104,13 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, co
         for(auto instr : std::get<3>(rule)){
             std::visit(InstrVisitor::Syntax(block.instrs), instr);
         }
+        // trailing id
+        auto trailing = std::get<5>(rule);
+        if(trailing && !id){
+            throw Exception::block_id_mismatch(block.location, std::string(" : leading identifier is not present"));
+        }else if(id && trailing && (trailing->value != id->value)){
+            throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
+        }
         begin = it;
         return block;
     }
@@ -121,6 +129,7 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, cons
     if(syntax){
         auto rule = syntax.value();
         Parse::Instr::Loop loop;
+        loop.location = std::get<0>(rule).location;
         // id
         auto id = std::get<1>(rule);
         loop.id = id ? id->value : "";
@@ -141,6 +150,13 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, cons
         // instrs
         for(auto instr : std::get<3>(rule)){
             std::visit(InstrVisitor::Syntax(loop.instrs), instr);
+        }
+        // trailing id
+        auto trailing = std::get<5>(rule);
+        if(trailing && !id){
+            throw Exception::block_id_mismatch(loop.location, std::string(" : leading identifier is not present"));
+        }else if(id && trailing && (trailing->value != id->value)){
+            throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
         }
         begin = it;
         return loop;
