@@ -47,6 +47,23 @@ struct InstrVisitor {
         }, instr.type);
         return stream;
     }
+    std::ostream& operator()(WasmVM::Instr::If& instr){
+        stream << "if ";
+        std::visit(overloaded {
+            [&](index_t& idx) {
+                stream << idx;
+            },
+            [&](std::optional<ValueType>& type) {
+                if(type){
+                    stream << type.value();
+                }
+            }
+        }, instr.type);
+        return stream;
+    }
+    std::ostream& operator()(WasmVM::Instr::Else&){
+        return stream << "else";
+    }
     std::ostream& operator()(WasmVM::Instr::End&){
         return stream << "end";
     }

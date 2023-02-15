@@ -25,15 +25,10 @@ struct OneIndex : public Base {
     index_t index;
 };
 
-struct Block : public Base {
-    Block(index_t type): Base(Opcode::Block), type(type){}
-    Block(std::optional<ValueType> type): Base(Opcode::Block), type(type){}
-    std::variant<std::optional<ValueType>, index_t> type;
-};
-
-struct Loop : public Base {
-    Loop(index_t type): Base(Opcode::Loop), type(type){}
-    Loop(std::optional<ValueType> type): Base(Opcode::Loop), type(type){}
+template<Opcode::Opcode OP>
+struct BlockInstr : public Base {
+    BlockInstr(index_t type): Base(OP), type(type){}
+    BlockInstr(std::optional<ValueType> type): Base(OP), type(type){}
     std::variant<std::optional<ValueType>, index_t> type;
 };
 
@@ -41,6 +36,10 @@ using Unreachable = Atomic<Opcode::Unreachable>;
 using Nop = Atomic<Opcode::Nop>;
 using End = Atomic<Opcode::End>;
 using Call = OneIndex<Opcode::Call>;
+using Block = BlockInstr<Opcode::Block>;
+using Loop = BlockInstr<Opcode::Loop>;
+using If = BlockInstr<Opcode::If>;
+using Else = Atomic<Opcode::Else>;
 
 }
 
@@ -49,6 +48,8 @@ using WasmInstr = std::variant<
     Instr::Nop,
     Instr::Block,
     Instr::Loop,
+    Instr::If,
+    Instr::Else,
     Instr::End,
     Instr::Call
 >;
