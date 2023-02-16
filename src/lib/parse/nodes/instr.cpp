@@ -132,6 +132,10 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Br& node){
     index_t index = std::visit(BrIndexVisitor(labelid_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Br>(index);
 }
+void InstrVisitor::Sema::operator()(Parse::Instr::Br_if& node){
+    index_t index = std::visit(BrIndexVisitor(labelid_map), node.index);
+    func.body.emplace_back<WasmVM::Instr::Br_if>(index);
+}
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     std::visit(overloaded {

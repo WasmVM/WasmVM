@@ -41,6 +41,7 @@ using Loop = BlockInstr<Opcode::Loop>;
 using If = BlockInstr<Opcode::If>;
 using Else = Atomic<Opcode::Else>;
 using Br = OneIndex<Opcode::Br>;
+using Br_if = OneIndex<Opcode::Br_if>;
 
 }
 
@@ -53,7 +54,8 @@ using WasmInstr = std::variant<
     Instr::Else,
     Instr::End,
     Instr::Call,
-    Instr::Br
+    Instr::Br,
+    Instr::Br_if
 >;
 
 }

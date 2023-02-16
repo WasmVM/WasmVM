@@ -30,7 +30,8 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Unreachable,
     Parse::Instr::Nop,
     Parse::Instr::Call,
-    Parse::Instr::Br
+    Parse::Instr::Br,
+    Parse::Instr::Br_if
 >;
 
 using Instr = Parse::OneOf<

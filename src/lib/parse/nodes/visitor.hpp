@@ -93,6 +93,7 @@ struct Sema {
     void operator()(Parse::Instr::Loop& instr);
     void operator()(Parse::Instr::If& instr);
     void operator()(Parse::Instr::Br& instr);
+    void operator()(Parse::Instr::Br_if& instr);
 };
 
 struct Syntax {
