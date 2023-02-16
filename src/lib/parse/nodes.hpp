@@ -154,9 +154,10 @@ struct Loop;
 struct If;
 using Br = OneIndex::Class<"br">;
 using Br_if = OneIndex::Class<"br_if">;
+struct Br_table;
 
 using Instrction = std::variant <
-    Unreachable, Nop, Call, Block, Loop, If, Br, Br_if
+    Unreachable, Nop, Call, Block, Loop, If, Br, Br_if, Br_table
 >;
 
 struct Block {
@@ -181,6 +182,11 @@ struct If {
     std::string id;
     std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
     Token::Location location;
+};
+
+struct Br_table {
+    static std::optional<Br_table> get(TokenIter& begin, const TokenIter& end);
+    std::vector<Index> indices;
 };
 
 }

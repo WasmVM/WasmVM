@@ -94,6 +94,7 @@ struct Sema {
     void operator()(Parse::Instr::If& instr);
     void operator()(Parse::Instr::Br& instr);
     void operator()(Parse::Instr::Br_if& instr);
+    void operator()(Parse::Instr::Br_table& instr);
 };
 
 struct Syntax {

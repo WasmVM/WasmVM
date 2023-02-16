@@ -109,9 +109,6 @@ struct Repeat : public std::vector<T> {
     }
 };
 
-template<parseable T, size_t N>
-using Repeat_N = Repeat<T, N, N>;
-
 template<parseable... T>
 struct OneOf : public std::variant<T...>{
 

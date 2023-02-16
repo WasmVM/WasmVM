@@ -21,6 +21,7 @@ enum Opcode : opcode_t {
     End = 0x0b,
     Br = 0x0c,
     Br_if = 0x0d,
+    Br_table = 0x0e,
     Call = 0x10,
 };
 

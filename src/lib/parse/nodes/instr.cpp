@@ -136,6 +136,13 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Br_if& node){
     index_t index = std::visit(BrIndexVisitor(labelid_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Br_if>(index);
 }
+void InstrVisitor::Sema::operator()(Parse::Instr::Br_table& node){
+    WasmVM::Instr::Br_table instr;
+    for(Parse::Index& index : node.indices){
+        instr.indices.emplace_back(std::visit(BrIndexVisitor(labelid_map), index));
+    }
+    func.body.emplace_back(instr);
+}
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     std::visit(overloaded {
@@ -309,6 +316,24 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const To
         }
         begin = it;
         return if_instr;
+    }
+    return std::nullopt;
+}
+
+std::optional<Parse::Instr::Br_table> Parse::Instr::Br_table::get(TokenIter& begin, const TokenIter& end){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::Rule<
+        Token::Keyword<"br_table">, Parse::Repeat<Parse::Index, 1>
+    >::get(it, end);
+
+    if(syntax){
+        auto rule = syntax.value();
+        Parse::Instr::Br_table instr;
+        for(auto index : std::get<1>(rule)){
+            instr.indices.emplace_back(index);
+        }
+        begin = it;
+        return instr;
     }
     return std::nullopt;
 }

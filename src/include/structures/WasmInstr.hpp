@@ -42,6 +42,10 @@ using If = BlockInstr<Opcode::If>;
 using Else = Atomic<Opcode::Else>;
 using Br = OneIndex<Opcode::Br>;
 using Br_if = OneIndex<Opcode::Br_if>;
+struct Br_table : public Base {
+    Br_table() : Base(Opcode::Br_table) {}
+    std::vector<index_t> indices;
+};
 
 }
 
@@ -55,7 +59,8 @@ using WasmInstr = std::variant<
     Instr::End,
     Instr::Call,
     Instr::Br,
-    Instr::Br_if
+    Instr::Br_if,
+    Instr::Br_table
 >;
 
 }

@@ -73,6 +73,13 @@ struct InstrVisitor {
     std::ostream& operator()(WasmVM::Instr::Br_if& instr){
         return stream << "br_if " << instr.index;
     }
+    std::ostream& operator()(WasmVM::Instr::Br_table& instr){
+        stream << "br_table";
+        for(index_t index : instr.indices){
+            stream << " " << index;
+        }
+        return stream;
+    }
 
 private:
     std::ostream& stream;
