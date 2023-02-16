@@ -10,12 +10,17 @@ using namespace WasmVM;
 struct InstrVisitor {
     InstrVisitor(std::ostream& stream) : stream(stream){}
 
-    std::ostream& operator()(WasmVM::Instr::Unreachable&){
-        return stream << "unreachable";
+#define AtomicInstr(T, S) \
+    std::ostream& operator()(T&){ \
+        return stream << S; \
     }
-    std::ostream& operator()(WasmVM::Instr::Nop&){
-        return stream << "nop";
-    }
+
+    AtomicInstr(WasmVM::Instr::Unreachable, "unreachable")
+    AtomicInstr(WasmVM::Instr::Nop, "nop")
+    AtomicInstr(WasmVM::Instr::Else, "else")
+    AtomicInstr(WasmVM::Instr::End, "end")
+    AtomicInstr(WasmVM::Instr::Return, "return")
+
     std::ostream& operator()(WasmVM::Instr::Call& instr){
         return stream << "call " << instr.index;
     }
@@ -61,12 +66,6 @@ struct InstrVisitor {
         }, instr.type);
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::Else&){
-        return stream << "else";
-    }
-    std::ostream& operator()(WasmVM::Instr::End&){
-        return stream << "end";
-    }
     std::ostream& operator()(WasmVM::Instr::Br& instr){
         return stream << "br " << instr.index;
     }
@@ -80,6 +79,8 @@ struct InstrVisitor {
         }
         return stream;
     }
+
+#undef AtomicInstr
 
 private:
     std::ostream& stream;

@@ -22,7 +22,9 @@ enum Opcode : opcode_t {
     Br = 0x0c,
     Br_if = 0x0d,
     Br_table = 0x0e,
+    Return = 0x0f,
     Call = 0x10,
+    Call_indirect = 0x11,
 };
 
 }

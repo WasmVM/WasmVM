@@ -148,16 +148,17 @@ struct Class : public Base {
 
 using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
 using Nop = Atomic<WasmVM::Instr::Nop, "nop">;
-using Call = OneIndex::Class<"call">;
 struct Block;
 struct Loop;
 struct If;
 using Br = OneIndex::Class<"br">;
 using Br_if = OneIndex::Class<"br_if">;
 struct Br_table;
+using Return = Atomic<WasmVM::Instr::Return, "return">;
+using Call = OneIndex::Class<"call">;
 
 using Instrction = std::variant <
-    Unreachable, Nop, Call, Block, Loop, If, Br, Br_if, Br_table
+    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call
 >;
 
 struct Block {

@@ -46,6 +46,7 @@ struct Br_table : public Base {
     Br_table() : Base(Opcode::Br_table) {}
     std::vector<index_t> indices;
 };
+using Return = Atomic<Opcode::Return>;
 
 }
 
@@ -57,10 +58,11 @@ using WasmInstr = std::variant<
     Instr::If,
     Instr::Else,
     Instr::End,
-    Instr::Call,
     Instr::Br,
     Instr::Br_if,
-    Instr::Br_table
+    Instr::Br_table,
+    Instr::Return,
+    Instr::Call
 >;
 
 }

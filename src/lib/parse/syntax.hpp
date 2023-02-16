@@ -29,10 +29,11 @@ using Global = Parse::Rule<Token::ParenL, Token::Keyword<"global">, Parse::Optio
 using PlainInstr = Parse::OneOf<
     Parse::Instr::Unreachable,
     Parse::Instr::Nop,
-    Parse::Instr::Call,
     Parse::Instr::Br,
     Parse::Instr::Br_if,
-    Parse::Instr::Br_table
+    Parse::Instr::Br_table,
+    Parse::Instr::Return,
+    Parse::Instr::Call
 >;
 
 using Instr = Parse::OneOf<
