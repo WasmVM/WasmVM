@@ -19,6 +19,7 @@ enum Opcode : opcode_t {
     Else = 0x05,
 
     End = 0x0b,
+    Br = 0x0c,
     Call = 0x10,
 };
 

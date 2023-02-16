@@ -73,8 +73,10 @@ void ModuleVisitor::operator()(Parse::Func& node){
     }
 
     // Body
+    std::map<std::string, index_t> labelid_map;
+    labelid_map[node.id] = 0;
     for(Parse::Instr::Instrction instrnode : node.body){
-        std::visit(InstrVisitor::Sema(*this, func), instrnode);
+        std::visit(InstrVisitor::Sema(*this, func, labelid_map), instrnode);
     }
 
     funcidx += 1;

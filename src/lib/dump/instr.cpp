@@ -67,6 +67,9 @@ struct InstrVisitor {
     std::ostream& operator()(WasmVM::Instr::End&){
         return stream << "end";
     }
+    std::ostream& operator()(WasmVM::Instr::Br& instr){
+        return stream << "br " << instr.index;
+    }
 
 private:
     std::ostream& stream;

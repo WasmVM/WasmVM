@@ -8,12 +8,35 @@
 
 using namespace WasmVM;
 
+struct BrIndexVisitor : public Parse::Index::Visitor {
+    BrIndexVisitor(std::map<std::string, index_t>& idmap, bool check = true) : Parse::Index::Visitor(idmap, check) {}
+    index_t operator()(Token::Number& token){
+        return Parse::Index::Visitor::operator()(token);
+    }
+    index_t operator()(Token::Id& token){
+        if(token.value.empty()){
+            return index_npos;
+        }else if(idmap.contains(token.value)){
+            return idmap.size() - idmap[token.value] - 1;
+        }else if(check){
+            throw Exception::unknown_identifier(token.location, ": index '" + token.value + "' not found");
+        }
+        return index_npos;
+    }
+};
+
 void InstrVisitor::Sema::operator()(Parse::Instr::Call& node){
     index_t index = std::visit(Parse::Index::Visitor(module.funcid_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Call>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
     WasmVM::Instr::Block instr(std::nullopt);
+    if(!node.id.empty()){
+        if(labelid_map.contains(node.id)){
+            throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
+        }
+        labelid_map[node.id] = labelid_map.size();
+    }
     if(node.blocktype){
         instr = std::visit(overloaded {
             [&](ValueType& type) {
@@ -30,12 +53,21 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs){
-        std::visit(InstrVisitor::Sema(module, func), instrnode);
+        std::visit(InstrVisitor::Sema(module, func, labelid_map), instrnode);
     }
     func.body.emplace_back(WasmVM::Instr::End());
+    if(!node.id.empty()){
+        labelid_map.erase(node.id);
+    }
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
     WasmVM::Instr::Loop instr(std::nullopt);
+    if(!node.id.empty()){
+        if(labelid_map.contains(node.id)){
+            throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
+        }
+        labelid_map[node.id] = labelid_map.size();
+    }
     if(node.blocktype){
         instr = std::visit(overloaded {
             [&](ValueType& type) {
@@ -52,12 +84,21 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs){
-        std::visit(InstrVisitor::Sema(module, func), instrnode);
+        std::visit(InstrVisitor::Sema(module, func, labelid_map), instrnode);
     }
     func.body.emplace_back(WasmVM::Instr::End());
+    if(!node.id.empty()){
+        labelid_map.erase(node.id);
+    }
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::If& node){
     WasmVM::Instr::If instr(std::nullopt);
+    if(!node.id.empty()){
+        if(labelid_map.contains(node.id)){
+            throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
+        }
+        labelid_map[node.id] = labelid_map.size();
+    }
     if(node.blocktype){
         instr = std::visit(overloaded {
             [&](ValueType& type) {
@@ -74,15 +115,22 @@ void InstrVisitor::Sema::operator()(Parse::Instr::If& node){
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs1){
-        std::visit(InstrVisitor::Sema(module, func), instrnode);
+        std::visit(InstrVisitor::Sema(module, func, labelid_map), instrnode);
     }
     if(!node.instrs2.empty()){
         func.body.emplace_back(WasmVM::Instr::Else());
         for(Parse::Instr::Instrction instrnode : node.instrs2){
-            std::visit(InstrVisitor::Sema(module, func), instrnode);
+            std::visit(InstrVisitor::Sema(module, func, labelid_map), instrnode);
         }
     }
     func.body.emplace_back(WasmVM::Instr::End());
+    if(!node.id.empty()){
+        labelid_map.erase(node.id);
+    }
+}
+void InstrVisitor::Sema::operator()(Parse::Instr::Br& node){
+    index_t index = std::visit(BrIndexVisitor(labelid_map), node.index);
+    func.body.emplace_back<WasmVM::Instr::Br>(index);
 }
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){

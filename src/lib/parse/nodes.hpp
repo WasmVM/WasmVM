@@ -152,9 +152,10 @@ using Call = OneIndex::Class<"call">;
 struct Block;
 struct Loop;
 struct If;
+using Br = OneIndex::Class<"br">;
 
 using Instrction = std::variant <
-    Unreachable, Nop, Call, Block, Loop, If
+    Unreachable, Nop, Call, Block, Loop, If, Br
 >;
 
 struct Block {
