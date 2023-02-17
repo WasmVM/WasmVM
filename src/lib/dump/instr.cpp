@@ -25,45 +25,24 @@ struct InstrVisitor {
         return stream << "call " << instr.index;
     }
     std::ostream& operator()(WasmVM::Instr::Block& instr){
-        stream << "block ";
-        std::visit(overloaded {
-            [&](index_t& idx) {
-                stream << idx;
-            },
-            [&](std::optional<ValueType>& type) {
-                if(type){
-                    stream << type.value();
-                }
-            }
-        }, instr.type);
+        stream << "block";
+        if(instr.type){
+            stream << " " << instr.type.value();
+        }
         return stream;
     }
     std::ostream& operator()(WasmVM::Instr::Loop& instr){
-        stream << "loop ";
-        std::visit(overloaded {
-            [&](index_t& idx) {
-                stream << idx;
-            },
-            [&](std::optional<ValueType>& type) {
-                if(type){
-                    stream << type.value();
-                }
-            }
-        }, instr.type);
+        stream << "loop";
+        if(instr.type){
+            stream << " " << instr.type.value();
+        }
         return stream;
     }
     std::ostream& operator()(WasmVM::Instr::If& instr){
-        stream << "if ";
-        std::visit(overloaded {
-            [&](index_t& idx) {
-                stream << idx;
-            },
-            [&](std::optional<ValueType>& type) {
-                if(type){
-                    stream << type.value();
-                }
-            }
-        }, instr.type);
+        stream << "if";
+        if(instr.type){
+            stream << " " << instr.type.value();
+        }
         return stream;
     }
     std::ostream& operator()(WasmVM::Instr::Br& instr){
@@ -78,6 +57,9 @@ struct InstrVisitor {
             stream << " " << index;
         }
         return stream;
+    }
+    std::ostream& operator()(WasmVM::Instr::Call_indirect& instr){
+        return stream << "call_indirect " << instr.tableidx << " " << instr.typeidx;
     }
 
 #undef AtomicInstr

@@ -95,6 +95,7 @@ struct Sema {
     void operator()(Parse::Instr::Br& instr);
     void operator()(Parse::Instr::Br_if& instr);
     void operator()(Parse::Instr::Br_table& instr);
+    void operator()(Parse::Instr::Call_indirect& instr);
 };
 
 struct Syntax {
@@ -102,10 +103,11 @@ struct Syntax {
     Syntax(std::vector<Parse::Instr::Instrction>& body) : body(body){}
     std::vector<Parse::Instr::Instrction>& body;
 
+    template<typename T>
+    void operator()(T& instr){
+        body.emplace_back(instr);
+    }
     void operator()(WasmVM::Syntax::PlainInstr&);
-    void operator()(Parse::Instr::Block&);
-    void operator()(Parse::Instr::Loop&);
-    void operator()(Parse::Instr::If&);
 };
 
 }

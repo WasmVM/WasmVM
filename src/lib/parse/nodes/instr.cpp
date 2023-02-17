@@ -30,7 +30,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Call& node){
     func.body.emplace_back<WasmVM::Instr::Call>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
-    WasmVM::Instr::Block instr(std::nullopt);
+    WasmVM::Instr::Block instr;
     if(!node.id.empty()){
         if(labelid_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
@@ -38,18 +38,11 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        instr = std::visit(overloaded {
-            [&](ValueType& type) {
-                return WasmVM::Instr::Block(std::optional<ValueType>(type));
-            },
-            [&](Parse::TypeUse& typeuse) {
-                Parse::Type type(typeuse);
-                if(!type.func.id_map.empty()){
-                    Exception::Warning("param ids in block are ignored");
-                }
-                return WasmVM::Instr::Block(type.index(module.module, module.typeid_map, module.paramid_maps));
-            },
-        }, node.blocktype.value());
+        Parse::Type type(node.blocktype.value());
+        if(!type.func.id_map.empty()){
+            Exception::Warning("param ids in block are ignored");
+        }
+        instr = WasmVM::Instr::Block(type.index(module.module, module.typeid_map, module.paramid_maps));
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs){
@@ -61,7 +54,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
     }
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
-    WasmVM::Instr::Loop instr(std::nullopt);
+    WasmVM::Instr::Loop instr;
     if(!node.id.empty()){
         if(labelid_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
@@ -69,18 +62,11 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        instr = std::visit(overloaded {
-            [&](ValueType& type) {
-                return WasmVM::Instr::Loop(std::optional<ValueType>(type));
-            },
-            [&](Parse::TypeUse& typeuse) {
-                Parse::Type type(typeuse);
-                if(!type.func.id_map.empty()){
-                    Exception::Warning("param ids in loop are ignored");
-                }
-                return WasmVM::Instr::Loop(type.index(module.module, module.typeid_map, module.paramid_maps));
-            },
-        }, node.blocktype.value());
+        Parse::Type type(node.blocktype.value());
+        if(!type.func.id_map.empty()){
+            Exception::Warning("param ids in loop are ignored");
+        }
+        instr = WasmVM::Instr::Loop(type.index(module.module, module.typeid_map, module.paramid_maps));
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs){
@@ -92,7 +78,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Loop& node){
     }
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::If& node){
-    WasmVM::Instr::If instr(std::nullopt);
+    WasmVM::Instr::If instr;
     if(!node.id.empty()){
         if(labelid_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, " : block id '" + node.id + "' is used");
@@ -100,18 +86,11 @@ void InstrVisitor::Sema::operator()(Parse::Instr::If& node){
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        instr = std::visit(overloaded {
-            [&](ValueType& type) {
-                return WasmVM::Instr::If(std::optional<ValueType>(type));
-            },
-            [&](Parse::TypeUse& typeuse) {
-                Parse::Type type(typeuse);
-                if(!type.func.id_map.empty()){
-                    Exception::Warning("param ids in if are ignored");
-                }
-                return WasmVM::Instr::If(type.index(module.module, module.typeid_map, module.paramid_maps));
-            },
-        }, node.blocktype.value());
+        Parse::Type type(node.blocktype.value());
+        if(!type.func.id_map.empty()){
+            Exception::Warning("param ids in if are ignored");
+        }
+        instr = WasmVM::Instr::If(type.index(module.module, module.typeid_map, module.paramid_maps));
     }
     func.body.emplace_back(instr);
     for(Parse::Instr::Instrction instrnode : node.instrs1){
@@ -143,6 +122,11 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Br_table& node){
     }
     func.body.emplace_back(instr);
 }
+void InstrVisitor::Sema::operator()(Parse::Instr::Call_indirect& node){
+    index_t tableidx = node.tableidx ? std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value()) : 0;
+    index_t typeidx = Parse::Type(node.type).index(module.module, module.typeid_map, module.paramid_maps);
+    func.body.emplace_back(WasmVM::Instr::Call_indirect(tableidx, typeidx));
+}
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     std::visit(overloaded {
@@ -151,21 +135,12 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
         }
     }, plain);
 }
-void InstrVisitor::Syntax::operator()(Parse::Instr::Block& block){
-    body.emplace_back(block);
-}
-void InstrVisitor::Syntax::operator()(Parse::Instr::Loop& block){
-    body.emplace_back(block);
-}
-void InstrVisitor::Syntax::operator()(Parse::Instr::If& block){
-    body.emplace_back(block);
-}
 
 std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, const TokenIter& end){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"block">, Parse::Optional<Token::Id>,
-        Parse::Optional<Parse::OneOf<Parse::ValueType, Parse::TypeUse>>,
+        Parse::TypeUse,
         Parse::Repeat<Syntax::Instr>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
     >::get(it, end);
@@ -178,19 +153,7 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, co
         auto id = std::get<1>(rule);
         block.id = id ? id->value : "";
         // blocktype
-        auto blocktype = std::get<2>(rule);
-        if(blocktype){
-            std::variant<WasmVM::ValueType, Parse::TypeUse> type;
-            std::visit(overloaded {
-                [&](Parse::ValueType& value){
-                    type.emplace<WasmVM::ValueType>(value);
-                },
-                [&](Parse::TypeUse& value){
-                    type.emplace<Parse::TypeUse>(value);
-                }
-            }, blocktype.value());
-            block.blocktype.emplace(type);
-        }
+        block.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
             std::visit(InstrVisitor::Syntax(block.instrs), instr);
@@ -212,7 +175,7 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, cons
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"loop">, Parse::Optional<Token::Id>,
-        Parse::Optional<Parse::OneOf<Parse::ValueType, Parse::TypeUse>>,
+        Parse::TypeUse,
         Parse::Repeat<Syntax::Instr>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
     >::get(it, end);
@@ -225,19 +188,7 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, cons
         auto id = std::get<1>(rule);
         loop.id = id ? id->value : "";
         // blocktype
-        auto blocktype = std::get<2>(rule);
-        if(blocktype){
-            std::variant<WasmVM::ValueType, Parse::TypeUse> type;
-            std::visit(overloaded {
-                [&](Parse::ValueType& value){
-                    type.emplace<WasmVM::ValueType>(value);
-                },
-                [&](Parse::TypeUse& value){
-                    type.emplace<Parse::TypeUse>(value);
-                }
-            }, blocktype.value());
-            loop.blocktype.emplace(type);
-        }
+        loop.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
             std::visit(InstrVisitor::Syntax(loop.instrs), instr);
@@ -259,7 +210,7 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const To
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"if">, Parse::Optional<Token::Id>,
-        Parse::Optional<Parse::OneOf<Parse::ValueType, Parse::TypeUse>>,
+        Parse::TypeUse,
         Parse::Repeat<Syntax::Instr>,
         Parse::Optional<Parse::Rule<
             Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Syntax::Instr>
@@ -275,19 +226,7 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const To
         auto id = std::get<1>(rule);
         if_instr.id = id ? id->value : "";
         // blocktype
-        auto blocktype = std::get<2>(rule);
-        if(blocktype){
-            std::variant<WasmVM::ValueType, Parse::TypeUse> type;
-            std::visit(overloaded {
-                [&](Parse::ValueType& value){
-                    type.emplace<WasmVM::ValueType>(value);
-                },
-                [&](Parse::TypeUse& value){
-                    type.emplace<Parse::TypeUse>(value);
-                }
-            }, blocktype.value());
-            if_instr.blocktype.emplace(type);
-        }
+        if_instr.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
             std::visit(InstrVisitor::Syntax(if_instr.instrs1), instr);
@@ -334,6 +273,20 @@ std::optional<Parse::Instr::Br_table> Parse::Instr::Br_table::get(TokenIter& beg
         }
         begin = it;
         return instr;
+    }
+    return std::nullopt;
+}
+
+std::optional<Parse::Instr::Call_indirect> Parse::Instr::Call_indirect::get(TokenIter& begin, const TokenIter& end){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::Rule<
+        Token::Keyword<"call_indirect">, Parse::Optional<Parse::Index>, Parse::TypeUse
+    >::get(it, end);
+
+    if(syntax){
+        auto rule = syntax.value();
+        begin = it;
+        return Parse::Instr::Call_indirect(std::get<1>(rule), std::get<2>(rule));
     }
     return std::nullopt;
 }

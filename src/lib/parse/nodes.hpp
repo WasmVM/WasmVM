@@ -153,19 +153,28 @@ struct Loop;
 struct If;
 using Br = OneIndex::Class<"br">;
 using Br_if = OneIndex::Class<"br_if">;
-struct Br_table;
+struct Br_table {
+    static std::optional<Br_table> get(TokenIter& begin, const TokenIter& end);
+    std::vector<Index> indices;
+};
 using Return = Atomic<WasmVM::Instr::Return, "return">;
 using Call = OneIndex::Class<"call">;
+struct Call_indirect {
+    Call_indirect(std::optional<Index>& tableidx, TypeUse& type) : tableidx(tableidx), type(type) {}
+    static std::optional<Call_indirect> get(TokenIter& begin, const TokenIter& end);
+    std::optional<Index> tableidx;
+    TypeUse type;
+};
 
 using Instrction = std::variant <
-    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call
+    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect
 >;
 
 struct Block {
     static std::optional<Block> get(TokenIter& begin, const TokenIter& end);
     std::vector<Instrction> instrs;
     std::string id;
-    std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
+    std::optional<TypeUse> blocktype;
     Token::Location location;
 };
 
@@ -173,7 +182,7 @@ struct Loop {
     static std::optional<Loop> get(TokenIter& begin, const TokenIter& end);
     std::vector<Instrction> instrs;
     std::string id;
-    std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
+    std::optional<TypeUse> blocktype;
     Token::Location location;
 };
 
@@ -181,13 +190,8 @@ struct If {
     static std::optional<If> get(TokenIter& begin, const TokenIter& end);
     std::vector<Instrction> instrs1, instrs2;
     std::string id;
-    std::optional<std::variant<WasmVM::ValueType, TypeUse>> blocktype;
+    std::optional<TypeUse> blocktype;
     Token::Location location;
-};
-
-struct Br_table {
-    static std::optional<Br_table> get(TokenIter& begin, const TokenIter& end);
-    std::vector<Index> indices;
 };
 
 }

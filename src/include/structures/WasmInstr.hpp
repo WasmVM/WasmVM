@@ -27,9 +27,9 @@ struct OneIndex : public Base {
 
 template<Opcode::Opcode OP>
 struct BlockInstr : public Base {
+    BlockInstr(): Base(OP){}
     BlockInstr(index_t type): Base(OP), type(type){}
-    BlockInstr(std::optional<ValueType> type): Base(OP), type(type){}
-    std::variant<std::optional<ValueType>, index_t> type;
+    std::optional<index_t> type;
 };
 
 using Unreachable = Atomic<Opcode::Unreachable>;
@@ -47,6 +47,12 @@ struct Br_table : public Base {
     std::vector<index_t> indices;
 };
 using Return = Atomic<Opcode::Return>;
+struct Call_indirect : public Base {
+    Call_indirect() : Base(Opcode::Call_indirect) {}
+    Call_indirect(index_t tableidx, index_t typeidx) : Base(Opcode::Call_indirect), tableidx(tableidx), typeidx(typeidx) {}
+    index_t tableidx;
+    index_t typeidx;
+};
 
 }
 
@@ -62,7 +68,8 @@ using WasmInstr = std::variant<
     Instr::Br_if,
     Instr::Br_table,
     Instr::Return,
-    Instr::Call
+    Instr::Call,
+    Instr::Call_indirect
 >;
 
 }
