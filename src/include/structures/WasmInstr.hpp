@@ -53,6 +53,11 @@ struct Call_indirect : public Base {
     index_t tableidx;
     index_t typeidx;
 };
+struct Ref_null : public Base {
+    Ref_null() : Base(Opcode::Ref_null), heaptype(RefType::funcref) {}
+    Ref_null(RefType heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
+    RefType heaptype;
+};
 
 }
 
@@ -69,7 +74,8 @@ using WasmInstr = std::variant<
     Instr::Br_table,
     Instr::Return,
     Instr::Call,
-    Instr::Call_indirect
+    Instr::Call_indirect,
+    Instr::Ref_null
 >;
 
 }

@@ -61,6 +61,17 @@ struct InstrVisitor {
     std::ostream& operator()(WasmVM::Instr::Call_indirect& instr){
         return stream << "call_indirect " << instr.tableidx << " " << instr.typeidx;
     }
+    std::ostream& operator()(WasmVM::Instr::Ref_null& instr){
+        stream << "ref.null ";
+        switch(instr.heaptype){
+            case RefType::funcref:
+                return stream << "func";
+            case RefType::externref:
+                return stream << "extern";
+            default:
+                return stream;
+        }
+    }
 
 #undef AtomicInstr
 

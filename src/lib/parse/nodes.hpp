@@ -165,9 +165,13 @@ struct Call_indirect {
     std::optional<Index> tableidx;
     TypeUse type;
 };
+struct Ref_null : public WasmVM::Instr::Ref_null {
+    Ref_null(WasmVM::RefType heaptype) : WasmVM::Instr::Ref_null(heaptype) {}
+    static std::optional<Ref_null> get(TokenIter& begin, const TokenIter& end);
+};
 
 using Instrction = std::variant <
-    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect
+    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect, Ref_null
 >;
 
 struct Block {

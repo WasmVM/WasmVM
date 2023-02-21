@@ -12,7 +12,7 @@ static std::unordered_set<std::string> keywords = {
     "func", "table", "memory", "global",
     "mut", "local",
     "unreachable", "nop", "block", "end", "loop", "if", "else", "br", "br_if", "br_table", "return", "call", "call_indirect",
-    
+    "ref.null", "ref.is_null", "ref.func",
 };
 
 #endif

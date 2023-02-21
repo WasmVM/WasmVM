@@ -290,3 +290,24 @@ std::optional<Parse::Instr::Call_indirect> Parse::Instr::Call_indirect::get(Toke
     }
     return std::nullopt;
 }
+
+std::optional<Parse::Instr::Ref_null> Parse::Instr::Ref_null::get(TokenIter& begin, const TokenIter& end){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::Rule<
+        Token::Keyword<"ref.null">, Parse::OneOf<Token::Keyword<"func">, Token::Keyword<"extern">>
+    >::get(it, end);
+
+    if(syntax){
+        auto rule = syntax.value();
+        begin = it;
+        return Parse::Instr::Ref_null(std::visit(overloaded {
+            [](Token::Keyword<"func">){
+                return WasmVM::RefType::funcref;
+            },
+            [](Token::Keyword<"extern">){
+                return WasmVM::RefType::externref;
+            },
+        }, std::get<1>(rule)));
+    }
+    return std::nullopt;
+}
