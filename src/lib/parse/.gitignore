@@ -1,4 +1,0 @@
-Makefile
-parser_test*
-*.wat
-setenv.sh

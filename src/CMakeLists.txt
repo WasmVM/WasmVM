@@ -1,4 +1,5 @@
 add_subdirectory(lib)
+add_subdirectory(exec)
 
 if(INSTALL_C)
 install(DIRECTORY include/
