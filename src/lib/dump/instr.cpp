@@ -14,6 +14,10 @@ struct InstrVisitor {
     std::ostream& operator()(T&){ \
         return stream << S; \
     }
+#define OneIndexInstr(T, S) \
+    std::ostream& operator()(T& instr){ \
+        return stream << S << " " << instr.index; \
+    }
 
     AtomicInstr(WasmVM::Instr::Unreachable, "unreachable")
     AtomicInstr(WasmVM::Instr::Nop, "nop")
@@ -22,9 +26,11 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::Return, "return")
     AtomicInstr(WasmVM::Instr::Ref_is_null, "ref.is_null")
 
-    std::ostream& operator()(WasmVM::Instr::Call& instr){
-        return stream << "call " << instr.index;
-    }
+    OneIndexInstr(WasmVM::Instr::Call, "call")
+    OneIndexInstr(WasmVM::Instr::Br, "br")
+    OneIndexInstr(WasmVM::Instr::Br_if, "br_if")
+    OneIndexInstr(WasmVM::Instr::Ref_func, "ref.func")
+
     std::ostream& operator()(WasmVM::Instr::Block& instr){
         stream << "block";
         if(instr.type){
@@ -45,12 +51,6 @@ struct InstrVisitor {
             stream << " " << instr.type.value();
         }
         return stream;
-    }
-    std::ostream& operator()(WasmVM::Instr::Br& instr){
-        return stream << "br " << instr.index;
-    }
-    std::ostream& operator()(WasmVM::Instr::Br_if& instr){
-        return stream << "br_if " << instr.index;
     }
     std::ostream& operator()(WasmVM::Instr::Br_table& instr){
         stream << "br_table";
@@ -75,6 +75,7 @@ struct InstrVisitor {
     }
 
 #undef AtomicInstr
+#undef OneIndexInstr
 
 private:
     std::ostream& stream;

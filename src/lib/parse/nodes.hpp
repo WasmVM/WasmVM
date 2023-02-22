@@ -170,10 +170,11 @@ struct Ref_null : public WasmVM::Instr::Ref_null {
     static std::optional<Ref_null> get(TokenIter& begin, const TokenIter& end);
 };
 using Ref_is_null = Atomic<WasmVM::Instr::Ref_is_null, "ref.is_null">;
+using Ref_func = OneIndex::Class<"ref.func">;
 
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
-    Ref_null, Ref_is_null
+    Ref_null, Ref_is_null, Ref_func
 >;
 
 struct Block {

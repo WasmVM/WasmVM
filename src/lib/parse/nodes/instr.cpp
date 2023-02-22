@@ -127,6 +127,10 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Call_indirect& node){
     index_t typeidx = Parse::Type(node.type).index(module.module, module.typeid_map, module.paramid_maps);
     func.body.emplace_back(WasmVM::Instr::Call_indirect(tableidx, typeidx));
 }
+void InstrVisitor::Sema::operator()(Parse::Instr::Ref_func& node){
+    index_t index = std::visit(Parse::Index::Visitor(module.funcid_map), node.index);
+    func.body.emplace_back<WasmVM::Instr::Ref_func>(index);
+}
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     std::visit(overloaded {
