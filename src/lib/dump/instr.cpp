@@ -20,6 +20,7 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::Else, "else")
     AtomicInstr(WasmVM::Instr::End, "end")
     AtomicInstr(WasmVM::Instr::Return, "return")
+    AtomicInstr(WasmVM::Instr::Ref_is_null, "ref.is_null")
 
     std::ostream& operator()(WasmVM::Instr::Call& instr){
         return stream << "call " << instr.index;

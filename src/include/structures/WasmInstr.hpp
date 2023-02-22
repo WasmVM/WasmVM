@@ -58,6 +58,7 @@ struct Ref_null : public Base {
     Ref_null(RefType heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
     RefType heaptype;
 };
+using Ref_is_null = Atomic<Opcode::Ref_is_null>;
 
 }
 
@@ -75,7 +76,8 @@ using WasmInstr = std::variant<
     Instr::Return,
     Instr::Call,
     Instr::Call_indirect,
-    Instr::Ref_null
+    Instr::Ref_null,
+    Instr::Ref_is_null
 >;
 
 }

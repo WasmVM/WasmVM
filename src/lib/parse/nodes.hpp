@@ -169,9 +169,11 @@ struct Ref_null : public WasmVM::Instr::Ref_null {
     Ref_null(WasmVM::RefType heaptype) : WasmVM::Instr::Ref_null(heaptype) {}
     static std::optional<Ref_null> get(TokenIter& begin, const TokenIter& end);
 };
+using Ref_is_null = Atomic<WasmVM::Instr::Ref_is_null, "ref.is_null">;
 
 using Instrction = std::variant <
-    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect, Ref_null
+    Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
+    Ref_null, Ref_is_null
 >;
 
 struct Block {

@@ -35,7 +35,8 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Return,
     Parse::Instr::Call,
     Parse::Instr::Call_indirect,
-    Parse::Instr::Ref_null
+    Parse::Instr::Ref_null,
+    Parse::Instr::Ref_is_null
 >;
 
 using Instr = Parse::OneOf<
