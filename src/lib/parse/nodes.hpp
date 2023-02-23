@@ -146,6 +146,7 @@ struct Class : public Base {
 
 }
 
+// Control instructions
 using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
 using Nop = Atomic<WasmVM::Instr::Nop, "nop">;
 struct Block;
@@ -165,6 +166,8 @@ struct Call_indirect {
     std::optional<Index> tableidx;
     TypeUse type;
 };
+
+// Reference instructions
 struct Ref_null : public WasmVM::Instr::Ref_null {
     Ref_null(WasmVM::RefType heaptype) : WasmVM::Instr::Ref_null(heaptype) {}
     static std::optional<Ref_null> get(TokenIter& begin, const TokenIter& end);
@@ -172,9 +175,16 @@ struct Ref_null : public WasmVM::Instr::Ref_null {
 using Ref_is_null = Atomic<WasmVM::Instr::Ref_is_null, "ref.is_null">;
 using Ref_func = OneIndex::Class<"ref.func">;
 
+// Parametric instructions
+using Drop = Atomic<WasmVM::Instr::Drop, "drop">;
+struct Select : public WasmVM::Instr::Select {
+    static std::optional<Select> get(TokenIter& begin, const TokenIter& end);
+};
+
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
-    Ref_null, Ref_is_null, Ref_func
+    Ref_null, Ref_is_null, Ref_func,
+    Drop, Select
 >;
 
 struct Block {

@@ -315,3 +315,26 @@ std::optional<Parse::Instr::Ref_null> Parse::Instr::Ref_null::get(TokenIter& beg
     }
     return std::nullopt;
 }
+
+std::optional<Parse::Instr::Select> Parse::Instr::Select::get(TokenIter& begin, const TokenIter& end){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::Rule<
+        Token::Keyword<"select">, 
+        Repeat<
+            Rule<Token::ParenL, Token::Keyword<"result">, Repeat<ValueType>, Token::ParenR>
+        >
+    >::get(it, end);
+
+    if(syntax){
+        auto rule = syntax.value();
+        Parse::Instr::Select instr;
+        for(auto result : std::get<1>(rule)){
+            for(auto type : std::get<2>(result)){
+                instr.valtypes.emplace_back(type);
+            }
+        }
+        begin = it;
+        return instr;
+    }
+    return std::nullopt;
+}

@@ -25,6 +25,7 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::End, "end")
     AtomicInstr(WasmVM::Instr::Return, "return")
     AtomicInstr(WasmVM::Instr::Ref_is_null, "ref.is_null")
+    AtomicInstr(WasmVM::Instr::Drop, "drop")
 
     OneIndexInstr(WasmVM::Instr::Call, "call")
     OneIndexInstr(WasmVM::Instr::Br, "br")
@@ -72,6 +73,13 @@ struct InstrVisitor {
             default:
                 return stream;
         }
+    }
+    std::ostream& operator()(WasmVM::Instr::Select& instr){
+        stream << "select";
+        for(ValueType type : instr.valtypes){
+            stream << " " << type;
+        }
+        return stream;
     }
 
 #undef AtomicInstr

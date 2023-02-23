@@ -27,11 +27,11 @@ enum Opcode : opcode_t {
     Call_indirect = 0x11,
     // Reference
     Ref_null = 0xd0,
-    Ref_is_null = 0xD1,
-    Ref_func = 0xD2,
+    Ref_is_null = 0xd1,
+    Ref_func = 0xd2,
     // Parametric
-    #define Op_drop                 0x1A
-    #define Op_select               0x1B
+    Drop = 0x1a,
+    Select = 0x1b,
 };
 
 }

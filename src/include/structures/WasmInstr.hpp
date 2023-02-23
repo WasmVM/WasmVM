@@ -32,6 +32,7 @@ struct BlockInstr : public Base {
     std::optional<index_t> type;
 };
 
+// Control instructions
 using Unreachable = Atomic<Opcode::Unreachable>;
 using Nop = Atomic<Opcode::Nop>;
 using End = Atomic<Opcode::End>;
@@ -53,6 +54,8 @@ struct Call_indirect : public Base {
     index_t tableidx;
     index_t typeidx;
 };
+
+// Reference instructions
 struct Ref_null : public Base {
     Ref_null() : Base(Opcode::Ref_null), heaptype(RefType::funcref) {}
     Ref_null(RefType heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
@@ -60,6 +63,13 @@ struct Ref_null : public Base {
 };
 using Ref_is_null = Atomic<Opcode::Ref_is_null>;
 using Ref_func = OneIndex<Opcode::Ref_func>;
+
+// Parametric instructions
+using Drop = Atomic<Opcode::Drop>;
+struct Select : public Base {
+    Select() : Base(Opcode::Select) {}
+    std::vector<ValueType> valtypes;
+};
 
 }
 
@@ -77,9 +87,13 @@ using WasmInstr = std::variant<
     Instr::Return,
     Instr::Call,
     Instr::Call_indirect,
+
     Instr::Ref_null,
     Instr::Ref_is_null,
-    Instr::Ref_func
+    Instr::Ref_func,
+
+    Instr::Drop,
+    Instr::Select
 >;
 
 }
