@@ -71,9 +71,17 @@ struct Select : public Base {
     std::vector<ValueType> valtypes;
 };
 
+// Variable instructions
+using Local_get = OneIndex<Opcode::Local_get>;
+using Local_set = OneIndex<Opcode::Local_set>;
+using Local_tee = OneIndex<Opcode::Local_tee>;
+using Global_get = OneIndex<Opcode::Global_get>;
+using Global_set = OneIndex<Opcode::Global_set>;
+
 }
 
 using WasmInstr = std::variant<
+    // Control
     Instr::Unreachable,
     Instr::Nop,
     Instr::Block,
@@ -87,13 +95,19 @@ using WasmInstr = std::variant<
     Instr::Return,
     Instr::Call,
     Instr::Call_indirect,
-
+    // Reference
     Instr::Ref_null,
     Instr::Ref_is_null,
     Instr::Ref_func,
-
+    // Parametric
     Instr::Drop,
-    Instr::Select
+    Instr::Select,
+    // Variable
+    Instr::Local_get,
+    Instr::Local_set,
+    Instr::Local_tee,
+    Instr::Global_get,
+    Instr::Global_set
 >;
 
 }

@@ -41,7 +41,13 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Ref_func,
 
     Parse::Instr::Drop,
-    Parse::Instr::Select
+    Parse::Instr::Select,
+
+    Parse::Instr::Local_get,
+    Parse::Instr::Local_set,
+    Parse::Instr::Local_tee,
+    Parse::Instr::Global_get,
+    Parse::Instr::Global_set
 >;
 
 using Instr = Parse::OneOf<

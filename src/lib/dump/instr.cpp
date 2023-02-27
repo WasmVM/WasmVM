@@ -31,6 +31,11 @@ struct InstrVisitor {
     OneIndexInstr(WasmVM::Instr::Br, "br")
     OneIndexInstr(WasmVM::Instr::Br_if, "br_if")
     OneIndexInstr(WasmVM::Instr::Ref_func, "ref.func")
+    OneIndexInstr(WasmVM::Instr::Local_get, "local.get")
+    OneIndexInstr(WasmVM::Instr::Local_set, "local.set")
+    OneIndexInstr(WasmVM::Instr::Local_tee, "local.tee")
+    OneIndexInstr(WasmVM::Instr::Global_get, "global.get")
+    OneIndexInstr(WasmVM::Instr::Global_set, "global.set")
 
     std::ostream& operator()(WasmVM::Instr::Block& instr){
         stream << "block";

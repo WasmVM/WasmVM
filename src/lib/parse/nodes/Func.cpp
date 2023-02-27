@@ -5,6 +5,8 @@
 #include "../syntax.hpp"
 #include "visitor.hpp"
 
+#include <algorithm>
+
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Func& node){
@@ -19,6 +21,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
     WasmFunc& func = module.funcs.emplace_back();
     
     // Type
+    std::map<std::string, index_t> paramid_map;
     {
         index_t idx = std::visit(overloaded {
             [&](std::string id){
@@ -36,7 +39,6 @@ void ModuleVisitor::operator()(Parse::Func& node){
         }, node.type.id);
 
         FuncType functype;
-        std::map<std::string, index_t> paramid_map;
         bool create_type = true;
         if(idx != index_npos){
             if(idx >= module.types.size()){
@@ -75,8 +77,10 @@ void ModuleVisitor::operator()(Parse::Func& node){
     // Body
     std::map<std::string, index_t> labelid_map;
     labelid_map[node.id] = 0;
+    std::map<std::string, index_t> localid_map;
+    std::ranges::merge(paramid_map, node.local_id_map, std::inserter(localid_map, localid_map.end()));
     for(Parse::Instr::Instrction instrnode : node.body){
-        std::visit(InstrVisitor::Sema(*this, func, labelid_map), instrnode);
+        std::visit(InstrVisitor::Sema(*this, func, labelid_map, localid_map), instrnode);
     }
 
     funcidx += 1;

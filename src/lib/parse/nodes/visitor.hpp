@@ -78,11 +78,17 @@ struct ImportVisitor {
 namespace InstrVisitor{
 
 struct Sema {
-    Sema(ModuleVisitor& module, WasmFunc& func, std::map<std::string, index_t>& labelid_map)
-        : module(module), func(func), labelid_map(labelid_map){}
+    Sema(
+        ModuleVisitor& module,
+        WasmFunc& func,
+        std::map<std::string, index_t>& labelid_map, 
+        const std::map<std::string, index_t>& localid_map
+    ) : module(module), func(func), labelid_map(labelid_map), localid_map(localid_map) {}
+
     ModuleVisitor& module;
     WasmFunc& func;
     std::map<std::string, index_t>& labelid_map;
+    const std::map<std::string, index_t>& localid_map;
 
     template<typename T> void operator()(T& instr){
         func.body.emplace_back(instr);
@@ -97,6 +103,11 @@ struct Sema {
     void operator()(Parse::Instr::Br_table& instr);
     void operator()(Parse::Instr::Call_indirect& instr);
     void operator()(Parse::Instr::Ref_func& instr);
+    void operator()(Parse::Instr::Local_get& instr);
+    void operator()(Parse::Instr::Local_set& instr);
+    void operator()(Parse::Instr::Local_tee& instr);
+    void operator()(Parse::Instr::Global_get& instr);
+    void operator()(Parse::Instr::Global_set& instr);
 };
 
 struct Syntax {

@@ -31,13 +31,21 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, ValueType& type){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
-    stream << "  (type (func ";
-    for(auto& param : type.params){
-        stream << "(param " << param << ") ";
+    stream << "  (type (func";
+    if(!type.params.empty()){
+        stream << " (param";
+        for(auto& param : type.params){
+            stream << " " << param;
+        }
+        stream << ")";
     }
-    for(auto& result : type.results){
-        stream << "(result " << result << ") ";
+    if(!type.results.empty()){
+        stream << " (result";
+        for(auto& result : type.results){
+            stream << " " << result;
+        }
+        stream << ")";
     }
-    stream << ") )" << std::endl;
+    stream << " ) )" << std::endl;
     return stream;
 }

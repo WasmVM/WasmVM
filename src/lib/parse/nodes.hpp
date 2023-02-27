@@ -27,8 +27,8 @@ struct Index : public OneOf<Token::Number, Token::Id> {
     T& retrieve(std::vector<T>& container);
 
     struct Visitor {
-        Visitor(std::map<std::string, index_t>& idmap, bool check = true) : idmap(idmap), check(check){}
-        std::map<std::string, index_t>& idmap;
+        Visitor(const std::map<std::string, index_t>& idmap, bool check = true) : idmap(idmap), check(check){}
+        const std::map<std::string, index_t>& idmap;
         bool check;
 
         index_t operator()(Token::Number& token){
@@ -38,7 +38,7 @@ struct Index : public OneOf<Token::Number, Token::Id> {
             if(token.value.empty()){
                 return index_npos;
             }else if(idmap.contains(token.value)){
-                return idmap[token.value];
+                return idmap.at(token.value);
             }else if(check){
                 throw Exception::unknown_identifier(token.location, ": index '" + token.value + "' not found");
             }
@@ -181,10 +181,18 @@ struct Select : public WasmVM::Instr::Select {
     static std::optional<Select> get(TokenIter& begin, const TokenIter& end);
 };
 
+// Variable instructions
+using Local_get = OneIndex::Class<"local.get">;
+using Local_set = OneIndex::Class<"local.set">;
+using Local_tee = OneIndex::Class<"local.tee">;
+using Global_get = OneIndex::Class<"global.get">;
+using Global_set = OneIndex::Class<"global.set">;
+
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
     Ref_null, Ref_is_null, Ref_func,
-    Drop, Select
+    Drop, Select,
+    Local_get, Local_set, Local_tee, Global_get, Global_set
 >;
 
 struct Block {
