@@ -222,12 +222,22 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     }, plain);
 }
 
+void InstrVisitor::Syntax::operator()(WasmVM::Syntax::FoldedInstr& folded){
+    for(WasmVM::Syntax::Instr instr : folded.instrs){
+        std::visit(overloaded {
+            [&](auto&& i){
+                this->operator()(i);
+            }
+        }, instr);
+    }
+}
+
 std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"block">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
-        Parse::Repeat<Syntax::Instr>,
+        Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
     >::get(it, holder);
 
@@ -242,7 +252,14 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, To
         block.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
-            std::visit(InstrVisitor::Syntax(block.instrs), instr);
+            std::visit(overloaded {
+                [&](Syntax::Instr& i){
+                    std::visit(InstrVisitor::Syntax(block.instrs), i);
+                },
+                [&](Syntax::FoldedInstr& i){
+                    InstrVisitor::Syntax(block.instrs)(i);
+                }
+            }, instr);
         }
         // trailing id
         auto trailing = std::get<5>(rule);
@@ -262,7 +279,7 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, Toke
     auto syntax = Parse::Rule<
         Token::Keyword<"loop">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
-        Parse::Repeat<Syntax::Instr>,
+        Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
     >::get(it, holder);
 
@@ -277,7 +294,14 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, Toke
         loop.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
-            std::visit(InstrVisitor::Syntax(loop.instrs), instr);
+            std::visit(overloaded {
+                [&](Syntax::Instr& i){
+                    std::visit(InstrVisitor::Syntax(loop.instrs), i);
+                },
+                [&](Syntax::FoldedInstr& i){
+                    InstrVisitor::Syntax(loop.instrs)(i);
+                }
+            }, instr);
         }
         // trailing id
         auto trailing = std::get<5>(rule);
@@ -297,9 +321,9 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHol
     auto syntax = Parse::Rule<
         Token::Keyword<"if">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
-        Parse::Repeat<Syntax::Instr>,
+        Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
         Parse::Optional<Parse::Rule<
-            Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Syntax::Instr>
+            Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>
         >>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
     >::get(it, holder);
@@ -315,7 +339,14 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHol
         if_instr.blocktype.emplace(std::get<2>(rule));
         // instrs
         for(auto instr : std::get<3>(rule)){
-            std::visit(InstrVisitor::Syntax(if_instr.instrs1), instr);
+            std::visit(overloaded {
+                [&](Syntax::Instr& i){
+                    std::visit(InstrVisitor::Syntax(if_instr.instrs1), i);
+                },
+                [&](Syntax::FoldedInstr& i){
+                    InstrVisitor::Syntax(if_instr.instrs1)(i);
+                }
+            }, instr);
         }
         // else
         auto elsesect = std::get<4>(rule);
@@ -329,7 +360,14 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHol
             }
             // instrs
             for(auto instr : std::get<2>(elsesect.value())){
-                std::visit(InstrVisitor::Syntax(if_instr.instrs2), instr);
+                std::visit(overloaded {
+                    [&](Syntax::Instr& i){
+                        std::visit(InstrVisitor::Syntax(if_instr.instrs2), i);
+                    },
+                    [&](Syntax::FoldedInstr& i){
+                        InstrVisitor::Syntax(if_instr.instrs2)(i);
+                    }
+                }, instr);
             }
         }
         // trailing id
@@ -456,6 +494,33 @@ std::optional<Parse::Instr::Table_init> Parse::Instr::Table_init::get(TokenIter&
         }else{
             return Parse::Instr::Table_init(std::nullopt, index1);
         }
+    }
+    return std::nullopt;
+}
+
+namespace _Folded {
+    using Plain = Parse::Rule<Token::ParenL, Syntax::PlainInstr, Parse::Repeat<Syntax::FoldedInstr>, Token::ParenR>;
+}
+
+std::optional<Syntax::FoldedInstr> Syntax::FoldedInstr::get(TokenIter& begin, TokenHolder& holder){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = Parse::OneOf<
+        _Folded::Plain
+    >::get(it, holder);
+
+    if(syntax){
+        Syntax::FoldedInstr instr;
+        std::visit(overloaded {
+            [&](_Folded::Plain rule){
+                auto plain = std::get<1>(rule);
+                for(auto folded : std::get<2>(rule)){
+                    instr.instrs.splice(instr.instrs.end(), folded.instrs);
+                }
+                instr.instrs.emplace_back(plain);
+            }
+        }, syntax.value());
+        begin = it;
+        return instr;
     }
     return std::nullopt;
 }

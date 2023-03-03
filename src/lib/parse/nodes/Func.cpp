@@ -90,7 +90,7 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holde
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Parse::TypeUse,
-        Parse::Repeat<Syntax::Local>, Parse::Repeat<Syntax::Instr>,
+        Parse::Repeat<Syntax::Local>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
         Token::ParenR
     >::get(it, holder);
 
@@ -131,7 +131,14 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holde
         }
         // Instr
         for(auto instr : std::get<5>(rule)){
-            std::visit(InstrVisitor::Syntax(func.body), instr);
+            std::visit(overloaded {
+                [&](Syntax::Instr& i){
+                    std::visit(InstrVisitor::Syntax(func.body), i);
+                },
+                [&](Syntax::FoldedInstr& i){
+                    InstrVisitor::Syntax(func.body)(i);
+                }
+            }, instr);
         }
         begin = it;
         return func;

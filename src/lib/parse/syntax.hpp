@@ -1,6 +1,7 @@
 #ifndef WASMVM_PP_PARSE_SYNTAX_DEF
 #define WASMVM_PP_PARSE_SYNTAX_DEF
 
+#include <list>
 #include "nodes.hpp"
 #include <structures/WasmModule.hpp>
 
@@ -65,6 +66,11 @@ using Instr = Parse::OneOf<
     Parse::Instr::Loop,
     Parse::Instr::If
 >;
+
+struct FoldedInstr {
+    static std::optional<FoldedInstr> get(TokenIter& begin, TokenHolder& holder);
+    std::list<Syntax::Instr> instrs;
+};
 
 }
 }

@@ -129,6 +129,7 @@ struct Syntax {
         body.emplace_back(instr);
     }
     void operator()(WasmVM::Syntax::PlainInstr&);
+    void operator()(WasmVM::Syntax::FoldedInstr&);
 };
 
 }
