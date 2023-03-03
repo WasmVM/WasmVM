@@ -38,6 +38,15 @@ enum Opcode : opcode_t {
     Local_tee = 0x22,
     Global_get = 0x23,
     Global_set = 0x24,
+    // Table
+    Table_get = 0x25,
+    Table_set = 0x26,
+    Table_init = 0xFC0C,
+    Elem_drop = 0xFC0D,
+    Table_copy = 0xFC0E,
+    Table_grow = 0xFC0F,
+    Table_size = 0xFC10,
+    Table_fill = 0xFC11,
 };
 
 }

@@ -47,7 +47,16 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Local_set,
     Parse::Instr::Local_tee,
     Parse::Instr::Global_get,
-    Parse::Instr::Global_set
+    Parse::Instr::Global_set,
+
+    Parse::Instr::Table_get,
+    Parse::Instr::Table_set,
+    Parse::Instr::Table_size,
+    Parse::Instr::Table_grow,
+    Parse::Instr::Table_fill,
+    Parse::Instr::Table_copy,
+    Parse::Instr::Table_init,
+    Parse::Instr::Elem_drop
 >;
 
 using Instr = Parse::OneOf<

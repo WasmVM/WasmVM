@@ -188,13 +188,58 @@ using Local_tee = OneIndex::Class<"local.tee">;
 using Global_get = OneIndex::Class<"global.get">;
 using Global_set = OneIndex::Class<"global.set">;
 
+// Table instructions
+template<conststr S>
+struct TableInstr {
+    TableInstr(const TableInstr&) = default;
+    TableInstr(std::optional<Index>& index): tableidx(index) {}
+
+    static std::optional<TableInstr<S>> get(TokenIter& begin, const TokenIter& end){
+        std::list<TokenType>::iterator it = begin;
+        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, end);
+        if(syntax){
+            begin = it;
+            return TableInstr<S>(std::get<1>(syntax.value()));
+        }
+        return std::nullopt;
+    }
+
+    std::optional<Index> tableidx;
+};
+
+using Table_get = TableInstr<"table.get">;
+using Table_set = TableInstr<"table.set">;
+using Table_size = TableInstr<"table.size">; 
+using Table_grow = TableInstr<"table.grow">; 
+using Table_fill = TableInstr<"table.fill">;
+struct Table_copy {
+    Table_copy(const Table_copy&) = default;
+    Table_copy(std::optional<Index> dstidx, std::optional<Index> srcidx): dstidx(dstidx), srcidx(srcidx) {}
+    static std::optional<Table_copy> get(TokenIter& begin, const TokenIter& end);
+    
+    std::optional<Index> dstidx;
+    std::optional<Index> srcidx;
+};
+struct Table_init {
+    Table_init(const Table_init&) = default;
+    Table_init(std::optional<Index> tableidx, Index& elemidx): tableidx(tableidx), elemidx(elemidx) {}
+    static std::optional<Table_init> get(TokenIter& begin, const TokenIter& end);
+    
+    std::optional<Index> tableidx;
+    Index elemidx;
+};
+using Elem_drop = OneIndex::Class<"elem.drop">;
+
+// Instruction types
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
     Ref_null, Ref_is_null, Ref_func,
     Drop, Select,
-    Local_get, Local_set, Local_tee, Global_get, Global_set
+    Local_get, Local_set, Local_tee, Global_get, Global_set,
+    Table_get, Table_set, Table_size, Table_grow, Table_fill, Table_copy, Table_init, Elem_drop
 >;
 
+// Block instructions
 struct Block {
     static std::optional<Block> get(TokenIter& begin, const TokenIter& end);
     std::vector<Instrction> instrs;

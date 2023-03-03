@@ -13,8 +13,9 @@ static std::unordered_set<std::string> keywords = {
     "mut", "local",
     "unreachable", "nop", "block", "end", "loop", "if", "else", "br", "br_if", "br_table", "return", "call", "call_indirect",
     "ref.null", "ref.is_null", "ref.func",
-    "drop", "select",
+    "drop","select",
     "local.get","local.set","local.tee","global.get","global.set",
+    "table.get","table.set","table.size","table.grow","table.fill","table.copy","table.init","elem.drop",
 };
 
 #endif

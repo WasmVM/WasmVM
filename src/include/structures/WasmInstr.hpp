@@ -78,6 +78,26 @@ using Local_tee = OneIndex<Opcode::Local_tee>;
 using Global_get = OneIndex<Opcode::Global_get>;
 using Global_set = OneIndex<Opcode::Global_set>;
 
+// Table instructions
+using Table_get = OneIndex<Opcode::Table_get>;
+using Table_set = OneIndex<Opcode::Table_set>;
+using Table_size = OneIndex<Opcode::Table_size>;
+using Table_grow = OneIndex<Opcode::Table_grow>;
+using Table_fill = OneIndex<Opcode::Table_fill>;
+struct Table_copy : public Base {
+    Table_copy(): Base(Opcode::Table_copy), dstidx(0), srcidx(0) {}
+    Table_copy(index_t dstidx, index_t srcidx): Base(Opcode::Table_copy), dstidx(dstidx), srcidx(srcidx) {}
+    index_t dstidx;
+    index_t srcidx;
+};
+struct Table_init : public Base {
+    Table_init(): Base(Opcode::Table_init), tableidx(0), elemidx(0) {}
+    Table_init(index_t tableidx, index_t elemidx): Base(Opcode::Table_init), tableidx(tableidx), elemidx(elemidx) {}
+    index_t tableidx;
+    index_t elemidx;
+};
+using Elem_drop = OneIndex<Opcode::Elem_drop>;
+
 }
 
 using WasmInstr = std::variant<
@@ -107,7 +127,16 @@ using WasmInstr = std::variant<
     Instr::Local_set,
     Instr::Local_tee,
     Instr::Global_get,
-    Instr::Global_set
+    Instr::Global_set,
+    // Table
+    Instr::Table_get,
+    Instr::Table_set,
+    Instr::Table_size,
+    Instr::Table_grow,
+    Instr::Table_fill,
+    Instr::Table_copy,
+    Instr::Table_init,
+    Instr::Elem_drop
 >;
 
 }

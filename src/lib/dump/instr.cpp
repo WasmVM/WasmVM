@@ -36,6 +36,13 @@ struct InstrVisitor {
     OneIndexInstr(WasmVM::Instr::Local_tee, "local.tee")
     OneIndexInstr(WasmVM::Instr::Global_get, "global.get")
     OneIndexInstr(WasmVM::Instr::Global_set, "global.set")
+    OneIndexInstr(WasmVM::Instr::Table_get, "table.get")
+    OneIndexInstr(WasmVM::Instr::Table_set, "table.set")
+    OneIndexInstr(WasmVM::Instr::Table_size, "table.size")
+    OneIndexInstr(WasmVM::Instr::Table_grow, "table.grow")
+    OneIndexInstr(WasmVM::Instr::Table_fill, "table.fill")
+    OneIndexInstr(WasmVM::Instr::Elem_drop, "elem.drop")
+
 
     std::ostream& operator()(WasmVM::Instr::Block& instr){
         stream << "block";
@@ -86,6 +93,13 @@ struct InstrVisitor {
         }
         return stream;
     }
+    std::ostream& operator()(WasmVM::Instr::Table_copy& instr){
+        return stream << "table.copy " << instr.dstidx << " " << instr.srcidx;
+    }
+    std::ostream& operator()(WasmVM::Instr::Table_init& instr){
+        return stream << "table.init " << instr.tableidx << " " << instr.elemidx;
+    }
+    
 
 #undef AtomicInstr
 #undef OneIndexInstr

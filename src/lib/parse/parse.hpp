@@ -90,12 +90,11 @@ template<parseable T, size_t Min = 0, size_t Max = SIZE_MAX>
 struct Repeat : public std::vector<T> {
     static std::optional<Repeat<T, Min, Max>> get(TokenIter& begin, const TokenIter& end){
         Repeat<T, Min, Max> result;
-        TokenIter it = begin;
         for(size_t i = 0; i < Max; ++i){
-            TokenIter iter_in = it;
+            TokenIter iter_in = begin;
             std::optional<T> item = T::get(iter_in, end);
             if(item){
-                it = iter_in;
+                begin = iter_in;
                 result.emplace_back(*item);
             }else{
                 break;
@@ -104,7 +103,6 @@ struct Repeat : public std::vector<T> {
         if(result.size() < Min){
             return std::nullopt;
         }
-        begin = it;
         return result;
     }
 };
@@ -118,7 +116,7 @@ struct OneOf : public std::variant<T...>{
     static std::optional<OneOf<T...>> get(TokenIter& begin, const TokenIter& end){
         std::optional<OneOf<T...>> result;
         if((attempt<T>(result, begin, end) || ...)){
-           return result; 
+           return result;
         }else{
             return std::nullopt;
         }
