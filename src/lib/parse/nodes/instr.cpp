@@ -210,7 +210,8 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_init& node){
     func.body.emplace_back(WasmVM::Instr::Table_init(tableidx, std::visit(Parse::Index::Visitor(module.elemid_map), node.elemidx)));
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Elem_drop& node){
-
+    index_t index = std::visit(Parse::Index::Visitor(module.elemid_map), node.index);
+    func.body.emplace_back<WasmVM::Instr::Elem_drop>(index);
 }
 
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
