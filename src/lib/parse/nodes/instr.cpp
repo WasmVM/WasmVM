@@ -221,14 +221,14 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
     }, plain);
 }
 
-std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"block">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
         Parse::Repeat<Syntax::Instr>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -256,14 +256,14 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, co
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"loop">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
         Parse::Repeat<Syntax::Instr>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -291,7 +291,7 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, cons
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"if">, Parse::Optional<Token::Id>,
@@ -301,7 +301,7 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const To
             Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Syntax::Instr>
         >>,
         Token::Keyword<"end">, Parse::Optional<Token::Id>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -344,11 +344,11 @@ std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, const To
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Br_table> Parse::Instr::Br_table::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Br_table> Parse::Instr::Br_table::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"br_table">, Parse::Repeat<Parse::Index, 1>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -362,11 +362,11 @@ std::optional<Parse::Instr::Br_table> Parse::Instr::Br_table::get(TokenIter& beg
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Call_indirect> Parse::Instr::Call_indirect::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Call_indirect> Parse::Instr::Call_indirect::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"call_indirect">, Parse::Optional<Parse::Index>, Parse::TypeUse
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -376,11 +376,11 @@ std::optional<Parse::Instr::Call_indirect> Parse::Instr::Call_indirect::get(Toke
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Ref_null> Parse::Instr::Ref_null::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Ref_null> Parse::Instr::Ref_null::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"ref.null">, Parse::OneOf<Token::Keyword<"func">, Token::Keyword<"extern">>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -397,14 +397,14 @@ std::optional<Parse::Instr::Ref_null> Parse::Instr::Ref_null::get(TokenIter& beg
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Select> Parse::Instr::Select::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Select> Parse::Instr::Select::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"select">, 
         Parse::Repeat<
             Rule<Token::ParenL, Token::Keyword<"result">, Repeat<ValueType>, Token::ParenR>
         >
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -420,11 +420,11 @@ std::optional<Parse::Instr::Select> Parse::Instr::Select::get(TokenIter& begin, 
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Table_copy> Parse::Instr::Table_copy::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Table_copy> Parse::Instr::Table_copy::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"table.copy">, Parse::Optional<Parse::Rule<Parse::Index, Parse::Index>>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -439,11 +439,11 @@ std::optional<Parse::Instr::Table_copy> Parse::Instr::Table_copy::get(TokenIter&
     return std::nullopt;
 }
 
-std::optional<Parse::Instr::Table_init> Parse::Instr::Table_init::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Instr::Table_init> Parse::Instr::Table_init::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::Keyword<"table.init">, Parse::Index, Parse::Optional<Parse::Index>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();

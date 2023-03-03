@@ -12,6 +12,7 @@ namespace WasmVM {
 
 namespace Exception {
     struct unexpected_keyword;
+    struct unexpected_token;
 }
 
 namespace Token {
@@ -34,6 +35,16 @@ using TokenType = std::variant<
 
 using TokenIter = std::list<TokenType>::iterator;
 
+struct TokenHolder {
+    TokenHolder(const TokenIter& begin, const TokenIter& end): last(begin), end(end) {}
+    bool has_next(TokenIter& it);
+    TokenIter next(TokenIter& it);
+    Exception::unexpected_token error();
+protected:
+    TokenIter last;
+    const TokenIter end;
+};
+
 namespace Token {
 
 using Location = std::pair<size_t, size_t>;
@@ -46,22 +57,22 @@ struct TokenBase {
 
 struct ParenL : public TokenBase {
     ParenL(Location loc);
-    static std::optional<ParenL> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ParenL> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct ParenR : public TokenBase {
     ParenR(Location loc);
-    static std::optional<ParenR> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ParenR> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct Id : public TokenBase {
     Id(Location loc, std::string value);
-    static std::optional<Id> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Id> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct Number : public TokenBase {
     static std::optional<Number> create(Location loc, std::string str);
-    static std::optional<Number> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Number> get(TokenIter& begin, TokenHolder& holder);
     template<typename T> T unpack();
 private:
     Number(Location loc, std::string value);
@@ -69,7 +80,7 @@ private:
 
 struct String : public TokenBase {
     String(Location loc, std::string value);
-    static std::optional<String> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<String> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct KeywordBase : public TokenBase {
@@ -80,9 +91,9 @@ template <conststr K, bool Required = false>
 struct Keyword : public KeywordBase {
     Keyword(Location loc) : KeywordBase(loc, K.value){}
 
-    static std::optional<Keyword> get(TokenIter& begin, const TokenIter& end){
-        if(begin != end && std::holds_alternative<KeywordBase>(*begin)){
-            KeywordBase& keyword = std::get<KeywordBase>(*(begin++));
+    static std::optional<Keyword> get(TokenIter& begin, TokenHolder& holder){
+        if(holder.has_next(begin) && std::holds_alternative<KeywordBase>(*begin)){
+            KeywordBase& keyword = std::get<KeywordBase>(*holder.next(begin));
             if(keyword.value == K.value){
                 return Keyword(keyword.location);
             }else if (Required){

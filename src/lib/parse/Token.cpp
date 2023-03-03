@@ -15,6 +15,35 @@ using namespace Token;
 
 TokenBase::TokenBase(Location& loc, std::string value) : location(loc), value(value){}
 
+bool TokenHolder::has_next(TokenIter& it){
+    return it != end;
+}
+
+TokenIter TokenHolder::next(TokenIter& it){
+    if(it == last){
+        ++last;
+    }
+    return it++;
+}
+
+Exception::unexpected_token TokenHolder::error(){
+    TokenIter it = last;
+    Token::Location location;
+    std::string message = " '";
+    std::visit(overloaded {
+        [&message](TokenBase token){
+            message += token.value + "' after '";
+        }
+    }, *(it--));
+    std::visit(overloaded {
+        [&](TokenBase token){
+            message += token.value + "'";
+            location = token.location;
+        }
+    }, *it);
+    return Exception::unexpected_token(location, message);
+}
+
 ParenL::ParenL(Location loc) : TokenBase(loc, "("){}
 
 ParenR::ParenR(Location loc) : TokenBase(loc, ")"){}
@@ -47,9 +76,9 @@ KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value
     }
 }
 
-#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter& begin, const TokenIter& end){ \
-    if(begin != end && std::holds_alternative<TOKEN>(*begin)){ \
-        return std::get<TOKEN>(*(begin++)); \
+#define TokenGet(TOKEN) std::optional<TOKEN> TOKEN::get(TokenIter& begin, TokenHolder& holder){ \
+    if(holder.has_next(begin) && std::holds_alternative<TOKEN>(*begin)){ \
+        return std::get<TOKEN>(*holder.next(begin)); \
     }else{ \
         return std::nullopt; \
     } \

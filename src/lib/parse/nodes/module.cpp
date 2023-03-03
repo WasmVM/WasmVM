@@ -10,7 +10,6 @@ using namespace WasmVM;
 
 WasmModule WasmVM::module_parse(std::string src){
     std::list<TokenType> tokens = tokenize(src);
-    std::list<TokenType>::iterator it = tokens.begin();
 
     using modulefields = Parse::OneOf<
         Parse::Type,
@@ -19,6 +18,8 @@ WasmModule WasmVM::module_parse(std::string src){
     >;
 
     WasmModule module;
+    TokenIter it = tokens.begin();
+    TokenHolder holder(tokens.begin(), tokens.end());
 
     auto syntax = Parse::Rule<
         Token::ParenL,
@@ -26,7 +27,7 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Optional<Token::Id>,
         Parse::Repeat<modulefields>,
         Token::ParenR
-    >::get(it, tokens.end());
+    >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
@@ -45,5 +46,5 @@ WasmModule WasmVM::module_parse(std::string src){
         
         return module;
     }
-    throw Exception::syntax_error();
+    throw holder.error();
 }

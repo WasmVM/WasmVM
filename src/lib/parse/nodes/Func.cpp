@@ -86,13 +86,13 @@ void ModuleVisitor::operator()(Parse::Func& node){
     funcidx += 1;
 }
 
-std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
         Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Parse::TypeUse,
         Parse::Repeat<Syntax::Local>, Parse::Repeat<Syntax::Instr>,
         Token::ParenR
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         Parse::Func func;

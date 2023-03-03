@@ -82,14 +82,14 @@ void ModuleVisitor::operator()(Parse::Type& type){
     paramid_maps.emplace_back(type.func.id_map);
 }
 
-std::optional<Parse::Type> Parse::Type::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Type> Parse::Type::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
 
     auto syntax = Parse::Rule<Token::ParenL,
         Token::Keyword<"type">, Parse::Optional<Token::Id>,
         Token::ParenL, Token::Keyword<"func">, Parse::FuncType, Token::ParenR,
         Token::ParenR
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         Parse::Type type;

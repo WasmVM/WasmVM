@@ -6,11 +6,11 @@
 
 using namespace WasmVM;
 
-std::optional<Parse::MemType> Parse::MemType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::MemType> Parse::MemType::get(TokenIter& begin, TokenHolder& holder){
 
     std::list<TokenType>::iterator it = begin;
 
-    auto syntax = Syntax::Limits::get(it, end);
+    auto syntax = Syntax::Limits::get(it, holder);
 
     if(syntax){
         Parse::MemType mem_type;

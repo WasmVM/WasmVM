@@ -6,11 +6,11 @@
 
 using namespace WasmVM;
 
-std::optional<Parse::TableType> Parse::TableType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::TableType> Parse::TableType::get(TokenIter& begin, TokenHolder& holder){
 
     std::list<TokenType>::iterator it = begin;
 
-    auto syntax = Parse::Rule<Syntax::Limits, Syntax::RefType>::get(it, end);
+    auto syntax = Parse::Rule<Syntax::Limits, Syntax::RefType>::get(it, holder);
 
     if(syntax){
         Parse::TableType table_type;

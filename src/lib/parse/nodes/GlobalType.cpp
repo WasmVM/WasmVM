@@ -7,14 +7,14 @@
 
 using namespace WasmVM;
 
-std::optional<Parse::GlobalType> Parse::GlobalType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::GlobalType> Parse::GlobalType::get(TokenIter& begin, TokenHolder& holder){
 
     std::list<TokenType>::iterator it = begin;
 
     auto syntax = Parse::OneOf<
         Parse::ValueType,
         Parse::Rule<Token::ParenL, Token::Keyword<"mut">, Parse::ValueType, Token::ParenR>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         Parse::GlobalType global_type;

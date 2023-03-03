@@ -12,7 +12,7 @@ Parse::ValueType::operator WasmVM::ValueType(){
     return type;
 }
 
-std::optional<Parse::ValueType> Parse::ValueType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::ValueType> Parse::ValueType::get(TokenIter& begin, TokenHolder& holder){
 
     std::list<TokenType>::iterator it = begin;
 
@@ -25,7 +25,7 @@ std::optional<Parse::ValueType> Parse::ValueType::get(TokenIter& begin, const To
         Token::Keyword<"externref">,
         Token::Keyword<"func">,
         Token::Keyword<"extern">
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         begin = it;

@@ -13,9 +13,9 @@ namespace WasmVM {
 namespace Parse {
 
 struct Index : public OneOf<Token::Number, Token::Id> {
-    static std::optional<Index> get(TokenIter& begin, const TokenIter& end){
+    static std::optional<Index> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
-        auto syntax = OneOf<Token::Number, Token::Id>::get(it, end);
+        auto syntax = OneOf<Token::Number, Token::Id>::get(it, holder);
         if(syntax){
             begin = it;
             return Index(syntax.value());
@@ -50,13 +50,13 @@ struct Index : public OneOf<Token::Number, Token::Id> {
 };
 
 struct FuncType : public WasmVM::FuncType {
-    static std::optional<FuncType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<FuncType> get(TokenIter& begin, TokenHolder& holder);
     std::map<std::string, index_t> id_map;
 };
 
 struct ValueType {
     ValueType(WasmVM::ValueType type) : type(type){}
-    static std::optional<ValueType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<ValueType> get(TokenIter& begin, TokenHolder& holder);
     operator WasmVM::ValueType();
 private:
     WasmVM::ValueType type;
@@ -75,7 +75,7 @@ using TypeUse = Rule<
 >;
 
 struct Type {
-    static std::optional<Type> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Type> get(TokenIter& begin, TokenHolder& holder);
     Type() = default;
     Type(TypeUse& typeuse);
     index_t index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps);
@@ -86,19 +86,19 @@ struct Type {
 };
 
 struct TableType : public WasmVM::TableType {
-    static std::optional<TableType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<TableType> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct MemType : public WasmVM::MemType {
-    static std::optional<MemType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<MemType> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct GlobalType : public WasmVM::GlobalType {
-    static std::optional<GlobalType> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<GlobalType> get(TokenIter& begin, TokenHolder& holder);
 };
 
 struct Import {
-    static std::optional<Import> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Import> get(TokenIter& begin, TokenHolder& holder);
     std::variant<Type, TableType, MemType, GlobalType> desc;
     std::string module;
     std::string name;
@@ -111,9 +111,9 @@ namespace Instr {
 template<typename I, conststr S>
     requires (std::is_base_of<WasmVM::Instr::Base, I>::value)
 struct Atomic : public I {
-    static std::optional<Atomic<I, S>> get(TokenIter& begin, const TokenIter& end){
+    static std::optional<Atomic<I, S>> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
-        if(Token::Keyword<S>::get(it, end)){
+        if(Token::Keyword<S>::get(it, holder)){
             begin = it;
             return Atomic<I, S>();
         }
@@ -133,9 +133,9 @@ struct Class : public Base {
     Class(const Class&) = default;
     Class(Index& index) : Base(index){}
 
-    static std::optional<Class<S>> get(TokenIter& begin, const TokenIter& end){
+    static std::optional<Class<S>> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
-        auto syntax = Rule<Token::Keyword<S>, Index>::get(it, end);
+        auto syntax = Rule<Token::Keyword<S>, Index>::get(it, holder);
         if(syntax){
             begin = it;
             return Class<S>(std::get<1>(syntax.value()));
@@ -155,14 +155,14 @@ struct If;
 using Br = OneIndex::Class<"br">;
 using Br_if = OneIndex::Class<"br_if">;
 struct Br_table {
-    static std::optional<Br_table> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Br_table> get(TokenIter& begin, TokenHolder& holder);
     std::vector<Index> indices;
 };
 using Return = Atomic<WasmVM::Instr::Return, "return">;
 using Call = OneIndex::Class<"call">;
 struct Call_indirect {
     Call_indirect(std::optional<Index>& tableidx, TypeUse& type) : tableidx(tableidx), type(type) {}
-    static std::optional<Call_indirect> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Call_indirect> get(TokenIter& begin, TokenHolder& holder);
     std::optional<Index> tableidx;
     TypeUse type;
 };
@@ -170,7 +170,7 @@ struct Call_indirect {
 // Reference instructions
 struct Ref_null : public WasmVM::Instr::Ref_null {
     Ref_null(WasmVM::RefType heaptype) : WasmVM::Instr::Ref_null(heaptype) {}
-    static std::optional<Ref_null> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Ref_null> get(TokenIter& begin, TokenHolder& holder);
 };
 using Ref_is_null = Atomic<WasmVM::Instr::Ref_is_null, "ref.is_null">;
 using Ref_func = OneIndex::Class<"ref.func">;
@@ -178,7 +178,7 @@ using Ref_func = OneIndex::Class<"ref.func">;
 // Parametric instructions
 using Drop = Atomic<WasmVM::Instr::Drop, "drop">;
 struct Select : public WasmVM::Instr::Select {
-    static std::optional<Select> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Select> get(TokenIter& begin, TokenHolder& holder);
 };
 
 // Variable instructions
@@ -194,9 +194,9 @@ struct TableInstr {
     TableInstr(const TableInstr&) = default;
     TableInstr(std::optional<Index>& index): tableidx(index) {}
 
-    static std::optional<TableInstr<S>> get(TokenIter& begin, const TokenIter& end){
+    static std::optional<TableInstr<S>> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
-        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, end);
+        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, holder);
         if(syntax){
             begin = it;
             return TableInstr<S>(std::get<1>(syntax.value()));
@@ -215,7 +215,7 @@ using Table_fill = TableInstr<"table.fill">;
 struct Table_copy {
     Table_copy(const Table_copy&) = default;
     Table_copy(std::optional<Index> dstidx, std::optional<Index> srcidx): dstidx(dstidx), srcidx(srcidx) {}
-    static std::optional<Table_copy> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Table_copy> get(TokenIter& begin, TokenHolder& holder);
     
     std::optional<Index> dstidx;
     std::optional<Index> srcidx;
@@ -223,7 +223,7 @@ struct Table_copy {
 struct Table_init {
     Table_init(const Table_init&) = default;
     Table_init(std::optional<Index> tableidx, Index& elemidx): tableidx(tableidx), elemidx(elemidx) {}
-    static std::optional<Table_init> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Table_init> get(TokenIter& begin, TokenHolder& holder);
     
     std::optional<Index> tableidx;
     Index elemidx;
@@ -241,7 +241,7 @@ using Instrction = std::variant <
 
 // Block instructions
 struct Block {
-    static std::optional<Block> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Block> get(TokenIter& begin, TokenHolder& holder);
     std::vector<Instrction> instrs;
     std::string id;
     std::optional<TypeUse> blocktype;
@@ -249,7 +249,7 @@ struct Block {
 };
 
 struct Loop {
-    static std::optional<Loop> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Loop> get(TokenIter& begin, TokenHolder& holder);
     std::vector<Instrction> instrs;
     std::string id;
     std::optional<TypeUse> blocktype;
@@ -257,7 +257,7 @@ struct Loop {
 };
 
 struct If {
-    static std::optional<If> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<If> get(TokenIter& begin, TokenHolder& holder);
     std::vector<Instrction> instrs1, instrs2;
     std::string id;
     std::optional<TypeUse> blocktype;
@@ -267,7 +267,7 @@ struct If {
 }
 
 struct Func {
-    static std::optional<Func> get(TokenIter& begin, const TokenIter& end);
+    static std::optional<Func> get(TokenIter& begin, TokenHolder& holder);
     Type type;
     std::string id;
     std::vector<ValueType> locals;

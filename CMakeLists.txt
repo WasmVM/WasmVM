@@ -11,11 +11,6 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
 set(INSTALL_C ON CACHE BOOL "Install C implementations")
 set(INSTALL_CPP ON CACHE BOOL "Install C++ implementations")
 
-# set(CONSOLE_COLOR ON CACHE BOOL "Apply color to console outputs")
-# if(CONSOLE_COLOR)
-#     set(CMAKE_CXX_FLAGS ${CMAKE_CXX_FLAGS} "-DCONSOLE_COLOR")
-# endif(CONSOLE_COLOR)
-
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")
 add_subdirectory(src)
 

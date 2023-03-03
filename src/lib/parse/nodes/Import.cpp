@@ -60,7 +60,7 @@ void ModuleVisitor::operator()(Parse::Import& node){
     import.name = node.name;
 }
 
-std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
 
     auto syntax = Parse::Rule<
@@ -72,7 +72,7 @@ std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, const TokenIte
             Syntax::ImportDesc::Global
         >,
         Token::ParenR
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         Parse::Import import;

@@ -7,7 +7,7 @@
 
 using namespace WasmVM;
 
-std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const TokenIter& end){
+std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, TokenHolder& holder){
 
     std::list<TokenType>::iterator it = begin;
 
@@ -24,7 +24,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, const Toke
             Parse::Repeat<Parse::ValueType>,
             Token::ParenR
         >>
-    >::get(it, end);
+    >::get(it, holder);
 
     if(syntax){
         Parse::FuncType func_type;

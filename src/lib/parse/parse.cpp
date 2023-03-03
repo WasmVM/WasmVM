@@ -132,8 +132,8 @@ invalid_functype::invalid_functype(Token::Location location, std::string message
     Parse(std::string("invalid functype") + message, location) {}
 invalid_limit::invalid_limit(Token::Location location, std::string message) : 
     Parse(std::string("invalid limit") + message, location) {}
-syntax_error::syntax_error(std::string message) : 
-    Exception(std::string("syntax error") + message) {}
+unexpected_token::unexpected_token(Token::Location location, std::string message) : 
+    Parse(std::string("unexpected token") + message, location) {}
 duplicated_identifier::duplicated_identifier(Token::Location location, std::string message) :
     Parse(std::string("duplicated identifier") + message, location) {}
 block_id_mismatch::block_id_mismatch(Token::Location location, std::string message) :
