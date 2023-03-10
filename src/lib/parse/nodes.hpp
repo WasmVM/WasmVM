@@ -258,7 +258,8 @@ struct Loop {
 
 struct If {
     static std::optional<If> get(TokenIter& begin, TokenHolder& holder);
-    std::vector<Instrction> instrs1, instrs2;
+    std::vector<Instrction> thenInstrs, elseInstrs;
+    std::vector<Instrction> foldInstrs;
     std::string id;
     std::optional<TypeUse> blocktype;
     Token::Location location;

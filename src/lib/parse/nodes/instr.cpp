@@ -92,16 +92,23 @@ void InstrVisitor::Sema::operator()(Parse::Instr::If& node){
         }
         instr = WasmVM::Instr::If(type.index(module.module, module.typeid_map, module.paramid_maps));
     }
-    func.body.emplace_back(instr);
-    for(Parse::Instr::Instrction instrnode : node.instrs1){
+    // Folded
+    for(Parse::Instr::Instrction instrnode : node.foldInstrs){
         std::visit(InstrVisitor::Sema(module, func, labelid_map, localid_map), instrnode);
     }
-    if(!node.instrs2.empty()){
+    // Then
+    func.body.emplace_back(instr);
+    for(Parse::Instr::Instrction instrnode : node.thenInstrs){
+        std::visit(InstrVisitor::Sema(module, func, labelid_map, localid_map), instrnode);
+    }
+    // Else
+    if(!node.elseInstrs.empty()){
         func.body.emplace_back(WasmVM::Instr::Else());
-        for(Parse::Instr::Instrction instrnode : node.instrs2){
+        for(Parse::Instr::Instrction instrnode : node.elseInstrs){
             std::visit(InstrVisitor::Sema(module, func, labelid_map, localid_map), instrnode);
         }
     }
+    // End
     func.body.emplace_back(WasmVM::Instr::End());
     if(!node.id.empty()){
         labelid_map.erase(node.id);
@@ -235,23 +242,27 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::FoldedInstr& folded){
 std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
+        Parse::Optional<Token::ParenL>,
         Token::Keyword<"block">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
         Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
-        Token::Keyword<"end">, Parse::Optional<Token::Id>
+        Parse::OneOf<
+            Parse::Rule<Token::Keyword<"end">, Parse::Optional<Token::Id>>,
+            Token::ParenR
+        >
     >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
         Parse::Instr::Block block;
-        block.location = std::get<0>(rule).location;
+        block.location = std::get<1>(rule).location;
         // id
-        auto id = std::get<1>(rule);
+        auto id = std::get<2>(rule);
         block.id = id ? id->value : "";
         // blocktype
-        block.blocktype.emplace(std::get<2>(rule));
+        block.blocktype.emplace(std::get<3>(rule));
         // instrs
-        for(auto instr : std::get<3>(rule)){
+        for(auto instr : std::get<4>(rule)){
             std::visit(overloaded {
                 [&](Syntax::Instr& i){
                     std::visit(InstrVisitor::Syntax(block.instrs), i);
@@ -262,14 +273,23 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, To
             }, instr);
         }
         // trailing id
+        auto lparen = std::get<0>(rule);
         auto trailing = std::get<5>(rule);
-        if(trailing && !id){
-            throw Exception::block_id_mismatch(block.location, std::string(" : leading identifier is not present"));
-        }else if(id && trailing && (trailing->value != id->value)){
-            throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
+        if(lparen && std::holds_alternative<Token::ParenR>(trailing)){
+            begin = it;
+            return block;
+        }else if(!lparen && !std::holds_alternative<Token::ParenR>(trailing)){
+            auto traling_rule = std::get<0>(trailing);
+            auto traling_id = std::get<1>(traling_rule);
+            if(traling_id && !id){
+                throw Exception::block_id_mismatch(block.location, std::string(" : leading identifier is not present"));
+            }else if(id && traling_id && (traling_id->value != id->value)){
+                throw Exception::block_id_mismatch(traling_id->location, std::string(" : leading & trailing id should be the same"));
+            }
+            begin = it;
+            return block;
         }
-        begin = it;
-        return block;
+        throw Exception::invalid_folded_instruction(block.location);
     }
     return std::nullopt;
 }
@@ -277,23 +297,27 @@ std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, To
 std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::Rule<
+        Parse::Optional<Token::ParenL>,
         Token::Keyword<"loop">, Parse::Optional<Token::Id>,
         Parse::TypeUse,
         Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
-        Token::Keyword<"end">, Parse::Optional<Token::Id>
+        Parse::OneOf<
+            Parse::Rule<Token::Keyword<"end">, Parse::Optional<Token::Id>>,
+            Token::ParenR
+        >
     >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
         Parse::Instr::Loop loop;
-        loop.location = std::get<0>(rule).location;
+        loop.location = std::get<1>(rule).location;
         // id
-        auto id = std::get<1>(rule);
+        auto id = std::get<2>(rule);
         loop.id = id ? id->value : "";
         // blocktype
-        loop.blocktype.emplace(std::get<2>(rule));
+        loop.blocktype.emplace(std::get<3>(rule));
         // instrs
-        for(auto instr : std::get<3>(rule)){
+        for(auto instr : std::get<4>(rule)){
             std::visit(overloaded {
                 [&](Syntax::Instr& i){
                     std::visit(InstrVisitor::Syntax(loop.instrs), i);
@@ -304,79 +328,132 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, Toke
             }, instr);
         }
         // trailing id
+        auto lparen = std::get<0>(rule);
         auto trailing = std::get<5>(rule);
-        if(trailing && !id){
-            throw Exception::block_id_mismatch(loop.location, std::string(" : leading identifier is not present"));
-        }else if(id && trailing && (trailing->value != id->value)){
-            throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
+        if(lparen && std::holds_alternative<Token::ParenR>(trailing)){
+            begin = it;
+            return loop;
+        }else if(!lparen && !std::holds_alternative<Token::ParenR>(trailing)){
+            auto traling_rule = std::get<0>(trailing);
+            auto traling_id = std::get<1>(traling_rule);
+            if(traling_id && !id){
+                throw Exception::block_id_mismatch(loop.location, std::string(" : leading identifier is not present"));
+            }else if(id && traling_id && (traling_id->value != id->value)){
+                throw Exception::block_id_mismatch(traling_id->location, std::string(" : leading & trailing id should be the same"));
+            }
+            begin = it;
+            return loop;
         }
-        begin = it;
-        return loop;
+        throw Exception::invalid_folded_instruction(loop.location);
     }
     return std::nullopt;
 }
 
+using PlainIfRule = Parse::Rule<Token::Keyword<"if">, Parse::Optional<Token::Id>,
+    Parse::TypeUse, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, 
+    Parse::Optional<Parse::Rule<Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>>>,
+    Token::Keyword<"end">, Parse::Optional<Token::Id>>;
+using FoldedIfRule = Parse::Rule<Token::ParenL, Token::Keyword<"if">, Parse::Optional<Token::Id>,
+    Parse::TypeUse, Parse::Repeat<Syntax::FoldedInstr>,
+    Token::ParenL, Token::Keyword<"then">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR,
+    Parse::Optional<Parse::Rule<Token::ParenL, Token::Keyword<"else">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR>>,
+    Token::ParenR>;
+
 std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
-    auto syntax = Parse::Rule<
-        Token::Keyword<"if">, Parse::Optional<Token::Id>,
-        Parse::TypeUse,
-        Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>,
-        Parse::Optional<Parse::Rule<
-            Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>
-        >>,
-        Token::Keyword<"end">, Parse::Optional<Token::Id>
-    >::get(it, holder);
+    auto syntax = Parse::OneOf<PlainIfRule, FoldedIfRule>::get(it, holder);
 
     if(syntax){
-        auto rule = syntax.value();
         Parse::Instr::If if_instr;
-        if_instr.location = std::get<0>(rule).location;
-        // id
-        auto id = std::get<1>(rule);
-        if_instr.id = id ? id->value : "";
-        // blocktype
-        if_instr.blocktype.emplace(std::get<2>(rule));
-        // instrs
-        for(auto instr : std::get<3>(rule)){
-            std::visit(overloaded {
-                [&](Syntax::Instr& i){
-                    std::visit(InstrVisitor::Syntax(if_instr.instrs1), i);
-                },
-                [&](Syntax::FoldedInstr& i){
-                    InstrVisitor::Syntax(if_instr.instrs1)(i);
+        std::visit(overloaded {
+            [&](PlainIfRule& rule){
+                // id
+                auto id = std::get<1>(rule);
+                if_instr.id = id ? id->value : "";
+                // blocktype
+                if_instr.blocktype.emplace(std::get<2>(rule));
+                // instrs
+                for(auto instr : std::get<3>(rule)){
+                    std::visit(overloaded {
+                        [&](Syntax::Instr& i){
+                            std::visit(InstrVisitor::Syntax(if_instr.thenInstrs), i);
+                        },
+                        [&](Syntax::FoldedInstr& i){
+                            InstrVisitor::Syntax(if_instr.thenInstrs)(i);
+                        }
+                    }, instr);
                 }
-            }, instr);
-        }
-        // else
-        auto elsesect = std::get<4>(rule);
-        if(elsesect){
-            // id
-            auto elseid = std::get<1>(elsesect.value());
-            if(elseid && !id){
-                throw Exception::block_id_mismatch(if_instr.location, std::string(" : else identifier is not present"));
-            }else if(id && elseid && (elseid->value != id->value)){
-                throw Exception::block_id_mismatch(elseid->location, std::string(" : leading & else id should be the same"));
-            }
-            // instrs
-            for(auto instr : std::get<2>(elsesect.value())){
-                std::visit(overloaded {
-                    [&](Syntax::Instr& i){
-                        std::visit(InstrVisitor::Syntax(if_instr.instrs2), i);
-                    },
-                    [&](Syntax::FoldedInstr& i){
-                        InstrVisitor::Syntax(if_instr.instrs2)(i);
+                // else
+                auto elsesect = std::get<4>(rule);
+                if(elsesect){
+                    // id
+                    auto elseid = std::get<1>(elsesect.value());
+                    if(elseid && !id){
+                        throw Exception::block_id_mismatch(if_instr.location, std::string(" : leading identifier is not present"));
+                    }else if(id && elseid && (elseid->value != id->value)){
+                        throw Exception::block_id_mismatch(elseid->location, std::string(" : leading & else id should be the same"));
                     }
-                }, instr);
+                    // instrs
+                    for(auto instr : std::get<2>(elsesect.value())){
+                        std::visit(overloaded {
+                            [&](Syntax::Instr& i){
+                                std::visit(InstrVisitor::Syntax(if_instr.elseInstrs), i);
+                            },
+                            [&](Syntax::FoldedInstr& i){
+                                InstrVisitor::Syntax(if_instr.elseInstrs)(i);
+                            }
+                        }, instr);
+                    }
+                }
+                // trailing id
+                auto trailing = std::get<6>(rule);
+                if(trailing && !id){
+                    throw Exception::block_id_mismatch(if_instr.location, std::string(" : leading identifier is not present"));
+                }else if(id && trailing && (trailing->value != id->value)){
+                    throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
+                }
+            },
+            [&](FoldedIfRule& rule){
+                // id
+                auto id = std::get<2>(rule);
+                if_instr.id = id ? id->value : "";
+                // blocktype
+                if_instr.blocktype.emplace(std::get<3>(rule));
+                // Folded
+                auto folded_rules = std::get<4>(rule);
+                for(auto& folded_instrs : folded_rules){
+                    for(auto& instr : folded_instrs.instrs){
+                        std::visit(InstrVisitor::Syntax(if_instr.foldInstrs), instr);
+                    }
+                }
+                // instrs
+                for(auto instr : std::get<7>(rule)){
+                    std::visit(overloaded {
+                        [&](Syntax::Instr& i){
+                            std::visit(InstrVisitor::Syntax(if_instr.thenInstrs), i);
+                        },
+                        [&](Syntax::FoldedInstr& i){
+                            InstrVisitor::Syntax(if_instr.thenInstrs)(i);
+                        }
+                    }, instr);
+                }
+                // else
+                auto elsesect = std::get<9>(rule);
+                if(elsesect){
+                    // instrs
+                    for(auto instr : std::get<2>(elsesect.value())){
+                        std::visit(overloaded {
+                            [&](Syntax::Instr& i){
+                                std::visit(InstrVisitor::Syntax(if_instr.elseInstrs), i);
+                            },
+                            [&](Syntax::FoldedInstr& i){
+                                InstrVisitor::Syntax(if_instr.elseInstrs)(i);
+                            }
+                        }, instr);
+                    }
+                }
             }
-        }
-        // trailing id
-        auto trailing = std::get<6>(rule);
-        if(trailing && !id){
-            throw Exception::block_id_mismatch(if_instr.location, std::string(" : leading identifier is not present"));
-        }else if(id && trailing && (trailing->value != id->value)){
-            throw Exception::block_id_mismatch(trailing->location, std::string(" : leading & trailing id should be the same"));
-        }
+        }, syntax.value());
         begin = it;
         return if_instr;
     }
@@ -498,27 +575,22 @@ std::optional<Parse::Instr::Table_init> Parse::Instr::Table_init::get(TokenIter&
     return std::nullopt;
 }
 
-namespace _Folded {
-    using Plain = Parse::Rule<Token::ParenL, Syntax::PlainInstr, Parse::Repeat<Syntax::FoldedInstr>, Token::ParenR>;
-}
-
 std::optional<Syntax::FoldedInstr> Syntax::FoldedInstr::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
-    auto syntax = Parse::OneOf<
-        _Folded::Plain
+    auto syntax = Parse::Rule<
+        Token::ParenL,
+        Syntax::PlainInstr, Parse::Repeat<Syntax::FoldedInstr>, 
+        Token::ParenR
     >::get(it, holder);
 
     if(syntax){
+        auto rule = syntax.value();
         Syntax::FoldedInstr instr;
-        std::visit(overloaded {
-            [&](_Folded::Plain rule){
-                auto plain = std::get<1>(rule);
-                for(auto folded : std::get<2>(rule)){
-                    instr.instrs.splice(instr.instrs.end(), folded.instrs);
-                }
-                instr.instrs.emplace_back(plain);
-            }
-        }, syntax.value());
+        auto plain = std::get<1>(rule);
+        for(auto folded : std::get<2>(rule)){
+            instr.instrs.splice(instr.instrs.end(), folded.instrs);
+        }
+        instr.instrs.emplace_back(plain);
         begin = it;
         return instr;
     }
