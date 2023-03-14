@@ -8,6 +8,9 @@
 #include <list>
 #include <string>
 #include <utility>
+#include <regex>
+#include <ranges>
+#include <optional>
 
 using namespace WasmVM;
 
@@ -19,6 +22,41 @@ static void next_char(std::string_view::const_iterator& it, Token::Location& loc
         loc.second += 1;
     }
     ++it;
+}
+
+namespace TokenCreate {
+
+static const std::regex decimal = std::regex("([\\+\\-]?[0-9](_?[0-9])*)((\\.([0-9](_?[0-9])*)?)?([eE][\\+\\-]?[0-9](_?[0-9])*)?)");
+static const std::regex hexadecimal = std::regex("([\\+\\-]?0x[0-9a-fA-F](_?[0-9a-fA-F])*)((\\.([0-9a-fA-F](_?[0-9a-fA-F])*)?)?([pP][\\+\\-]?[0-9](_?[0-9])*)?)");
+static const std::regex inf_nan = std::regex("[\\+\\-]?((inf)|(nan(:0x[0-9a-fA-F](_?[0-9a-fA-F])*)?))");
+
+static std::optional<Token::MemArgBase> memarg(Token::Location loc, std::string str){
+    static const std::regex keypair("([^=]+)=(.*)");
+    std::smatch result;
+    if(std::regex_match(str, result, keypair)){
+        std::string val(result.str(2));
+        if(std::regex_match(val, decimal) || std::regex_match(val, hexadecimal)){
+            auto rem = std::ranges::remove(val, '_');
+            val.erase(rem.begin(), rem.end());
+            return Token::MemArgBase(loc, result.str(1), val);
+        }
+    }
+    return std::nullopt;
+}
+
+static std::optional<Token::Number> number(Token::Location loc, std::string str){
+
+    if(std::regex_match(str, decimal)
+        || std::regex_match(str, hexadecimal)
+        || std::regex_match(str, inf_nan)
+    ){
+        auto rem = std::ranges::remove(str, '_');
+        
+        return Token::Number(loc, str);
+    }
+    return std::nullopt;
+}
+
 }
 
 std::list<TokenType> WasmVM::tokenize(std::string_view src){
@@ -105,11 +143,16 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
                 for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
                     seq += *it;
                 }
-                std::optional<Token::Number> number = Token::Number::create(location, seq);
+                std::optional<Token::Number> number = TokenCreate::number(location, seq);
                 if(number){
                     tokens.emplace_back(*number);
                 }else{
-                    tokens.emplace_back(Token::KeywordBase(location, seq));
+                    std::optional<Token::MemArgBase> memarg = TokenCreate::memarg(location, seq);
+                    if(memarg){
+                        tokens.emplace_back(*memarg);
+                    }else{
+                        tokens.emplace_back(Token::KeywordBase(location, seq));
+                    }
                 }
             }break;
         }

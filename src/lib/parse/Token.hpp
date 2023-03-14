@@ -21,6 +21,7 @@ namespace Token {
     struct Number;
     struct ParenL;
     struct ParenR;
+    struct MemArgBase;
     struct KeywordBase;
 }
 
@@ -30,6 +31,7 @@ using TokenType = std::variant<
     Token::Id,
     Token::String,
     Token::Number,
+    Token::MemArgBase,
     Token::KeywordBase
 >;
 
@@ -71,11 +73,15 @@ struct Id : public TokenBase {
 };
 
 struct Number : public TokenBase {
-    static std::optional<Number> create(Location loc, std::string str);
+    Number(Location loc, std::string value);
     static std::optional<Number> get(TokenIter& begin, TokenHolder& holder);
     template<typename T> T unpack();
-private:
-    Number(Location loc, std::string value);
+};
+
+struct MemArgBase : public TokenBase {
+    MemArgBase(Location loc, std::string key, std::string value);
+    template<typename T> T unpack();
+    std::string key;
 };
 
 struct String : public TokenBase {
@@ -85,6 +91,21 @@ struct String : public TokenBase {
 
 struct KeywordBase : public TokenBase {
     KeywordBase(Location loc, std::string value);
+};
+
+template <conststr K>
+struct MemArg : public MemArgBase {
+    MemArg(Location loc, std::string key, std::string value) : MemArgBase(loc, key, value){}
+
+    static std::optional<MemArg> get(TokenIter& begin, TokenHolder& holder){
+        if(holder.has_next(begin) && std::holds_alternative<MemArgBase>(*begin)){
+            MemArgBase& memarg = std::get<MemArgBase>(*holder.next(begin));
+            if(memarg.key == K.value){
+                return MemArg(memarg.location, memarg.key, memarg.value);
+            }
+        }
+        return std::nullopt;
+    }
 };
 
 template <conststr K, bool Required = false>

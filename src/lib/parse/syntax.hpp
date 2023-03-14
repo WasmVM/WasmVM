@@ -57,7 +57,37 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Table_fill,
     Parse::Instr::Table_copy,
     Parse::Instr::Table_init,
-    Parse::Instr::Elem_drop
+    Parse::Instr::Elem_drop,
+
+    Parse::Instr::I32_load,
+    Parse::Instr::I64_load,
+    Parse::Instr::F32_load,
+    Parse::Instr::F64_load,
+    Parse::Instr::I32_load8_s,
+    Parse::Instr::I32_load8_u,
+    Parse::Instr::I32_load16_s,
+    Parse::Instr::I32_load16_u,
+    Parse::Instr::I64_load8_s,
+    Parse::Instr::I64_load8_u,
+    Parse::Instr::I64_load16_s,
+    Parse::Instr::I64_load16_u,
+    Parse::Instr::I64_load32_s,
+    Parse::Instr::I64_load32_u,
+    Parse::Instr::I32_store,
+    Parse::Instr::I64_store,
+    Parse::Instr::F32_store,
+    Parse::Instr::F64_store,
+    Parse::Instr::I32_store8,
+    Parse::Instr::I32_store16,
+    Parse::Instr::I64_store8,
+    Parse::Instr::I64_store16,
+    Parse::Instr::I64_store32,
+    Parse::Instr::Memory_size, 
+    Parse::Instr::Memory_grow,
+    Parse::Instr::Memory_fill,
+    Parse::Instr::Memory_copy,
+    Parse::Instr::Memory_init,
+    Parse::Instr::Data_drop
 >;
 
 using Instr = Parse::OneOf<

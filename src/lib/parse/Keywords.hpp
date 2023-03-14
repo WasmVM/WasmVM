@@ -16,6 +16,10 @@ static std::unordered_set<std::string> keywords = {
     "drop","select",
     "local.get","local.set","local.tee","global.get","global.set",
     "table.get","table.set","table.size","table.grow","table.fill","table.copy","table.init","elem.drop",
+    "memory.size", "memory.grow", "memory.fill", "memory.init", "memory.copy", "data.drop",
+    "i32.load","i64.load","f32.load","f64.load","i32.load8_s","i32.load8_u","i32.load16_s","i32.load16_u",
+    "i64.load8_s","i64.load8_u","i64.load16_s","i64.load16_u","i64.load32_s","i64.load32_u",
+    "i32.store","i64.store","f32.store","f64.store","i32.store8","i32.store16","i64.store8","i64.store16","i64.store32",
 };
 
 #endif

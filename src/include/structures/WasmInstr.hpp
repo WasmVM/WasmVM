@@ -98,6 +98,64 @@ struct Table_init : public Base {
 };
 using Elem_drop = OneIndex<Opcode::Elem_drop>;
 
+// Memory Instruction
+namespace MemoryInstr {
+
+struct Base : public Instr::Base {
+    Base(Opcode::Opcode op, index_t memidx, offset_t offset, align_t align): Instr::Base(op), memidx(memidx), offset(offset), align(align){}
+    index_t memidx;
+    offset_t offset;
+    align_t align;
+};
+
+template<Opcode::Opcode OP>
+struct Class : public Base {
+    Class(): Base(OP, 0, 0, 0){}
+    Class(index_t memidx, offset_t offset, align_t align): Base(OP, memidx, offset, align){}
+};
+
+}
+
+using I32_load = MemoryInstr::Class<Opcode::I32_load>;
+using I64_load = MemoryInstr::Class<Opcode::I64_load>;
+using F32_load = MemoryInstr::Class<Opcode::F32_load>;
+using F64_load = MemoryInstr::Class<Opcode::F64_load>;
+using I32_load8_s = MemoryInstr::Class<Opcode::I32_load8_s>;
+using I32_load8_u = MemoryInstr::Class<Opcode::I32_load8_u>;
+using I32_load16_s = MemoryInstr::Class<Opcode::I32_load16_s>;
+using I32_load16_u = MemoryInstr::Class<Opcode::I32_load16_u>;
+using I64_load8_s = MemoryInstr::Class<Opcode::I64_load8_s>;
+using I64_load8_u = MemoryInstr::Class<Opcode::I64_load8_u>;
+using I64_load16_s = MemoryInstr::Class<Opcode::I64_load16_s>;
+using I64_load16_u = MemoryInstr::Class<Opcode::I64_load16_u>;
+using I64_load32_s = MemoryInstr::Class<Opcode::I64_load32_s>;
+using I64_load32_u = MemoryInstr::Class<Opcode::I64_load32_u>;
+using I32_store = MemoryInstr::Class<Opcode::I32_store>;
+using I64_store = MemoryInstr::Class<Opcode::I64_store>;
+using F32_store = MemoryInstr::Class<Opcode::F32_store>;
+using F64_store = MemoryInstr::Class<Opcode::F64_store>;
+using I32_store8 = MemoryInstr::Class<Opcode::I32_store8>;
+using I32_store16 = MemoryInstr::Class<Opcode::I32_store16>;
+using I64_store8 = MemoryInstr::Class<Opcode::I64_store8>;
+using I64_store16 = MemoryInstr::Class<Opcode::I64_store16>;
+using I64_store32 = MemoryInstr::Class<Opcode::I64_store32>;
+using Memory_size = OneIndex<Opcode::Memory_size>;
+using Memory_grow = OneIndex<Opcode::Memory_grow>;
+using Memory_fill = OneIndex<Opcode::Memory_fill>;
+struct Memory_init : public Base {
+    Memory_init(): Base(Opcode::Memory_init), memidx(0), dataidx(0) {}
+    Memory_init(index_t memidx, index_t dataidx): Base(Opcode::Memory_init), memidx(memidx), dataidx(dataidx) {}
+    index_t memidx;
+    index_t dataidx;
+};
+struct Memory_copy : public Base {
+    Memory_copy(): Base(Opcode::Memory_copy), dstidx(0), srcidx(0) {}
+    Memory_copy(index_t dstidx, index_t srcidx): Base(Opcode::Memory_copy), dstidx(dstidx), srcidx(srcidx) {}
+    index_t dstidx;
+    index_t srcidx;
+};
+using Data_drop = OneIndex<Opcode::Data_drop>;
+
 }
 
 using WasmInstr = std::variant<
@@ -136,7 +194,37 @@ using WasmInstr = std::variant<
     Instr::Table_fill,
     Instr::Table_copy,
     Instr::Table_init,
-    Instr::Elem_drop
+    Instr::Elem_drop,
+    // Memory
+    Instr::I32_load,
+    Instr::I64_load,
+    Instr::F32_load,
+    Instr::F64_load,
+    Instr::I32_load8_s,
+    Instr::I32_load8_u,
+    Instr::I32_load16_s,
+    Instr::I32_load16_u,
+    Instr::I64_load8_s,
+    Instr::I64_load8_u,
+    Instr::I64_load16_s,
+    Instr::I64_load16_u,
+    Instr::I64_load32_s,
+    Instr::I64_load32_u,
+    Instr::I32_store,
+    Instr::I64_store,
+    Instr::F32_store,
+    Instr::F64_store,
+    Instr::I32_store8,
+    Instr::I32_store16,
+    Instr::I64_store8,
+    Instr::I64_store16,
+    Instr::I64_store32,
+    Instr::Memory_size,
+    Instr::Memory_grow,
+    Instr::Memory_fill,
+    Instr::Memory_init,
+    Instr::Data_drop,
+    Instr::Memory_copy
 >;
 
 }

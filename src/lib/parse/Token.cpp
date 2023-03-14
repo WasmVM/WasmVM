@@ -4,8 +4,6 @@
 
 #include "parse.hpp"
 
-#include <regex>
-#include <ranges>
 #include <algorithm>
 
 #include "Keywords.hpp"
@@ -33,11 +31,18 @@ Exception::unexpected_token TokenHolder::error(){
     std::visit(overloaded {
         [&message](TokenBase token){
             message += token.value + "' after '";
+        },
+        [&message](MemArgBase token){
+            message += token.key + "=" + token.value + "' after '";
         }
     }, *(it--));
     std::visit(overloaded {
         [&](TokenBase token){
             message += token.value + "'";
+            location = token.location;
+        },
+        [&](MemArgBase token){
+            message += token.key + "=" + token.value + "'";
             location = token.location;
         }
     }, *it);
@@ -52,23 +57,17 @@ Id::Id(Location loc, std::string value) : TokenBase(loc, value){}
 
 Number::Number(Location loc, std::string value) : TokenBase(loc, value){}
 
-std::optional<Number> Number::create(Location loc, std::string str){
-    static std::regex decimal("([\\+\\-]?[0-9](_?[0-9])*)((\\.([0-9](_?[0-9])*)?)?([eE][\\+\\-]?[0-9](_?[0-9])*)?)");
-    static std::regex hexadecimal("([\\+\\-]?0x[0-9a-fA-F](_?[0-9a-fA-F])*)((\\.([0-9a-fA-F](_?[0-9a-fA-F])*)?)?([pP][\\+\\-]?[0-9](_?[0-9])*)?)");
-    static std::regex inf_nan("[\\+\\-]?((inf)|(nan(:0x[0-9a-fA-F](_?[0-9a-fA-F])*)?))");
+String::String(Location loc, std::string value) : TokenBase(loc, value){}
 
-    if(std::regex_match(str, decimal)
-        || std::regex_match(str, hexadecimal)
-        || std::regex_match(str, inf_nan)
-    ){
-        auto rem = std::ranges::remove(str, '_');
-        str.erase(rem.begin(), rem.end());
-        return Number(loc, str);
-    }
-    return std::nullopt;
+MemArgBase::MemArgBase(Location loc, std::string key, std::string value) : TokenBase(loc, value), key(key){}
+
+template<> u32_t Token::MemArgBase::unpack<u32_t>(){
+    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
 }
 
-String::String(Location loc, std::string value) : TokenBase(loc, value){}
+template<> u64_t Token::MemArgBase::unpack<u64_t>(){
+    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+}
 
 KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value){
     if(!keywords.contains(value)){

@@ -16,7 +16,15 @@ using i32_t = int32_t;
 using i64_t = int64_t;
 using f32_t = float;
 using f64_t = double;
+
+using u8_t = uint8_t;
+using i8_t = int8_t;
+using u16_t = uint16_t;
+using i16_t = int16_t;
+
 using index_t = uint32_t;
+using offset_t = u64_t;
+using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;

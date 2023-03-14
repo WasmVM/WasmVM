@@ -21,6 +21,7 @@ struct ModuleVisitor {
     std::map<std::string, index_t> memid_map;
     std::map<std::string, index_t> globalid_map;
     std::map<std::string, index_t> elemid_map;
+    std::map<std::string, index_t> dataid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
     // FIXME:
@@ -117,6 +118,12 @@ struct Sema {
     void operator()(Parse::Instr::Table_copy& instr);
     void operator()(Parse::Instr::Table_init& instr);
     void operator()(Parse::Instr::Elem_drop& instr);
+    void operator()(Parse::Instr::Memory_size& instr);
+    void operator()(Parse::Instr::Memory_grow& instr);
+    void operator()(Parse::Instr::Memory_fill& instr);
+    void operator()(Parse::Instr::Memory_copy& instr);
+    void operator()(Parse::Instr::Memory_init& instr);
+    void operator()(Parse::Instr::Data_drop& instr);
 };
 
 struct Syntax {
