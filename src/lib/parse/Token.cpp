@@ -62,11 +62,21 @@ String::String(Location loc, std::string value) : TokenBase(loc, value){}
 MemArgBase::MemArgBase(Location loc, std::string key, std::string value) : TokenBase(loc, value), key(key){}
 
 template<> u32_t Token::MemArgBase::unpack<u32_t>(){
-    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    u32_t imm = std::stoul(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> u64_t Token::MemArgBase::unpack<u64_t>(){
-    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    u64_t imm = std::stoul(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 KeywordBase::KeywordBase(Location loc, std::string value) : TokenBase(loc, value){
@@ -90,25 +100,55 @@ TokenGet(Token::Number)
 TokenGet(Token::String)
 
 template<> u32_t Token::Number::unpack<u32_t>(){
-    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    u32_t imm = std::stoul(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> u64_t Token::Number::unpack<u64_t>(){
-    return std::stoul(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    u64_t imm = std::stoul(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> i32_t Token::Number::unpack<i32_t>(){
-    return std::stoi(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    i32_t imm = std::stoi(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> i64_t Token::Number::unpack<i64_t>(){
-    return std::stol(value, nullptr, (value.find("0x") == std::string::npos) ? 10 : 16);
+    size_t len;
+    i64_t imm = std::stol(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> f32_t Token::Number::unpack<f32_t>(){
-    return std::stof(value);
+    size_t len;
+    f32_t imm = std::stof(value, &len);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }
 
 template<> f64_t Token::Number::unpack<f64_t>(){
-    return std::stod(value);
+    size_t len;
+    f64_t imm = std::stod(value, &len);
+    if(len != value.length()){
+        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    }
+    return imm;
 }

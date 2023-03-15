@@ -156,6 +156,28 @@ struct Memory_copy : public Base {
 };
 using Data_drop = OneIndex<Opcode::Data_drop>;
 
+// Numeric
+struct I32_const : public Base {
+    I32_const(): Base(Opcode::I32_const), value(0) {}
+    I32_const(i32_t value): Base(Opcode::I32_const), value(value) {}
+    i32_t value;
+};
+struct I64_const : public Base {
+    I64_const(): Base(Opcode::I64_const), value(0) {}
+    I64_const(i64_t value): Base(Opcode::I64_const), value(value) {}
+    i64_t value;
+};
+struct F32_const : public Base {
+    F32_const(): Base(Opcode::F32_const), value(0) {}
+    F32_const(f32_t value): Base(Opcode::F32_const), value(value) {}
+    f32_t value;
+};
+struct F64_const : public Base {
+    F64_const(): Base(Opcode::F64_const), value(0) {}
+    F64_const(f64_t value): Base(Opcode::F64_const), value(value) {}
+    f64_t value;
+};
+
 }
 
 using WasmInstr = std::variant<
@@ -224,7 +246,12 @@ using WasmInstr = std::variant<
     Instr::Memory_fill,
     Instr::Memory_init,
     Instr::Data_drop,
-    Instr::Memory_copy
+    Instr::Memory_copy,
+    // Numeric
+    Instr::I32_const,
+    Instr::I64_const,
+    Instr::F32_const,
+    Instr::F64_const
 >;
 
 }

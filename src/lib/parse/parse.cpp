@@ -185,3 +185,5 @@ index_out_of_range::index_out_of_range(Token::Location location, std::string mes
     Parse(std::string("index out of range") + message, location) {}
 invalid_folded_instruction::invalid_folded_instruction(Token::Location location) : 
     Parse("invalid folded instruction", location) {}
+invalid_immediate_value::invalid_immediate_value(Token::Location location, std::string message) :
+    Parse(std::string("invalid immediate value") + message, location) {}

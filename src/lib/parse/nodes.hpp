@@ -231,7 +231,6 @@ struct Table_init {
 using Elem_drop = OneIndex::Class<"elem.drop">;
 
 // Memory Instructions
-
 template<typename I, conststr S, align_t N>
     requires (std::is_base_of<WasmVM::Instr::MemoryInstr::Base, I>::value)
 struct MemoryInstr : public I {
@@ -335,6 +334,26 @@ struct Memory_init {
 };
 using Data_drop = OneIndex::Class<"data.drop">;
 
+// Numeric instructions
+template<typename I, conststr S, typename T>
+struct NumericConst : public I {
+    NumericConst(const NumericConst&) = default;
+    NumericConst(Token::Number value): I(value.unpack<T>()) {}
+    static std::optional<NumericConst<I, S, T>> get(TokenIter& begin, TokenHolder& holder){
+        std::list<TokenType>::iterator it = begin;
+        auto syntax = Rule<Token::Keyword<S>, Token::Number>::get(it, holder);
+        if(syntax){
+            begin = it;
+            return NumericConst<I, S, T>(std::get<1>(syntax.value()));
+        }
+        return std::nullopt;
+    }
+};
+using I32_const = NumericConst<WasmVM::Instr::I32_const, "i32.const", i32_t>;
+using I64_const = NumericConst<WasmVM::Instr::I64_const, "i64.const", i64_t>;
+using F32_const = NumericConst<WasmVM::Instr::F32_const, "f32.const", f32_t>;
+using F64_const = NumericConst<WasmVM::Instr::F64_const, "f64.const", f64_t>;
+
 // Instruction types
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
@@ -345,7 +364,8 @@ using Instrction = std::variant <
     I32_load, I64_load, F32_load, F64_load, I32_load8_s, I32_load8_u, I32_load16_s, I32_load16_u,
     I64_load8_s, I64_load8_u, I64_load16_s, I64_load16_u, I64_load32_s, I64_load32_u,
     I32_store, I64_store, F32_store, F64_store, I32_store8, I32_store16, I64_store8, I64_store16, I64_store32,
-    Memory_size, Memory_grow, Memory_fill, Memory_copy, Memory_init, Data_drop
+    Memory_size, Memory_grow, Memory_fill, Memory_copy, Memory_init, Data_drop,
+    I32_const, I64_const, F32_const, F64_const
 >;
 
 // Block instructions

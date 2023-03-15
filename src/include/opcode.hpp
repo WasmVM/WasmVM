@@ -77,6 +77,11 @@ enum Opcode : opcode_t {
     Data_drop = 0xFC09,
     Memory_copy = 0xFC0A,
     Memory_fill = 0xFC0B,
+    // Numeric
+    I32_const = 0x41,
+    I64_const = 0x42,
+    F32_const = 0x43,
+    F64_const = 0x44,
 };
 
 }

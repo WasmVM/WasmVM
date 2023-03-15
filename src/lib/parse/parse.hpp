@@ -52,6 +52,9 @@ namespace Exception {
     struct invalid_folded_instruction : public Parse {
         invalid_folded_instruction(Token::Location location);
     };
+    struct invalid_immediate_value : public Parse {
+        invalid_immediate_value(Token::Location location, std::string message);
+    };
 }
 
 namespace Parse {

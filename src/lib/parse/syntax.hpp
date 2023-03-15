@@ -87,7 +87,11 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::Memory_fill,
     Parse::Instr::Memory_copy,
     Parse::Instr::Memory_init,
-    Parse::Instr::Data_drop
+    Parse::Instr::Data_drop,
+    Parse::Instr::I32_const,
+    Parse::Instr::I64_const,
+    Parse::Instr::F32_const,
+    Parse::Instr::F64_const
 >;
 
 using Instr = Parse::OneOf<

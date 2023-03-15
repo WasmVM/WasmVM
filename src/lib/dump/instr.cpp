@@ -135,7 +135,20 @@ struct InstrVisitor {
     }
     std::ostream& operator()(WasmVM::Instr::Memory_init& instr){
         return stream << "memory.init " << instr.memidx << " " << instr.dataidx;
-    }   
+    }
+    std::ostream& operator()(WasmVM::Instr::I32_const& instr){
+        return stream << "i32.const " << instr.value;
+    }  
+    std::ostream& operator()(WasmVM::Instr::I64_const& instr){
+        return stream << "i64.const " << instr.value;
+    }
+    std::ostream& operator()(WasmVM::Instr::F32_const& instr){
+        return stream << "f32.const " << instr.value;
+    }
+    std::ostream& operator()(WasmVM::Instr::F64_const& instr){
+        return stream << "f64.const " << instr.value;
+    }
+    
 
 #undef AtomicInstr
 #undef OneIndexInstr
