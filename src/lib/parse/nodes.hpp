@@ -354,6 +354,29 @@ using I64_const = NumericConst<WasmVM::Instr::I64_const, "i64.const", i64_t>;
 using F32_const = NumericConst<WasmVM::Instr::F32_const, "f32.const", f32_t>;
 using F64_const = NumericConst<WasmVM::Instr::F64_const, "f64.const", f64_t>;
 
+struct NumericInstr {
+
+    using Instr = std::variant<
+        Token::Keyword<"i32.eqz">, Token::Keyword<"i32.eq">, Token::Keyword<"i32.ne">, Token::Keyword<"i32.lt_s">, Token::Keyword<"i32.lt_u">, Token::Keyword<"i32.gt_s">, Token::Keyword<"i32.gt_u">, Token::Keyword<"i32.le_s">, Token::Keyword<"i32.le_u">, Token::Keyword<"i32.ge_s">, Token::Keyword<"i32.ge_u">,
+        Token::Keyword<"i64.eqz">, Token::Keyword<"i64.eq">, Token::Keyword<"i64.ne">, Token::Keyword<"i64.lt_s">, Token::Keyword<"i64.lt_u">, Token::Keyword<"i64.gt_s">, Token::Keyword<"i64.gt_u">, Token::Keyword<"i64.le_s">, Token::Keyword<"i64.le_u">, Token::Keyword<"i64.ge_s">, Token::Keyword<"i64.ge_u">,
+        Token::Keyword<"f32.eq">, Token::Keyword<"f32.ne">, Token::Keyword<"f32.lt">, Token::Keyword<"f32.gt">, Token::Keyword<"f32.le">, Token::Keyword<"f32.ge">, Token::Keyword<"f64.eq">, Token::Keyword<"f64.ne">, Token::Keyword<"f64.lt">, Token::Keyword<"f64.gt">, Token::Keyword<"f64.le">, Token::Keyword<"f64.ge">,
+        Token::Keyword<"i32.clz">, Token::Keyword<"i32.ctz">, Token::Keyword<"i32.popcnt">, Token::Keyword<"i32.add">, Token::Keyword<"i32.sub">, Token::Keyword<"i32.mul">, Token::Keyword<"i32.div_s">, Token::Keyword<"i32.div_u">, Token::Keyword<"i32.rem_s">, Token::Keyword<"i32.rem_u">, Token::Keyword<"i32.and">, Token::Keyword<"i32.or">, Token::Keyword<"i32.xor">, Token::Keyword<"i32.shl">, Token::Keyword<"i32.shr_s">, Token::Keyword<"i32.shr_u">, Token::Keyword<"i32.rotl">, Token::Keyword<"i32.rotr">,
+        Token::Keyword<"i64.clz">, Token::Keyword<"i64.ctz">, Token::Keyword<"i64.popcnt">, Token::Keyword<"i64.add">, Token::Keyword<"i64.sub">, Token::Keyword<"i64.mul">, Token::Keyword<"i64.div_s">, Token::Keyword<"i64.div_u">, Token::Keyword<"i64.rem_s">, Token::Keyword<"i64.rem_u">, Token::Keyword<"i64.and">, Token::Keyword<"i64.or">, Token::Keyword<"i64.xor">, Token::Keyword<"i64.shl">, Token::Keyword<"i64.shr_s">, Token::Keyword<"i64.shr_u">, Token::Keyword<"i64.rotl">, Token::Keyword<"i64.rotr">, 
+        Token::Keyword<"f32.abs">, Token::Keyword<"f32.neg">, Token::Keyword<"f32.ceil">, Token::Keyword<"f32.floor">, Token::Keyword<"f32.trunc">, Token::Keyword<"f32.nearest">, Token::Keyword<"f32.sqrt">, Token::Keyword<"f32.add">, Token::Keyword<"f32.sub">, Token::Keyword<"f32.mul">, Token::Keyword<"f32.div">, Token::Keyword<"f32.min">, Token::Keyword<"f32.max">, Token::Keyword<"f32.copysign">, 
+        Token::Keyword<"f64.abs">, Token::Keyword<"f64.neg">, Token::Keyword<"f64.ceil">, Token::Keyword<"f64.floor">, Token::Keyword<"f64.trunc">, Token::Keyword<"f64.nearest">, Token::Keyword<"f64.sqrt">, Token::Keyword<"f64.add">, Token::Keyword<"f64.sub">, Token::Keyword<"f64.mul">, Token::Keyword<"f64.div">, Token::Keyword<"f64.min">, Token::Keyword<"f64.max">, Token::Keyword<"f64.copysign">, 
+        Token::Keyword<"i32.wrap_i64">, Token::Keyword<"i32.trunc_s_f32">, Token::Keyword<"i32.trunc_u_f32">, Token::Keyword<"i32.trunc_s_f64">, Token::Keyword<"i32.trunc_u_f64">, Token::Keyword<"i64.extend_s_i32">, Token::Keyword<"i64.extend_u_i32">, Token::Keyword<"i64.trunc_s_f32">, Token::Keyword<"i64.trunc_u_f32">, Token::Keyword<"i64.trunc_s_f64">, Token::Keyword<"i64.trunc_u_f64">, 
+        Token::Keyword<"f32.convert_s_i32">, Token::Keyword<"f32.convert_u_i32">, Token::Keyword<"f32.convert_s_i64">, Token::Keyword<"f32.convert_u_i64">, Token::Keyword<"f32.demote_f64">, Token::Keyword<"f64.convert_s_i32">, Token::Keyword<"f64.convert_u_i32">, Token::Keyword<"f64.convert_s_i64">, Token::Keyword<"f64.convert_u_i64">, Token::Keyword<"f64.promote_f32">, 
+        Token::Keyword<"i32.reinterpret_f32">, Token::Keyword<"i64.reinterpret_f64">, Token::Keyword<"f32.reinterpret_i32">, Token::Keyword<"f64.reinterpret_i64">, Token::Keyword<"i32.extend8_s">, Token::Keyword<"i32.extend16_s">, Token::Keyword<"i64.extend8_s">, Token::Keyword<"i64.extend16_s">, Token::Keyword<"i64.extend32_s">, 
+        Token::Keyword<"i32.trunc_sat_f32_s">, Token::Keyword<"i32.trunc_sat_f32_u">, Token::Keyword<"i32.trunc_sat_f64_s">, Token::Keyword<"i32.trunc_sat_f64_u">, Token::Keyword<"i64.trunc_sat_f32_s">, Token::Keyword<"i64.trunc_sat_f32_u">, Token::Keyword<"i64.trunc_sat_f64_s">, Token::Keyword<"i64.trunc_sat_f64_u">
+    >;
+
+    NumericInstr(const NumericInstr&) = default;
+    NumericInstr(Instr instr) : instr(instr){}
+    static std::optional<NumericInstr> get(TokenIter& begin, TokenHolder& holder);
+
+    Instr instr;
+};
+
 // Instruction types
 using Instrction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
@@ -365,7 +388,8 @@ using Instrction = std::variant <
     I64_load8_s, I64_load8_u, I64_load16_s, I64_load16_u, I64_load32_s, I64_load32_u,
     I32_store, I64_store, F32_store, F64_store, I32_store8, I32_store16, I64_store8, I64_store16, I64_store32,
     Memory_size, Memory_grow, Memory_fill, Memory_copy, Memory_init, Data_drop,
-    I32_const, I64_const, F32_const, F64_const
+    I32_const, I64_const, F32_const, F64_const,
+    NumericInstr
 >;
 
 // Block instructions

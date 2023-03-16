@@ -124,6 +124,7 @@ struct Sema {
     void operator()(Parse::Instr::Memory_copy& instr);
     void operator()(Parse::Instr::Memory_init& instr);
     void operator()(Parse::Instr::Data_drop& instr);
+    void operator()(Parse::Instr::NumericInstr& instr);
 };
 
 struct Syntax {

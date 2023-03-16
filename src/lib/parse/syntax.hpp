@@ -91,7 +91,8 @@ using PlainInstr = Parse::OneOf<
     Parse::Instr::I32_const,
     Parse::Instr::I64_const,
     Parse::Instr::F32_const,
-    Parse::Instr::F64_const
+    Parse::Instr::F64_const,
+    Parse::Instr::NumericInstr
 >;
 
 using Instr = Parse::OneOf<
