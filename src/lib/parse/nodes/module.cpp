@@ -22,25 +22,34 @@ WasmModule WasmVM::module_parse(std::string src){
     TokenHolder holder(tokens.begin(), tokens.end());
 
     auto syntax = Parse::Rule<
-        Token::ParenL,
-        Token::Keyword<"module">,
+        Parse::Optional<Parse::Rule<Token::ParenL, Token::Keyword<"module">>>,
         Parse::Optional<Token::Id>,
         Parse::Repeat<modulefields>,
-        Token::ParenR
+        Parse::Optional<Token::ParenR>
     >::get(it, holder);
 
     if(syntax){
         auto rule = syntax.value();
 
+        // parenthesis
+        auto parenL = std::get<0>(rule);
+        auto parenR = std::get<3>(rule);
+        if((!(bool)parenL) != (!(bool)parenR)){
+            throw Exception::brackets_not_close(
+                parenL ? std::get<0>(parenL.value()).location : parenR->location,
+                " in module"
+            );
+        }
+
         // id
-        auto id = std::get<2>(rule);
+        auto id = std::get<1>(rule);
         if(id){
             module.id = id->value;
         }
 
         // sections
         ModuleVisitor visitor(module);
-        for(auto section : std::get<3>(rule)){
+        for(auto section : std::get<2>(rule)){
             std::visit(visitor, section);
         }
         

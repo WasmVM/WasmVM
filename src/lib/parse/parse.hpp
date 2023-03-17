@@ -49,6 +49,9 @@ namespace Exception {
     struct invalid_immediate_value : public Parse {
         invalid_immediate_value(Token::Location location, std::string message);
     };
+    struct brackets_not_close : public Parse {
+        brackets_not_close(Token::Location location, std::string message);
+    };
 }
 
 namespace Parse {

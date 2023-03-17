@@ -181,3 +181,5 @@ invalid_folded_instruction::invalid_folded_instruction(Token::Location location)
     Parse("invalid folded instruction", location) {}
 invalid_immediate_value::invalid_immediate_value(Token::Location location, std::string message) :
     Parse(std::string("invalid immediate value") + message, location) {}
+brackets_not_close::brackets_not_close(Token::Location location, std::string message) :
+    Parse(std::string("brackets not close") + message, location) {}
