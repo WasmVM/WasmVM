@@ -10,11 +10,6 @@
 
 namespace WasmVM {
 
-namespace Exception {
-    struct unexpected_keyword;
-    struct unexpected_token;
-}
-
 namespace Token {
     struct Id;
     struct String;
@@ -23,6 +18,14 @@ namespace Token {
     struct ParenR;
     struct MemArgBase;
     struct KeywordBase;
+    using Location = std::pair<size_t, size_t>;
+}
+
+namespace Exception {
+    struct unexpected_keyword : public Parse {
+        unexpected_keyword(Token::Location location, std::string token, std::string expected);
+    };
+    struct unexpected_token;
 }
 
 using TokenType = std::variant<
@@ -48,8 +51,6 @@ protected:
 };
 
 namespace Token {
-
-using Location = std::pair<size_t, size_t>;
 
 struct TokenBase {
     TokenBase(Location& loc, std::string value);

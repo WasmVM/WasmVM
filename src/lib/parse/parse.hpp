@@ -28,9 +28,6 @@ namespace Exception {
     struct unknown_identifier : public Parse {
         unknown_identifier(Token::Location location, std::string message);
     };
-    struct unexpected_keyword : public Parse {
-        unexpected_keyword(Token::Location location, std::string token, std::string expected);
-    };
     struct invalid_functype : public Parse {
         invalid_functype(Token::Location location, std::string message);
     };
@@ -81,6 +78,9 @@ public:
 
 template<parseable T>
 struct Optional : public std::optional<T> {
+
+    Optional(std::optional<T>& val) : std::optional<T>(val){}
+
     static std::optional<Optional<T>> get(TokenIter& begin, TokenHolder& holder){
         TokenIter it = begin;
         auto result = T::get(it, holder);

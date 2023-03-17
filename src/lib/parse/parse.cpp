@@ -36,8 +36,7 @@ static std::optional<Token::MemArgBase> memarg(Token::Location loc, std::string 
     if(std::regex_match(str, result, keypair)){
         std::string val(result.str(2));
         if(std::regex_match(val, decimal) || std::regex_match(val, hexadecimal)){
-            auto rem = std::ranges::remove(val, '_');
-            val.erase(rem.begin(), rem.end());
+            val.erase(std::remove(val.begin(), val.end(), '_'), val.end());
             return Token::MemArgBase(loc, result.str(1), val);
         }
     }
@@ -50,8 +49,7 @@ static std::optional<Token::Number> number(Token::Location loc, std::string str)
         || std::regex_match(str, hexadecimal)
         || std::regex_match(str, inf_nan)
     ){
-        auto rem = std::ranges::remove(str, '_');
-        
+        str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
         return Token::Number(loc, str);
     }
     return std::nullopt;

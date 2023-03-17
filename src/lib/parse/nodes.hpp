@@ -13,6 +13,9 @@ namespace WasmVM {
 namespace Parse {
 
 struct Index : public OneOf<Token::Number, Token::Id> {
+
+    Index(const OneOf<Token::Number, Token::Id>& val) : OneOf<Token::Number, Token::Id>(val){}
+
     static std::optional<Index> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
         auto syntax = OneOf<Token::Number, Token::Id>::get(it, holder);
