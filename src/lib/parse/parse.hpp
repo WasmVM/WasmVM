@@ -43,9 +43,6 @@ namespace Exception {
     struct block_id_mismatch : public Parse {
         block_id_mismatch(Token::Location location, std::string message);
     };
-    struct unexpected_token : public Parse {
-        unexpected_token(Token::Location location, std::string message);
-    };
     struct invalid_folded_instruction : public Parse {
         invalid_folded_instruction(Token::Location location);
     };

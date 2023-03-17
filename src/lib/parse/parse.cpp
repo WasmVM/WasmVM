@@ -167,14 +167,10 @@ unknown_token::unknown_token(Token::Location location, std::string token) :
     Parse(std::string("unknown token '") + token + "'", location) {}
 unknown_identifier::unknown_identifier(Token::Location location, std::string message) : 
     Parse(std::string("unknown identifier") + message, location) {}
-unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string expected) :
-    Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
 invalid_functype::invalid_functype(Token::Location location, std::string message) : 
     Parse(std::string("invalid functype") + message, location) {}
 invalid_limit::invalid_limit(Token::Location location, std::string message) : 
     Parse(std::string("invalid limit") + message, location) {}
-unexpected_token::unexpected_token(Token::Location location, std::string message) : 
-    Parse(std::string("unexpected token") + message, location) {}
 duplicated_identifier::duplicated_identifier(Token::Location location, std::string message) :
     Parse(std::string("duplicated identifier") + message, location) {}
 block_id_mismatch::block_id_mismatch(Token::Location location, std::string message) :

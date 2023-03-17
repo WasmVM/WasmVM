@@ -49,6 +49,11 @@ Exception::unexpected_token TokenHolder::error(){
     return Exception::unexpected_token(location, message);
 }
 
+Exception::unexpected_token::unexpected_token(Token::Location location, std::string message) : 
+    Parse(std::string("unexpected token") + message, location) {}
+Exception::unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string expected) :
+    Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
+
 ParenL::ParenL(Location loc) : TokenBase(loc, "("){}
 
 ParenR::ParenR(Location loc) : TokenBase(loc, ")"){}
