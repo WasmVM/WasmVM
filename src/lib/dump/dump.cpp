@@ -24,6 +24,12 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(WasmFunc& func : module.funcs){
         stream << func;
     }
+    for(TableType& table : module.tables){
+        stream << table;
+    }
+    for(WasmExport& export_ : module.exports){
+        stream << export_;
+    }
     stream << ")" << std::endl;
     return stream.str();
 }

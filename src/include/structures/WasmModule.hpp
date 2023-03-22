@@ -6,6 +6,7 @@
 #include <Types.hpp>
 #include <structures/WasmImport.hpp>
 #include <structures/WasmFunc.hpp>
+#include <structures/WasmExport.hpp>
 
 namespace WasmVM {
 
@@ -14,6 +15,8 @@ struct WasmModule {
     std::vector<FuncType> types;
     std::vector<WasmImport> imports;
     std::vector<WasmFunc> funcs;
+    std::vector<TableType> tables;
+    std::vector<WasmExport> exports;
 };
 
 }

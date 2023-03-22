@@ -10,6 +10,14 @@
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Func& node){
+
+    index_t funcidx = import_maps.funcid_map.size() + module.funcs.size();
+
+    // export
+    for(std::string name : node.exports){
+        module.exports.emplace_back(name, WasmExport::DescType::func, funcidx);
+    }
+
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){
         WasmImport& import = module.imports.emplace_back();
@@ -17,19 +25,20 @@ void ModuleVisitor::operator()(Parse::Func& node){
             if(import_maps.funcid_map.contains(node.id)){
                 throw Exception::duplicated_identifier(node.location, std::string(" : func ") + node.id);
             }
-            import_maps.funcid_map[node.id] = import_maps.funcid_map.size();
+            import_maps.funcid_map[node.id] = funcidx;
         }
         import.module = node.import.first;
         import.name = node.import.second;
         import.desc.emplace<index_t>(node.type.index(module, typeid_map, paramid_maps));
         return;
     }
+
     // id
     if(!node.id.empty()){
         if(funcid_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, std::string(" : func ") + node.id);
         }
-        funcid_map[node.id] = funcid_map.size();
+        funcid_map[node.id] = funcidx;
     }
 
     WasmFunc& func = module.funcs.emplace_back();
@@ -101,8 +110,11 @@ void ModuleVisitor::operator()(Parse::Func& node){
 std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holder){
     std::list<TokenType>::iterator it = begin;
 
+    using Local = Parse::Rule<
+        Token::ParenL, Token::Keyword<"local">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::ValueType>, Token::ParenR
+    >;
     using funcrule = Parse::Rule<
-        Parse::TypeUse, Parse::Repeat<Syntax::Local>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>
+        Parse::TypeUse, Parse::Repeat<Local>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>
     >;
     using importrule = Parse::Rule<
         Token::ParenL, Token::Keyword<"import">, Token::String, Token::String, Token::ParenR, Parse::TypeUse
@@ -122,7 +134,10 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holde
         // id
         auto id = std::get<2>(rule);
         func.id = id ? id->value : "";
-        // TODO: export
+        // export
+        for(auto node : std::get<3>(rule)){
+            func.exports.emplace_back(std::get<2>(node).value);
+        }
         // rules
         std::visit(overloaded {
             [&](importrule& node){

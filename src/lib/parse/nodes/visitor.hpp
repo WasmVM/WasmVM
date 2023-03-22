@@ -49,7 +49,7 @@ struct ModuleVisitor {
             std::cout << "  " << func_id.first << "(" << func_id.second << ")" << std::endl;
         }
         for(auto func_id : funcid_map){
-            std::cout << "  " << func_id.first << "(" << (func_id.second + import_maps.funcid_map.size()) << ")" << std::endl;
+            std::cout << "  " << func_id.first << "(" << func_id.second << ")" << std::endl;
         }
         std::cout << "== tableid map ==" << std::endl;
         for(auto table_id : import_maps.tableid_map){
