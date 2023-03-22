@@ -35,6 +35,8 @@ int main(int argc, char const *argv[])
         
     }catch(Exception::Parse &e){
         std::cerr << path.string() << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;
+    }catch(Exception::Exception &e){
+        std::cerr << path.string() << ": error: " << e.what() << std::endl;
     }
 
     return 0;

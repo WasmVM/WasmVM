@@ -52,6 +52,9 @@ namespace Exception {
     struct brackets_not_close : public Parse {
         brackets_not_close(Token::Location location, std::string message);
     };
+    struct unexpected_eof : public Exception {
+        unexpected_eof();
+    };
 }
 
 namespace Parse {

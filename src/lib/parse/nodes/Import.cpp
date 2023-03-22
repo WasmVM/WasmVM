@@ -15,23 +15,21 @@ void ModuleVisitor::operator()(Parse::Import& node){
             import.desc.emplace<index_t>(type.index(module, typeid_map, paramid_maps));
             // id
             if(!node.id.empty()){
-                if(funcid_map.contains(node.id)){
+                if(import_maps.funcid_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
                 }
-                funcid_map[node.id] = funcidx;
+                import_maps.funcid_map[node.id] = import_maps.funcid_map.size();
             }
-            funcidx += 1;
         },
         // Table
         [&](Parse::TableType tabletype){
             import.desc.emplace<WasmVM::TableType>(tabletype);
             if(!node.id.empty()){
-                if(tableid_map.contains(node.id)){
+                if(import_maps.tableid_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import table ") + node.id);
                 }
-                tableid_map[node.id] = tableidx;
+                import_maps.tableid_map[node.id] = import_maps.tableid_map.size();
             }
-            tableidx += 1;
         },
         // Memory
         [&](Parse::MemType memtype){

@@ -395,17 +395,18 @@ std::optional<Parse::Instr::Loop> Parse::Instr::Loop::get(TokenIter& begin, Toke
     return std::nullopt;
 }
 
-using PlainIfRule = Parse::Rule<Token::Keyword<"if">, Parse::Optional<Token::Id>,
-    Parse::TypeUse, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, 
-    Parse::Optional<Parse::Rule<Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>>>,
-    Token::Keyword<"end">, Parse::Optional<Token::Id>>;
-using FoldedIfRule = Parse::Rule<Token::ParenL, Token::Keyword<"if">, Parse::Optional<Token::Id>,
-    Parse::TypeUse, Parse::Repeat<Syntax::FoldedInstr>,
-    Token::ParenL, Token::Keyword<"then">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR,
-    Parse::Optional<Parse::Rule<Token::ParenL, Token::Keyword<"else">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR>>,
-    Token::ParenR>;
-
 std::optional<Parse::Instr::If> Parse::Instr::If::get(TokenIter& begin, TokenHolder& holder){
+
+    using PlainIfRule = Parse::Rule<Token::Keyword<"if">, Parse::Optional<Token::Id>,
+        Parse::TypeUse, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, 
+        Parse::Optional<Parse::Rule<Token::Keyword<"else">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>>>,
+        Token::Keyword<"end">, Parse::Optional<Token::Id>>;
+    using FoldedIfRule = Parse::Rule<Token::ParenL, Token::Keyword<"if">, Parse::Optional<Token::Id>,
+        Parse::TypeUse, Parse::Repeat<Syntax::FoldedInstr>,
+        Token::ParenL, Token::Keyword<"then">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR,
+        Parse::Optional<Parse::Rule<Token::ParenL, Token::Keyword<"else">, Parse::Repeat<Parse::OneOf<Syntax::Instr, Syntax::FoldedInstr>>, Token::ParenR>>,
+        Token::ParenR>;
+
     std::list<TokenType>::iterator it = begin;
     auto syntax = Parse::OneOf<PlainIfRule, FoldedIfRule>::get(it, holder);
 

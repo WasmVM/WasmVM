@@ -46,7 +46,7 @@ struct TokenHolder {
     TokenHolder(const TokenIter& begin, const TokenIter& end): last(begin), end(end) {}
     bool has_next(TokenIter& it);
     TokenIter next(TokenIter& it);
-    Exception::unexpected_token error();
+    Exception::Parse error();
 protected:
     TokenIter last;
     const TokenIter end;

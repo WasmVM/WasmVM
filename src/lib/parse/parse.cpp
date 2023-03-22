@@ -183,3 +183,5 @@ invalid_immediate_value::invalid_immediate_value(Token::Location location, std::
     Parse(std::string("invalid immediate value") + message, location) {}
 brackets_not_close::brackets_not_close(Token::Location location, std::string message) :
     Parse(std::string("brackets not close") + message, location) {}
+unexpected_eof::unexpected_eof() :
+    Exception(std::string("unexpected EOF")) {}

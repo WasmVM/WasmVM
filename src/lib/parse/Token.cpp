@@ -24,7 +24,7 @@ TokenIter TokenHolder::next(TokenIter& it){
     return it++;
 }
 
-Exception::unexpected_token TokenHolder::error(){
+Exception::Parse TokenHolder::error(){
     TokenIter it = last;
     Token::Location location;
     std::string message = " '";
