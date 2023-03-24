@@ -26,7 +26,7 @@ struct BrIndexVisitor : public Parse::Index::Visitor {
 };
 
 void InstrVisitor::Sema::operator()(Parse::Instr::Call& node){
-    index_t index = std::visit(Parse::Index::Visitor(module.funcid_map), node.index);
+    index_t index = std::visit(Parse::Index::Visitor(module.func_indices.id_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Call>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Block& node){
@@ -130,12 +130,12 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Br_table& node){
     func.body.emplace_back(instr);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Call_indirect& node){
-    index_t tableidx = node.tableidx ? std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value()) : 0;
+    index_t tableidx = node.tableidx ? std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value()) : 0;
     index_t typeidx = Parse::Type(node.type).index(module.module, module.typeid_map, module.paramid_maps);
     func.body.emplace_back(WasmVM::Instr::Call_indirect(tableidx, typeidx));
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Ref_func& node){
-    index_t index = std::visit(Parse::Index::Visitor(module.funcid_map), node.index);
+    index_t index = std::visit(Parse::Index::Visitor(module.func_indices.id_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Ref_func>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Local_get& node){
@@ -151,16 +151,16 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Local_tee& node){
     func.body.emplace_back<WasmVM::Instr::Local_tee>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Global_get& node){
-    index_t index = std::visit(Parse::Index::Visitor(module.globalid_map), node.index);
+    index_t index = std::visit(Parse::Index::Visitor(module.global_indices.id_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Global_get>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Global_set& node){
-    index_t index = std::visit(Parse::Index::Visitor(module.globalid_map), node.index);
+    index_t index = std::visit(Parse::Index::Visitor(module.global_indices.id_map), node.index);
     func.body.emplace_back<WasmVM::Instr::Global_set>(index);
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_get& node){
     if(node.tableidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
         func.body.emplace_back<WasmVM::Instr::Table_get>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Table_get>(0);
@@ -168,7 +168,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_get& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_set& node){
     if(node.tableidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
         func.body.emplace_back<WasmVM::Instr::Table_set>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Table_set>(0);
@@ -176,7 +176,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_set& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_size& node){
     if(node.tableidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
         func.body.emplace_back<WasmVM::Instr::Table_size>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Table_size>(0);
@@ -184,7 +184,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_size& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_grow& node){
     if(node.tableidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
         func.body.emplace_back<WasmVM::Instr::Table_grow>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Table_grow>(0);
@@ -192,7 +192,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_grow& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_fill& node){
     if(node.tableidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
         func.body.emplace_back<WasmVM::Instr::Table_fill>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Table_fill>(0);
@@ -202,17 +202,17 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Table_copy& node){
     index_t dstidx = 0;
     index_t srcidx = 0;
     if(node.dstidx){
-        dstidx = std::visit(Parse::Index::Visitor(module.tableid_map), node.dstidx.value());
+        dstidx = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.dstidx.value());
     }
     if(node.srcidx){
-        srcidx = std::visit(Parse::Index::Visitor(module.tableid_map), node.srcidx.value());
+        srcidx = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.srcidx.value());
     }
     func.body.emplace_back(WasmVM::Instr::Table_copy(dstidx, srcidx));
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Table_init& node){
     index_t tableidx = 0;
     if(node.tableidx){
-        tableidx = std::visit(Parse::Index::Visitor(module.tableid_map), node.tableidx.value());
+        tableidx = std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value());
     }
     func.body.emplace_back(WasmVM::Instr::Table_init(tableidx, std::visit(Parse::Index::Visitor(module.elemid_map), node.elemidx)));
 }
@@ -222,7 +222,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Elem_drop& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Memory_size& node){
     if(node.memidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.memid_map), node.memidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.memidx.value());
         func.body.emplace_back<WasmVM::Instr::Memory_size>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Memory_size>(0);
@@ -230,7 +230,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Memory_size& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Memory_grow& node){
     if(node.memidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.memid_map), node.memidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.memidx.value());
         func.body.emplace_back<WasmVM::Instr::Memory_grow>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Memory_grow>(0);
@@ -238,7 +238,7 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Memory_grow& node){
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Memory_fill& node){
     if(node.memidx){
-        index_t index = std::visit(Parse::Index::Visitor(module.memid_map), node.memidx.value());
+        index_t index = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.memidx.value());
         func.body.emplace_back<WasmVM::Instr::Memory_fill>(index);
     }else{
         func.body.emplace_back<WasmVM::Instr::Memory_fill>(0);
@@ -248,17 +248,17 @@ void InstrVisitor::Sema::operator()(Parse::Instr::Memory_copy& node){
     index_t dstidx = 0;
     index_t srcidx = 0;
     if(node.dstidx){
-        dstidx = std::visit(Parse::Index::Visitor(module.memid_map), node.dstidx.value());
+        dstidx = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.dstidx.value());
     }
     if(node.srcidx){
-        srcidx = std::visit(Parse::Index::Visitor(module.memid_map), node.srcidx.value());
+        srcidx = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.srcidx.value());
     }
     func.body.emplace_back(WasmVM::Instr::Memory_copy(dstidx, srcidx));
 }
 void InstrVisitor::Sema::operator()(Parse::Instr::Memory_init& node){
     index_t memidx = 0;
     if(node.memidx){
-        memidx = std::visit(Parse::Index::Visitor(module.memid_map), node.memidx.value());
+        memidx = std::visit(Parse::Index::Visitor(module.mem_indices.id_map), node.memidx.value());
     }
     func.body.emplace_back(WasmVM::Instr::Memory_init(memidx, std::visit(Parse::Index::Visitor(module.dataid_map), node.dataidx)));
 }

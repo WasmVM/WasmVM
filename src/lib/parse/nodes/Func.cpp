@@ -10,36 +10,35 @@
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Func& node){
-
-    index_t funcidx = import_maps.funcid_map.size() + module.funcs.size();
-
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::func, funcidx);
+        module.exports.emplace_back(name, WasmExport::DescType::func, func_indices.records.size());
     }
 
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){
         WasmImport& import = module.imports.emplace_back();
         if(!node.id.empty()){
-            if(import_maps.funcid_map.contains(node.id)){
+            if(func_indices.id_map.contains(node.id)){
                 throw Exception::duplicated_identifier(node.location, std::string(" : func ") + node.id);
             }
-            import_maps.funcid_map[node.id] = funcidx;
+            func_indices.id_map[node.id] = func_indices.records.size();
         }
         import.module = node.import.first;
         import.name = node.import.second;
         import.desc.emplace<index_t>(node.type.index(module, typeid_map, paramid_maps));
+        func_indices.records.emplace_back(IndexSpace::Type::Import);
         return;
     }
 
     // id
     if(!node.id.empty()){
-        if(funcid_map.contains(node.id)){
+        if(func_indices.id_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, std::string(" : func ") + node.id);
         }
-        funcid_map[node.id] = funcidx;
+        func_indices.id_map[node.id] = func_indices.records.size();
     }
+    func_indices.records.emplace_back(IndexSpace::Type::Normal);
 
     WasmFunc& func = module.funcs.emplace_back();
     

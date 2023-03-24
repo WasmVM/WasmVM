@@ -12,31 +12,31 @@
 namespace WasmVM {
 
 struct ModuleVisitor {
-    ModuleVisitor(WasmModule& module) :
-        module(module), memidx(0), globalidx(0){}
+
+    struct IndexSpace {
+        enum class Type {Import, Normal};
+        std::vector<Type> records;
+        std::map<std::string, index_t> id_map;
+    };
+
+    ModuleVisitor(WasmModule& module) : module(module){}
     WasmModule& module;
-    struct {
-        std::map<std::string, index_t> funcid_map;
-        std::map<std::string, index_t> tableid_map;
-        std::map<std::string, index_t> memid_map;
-        std::map<std::string, index_t> globalid_map;
-    } import_maps;
+    IndexSpace func_indices;
+    IndexSpace table_indices;
+    IndexSpace mem_indices;
+    IndexSpace global_indices;
     std::map<std::string, index_t> typeid_map;
-    std::map<std::string, index_t> funcid_map;
-    std::map<std::string, index_t> tableid_map;
-    std::map<std::string, index_t> memid_map;
-    std::map<std::string, index_t> globalid_map;
     std::map<std::string, index_t> elemid_map;
     std::map<std::string, index_t> dataid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
     // FIXME:
     ~ModuleVisitor(){
-        std::cout << "== typeid map ==" << std::endl;
+        std::cout << "== type index ==" << std::endl;
         for(auto type_id : typeid_map){
             std::cout << "  " << type_id.first << "(" << type_id.second << ")" << std::endl;
         }
-        std::cout << "== paramid map ==" << std::endl;
+        std::cout << "== param index ==" << std::endl;
         for(size_t i = 0; i < paramid_maps.size(); ++i){
             std::cout << "  " << i << " : ";
             for(auto paramid : paramid_maps[i]){
@@ -44,26 +44,20 @@ struct ModuleVisitor {
             }
             std::cout << std::endl;
         }
-        std::cout << "== funcid map ==" << std::endl;
-        for(auto func_id : import_maps.funcid_map){
+        std::cout << "== func index ==" << std::endl;
+        for(auto func_id : func_indices.id_map){
             std::cout << "  " << func_id.first << "(" << func_id.second << ")" << std::endl;
         }
-        for(auto func_id : funcid_map){
-            std::cout << "  " << func_id.first << "(" << func_id.second << ")" << std::endl;
-        }
-        std::cout << "== tableid map ==" << std::endl;
-        for(auto table_id : import_maps.tableid_map){
+        std::cout << "== table index ==" << std::endl;
+        for(auto table_id : table_indices.id_map){
             std::cout << "  " << table_id.first << "(" << table_id.second << ")" << std::endl;
         }
-        for(auto table_id : tableid_map){
-            std::cout << "  " << table_id.first << "(" << (table_id.second + import_maps.tableid_map.size()) << ")" << std::endl;
-        }
-        std::cout << "== memid map ==" << std::endl;
-        for(auto mem_id : memid_map){
+        std::cout << "== mem index ==" << std::endl;
+        for(auto mem_id : mem_indices.id_map){
             std::cout << "  " << mem_id.first << "(" << mem_id.second << ")" << std::endl;
         }
-        std::cout << "== globalid map ==" << std::endl;
-        for(auto global_id : globalid_map){
+        std::cout << "== global index ==" << std::endl;
+        for(auto global_id : global_indices.id_map){
             std::cout << "  " << global_id.first << "(" << global_id.second << ")" << std::endl;
         }
     }
@@ -72,10 +66,6 @@ struct ModuleVisitor {
     void operator()(Parse::Import& import);
     void operator()(Parse::Func& func);
     void operator()(Parse::Table& table);
-
-private:
-    index_t memidx;
-    index_t globalidx;
 };
 
 struct ImportVisitor {

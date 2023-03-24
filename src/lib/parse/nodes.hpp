@@ -427,9 +427,21 @@ struct Func {
     static std::optional<Func> get(TokenIter& begin, TokenHolder& holder);
     Type type;
     std::string id;
+    std::pair<std::string, std::string> import;
+    std::vector<std::string> exports;
     std::vector<ValueType> locals;
     std::map<std::string, index_t> local_id_map;
     std::vector<Instr::Instrction> body;
+    Token::Location location;
+};
+
+struct Table {
+    static std::optional<Table> get(TokenIter& begin, TokenHolder& holder);
+    std::string id;
+    std::pair<std::string, std::string> import;
+    std::vector<std::string> exports;
+    TableType tabletype;
+    std::vector<Instr::Instrction> elemlist;
     Token::Location location;
 };
 

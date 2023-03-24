@@ -16,10 +16,6 @@ using RefType = Parse::OneOf<
     Token::Keyword<"funcref">, Token::Keyword<"externref">
 >;
 
-using Local = Parse::Rule<
-    Token::ParenL, Token::Keyword<"local">, Parse::Optional<Token::Id>, Parse::Repeat<Parse::ValueType>, Token::ParenR
->;
-
 namespace ImportDesc {
 using Func = Parse::Rule<Token::ParenL, Token::Keyword<"func">, Parse::Optional<Token::Id>, Parse::TypeUse, Token::ParenR>;
 using Table = Parse::Rule<Token::ParenL, Token::Keyword<"table">, Parse::Optional<Token::Id>, Parse::TableType, Token::ParenR>;
@@ -100,6 +96,16 @@ using Instr = Parse::OneOf<
     Parse::Instr::Block,
     Parse::Instr::Loop,
     Parse::Instr::If
+>;
+
+using ConstInstr = Parse::OneOf<
+    Parse::Instr::Ref_null,
+    Parse::Instr::Ref_func,
+    Parse::Instr::Global_get,
+    Parse::Instr::I32_const,
+    Parse::Instr::I64_const,
+    Parse::Instr::F32_const,
+    Parse::Instr::F64_const
 >;
 
 struct FoldedInstr {

@@ -10,48 +10,50 @@ using namespace WasmVM;
 void ModuleVisitor::operator()(Parse::Import& node){
     WasmImport& import = module.imports.emplace_back();
     std::visit(overloaded {
-        // Type
+        // Func
         [&](Parse::Type type){
             import.desc.emplace<index_t>(type.index(module, typeid_map, paramid_maps));
             // id
             if(!node.id.empty()){
-                if(import_maps.funcid_map.contains(node.id)){
+                if(func_indices.id_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import func ") + node.id);
                 }
-                import_maps.funcid_map[node.id] = import_maps.funcid_map.size();
+                func_indices.id_map[node.id] = func_indices.records.size();
             }
+            func_indices.records.emplace_back(IndexSpace::Type::Import);
         },
         // Table
         [&](Parse::TableType tabletype){
             import.desc.emplace<WasmVM::TableType>(tabletype);
             if(!node.id.empty()){
-                if(import_maps.tableid_map.contains(node.id)){
+                if(table_indices.id_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import table ") + node.id);
                 }
-                import_maps.tableid_map[node.id] = import_maps.tableid_map.size();
+                table_indices.id_map[node.id] = table_indices.records.size();
             }
+            table_indices.records.emplace_back(IndexSpace::Type::Import);
         },
         // Memory
         [&](Parse::MemType memtype){
             import.desc.emplace<WasmVM::MemType>(memtype);
             if(!node.id.empty()){
-                if(memid_map.contains(node.id)){
+                if(mem_indices.id_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import memory ") + node.id);
                 }
-                memid_map[node.id] = memidx;
+                mem_indices.id_map[node.id] = mem_indices.records.size();
             }
-            memidx += 1;
+            mem_indices.records.emplace_back(IndexSpace::Type::Import);
         },
         // Global
         [&](Parse::GlobalType globaltype){
             import.desc.emplace<WasmVM::GlobalType>(globaltype);
             if(!node.id.empty()){
-                if(globalid_map.contains(node.id)){
+                if(global_indices.id_map.contains(node.id)){
                     throw Exception::duplicated_identifier(node.location, std::string(" : import global ") + node.id);
                 }
-                globalid_map[node.id] = globalidx;
+                global_indices.id_map[node.id] = global_indices.records.size();
             }
-            globalidx += 1;
+            global_indices.records.emplace_back(IndexSpace::Type::Import);
         }
     }, node.desc);
     import.module = node.module;

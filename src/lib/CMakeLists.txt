@@ -36,11 +36,13 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/Func.cpp
     parse/nodes/instr.cpp
     parse/nodes/numeric.cpp
+    parse/nodes/Table.cpp
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp
     dump/func.cpp
     dump/instr.cpp
+    dump/export.cpp
     Types.cpp
     exception.cpp
 )

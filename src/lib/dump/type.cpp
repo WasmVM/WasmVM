@@ -49,3 +49,20 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
     stream << " ) )" << std::endl;
     return stream;
 }
+
+std::ostream& WasmVM::operator<<(std::ostream& stream, TableType& table){
+    stream << "  (table " << table.limits.min;
+    if(table.limits.max.has_value()){
+        stream << " " << table.limits.max.value();
+    }
+    switch(table.reftype){
+        case RefType::funcref :
+            stream << " funcref";
+        break;
+        case RefType::externref :
+            stream << " externref";
+        break;
+    }
+    stream << ")" << std::endl;
+    return stream;
+}
