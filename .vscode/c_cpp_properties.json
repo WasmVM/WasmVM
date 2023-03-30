@@ -4,7 +4,7 @@
             "name": "WasmVM",
             "includePath": [
                 "${workspaceFolder}/src/include/**",
-                "${workspaceFolder}/src/lib",
+                "${workspaceFolder}/src/lib/**",
                 "${workspaceFolder}/test/harness/**"
             ],
             "forcedInclude": [],

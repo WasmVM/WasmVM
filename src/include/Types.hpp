@@ -60,8 +60,8 @@ struct FuncType {
 };
 
 struct Limits {
-    u32_t min;
-    std::optional<u32_t> max;
+    index_t min;
+    std::optional<index_t> max;
 };
 
 struct TableType {

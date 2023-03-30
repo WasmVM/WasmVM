@@ -36,6 +36,17 @@ void ModuleVisitor::operator()(Parse::Table& node){
     table_indices.records.emplace_back(IndexSpace::Type::Normal);
     // table
     module.tables.emplace_back(node.tabletype);
+    // elem
+    if(node.elemlist.size() > 0){
+        WasmElem& elem = module.elems.emplace_back();
+        elem.type = node.tabletype.reftype;
+        elem.mode.type = WasmElem::ElemMode::Mode::active;
+        elem.mode.tableidx = 0;
+        elem.mode.offset.emplace(WasmVM::Instr::I32_const(0));
+        for(Parse::Instr::ConstInstr& item : node.elemlist){
+            std::visit(InstrVisitor::ConstSema(*this, elem.elemlist), item);
+        }
+    }
 }
 
 std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& holder){
@@ -45,9 +56,12 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
         Parse::Optional<Parse::Rule<Token::ParenL, Token::Keyword<"import">, Token::String, Token::String, Token::ParenR>>,
         Parse::TableType
     >;
+    using itemrule = Parse::Rule<Token::ParenL, Parse::Optional<Token::Keyword<"item">>, Syntax::ConstInstr, Token::ParenR>;
     using elemrule = Parse::Rule<
         Parse::OneOf<Token::Keyword<"funcref">, Token::Keyword<"externref">>,
-        Token::ParenL, Token::Keyword<"elem">, Parse::OneOf<Parse::Repeat<Syntax::ConstInstr>, Parse::Repeat<Parse::Index>>, Token::ParenR
+        Token::ParenL, Token::Keyword<"elem">,
+        Parse::Repeat<Parse::OneOf<Parse::Index, itemrule>>,
+        Token::ParenR
     >;
 
     auto syntax = Parse::Rule<
@@ -71,6 +85,7 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
         }
         // import/elem
         std::visit(overloaded {
+            // Import
             [&](tablerule& node){
                 auto importnode = std::get<0>(node);
                 if(importnode){
@@ -78,8 +93,31 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
                 }
                 table.tabletype = std::get<1>(node);
             },
+            // elem
             [&](elemrule& node){
-                // TODO:
+                // reftype
+                std::visit(overloaded {
+                    [&](Token::Keyword<"funcref">){
+                        table.tabletype.reftype = WasmVM::RefType::funcref;
+                    },
+                    [&](Token::Keyword<"externref">){
+                        table.tabletype.reftype = WasmVM::RefType::externref;
+                    }
+                }, std::get<0>(node));
+                // items
+                auto items = std::get<3>(node);
+                table.tabletype.limits.min = items.size();
+                table.tabletype.limits.max = items.size();
+                for(auto item : items){
+                    std::visit(overloaded {
+                        [&](Parse::Index& index){
+                            table.elemlist.emplace_back<Instr::Ref_func>(index);
+                        },
+                        [&](itemrule& instr){
+                            InstrVisitor::ConstSyntax(table.elemlist)(std::get<2>(instr));
+                        },
+                    }, item);
+                }
             }
         }, std::get<4>(rule));
 

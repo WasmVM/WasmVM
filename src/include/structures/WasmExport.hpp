@@ -4,7 +4,6 @@
 #include <Types.hpp>
 
 #include <string>
-#include <variant>
 
 namespace WasmVM {
 

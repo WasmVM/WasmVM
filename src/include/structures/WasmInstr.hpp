@@ -526,6 +526,16 @@ using WasmInstr = std::variant<
     Instr::I64_trunc_sat_f64_u
 >;
 
+using ConstInstr = std::variant<
+    Instr::Ref_null,
+    Instr::Ref_func,
+    Instr::Global_get,
+    Instr::I32_const,
+    Instr::I64_const,
+    Instr::F32_const,
+    Instr::F64_const
+>;
+
 }
 
 #endif

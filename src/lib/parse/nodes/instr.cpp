@@ -274,15 +274,19 @@ void InstrVisitor::Syntax::operator()(WasmVM::Syntax::PlainInstr& plain){
         }
     }, plain);
 }
-
 void InstrVisitor::Syntax::operator()(WasmVM::Syntax::FoldedInstr& folded){
     for(WasmVM::Syntax::Instr instr : folded.instrs){
-        std::visit(overloaded {
-            [&](auto&& i){
-                this->operator()(i);
-            }
-        }, instr);
+        std::visit(InstrVisitor::Syntax(body), instr);
     }
+}
+void InstrVisitor::Syntax::operator()(Parse::Instr::Block& node){
+    body.emplace_back(node);
+}
+void InstrVisitor::Syntax::operator()(Parse::Instr::Loop& node){
+    body.emplace_back(node);
+}
+void InstrVisitor::Syntax::operator()(Parse::Instr::If& node){
+    body.emplace_back(node);
 }
 
 std::optional<Parse::Instr::Block> Parse::Instr::Block::get(TokenIter& begin, TokenHolder& holder){

@@ -80,21 +80,40 @@ struct ImportVisitor {
 
 namespace InstrVisitor{
 
-struct Sema {
+template <typename T>
+class Base {
+protected:
+    Base(ModuleVisitor& module, std::vector<T>& instrs) : module(module), instrs(instrs) {}
+    
+    ModuleVisitor& module;
+    std::vector<T>& instrs;
+};
+
+struct ConstSema : public Base<WasmVM::ConstInstr>{
+    ConstSema(ModuleVisitor& module, std::vector<WasmVM::ConstInstr>& instrs) : Base<WasmVM::ConstInstr>(module, instrs) {}
+    void operator()(Parse::Instr::Ref_null&);
+    void operator()(Parse::Instr::Ref_func&);
+    void operator()(Parse::Instr::Global_get&);
+    void operator()(Parse::Instr::I32_const&);
+    void operator()(Parse::Instr::I64_const&);
+    void operator()(Parse::Instr::F32_const&);
+    void operator()(Parse::Instr::F64_const&);
+};
+
+struct Sema : public Base<WasmVM::WasmInstr>{
     Sema(
         ModuleVisitor& module,
         WasmFunc& func,
         std::map<std::string, index_t>& labelid_map, 
         const std::map<std::string, index_t>& localid_map
-    ) : module(module), func(func), labelid_map(labelid_map), localid_map(localid_map) {}
+    ) : Base<WasmVM::WasmInstr>(module, func.body), func(func), labelid_map(labelid_map), localid_map(localid_map) {}
 
-    ModuleVisitor& module;
     WasmFunc& func;
     std::map<std::string, index_t>& labelid_map;
     const std::map<std::string, index_t>& localid_map;
 
-    template<typename T> void operator()(T& instr){
-        func.body.emplace_back(instr);
+    template<typename T> void operator()(T& instr) {
+        //func.body.emplace_back(instr);
     }
 
     void operator()(Parse::Instr::Call& instr);
@@ -125,20 +144,26 @@ struct Sema {
     void operator()(Parse::Instr::Memory_copy& instr);
     void operator()(Parse::Instr::Memory_init& instr);
     void operator()(Parse::Instr::Data_drop& instr);
-    void operator()(Parse::Instr::NumericInstr& instr);
 };
 
 struct Syntax {
-
     Syntax(std::vector<Parse::Instr::Instrction>& body) : body(body){}
-    std::vector<Parse::Instr::Instrction>& body;
 
-    template<typename T>
-    void operator()(T& instr){
-        body.emplace_back(instr);
-    }
+    void operator()(Parse::Instr::Block&);
+    void operator()(Parse::Instr::Loop&);
+    void operator()(Parse::Instr::If&);
     void operator()(WasmVM::Syntax::PlainInstr&);
     void operator()(WasmVM::Syntax::FoldedInstr&);
+    void operator()(WasmVM::Syntax::ConstInstr&);
+private:
+    std::vector<Parse::Instr::Instrction>& body;
+};
+
+struct ConstSyntax {
+    ConstSyntax(std::vector<Parse::Instr::ConstInstr>& body) : body(body){}
+    void operator()(WasmVM::Syntax::ConstInstr&);
+private:
+    std::vector<Parse::Instr::ConstInstr>& body;
 };
 
 }

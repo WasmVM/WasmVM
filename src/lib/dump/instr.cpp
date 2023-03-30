@@ -297,3 +297,6 @@ private:
 std::ostream& WasmVM::operator<<(std::ostream& stream, WasmInstr& instr){
     return std::visit(InstrVisitor(stream), instr);
 }
+std::ostream& WasmVM::operator<<(std::ostream& stream, ConstInstr& instr){
+    return std::visit(InstrVisitor(stream), instr);
+}

@@ -30,6 +30,9 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(WasmExport& export_ : module.exports){
         stream << export_;
     }
+    for(WasmElem& elem : module.elems){
+        stream << elem;
+    }
     stream << ")" << std::endl;
     return stream.str();
 }
