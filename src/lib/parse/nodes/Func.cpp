@@ -101,7 +101,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
     labelid_map[node.id] = 0;
     std::map<std::string, index_t> localid_map(paramid_map);
     localid_map.merge(node.local_id_map);
-    for(Parse::Instr::Instrction instrnode : node.body){
+    for(Parse::Instr::Instruction instrnode : node.body){
         std::visit(InstrVisitor::Sema(*this, func, labelid_map, localid_map), instrnode);
     }
 }

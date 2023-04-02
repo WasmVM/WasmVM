@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "visitor.hpp"
+#include "../visitor.hpp"
 
 using namespace WasmVM;
 
@@ -34,5 +34,5 @@ std::optional<Parse::Instr::NumericInstr> Parse::Instr::NumericInstr::get(TokenI
 }
 
 template<> void InstrVisitor::Sema::operator()<Parse::Instr::NumericInstr>(Parse::Instr::NumericInstr& node){
-    func.body.emplace_back(node.instr);
+    instrs.emplace_back(node.instr);
 }

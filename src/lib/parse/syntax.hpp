@@ -113,7 +113,7 @@ struct FoldedInstr {
     std::list<Syntax::Instr> instrs;
 };
 
-}
-}
+} // namespace Syntax
+} // namespace WasmVM
 
 #endif

@@ -6,7 +6,6 @@
 
 #include <map>
 #include <string>
-
 #include <iostream>
 
 namespace WasmVM {
@@ -66,6 +65,7 @@ struct ModuleVisitor {
     void operator()(Parse::Import& import);
     void operator()(Parse::Func& func);
     void operator()(Parse::Table& table);
+    void operator()(Parse::Elem& elem);
 };
 
 struct ImportVisitor {
@@ -112,42 +112,11 @@ struct Sema : public Base<WasmVM::WasmInstr>{
     std::map<std::string, index_t>& labelid_map;
     const std::map<std::string, index_t>& localid_map;
 
-    template<typename T> void operator()(T& instr) {
-        //func.body.emplace_back(instr);
-    }
-
-    void operator()(Parse::Instr::Call& instr);
-    void operator()(Parse::Instr::Block& instr);
-    void operator()(Parse::Instr::Loop& instr);
-    void operator()(Parse::Instr::If& instr);
-    void operator()(Parse::Instr::Br& instr);
-    void operator()(Parse::Instr::Br_if& instr);
-    void operator()(Parse::Instr::Br_table& instr);
-    void operator()(Parse::Instr::Call_indirect& instr);
-    void operator()(Parse::Instr::Ref_func& instr);
-    void operator()(Parse::Instr::Local_get& instr);
-    void operator()(Parse::Instr::Local_set& instr);
-    void operator()(Parse::Instr::Local_tee& instr);
-    void operator()(Parse::Instr::Global_get& instr);
-    void operator()(Parse::Instr::Global_set& instr);
-    void operator()(Parse::Instr::Table_get& instr);
-    void operator()(Parse::Instr::Table_set& instr);
-    void operator()(Parse::Instr::Table_size& instr);
-    void operator()(Parse::Instr::Table_grow& instr);
-    void operator()(Parse::Instr::Table_fill& instr);
-    void operator()(Parse::Instr::Table_copy& instr);
-    void operator()(Parse::Instr::Table_init& instr);
-    void operator()(Parse::Instr::Elem_drop& instr);
-    void operator()(Parse::Instr::Memory_size& instr);
-    void operator()(Parse::Instr::Memory_grow& instr);
-    void operator()(Parse::Instr::Memory_fill& instr);
-    void operator()(Parse::Instr::Memory_copy& instr);
-    void operator()(Parse::Instr::Memory_init& instr);
-    void operator()(Parse::Instr::Data_drop& instr);
+    template<typename T> void operator()(T& instr);
 };
 
 struct Syntax {
-    Syntax(std::vector<Parse::Instr::Instrction>& body) : body(body){}
+    Syntax(std::vector<Parse::Instr::Instruction>& body) : body(body){}
 
     void operator()(Parse::Instr::Block&);
     void operator()(Parse::Instr::Loop&);
@@ -156,7 +125,7 @@ struct Syntax {
     void operator()(WasmVM::Syntax::FoldedInstr&);
     void operator()(WasmVM::Syntax::ConstInstr&);
 private:
-    std::vector<Parse::Instr::Instrction>& body;
+    std::vector<Parse::Instr::Instruction>& body;
 };
 
 struct ConstSyntax {
@@ -166,10 +135,7 @@ private:
     std::vector<Parse::Instr::ConstInstr>& body;
 };
 
-}
-
-
-
-}
+} // namespace InstrVisitor
+} // namespace WasmVM
 
 #endif

@@ -58,7 +58,7 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
     >;
     using itemrule = Parse::Rule<Token::ParenL, Parse::Optional<Token::Keyword<"item">>, Syntax::ConstInstr, Token::ParenR>;
     using elemrule = Parse::Rule<
-        Parse::OneOf<Token::Keyword<"funcref">, Token::Keyword<"externref">>,
+        Syntax::RefType,
         Token::ParenL, Token::Keyword<"elem">,
         Parse::Repeat<Parse::OneOf<Parse::Index, itemrule>>,
         Token::ParenR

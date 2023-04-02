@@ -25,7 +25,7 @@ add_library(WasmVM_core SHARED
 add_library(WasmVM_obj OBJECT
     parse/parse.cpp
     parse/Token.cpp
-    parse/nodes/module.cpp
+    parse/nodes/Module.cpp
     parse/nodes/Type.cpp
     parse/nodes/FuncType.cpp
     parse/nodes/ValueType.cpp
@@ -34,10 +34,17 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/MemType.cpp
     parse/nodes/GlobalType.cpp
     parse/nodes/Func.cpp
-    parse/nodes/instr.cpp
-    parse/nodes/numeric.cpp
     parse/nodes/Table.cpp
-    parse/nodes/const.cpp
+    parse/nodes/elem.cpp
+    parse/nodes/instruction.cpp
+    parse/nodes/instruction/numeric.cpp
+    parse/nodes/instruction/const.cpp
+    parse/nodes/instruction/control.cpp
+    parse/nodes/instruction/reference.cpp
+    parse/nodes/instruction/parametric.cpp
+    parse/nodes/instruction/variable.cpp
+    parse/nodes/instruction/table.cpp
+    parse/nodes/instruction/memory.cpp
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp

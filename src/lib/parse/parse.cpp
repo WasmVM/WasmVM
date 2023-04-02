@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include <exception.hpp>
-#include "parse.hpp"
+#include "nodes.hpp"
 
 #include <list>
 #include <string>
@@ -13,16 +13,6 @@
 #include <optional>
 
 using namespace WasmVM;
-
-static void next_char(std::string_view::const_iterator& it, Token::Location& loc){
-    if(*it == '\n'){
-        loc.first += 1;
-        loc.second = 1;
-    }else{
-        loc.second += 1;
-    }
-    ++it;
-}
 
 namespace TokenCreate {
 
@@ -42,7 +32,6 @@ static std::optional<Token::MemArgBase> memarg(Token::Location loc, std::string 
     }
     return std::nullopt;
 }
-
 static std::optional<Token::Number> number(Token::Location loc, std::string str){
 
     if(std::regex_match(str, decimal)
@@ -57,6 +46,15 @@ static std::optional<Token::Number> number(Token::Location loc, std::string str)
 
 }
 
+static void next_char(std::string_view::const_iterator& it, Token::Location& loc){
+    if(*it == '\n'){
+        loc.first += 1;
+        loc.second = 1;
+    }else{
+        loc.second += 1;
+    }
+    ++it;
+}
 std::list<TokenType> WasmVM::tokenize(std::string_view src){
     std::list<TokenType> tokens;
     Token::Location current {1, 1};
@@ -157,6 +155,17 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
     }
     return tokens;
 }
+
+std::optional<Parse::Index> Parse::Index::get(TokenIter& begin, TokenHolder& holder){
+    std::list<TokenType>::iterator it = begin;
+    auto syntax = OneOf<Token::Number, Token::Id>::get(it, holder);
+    if(syntax){
+        begin = it;
+        return Parse::Index(syntax.value());
+    }
+    return std::nullopt;
+}
+
 
 using namespace Exception;
 string_not_close::string_not_close(Token::Location location) : 

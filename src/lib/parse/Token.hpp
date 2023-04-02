@@ -128,8 +128,8 @@ struct Keyword : public KeywordBase {
     }
 };
 
-}
+} // namespace Token
 
-}
+} // namespace WasmVM
 
 #endif

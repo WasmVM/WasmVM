@@ -12,19 +12,38 @@
 namespace WasmVM {
 namespace Parse {
 
+/*** Types ***/
+
+struct ValueType {
+    ValueType(WasmVM::ValueType type) : type(type){}
+    static std::optional<ValueType> get(TokenIter& begin, TokenHolder& holder);
+    operator WasmVM::ValueType();
+private:
+    WasmVM::ValueType type;
+};
+
+struct FuncType : public WasmVM::FuncType {
+    static std::optional<FuncType> get(TokenIter& begin, TokenHolder& holder);
+    std::map<std::string, index_t> id_map;
+};
+
+struct TableType : public WasmVM::TableType {
+    static std::optional<TableType> get(TokenIter& begin, TokenHolder& holder);
+};
+
+struct MemType : public WasmVM::MemType {
+    static std::optional<MemType> get(TokenIter& begin, TokenHolder& holder);
+};
+
+struct GlobalType : public WasmVM::GlobalType {
+    static std::optional<GlobalType> get(TokenIter& begin, TokenHolder& holder);
+};
+
 struct Index : public OneOf<Token::Number, Token::Id> {
 
     Index(const OneOf<Token::Number, Token::Id>& val) : OneOf<Token::Number, Token::Id>(val){}
 
-    static std::optional<Index> get(TokenIter& begin, TokenHolder& holder){
-        std::list<TokenType>::iterator it = begin;
-        auto syntax = OneOf<Token::Number, Token::Id>::get(it, holder);
-        if(syntax){
-            begin = it;
-            return Index(syntax.value());
-        }
-        return std::nullopt;
-    }
+    static std::optional<Index> get(TokenIter& begin, TokenHolder& holder);
 
     struct Visitor {
         Visitor(const std::map<std::string, index_t>& idmap, bool check = true) : idmap(idmap), check(check){}
@@ -49,19 +68,6 @@ struct Index : public OneOf<Token::Number, Token::Id> {
     Token::Location location;
 };
 
-struct FuncType : public WasmVM::FuncType {
-    static std::optional<FuncType> get(TokenIter& begin, TokenHolder& holder);
-    std::map<std::string, index_t> id_map;
-};
-
-struct ValueType {
-    ValueType(WasmVM::ValueType type) : type(type){}
-    static std::optional<ValueType> get(TokenIter& begin, TokenHolder& holder);
-    operator WasmVM::ValueType();
-private:
-    WasmVM::ValueType type;
-};
-
 using TypeUse = Rule<
     Optional<
         Rule<Token::ParenL, Token::Keyword<"type">, OneOf<Token::Number, Token::Id>, Token::ParenR>
@@ -74,40 +80,11 @@ using TypeUse = Rule<
     >
 >;
 
-struct Type {
-    static std::optional<Type> get(TokenIter& begin, TokenHolder& holder);
-    Type() = default;
-    Type(TypeUse& typeuse);
-    index_t index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps);
-
-    std::variant<std::string, index_t> id;
-    FuncType func;
-    Token::Location location;
-};
-
-struct TableType : public WasmVM::TableType {
-    static std::optional<TableType> get(TokenIter& begin, TokenHolder& holder);
-};
-
-struct MemType : public WasmVM::MemType {
-    static std::optional<MemType> get(TokenIter& begin, TokenHolder& holder);
-};
-
-struct GlobalType : public WasmVM::GlobalType {
-    static std::optional<GlobalType> get(TokenIter& begin, TokenHolder& holder);
-};
-
-struct Import {
-    static std::optional<Import> get(TokenIter& begin, TokenHolder& holder);
-    std::variant<Type, TableType, MemType, GlobalType> desc;
-    std::string module;
-    std::string name;
-    std::string id;
-    Token::Location location;
-};
+/*** Instructions ***/
 
 namespace Instr {
 
+// Generic structures
 template<typename I, conststr S>
     requires (std::is_base_of<WasmVM::Instr::Base, I>::value)
 struct Atomic : public I {
@@ -120,7 +97,6 @@ struct Atomic : public I {
         return std::nullopt;
     }
 };
-
 namespace OneIndex {
 
 struct Base {
@@ -143,8 +119,7 @@ struct Class : public Base {
         return std::nullopt;
     }
 };
-
-}
+} // namespace OneIndex
 
 // Control instructions
 using Unreachable = Atomic<WasmVM::Instr::Unreachable, "unreachable">;
@@ -194,15 +169,7 @@ struct TableInstr {
     TableInstr(const TableInstr&) = default;
     TableInstr(std::optional<Index>& index): tableidx(index) {}
 
-    static std::optional<TableInstr<S>> get(TokenIter& begin, TokenHolder& holder){
-        std::list<TokenType>::iterator it = begin;
-        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, holder);
-        if(syntax){
-            begin = it;
-            return TableInstr<S>(std::get<1>(syntax.value()));
-        }
-        return std::nullopt;
-    }
+    static std::optional<TableInstr<S>> get(TokenIter& begin, TokenHolder& holder);
 
     std::optional<Index> tableidx;
 };
@@ -270,6 +237,23 @@ struct MemoryInstr : public I {
         return std::nullopt;
     }
 };
+template<conststr S>
+struct MemoryOneIndex {
+    MemoryOneIndex(const MemoryOneIndex&) = default;
+    MemoryOneIndex(std::optional<Index>& index): memidx(index) {}
+
+    static std::optional<MemoryOneIndex<S>> get(TokenIter& begin, TokenHolder& holder){
+        std::list<TokenType>::iterator it = begin;
+        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, holder);
+        if(syntax){
+            begin = it;
+            return MemoryOneIndex<S>(std::get<1>(syntax.value()));
+        }
+        return std::nullopt;
+    }
+
+    std::optional<Index> memidx;
+};
 
 using I32_load = MemoryInstr<WasmVM::Instr::I32_load, "i32.load", sizeof(i32_t)>;
 using I64_load = MemoryInstr<WasmVM::Instr::I64_load, "i64.load", sizeof(i64_t)>;
@@ -295,24 +279,6 @@ using I64_store8 = MemoryInstr<WasmVM::Instr::I64_store8, "i64.store8", sizeof(i
 using I64_store16 = MemoryInstr<WasmVM::Instr::I64_store16, "i64.store16", sizeof(i16_t)>;
 using I64_store32 = MemoryInstr<WasmVM::Instr::I64_store32, "i64.store32", sizeof(i32_t)>;
 
-template<conststr S>
-struct MemoryOneIndex {
-    MemoryOneIndex(const MemoryOneIndex&) = default;
-    MemoryOneIndex(std::optional<Index>& index): memidx(index) {}
-
-    static std::optional<MemoryOneIndex<S>> get(TokenIter& begin, TokenHolder& holder){
-        std::list<TokenType>::iterator it = begin;
-        auto syntax = Rule<Token::Keyword<S>, Optional<Index>>::get(it, holder);
-        if(syntax){
-            begin = it;
-            return MemoryOneIndex<S>(std::get<1>(syntax.value()));
-        }
-        return std::nullopt;
-    }
-
-    std::optional<Index> memidx;
-};
-
 using Memory_size = MemoryOneIndex<"memory.size">;
 using Memory_grow = MemoryOneIndex<"memory.grow">;
 using Memory_fill = MemoryOneIndex<"memory.fill">;
@@ -335,19 +301,11 @@ struct Memory_init {
 using Data_drop = OneIndex::Class<"data.drop">;
 
 // Numeric instructions
-template<typename I, conststr S, typename T>
+template<typename I>
 struct NumericConst : public I {
-    NumericConst(const NumericConst&) = default;
-    NumericConst(Token::Number value): I(value.unpack<T>()) {}
-    static std::optional<NumericConst<I, S, T>> get(TokenIter& begin, TokenHolder& holder);
+    static std::optional<NumericConst<I>> get(TokenIter& begin, TokenHolder& holder);
 };
-using I32_const = NumericConst<WasmVM::Instr::I32_const, "i32.const", i32_t>;
-using I64_const = NumericConst<WasmVM::Instr::I64_const, "i64.const", i64_t>;
-using F32_const = NumericConst<WasmVM::Instr::F32_const, "f32.const", f32_t>;
-using F64_const = NumericConst<WasmVM::Instr::F64_const, "f64.const", f64_t>;
-
 struct NumericInstr {
-
     NumericInstr(const NumericInstr&) = default;
     NumericInstr(WasmInstr instr) : instr(instr){}
     static std::optional<NumericInstr> get(TokenIter& begin, TokenHolder& holder);
@@ -355,8 +313,13 @@ struct NumericInstr {
     WasmInstr instr;
 };
 
+using I32_const = NumericConst<WasmVM::Instr::I32_const>;
+using I64_const = NumericConst<WasmVM::Instr::I64_const>;
+using F32_const = NumericConst<WasmVM::Instr::F32_const>;
+using F64_const = NumericConst<WasmVM::Instr::F64_const>;
+
 // Instruction types
-using Instrction = std::variant <
+using Instruction = std::variant <
     Unreachable, Nop, Block, Loop, If, Br, Br_if, Br_table, Return, Call, Call_indirect,
     Ref_null, Ref_is_null, Ref_func,
     Drop, Select,
@@ -369,7 +332,6 @@ using Instrction = std::variant <
     I32_const, I64_const, F32_const, F64_const,
     NumericInstr
 >;
-
 using ConstInstr = std::variant <
     Ref_null, Ref_func, Global_get, I32_const, I64_const, F32_const, F64_const
 >;
@@ -377,30 +339,50 @@ using ConstInstr = std::variant <
 // Block instructions
 struct Block {
     static std::optional<Block> get(TokenIter& begin, TokenHolder& holder);
-    std::vector<Instrction> instrs;
+    std::vector<Instruction> instrs;
     std::string id;
     std::optional<TypeUse> blocktype;
     Token::Location location;
 };
-
 struct Loop {
     static std::optional<Loop> get(TokenIter& begin, TokenHolder& holder);
-    std::vector<Instrction> instrs;
+    std::vector<Instruction> instrs;
     std::string id;
     std::optional<TypeUse> blocktype;
     Token::Location location;
 };
-
 struct If {
     static std::optional<If> get(TokenIter& begin, TokenHolder& holder);
-    std::vector<Instrction> thenInstrs, elseInstrs;
-    std::vector<Instrction> foldInstrs;
+    std::vector<Instruction> thenInstrs, elseInstrs;
+    std::vector<Instruction> foldInstrs;
     std::string id;
     std::optional<TypeUse> blocktype;
     Token::Location location;
 };
 
 }
+
+/*** Modules ***/
+
+struct Type {
+    static std::optional<Type> get(TokenIter& begin, TokenHolder& holder);
+    Type() = default;
+    Type(TypeUse& typeuse);
+    index_t index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps);
+
+    std::variant<std::string, index_t> id;
+    FuncType func;
+    Token::Location location;
+};
+
+struct Import {
+    static std::optional<Import> get(TokenIter& begin, TokenHolder& holder);
+    std::variant<Type, TableType, MemType, GlobalType> desc;
+    std::string module;
+    std::string name;
+    std::string id;
+    Token::Location location;
+};
 
 struct Func {
     static std::optional<Func> get(TokenIter& begin, TokenHolder& holder);
@@ -410,7 +392,7 @@ struct Func {
     std::vector<std::string> exports;
     std::vector<ValueType> locals;
     std::map<std::string, index_t> local_id_map;
-    std::vector<Instr::Instrction> body;
+    std::vector<Instr::Instruction> body;
     Token::Location location;
 };
 
@@ -420,6 +402,17 @@ struct Table {
     std::pair<std::string, std::string> import;
     std::vector<std::string> exports;
     TableType tabletype;
+    std::vector<Instr::ConstInstr> elemlist;
+    Token::Location location;
+};
+
+struct Elem {
+    static std::optional<Elem> get(TokenIter& begin, TokenHolder& holder);
+    std::string id;
+    std::optional<Index> tableidx;
+    std::optional<Instr::ConstInstr> offset;
+    bool declarative = false;
+    RefType reftype;
     std::vector<Instr::ConstInstr> elemlist;
     Token::Location location;
 };

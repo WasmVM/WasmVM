@@ -145,8 +145,12 @@ private:
     }
 };
 
-}
+namespace Instr {
 
-}
+} // namespace Instr
+
+} // namespace Parse
+
+} // namespace WasmVM
 
 #endif
