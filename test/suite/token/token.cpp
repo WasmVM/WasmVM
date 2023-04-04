@@ -16,14 +16,16 @@ Suite token {
             ParseFile(module_paren, "paren.wat");
         })
         Category("malformed", {
-            /* TODO:
-            Throw(Exception::paren_not_close, 
-                module_parse("(()")
-            )
-            Throw(Exception::paren_not_close, 
-                module_parse(")(")
-            )
-            */
+            Test("unmatched", {
+                Throw(WasmVM::Exception::Parse, 
+                    module_parse("(()")
+                )
+            })
+            Test("open pair", {
+                // Throw(WasmVM::Exception::Parse, 
+                //     module_parse(")(")
+                // )
+            })
         })
     })
 };

@@ -21,7 +21,6 @@ endif(BUILD_HOST_MODULES)
 
 set(BUILD_TESTS ON CACHE BOOL "Build tests")
 if(BUILD_TESTS)
-    add_subdirectory(third_party)
     include(CTest)
     enable_testing()
     add_subdirectory(test)

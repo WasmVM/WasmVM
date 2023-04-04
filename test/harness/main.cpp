@@ -16,7 +16,7 @@
 #define COLOR_Fault "\033[1;35m[Fault]\033[0m"
 #define COLOR_Note "\033[1;36m[Note]\033[0m"
 #else
-#define COLOR_Warning "! Warning]"
+#define COLOR_Warning "! Warning"
 #define COLOR_Pass "[Pass]"
 #define COLOR_Fail "[Failed]"
 #define COLOR_Fault "### Fault ###"
