@@ -9,4 +9,6 @@ if(CONSOLE_COLOR)
 endif(CONSOLE_COLOR)
 include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
 add_subdirectory(harness)
+
+# testsuite
 add_subdirectory(suite)

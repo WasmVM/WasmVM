@@ -1,7 +1,3 @@
-set(BUILD_suite_test ON CACHE BOOL "Build test suites")
-
-if(BUILD_suite_test)
-
 macro(add_test_suite suite_name)
   add_executable(suite_${suite_name}_target
     ${suite_name}/${suite_name}.cpp
@@ -25,5 +21,3 @@ endmacro(add_test_suite)
 # Add tests under here
 add_test_suite(comments)
 add_test_suite(token)
-
-endif(BUILD_suite_test)
