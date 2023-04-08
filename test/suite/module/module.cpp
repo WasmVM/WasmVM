@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include <harness.hpp>
-#include <parse/parse.hpp>
+#include <WasmVM.hpp>
 
 using namespace WasmVM;
 using namespace Testing;

@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 #include <exception>
+#include <sstream>
+#include <regex>
 
 #include "harness.hpp"
 
@@ -31,8 +33,12 @@ struct Runner {
 
     void operator()(Testing::TestType test){
         std::cout << std::string(indent + 1, ' ') <<  "- Run test: " << test.name << " ... ";
+        std::stringstream stream;
+        std::streambuf *coutbuf = std::cout.rdbuf();
         try{
+            std::cout.rdbuf(stream.rdbuf());
             test.func(test.passed);
+            std::cout.rdbuf(coutbuf);
         }catch(...){
             std::cout << COLOR_Fault " uncaught exception" << std::endl;
             failed += 1;
@@ -43,6 +49,13 @@ struct Runner {
         }else{
             std::cout << COLOR_Fail << std::endl;
             failed += 1;
+        }
+        std::string output = stream.str();
+        if(!output.empty()){
+            std::cout << std::string(indent + 3, ' ') << "stdout:" << std::endl;
+            std::cout << std::string(indent + 3, ' ');
+            std::regex_replace(std::ostreambuf_iterator<char>(std::cout), output.begin(), output.end(), std::regex("\n"), std::string("\n") + std::string(indent + 3, ' '));
+            std::cout << std::endl;
         }
     }
     void operator()(Testing::CategoryType category){
