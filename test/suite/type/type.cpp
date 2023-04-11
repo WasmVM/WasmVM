@@ -65,8 +65,8 @@ Suite type {
         FuncType param_f32_result_i64 = test_module.types[2];
         Expect(param_f32_result_i64.params.size() == 1);
         Expect(param_f32_result_i64.params[0] == ValueType::f32);
-        // Expect(param_f32_result_i64.results.size() == 1);
-        // Expect(param_f32_result_i64.results[0] == ValueType::i64);
+        Expect(param_f32_result_i64.results.size() == 1);
+        Expect(param_f32_result_i64.results[0] == ValueType::i64);
     })
     Test("with id", {
         module_parse("(type $ty1 (func))");
