@@ -64,21 +64,14 @@ struct Index : public OneOf<Token::Number, Token::Id> {
             return index_npos;
         }
     };
-
-    Token::Location location;
 };
 
-using TypeUse = Rule<
-    Optional<
-        Rule<Token::ParenL, Token::Keyword<"type">, OneOf<Token::Number, Token::Id>, Token::ParenR>
-    >,
-    Repeat<
-        Rule<Token::ParenL, Token::Keyword<"param">, Optional<Token::Id>, Repeat<ValueType>, Token::ParenR>
-    >,
-    Repeat<
-        Rule<Token::ParenL, Token::Keyword<"result">, Repeat<ValueType>, Token::ParenR>
-    >
->;
+struct TypeUse {
+    static std::optional<TypeUse> get(TokenIter& begin, TokenHolder& holder);
+    std::optional<Index> index;
+    FuncType functype;
+    Token::Location location;
+};
 
 /*** Instructions ***/
 
@@ -367,17 +360,19 @@ struct If {
 struct Type {
     static std::optional<Type> get(TokenIter& begin, TokenHolder& holder);
     Type() = default;
-    Type(TypeUse& typeuse);
-    index_t index(WasmModule& module, std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps);
+    static index_t index(
+        TypeUse& typeuse, WasmModule& module, 
+        std::map<std::string, index_t>& typeid_map, std::vector<std::map<std::string, index_t>>& paramid_maps
+    );
 
-    std::variant<std::string, index_t> id;
+    std::string id;
     FuncType func;
     Token::Location location;
 };
 
 struct Import {
     static std::optional<Import> get(TokenIter& begin, TokenHolder& holder);
-    std::variant<Type, TableType, MemType, GlobalType> desc;
+    std::variant<TableType, TypeUse, MemType, GlobalType> desc;
     std::string module;
     std::string name;
     std::string id;
@@ -386,7 +381,7 @@ struct Import {
 
 struct Func {
     static std::optional<Func> get(TokenIter& begin, TokenHolder& holder);
-    Type type;
+    TypeUse typeuse;
     std::string id;
     std::pair<std::string, std::string> import;
     std::vector<std::string> exports;

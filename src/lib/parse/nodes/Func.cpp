@@ -26,7 +26,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
         }
         import.module = node.import.first;
         import.name = node.import.second;
-        import.desc.emplace<index_t>(node.type.index(module, typeid_map, paramid_maps));
+        import.desc.emplace<index_t>(Parse::Type::index(node.typeuse, module, typeid_map, paramid_maps));
         func_indices.records.emplace_back(IndexSpace::Type::Import);
         return;
     }
@@ -43,53 +43,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
     WasmFunc& func = module.funcs.emplace_back();
     
     // Type
-    std::map<std::string, index_t> paramid_map;
-    {
-        index_t idx = std::visit(overloaded {
-            [&](std::string id){
-                if(id.empty()){
-                    return index_npos;
-                }else if(typeid_map.contains(id)){
-                    return typeid_map[id];
-                }else{
-                    throw Exception::unknown_identifier(node.location, std::string(" func type '") + id + "' not found");
-                }
-            },
-            [&](index_t id){
-                return id;
-            }
-        }, node.type.id);
-
-        FuncType functype;
-        bool create_type = true;
-        if(idx != index_npos){
-            if(idx >= module.types.size()){
-                throw Exception::index_out_of_range(node.location, " : type not found");
-            }
-            if(node.type.func.params.empty() && node.type.func.results.empty()){
-                func.typeidx = idx;
-                paramid_maps.emplace_back(paramid_maps[idx]);
-                create_type = false;
-            }else{
-                functype = module.types[idx];
-                paramid_map = paramid_maps[idx];
-            }
-        }
-        if(create_type){
-            size_t param_count = functype.params.size();
-            for(auto id_pair : node.type.func.id_map){
-                if(paramid_map.contains(id_pair.first)){
-                    throw Exception::duplicated_identifier(node.location, std::string(" : func param ") + id_pair.first);
-                }
-                paramid_map[id_pair.first] = id_pair.second + param_count;
-            }
-            functype.params.insert(functype.params.end(), node.type.func.params.begin(), node.type.func.params.end());
-            functype.results.insert(functype.results.end(), node.type.func.results.begin(), node.type.func.results.end());
-            func.typeidx = module.types.size();
-            paramid_maps.emplace_back(paramid_map);
-            module.types.emplace_back(functype);
-        }
-    }
+    func.typeidx = Parse::Type::index(node.typeuse, module, typeid_map, paramid_maps);
 
     // Local
     for(Parse::ValueType local : node.locals){
@@ -99,7 +53,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
     // Body
     std::map<std::string, index_t> labelid_map;
     labelid_map[node.id] = 0;
-    std::map<std::string, index_t> localid_map(paramid_map);
+    std::map<std::string, index_t> localid_map(paramid_maps[func.typeidx]);
     localid_map.merge(node.local_id_map);
     for(Parse::Instr::Instruction instrnode : node.body){
         std::visit(InstrVisitor::Sema(*this, func, labelid_map, localid_map), instrnode);
@@ -141,12 +95,12 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holde
         std::visit(overloaded {
             [&](importrule& node){
                 func.import = std::pair<std::string, std::string>(std::get<2>(node).value, std::get<3>(node).value);
-                func.type = Parse::Type(std::get<5>(node));
+                func.typeuse = std::get<5>(node);
             },
             [&](funcrule& node){
-                func.type = Parse::Type(std::get<0>(node));
+                func.typeuse = std::get<0>(node);
                 // Local
-                index_t local_idx = func.type.func.params.size();
+                index_t local_idx = func.typeuse.functype.params.size();
                 for(auto local : std::get<1>(node)){
                     // location
                     Token::Location location = std::get<0>(local).location;

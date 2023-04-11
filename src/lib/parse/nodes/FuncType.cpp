@@ -31,9 +31,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, TokenHolde
         auto rule = syntax.value();
 
         // param
-        auto params = std::get<0>(rule);
-        for(index_t i = 0; i < params.size(); ++i){
-            auto param = params[i];
+        for(auto param : std::get<0>(rule)){
             // location
             Token::Location location = std::get<0>(param).location;
             auto id = std::get<2>(param);
@@ -50,7 +48,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, TokenHolde
                 if(func_type.id_map.contains(id->value)){
                     throw Exception::duplicated_identifier(location, std::string(": param ") + id->value);
                 }
-                func_type.id_map[id->value] = i;
+                func_type.id_map[id->value] = func_type.params.size();
                 func_type.params.emplace_back(types.front());
             }else{
                 for(Parse::ValueType type : types){
@@ -60,8 +58,7 @@ std::optional<Parse::FuncType> Parse::FuncType::get(TokenIter& begin, TokenHolde
         }
 
         // result
-        auto results = std::get<1>(rule);
-        for(auto result : results){
+        for(auto result : std::get<1>(rule)){
             auto types = std::get<2>(result);
             for(Parse::ValueType type : types){
                 func_type.results.emplace_back(type);

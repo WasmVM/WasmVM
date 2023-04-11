@@ -11,8 +11,8 @@ void ModuleVisitor::operator()(Parse::Import& node){
     WasmImport& import = module.imports.emplace_back();
     std::visit(overloaded {
         // Func
-        [&](Parse::Type type){
-            import.desc.emplace<index_t>(type.index(module, typeid_map, paramid_maps));
+        [&](Parse::TypeUse typeuse){
+            import.desc.emplace<index_t>(Parse::Type::index(typeuse, module, typeid_map, paramid_maps));
             // id
             if(!node.id.empty()){
                 if(func_indices.id_map.contains(node.id)){
@@ -91,7 +91,7 @@ void ImportVisitor::operator()(Syntax::ImportDesc::Func& desc){
     auto id = std::get<2>(desc);
     import.id = id ? id->value : "";
     import.location = id->location;
-    import.desc.emplace<Parse::Type>(std::get<3>(desc));
+    import.desc.emplace<Parse::TypeUse>(std::get<3>(desc));
 }
 
 void ImportVisitor::operator()(Syntax::ImportDesc::Table& desc){

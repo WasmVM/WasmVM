@@ -15,14 +15,16 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Type,
         Parse::Import,
         Parse::Func,
-        Parse::Table
+        Parse::Table,
+        Parse::Elem,
+        Parse::Rule<Token::ParenL, Token::ParenR>
     >>;
 
     using modulerule = Parse::Rule<
         Token::ParenL, Token::Keyword<"module">, Parse::Optional<Token::Id>, modulefields, Token::ParenR
     >;
 
-    WasmModule module;
+    WasmModule wasm_module;
     TokenIter it = tokens.begin();
     TokenHolder holder(tokens.begin(), tokens.end());
 
@@ -34,7 +36,7 @@ WasmModule WasmVM::module_parse(std::string src){
                 // id
                 auto id = std::get<2>(rule);
                 if(id){
-                    module.id = id->value;
+                    wasm_module.id = id->value;
                 }
                 return std::get<3>(rule);
             },
@@ -44,12 +46,12 @@ WasmModule WasmVM::module_parse(std::string src){
         }, syntax.value());
 
         // sections
-        ModuleVisitor visitor(module);
+        ModuleVisitor visitor(wasm_module);
         for(auto section : sections){
             std::visit(visitor, section);
         }
         
-        return module;
+        return wasm_module;
     }
     if(holder.has_next(it)){
         throw holder.error();

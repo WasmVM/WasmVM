@@ -59,6 +59,14 @@ struct ModuleVisitor {
         for(auto global_id : global_indices.id_map){
             std::cout << "  " << global_id.first << "(" << global_id.second << ")" << std::endl;
         }
+        std::cout << "== elem index ==" << std::endl;
+        for(auto elem_id : elemid_map){
+            std::cout << "  " << elem_id.first << "(" << elem_id.second << ")" << std::endl;
+        }
+        std::cout << "== data index ==" << std::endl;
+        for(auto data_id : dataid_map){
+            std::cout << "  " << data_id.first << "(" << data_id.second << ")" << std::endl;
+        }
     }
 
     void operator()(Parse::Type& type);
@@ -66,6 +74,7 @@ struct ModuleVisitor {
     void operator()(Parse::Func& func);
     void operator()(Parse::Table& table);
     void operator()(Parse::Elem& elem);
+    void operator()(Parse::Rule<Token::ParenL, Token::ParenR>&){}
 };
 
 struct ImportVisitor {

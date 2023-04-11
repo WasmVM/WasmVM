@@ -32,7 +32,7 @@ static std::unordered_set<std::string> keywords = {
     "f32.convert_s_i32", "f32.convert_u_i32", "f32.convert_s_i64", "f32.convert_u_i64", "f32.demote_f64", "f64.convert_s_i32", "f64.convert_u_i32", "f64.convert_s_i64", "f64.convert_u_i64", "f64.promote_f32", 
     "i32.reinterpret_f32", "i64.reinterpret_f64", "f32.reinterpret_i32", "f64.reinterpret_i64", "i32.extend8_s", "i32.extend16_s", "i64.extend8_s", "i64.extend16_s", "i64.extend32_s", 
     "i32.trunc_sat_f32_s", "i32.trunc_sat_f32_u", "i32.trunc_sat_f64_s", "i32.trunc_sat_f64_u", "i64.trunc_sat_f32_s", "i64.trunc_sat_f32_u", "i64.trunc_sat_f64_s", "i64.trunc_sat_f64_u",
-    "elem", "item",
+    "elem", "item", "declare",
 };
 
 #endif

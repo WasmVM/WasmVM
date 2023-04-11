@@ -53,7 +53,7 @@ template<> void InstrVisitor::Sema::operator()<Parse::Instr::Call>(Parse::Instr:
 }
 template<> void InstrVisitor::Sema::operator()<Parse::Instr::Call_indirect>(Parse::Instr::Call_indirect& node){
     index_t tableidx = node.tableidx ? std::visit(Parse::Index::Visitor(module.table_indices.id_map), node.tableidx.value()) : 0;
-    index_t typeidx = Parse::Type(node.type).index(module.module, module.typeid_map, module.paramid_maps);
+    index_t typeidx = Parse::Type::index(node.type, module.module, module.typeid_map, module.paramid_maps);
     instrs.emplace_back(WasmVM::Instr::Call_indirect(tableidx, typeidx));
 }
 
@@ -66,11 +66,11 @@ template<> void InstrVisitor::Sema::operator()<Parse::Instr::Block>(Parse::Instr
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        Parse::Type type(node.blocktype.value());
-        if(!type.func.id_map.empty()){
+        Parse::TypeUse typeuse = node.blocktype.value();
+        if(!typeuse.functype.id_map.empty()){
             Exception::Warning("param ids in block are ignored");
         }
-        instr = WasmVM::Instr::Block(type.index(module.module, module.typeid_map, module.paramid_maps));
+        instr = WasmVM::Instr::Block(Parse::Type::index(typeuse, module.module, module.typeid_map, module.paramid_maps));
     }
     instrs.emplace_back(instr);
     for(Parse::Instr::Instruction instrnode : node.instrs){
@@ -90,11 +90,11 @@ template<> void InstrVisitor::Sema::operator()<Parse::Instr::Loop>(Parse::Instr:
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        Parse::Type type(node.blocktype.value());
-        if(!type.func.id_map.empty()){
+        Parse::TypeUse typeuse = node.blocktype.value();
+        if(!typeuse.functype.id_map.empty()){
             Exception::Warning("param ids in loop are ignored");
         }
-        instr = WasmVM::Instr::Loop(type.index(module.module, module.typeid_map, module.paramid_maps));
+        instr = WasmVM::Instr::Loop(Parse::Type::index(typeuse, module.module, module.typeid_map, module.paramid_maps));
     }
     instrs.emplace_back(instr);
     for(Parse::Instr::Instruction instrnode : node.instrs){
@@ -114,11 +114,11 @@ template<> void InstrVisitor::Sema::operator()<Parse::Instr::If>(Parse::Instr::I
         labelid_map[node.id] = labelid_map.size();
     }
     if(node.blocktype){
-        Parse::Type type(node.blocktype.value());
-        if(!type.func.id_map.empty()){
+        Parse::TypeUse typeuse = node.blocktype.value();
+        if(!typeuse.functype.id_map.empty()){
             Exception::Warning("param ids in if are ignored");
         }
-        instr = WasmVM::Instr::If(type.index(module.module, module.typeid_map, module.paramid_maps));
+        instr = WasmVM::Instr::If(Parse::Type::index(typeuse, module.module, module.typeid_map, module.paramid_maps));
     }
     // Folded
     for(Parse::Instr::Instruction instrnode : node.foldInstrs){

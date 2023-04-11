@@ -25,7 +25,7 @@ add_library(WasmVM_core SHARED
 add_library(WasmVM_obj OBJECT
     parse/parse.cpp
     parse/Token.cpp
-    parse/nodes/Module.cpp
+    parse/nodes/module.cpp
     parse/nodes/Type.cpp
     parse/nodes/FuncType.cpp
     parse/nodes/ValueType.cpp
@@ -36,6 +36,7 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/Func.cpp
     parse/nodes/Table.cpp
     parse/nodes/elem.cpp
+    parse/nodes/TypeUse.cpp
     parse/nodes/instruction.cpp
     parse/nodes/instruction/numeric.cpp
     parse/nodes/instruction/const.cpp
@@ -52,7 +53,6 @@ add_library(WasmVM_obj OBJECT
     dump/instr.cpp
     dump/export.cpp
     dump/elem.cpp
-    Types.cpp
     exception.cpp
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
