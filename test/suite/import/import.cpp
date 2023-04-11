@@ -62,17 +62,27 @@ Suite import {
         Expect(std::holds_alternative<TableType>(imp1.desc));
         TableType& table1 = std::get<TableType>(imp1.desc);
         Expect(table1.limits.min == 4);
-        Expect(table1.limits.max && table0.limits.max.value() == 5);
+        Expect(table1.limits.max && table1.limits.max.value() == 5);
         Expect(table1.reftype == RefType::externref);
         WasmImport& imp2 = test_module.imports[2];
         Expect(std::holds_alternative<TableType>(imp2.desc));
         TableType& table2 = std::get<TableType>(imp2.desc);
-        Expect(table1.limits.min == 6);
-        Expect(!table1.limits.max);
-        Expect(table1.reftype == RefType::funcref);
+        Expect(table2.limits.min == 6);
+        Expect(!table2.limits.max);
+        Expect(table2.reftype == RefType::funcref);
     })
     Test("memory", {
-
+        ParseFile(test_module, "memory.wat");
+        WasmImport& imp0 = test_module.imports[0];
+        Expect(std::holds_alternative<MemType>(imp0.desc));
+        MemType& mem0 = std::get<MemType>(imp0.desc);
+        Expect(mem0.min == 2);
+        Expect(mem0.max && mem0.max.value() == 3);
+        WasmImport& imp1 = test_module.imports[1];
+        Expect(std::holds_alternative<MemType>(imp1.desc));
+        MemType& mem1 = std::get<MemType>(imp1.desc);
+        Expect(mem1.min == 6);
+        Expect(!mem1.max);
     })
     Test("global", {
 
