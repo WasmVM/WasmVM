@@ -14,12 +14,6 @@ jobs:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
-      - run: git submodule status third_party/wabt > .wabt_head
-      - uses: actions/cache@v2
-        with:
-          path:
-            ${{ github.workspace }}/build/third_party/wabt
-          key: ${{ hashFiles('.wabt_head') }}
       - run: mkdir -p build && cd build && cmake -G Ninja --config Release .. && ninja
       - uses: actions/cache@v2
         with:
