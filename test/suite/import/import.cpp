@@ -85,6 +85,16 @@ Suite import {
         Expect(!mem1.max);
     })
     Test("global", {
-
+        ParseFile(test_module, "global.wat");
+        WasmImport& imp0 = test_module.imports[0];
+        Expect(std::holds_alternative<GlobalType>(imp0.desc));
+        GlobalType& glob0 = std::get<GlobalType>(imp0.desc);
+        Expect(glob0.mut == GlobalType::Mut::constant);
+        Expect(glob0.type == ValueType::i64);
+        WasmImport& imp1 = test_module.imports[1];
+        Expect(std::holds_alternative<GlobalType>(imp1.desc));
+        GlobalType& glob1 = std::get<GlobalType>(imp1.desc);
+        Expect(glob1.mut == GlobalType::Mut::variable);
+        Expect(glob1.type == ValueType::f32);
     })
 };
