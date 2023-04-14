@@ -2,6 +2,7 @@
 #define WASMVM_PP_PARSE_TOKEN_DEF
 
 #include <string>
+#include <list>
 #include <utility>
 #include <optional>
 
@@ -39,6 +40,8 @@ using TokenType = std::variant<
     Token::MemArgBase,
     Token::KeywordBase
 >;
+
+std::list<TokenType> tokenize(std::string_view src);
 
 using TokenIter = std::list<TokenType>::iterator;
 

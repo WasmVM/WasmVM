@@ -10,8 +10,8 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmElem& elem){
     stream << "  (elem ";
     switch(elem.mode.type){
         case WasmElem::ElemMode::Mode::active :
-            stream << "( table " << elem.mode.tableidx.value() << " ) ";
-            stream << "( offset " << elem.mode.offset.value() << " ) ";
+            stream << "(table " << elem.mode.tableidx.value() << ") ";
+            stream << "(offset " << elem.mode.offset.value() << ") ";
         break;
         case WasmElem::ElemMode::Mode::declarative :
             stream << "declare ";
@@ -28,7 +28,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmElem& elem){
         break;
     }
     for(ConstInstr& instr : elem.elemlist){
-        stream << std::endl << "    (item " << instr << " )";
+        stream << std::endl << "    (item " << instr << ")";
     }
     return stream << std::endl << "  )" << std::endl;
 }

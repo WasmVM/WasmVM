@@ -1,8 +1,6 @@
 #ifndef WASMVM_PP_PARSE_PARSE_DEF
 #define WASMVM_PP_PARSE_PARSE_DEF
 
-#include <string>
-#include <list>
 #include <utility>
 #include <vector>
 #include <concepts>
@@ -13,8 +11,6 @@
 #include "exception.hpp"
 
 namespace WasmVM {
-
-std::list<TokenType> tokenize(std::string_view src);
 
 namespace Parse {
 

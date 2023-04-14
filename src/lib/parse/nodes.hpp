@@ -408,7 +408,7 @@ struct Elem {
     std::optional<Instr::ConstInstr> offset;
     bool declarative = false;
     RefType reftype;
-    std::vector<Instr::ConstInstr> elemlist;
+    std::vector<std::variant<Instr::ConstInstr, Index>> elemlist;
     Token::Location location;
 };
 
