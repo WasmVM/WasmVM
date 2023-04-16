@@ -15,6 +15,7 @@ std::ostream& operator<<(std::ostream& stream, ConstInstr& instr);
 std::ostream& operator<<(std::ostream& stream, TableType& table);
 std::ostream& operator<<(std::ostream& stream, WasmExport& export_);
 std::ostream& operator<<(std::ostream& stream, WasmElem& elem);
+std::ostream& operator<<(std::ostream& stream, WasmData& data);
 
 }
 

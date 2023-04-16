@@ -17,6 +17,7 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Func,
         Parse::Table,
         Parse::Elem,
+        Parse::Data,
         Parse::Rule<Token::ParenL, Token::ParenR>
     >>;
 

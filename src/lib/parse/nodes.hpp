@@ -412,6 +412,15 @@ struct Elem {
     Token::Location location;
 };
 
+struct Data {
+    static std::optional<Data> get(TokenIter& begin, TokenHolder& holder);
+    std::string id;
+    std::optional<Index> memidx;
+    std::optional<Instr::ConstInstr> offset;
+    std::vector<Token::String> inits;
+    Token::Location location;
+};
+
 }
 }
 #endif

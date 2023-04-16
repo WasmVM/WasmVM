@@ -36,6 +36,7 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/Func.cpp
     parse/nodes/Table.cpp
     parse/nodes/Elem.cpp
+    parse/nodes/Data.cpp
     parse/nodes/TypeUse.cpp
     parse/nodes/instruction.cpp
     parse/nodes/instruction/numeric.cpp
@@ -53,6 +54,7 @@ add_library(WasmVM_obj OBJECT
     dump/instr.cpp
     dump/export.cpp
     dump/elem.cpp
+    dump/data.cpp
     exception.cpp
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)

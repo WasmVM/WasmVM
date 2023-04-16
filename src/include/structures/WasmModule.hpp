@@ -8,6 +8,7 @@
 #include <structures/WasmFunc.hpp>
 #include <structures/WasmExport.hpp>
 #include <structures/WasmElem.hpp>
+#include <structures/WasmData.hpp>
 
 namespace WasmVM {
 
@@ -19,6 +20,7 @@ struct WasmModule {
     std::vector<TableType> tables;
     std::vector<WasmExport> exports;
     std::vector<WasmElem> elems;
+    std::vector<WasmData> datas;
 };
 
 }

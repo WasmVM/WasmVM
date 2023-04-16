@@ -29,6 +29,9 @@ namespace Exception {
     struct unexpected_token : public Parse {
         unexpected_token(Token::Location location, std::string message);
     };
+    struct invalid_character : public Parse {
+        invalid_character(Token::Location location, std::string message);
+    };
 }
 
 using TokenType = std::variant<

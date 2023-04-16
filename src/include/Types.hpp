@@ -7,6 +7,7 @@
 #include <utility>
 #include <string>
 #include <cstdint>
+#include <cstddef>
 
 namespace WasmVM {
 
@@ -22,6 +23,7 @@ using i8_t = int8_t;
 using u16_t = uint16_t;
 using i16_t = int16_t;
 
+using byte_t = std::byte;
 using index_t = uint32_t;
 using offset_t = u64_t;
 using align_t = uint8_t;

@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <regex>
 #include <ranges>
+#include <cctype>
 
 #include "Keywords.hpp"
 
@@ -55,6 +56,8 @@ Exception::unexpected_token::unexpected_token(Token::Location location, std::str
     Parse(std::string("unexpected token") + message, location) {}
 Exception::unexpected_keyword::unexpected_keyword(Token::Location location, std::string token, std::string expected) :
     Parse(std::string("unexpected keyword '") + token + "', expected '" + expected + "'", location) {}
+Exception::invalid_character::invalid_character(Token::Location location, std::string message) :
+    Parse(std::string("invalid character") + message, location) {}
 
 ParenL::ParenL(Location loc) : TokenBase(loc, "("){}
 
@@ -257,12 +260,62 @@ std::list<TokenType> WasmVM::tokenize(std::string_view src){
                 std::string seq {*it};
                 bool escape = false;
                 for(next_char(it, current); (it != src.end()) && (escape || (*it != '\"')); next_char(it, current)){
+                    if((u8_t)*it < 0x20){
+                        throw Exception::invalid_character(location, ": control characters can only be specified by escape sequence");
+                    }
                     if((*it == '\\') && !escape){
                         escape = true;
-                    }else{
+                        continue;
+                    }else if(escape){
+                        if(std::isxdigit(*it) && (it + 1) != src.end() && std::isxdigit(it[1])){
+                            std::string valstr {'0', 'x', *it, it[1]};
+                            next_char(it, current);
+                            seq += (unsigned char)std::stoul(valstr, nullptr, 16);
+                        }else if(*it == 'u' && (it + 1) != src.end() && it[1] == '{'){
+                            std::string valstr = "0x";
+                            for(next_char(it, current), next_char(it, current); (it != src.end()) && (*it != '}'); next_char(it, current)){
+                                valstr += *it;
+                            }
+                            static std::regex hexnum("0x[0-9a-fA-F](_?[0-9a-fA-F])*");
+                            if(std::regex_match(valstr, hexnum)){
+                                valstr.erase(std::remove(valstr.begin(), valstr.end(), '_'), valstr.end());
+                                unsigned long value = std::stoul(valstr, nullptr, 16);
+                                if((value >= 0xD800 && value < 0xE000) || value >= 0x110000){
+                                    throw Exception::invalid_character(location, ": invalid unicode value");
+                                }
+                                if(value > 0xffff){
+                                    seq += (unsigned char)((value >> 16) & 0xff);
+                                }
+                                if(value > 0xff){
+                                    seq += (unsigned char)((value >> 8) & 0xff);
+                                }
+                                seq += (unsigned char)(value & 0xff);
+                            }else{
+                                throw Exception::invalid_character(location, ": invalid unicode format");
+                            }
+                        }else{
+                            switch(*it){
+                                case 't':
+                                    seq += '\t';
+                                break;
+                                case 'n':
+                                    seq += '\n';
+                                break;
+                                case 'r':
+                                    seq += '\r';
+                                break;
+                                case '"':
+                                    seq += '"';
+                                break;
+                                default:
+                                    seq += *it;
+                                break;
+                            }
+                        }
                         escape = false;
+                    }else{
+                        seq += *it;
                     }
-                    seq += *it;
                 }
                 if(it == src.end()){
                     throw Exception::string_not_close(location);

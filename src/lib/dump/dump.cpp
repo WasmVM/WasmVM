@@ -33,6 +33,9 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(WasmElem& elem : module.elems){
         stream << elem;
     }
+    for(WasmData& data : module.datas){
+        stream << data;
+    }
     stream << ")" << std::endl;
     return stream.str();
 }
