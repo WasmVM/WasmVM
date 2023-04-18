@@ -7,9 +7,10 @@
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Table& node){
+    index_t tableidx = table_indices.records.size();
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::table, table_indices.records.size());
+        module.exports.emplace_back(name, WasmExport::DescType::table, tableidx);
     }
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){
@@ -18,7 +19,7 @@ void ModuleVisitor::operator()(Parse::Table& node){
             if(table_indices.id_map.contains(node.id)){
                 throw Exception::duplicated_identifier(node.location, std::string(" : table ") + node.id);
             }
-            table_indices.id_map[node.id] = table_indices.records.size();
+            table_indices.id_map[node.id] = tableidx;
         }
         import.module = node.import.first;
         import.name = node.import.second;
@@ -31,7 +32,7 @@ void ModuleVisitor::operator()(Parse::Table& node){
         if(table_indices.id_map.contains(node.id)){
             throw Exception::duplicated_identifier(node.location, std::string(" : table ") + node.id);
         }
-        table_indices.id_map[node.id] = table_indices.records.size();
+        table_indices.id_map[node.id] = tableidx;
     }
     table_indices.records.emplace_back(IndexSpace::Type::Normal);
     // table
@@ -41,7 +42,7 @@ void ModuleVisitor::operator()(Parse::Table& node){
         WasmElem& elem = module.elems.emplace_back();
         elem.type = node.tabletype.reftype;
         elem.mode.type = WasmElem::ElemMode::Mode::active;
-        elem.mode.tableidx = 0;
+        elem.mode.tableidx = tableidx;
         elem.mode.offset.emplace(WasmVM::Instr::I32_const(0));
         for(Parse::Instr::ConstInstr& item : node.elemlist){
             std::visit(InstrVisitor::ConstSema(*this, elem.elemlist), item);

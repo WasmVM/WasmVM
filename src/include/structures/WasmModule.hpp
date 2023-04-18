@@ -18,6 +18,7 @@ struct WasmModule {
     std::vector<WasmImport> imports;
     std::vector<WasmFunc> funcs;
     std::vector<TableType> tables;
+    std::vector<MemType> mems;
     std::vector<WasmExport> exports;
     std::vector<WasmElem> elems;
     std::vector<WasmData> datas;

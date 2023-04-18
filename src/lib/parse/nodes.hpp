@@ -401,6 +401,16 @@ struct Table {
     Token::Location location;
 };
 
+struct Memory {
+    static std::optional<Memory> get(TokenIter& begin, TokenHolder& holder);
+    std::string id;
+    std::pair<std::string, std::string> import;
+    std::vector<std::string> exports;
+    MemType memtype;
+    std::vector<Token::String> inits;
+    Token::Location location;
+};
+
 struct Elem {
     static std::optional<Elem> get(TokenIter& begin, TokenHolder& holder);
     std::string id;

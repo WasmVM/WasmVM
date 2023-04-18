@@ -66,3 +66,12 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, TableType& table){
     stream << ")" << std::endl;
     return stream;
 }
+
+std::ostream& WasmVM::operator<<(std::ostream& stream, MemType& mem){
+    stream << "  (memory " << mem.min;
+    if(mem.max.has_value()){
+        stream << " " << mem.max.value();
+    }
+    stream << ")" << std::endl;
+    return stream;
+}

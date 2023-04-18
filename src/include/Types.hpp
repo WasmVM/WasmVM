@@ -30,6 +30,7 @@ using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
+constexpr u64_t page_size = 65536;
 static_assert(sizeof(f32_t) == sizeof(i32_t));
 static_assert(sizeof(f64_t) == sizeof(i64_t));
 

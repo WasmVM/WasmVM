@@ -27,9 +27,14 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(TableType& table : module.tables){
         stream << table;
     }
+    for(MemType& mem : module.mems){
+        stream << mem;
+    }
+    // TODO: Globals
     for(WasmExport& export_ : module.exports){
         stream << export_;
     }
+    // TODO: Starts
     for(WasmElem& elem : module.elems){
         stream << elem;
     }

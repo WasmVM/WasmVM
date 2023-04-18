@@ -22,6 +22,6 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmExport& export_){
             stream << " table ";
         break;
     }
-    stream << export_.index << " )" << std::endl;
+    stream << export_.index << ")" << std::endl;
     return stream;
 }
