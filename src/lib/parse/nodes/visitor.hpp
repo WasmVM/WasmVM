@@ -74,6 +74,7 @@ struct ModuleVisitor {
     void operator()(Parse::Func& func);
     void operator()(Parse::Table& table);
     void operator()(Parse::Memory& mem);
+    void operator()(Parse::Global& global);
     void operator()(Parse::Elem& elem);
     void operator()(Parse::Data& data);
     void operator()(Parse::Rule<Token::ParenL, Token::ParenR>&){}

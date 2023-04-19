@@ -17,6 +17,7 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Func,
         Parse::Table,
         Parse::Memory,
+        Parse::Global,
         Parse::Elem,
         Parse::Data,
         Parse::Rule<Token::ParenL, Token::ParenR>
@@ -35,11 +36,6 @@ WasmModule WasmVM::module_parse(std::string src){
     if(syntax && !holder.has_next(it)){
         auto sections = std::visit(overloaded {
             [&](modulerule& rule){
-                // id
-                auto id = std::get<2>(rule);
-                if(id){
-                    wasm_module.id = id->value;
-                }
                 return std::get<3>(rule);
             },
             [&](modulefields& fields){

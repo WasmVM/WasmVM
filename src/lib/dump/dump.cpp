@@ -14,7 +14,7 @@ using namespace WasmVM;
 
 std::string WasmVM::module_dump(WasmModule& module){
     std::stringstream stream;
-    stream << "(module " << module.id << std::endl;
+    stream << "(module " << std::endl;
     for(FuncType& type : module.types){
         stream << type;
     }
@@ -30,11 +30,15 @@ std::string WasmVM::module_dump(WasmModule& module){
     for(MemType& mem : module.mems){
         stream << mem;
     }
-    // TODO: Globals
+    for(WasmGlobal& global : module.globals){
+        stream << global;
+    }
     for(WasmExport& export_ : module.exports){
         stream << export_;
     }
-    // TODO: Starts
+    if(module.start){
+        stream << "  (start " << module.start.value() << ")" << std::endl;
+    }
     for(WasmElem& elem : module.elems){
         stream << elem;
     }

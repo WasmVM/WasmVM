@@ -36,7 +36,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
             stream << ")";
         },
         [&](WasmVM::GlobalType global){
-            if(global.mut == WasmVM::GlobalType::Mut::constant){
+            if(global.mut == WasmVM::GlobalType::Mut::variable){
                 stream << " (global " << "(mut " << global.type << ") )";
             }else{
                 stream << " (global " << global.type << " )";

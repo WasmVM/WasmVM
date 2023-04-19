@@ -81,7 +81,6 @@ struct FuncType {
     }
 };
 
-
 struct Limits {
     index_t min;
     std::optional<index_t> max;

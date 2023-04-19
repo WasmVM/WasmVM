@@ -431,6 +431,16 @@ struct Data {
     Token::Location location;
 };
 
+struct Global {
+    static std::optional<Global> get(TokenIter& begin, TokenHolder& holder);
+    std::string id;
+    std::pair<std::string, std::string> import;
+    std::vector<std::string> exports;
+    GlobalType type;
+    std::optional<Instr::ConstInstr> init;
+    Token::Location location;
+};
+
 }
 }
 #endif
