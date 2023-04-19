@@ -39,6 +39,9 @@ namespace Exception {
     struct invalid_immediate_value : public Parse {
         invalid_immediate_value(Token::Location location, std::string message);
     };
+    struct multiple_start : public Parse {
+        multiple_start(Token::Location location);
+    };
     struct unexpected_eof : public Exception {
         unexpected_eof();
     };

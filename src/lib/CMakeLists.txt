@@ -40,6 +40,7 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/Data.cpp
     parse/nodes/TypeUse.cpp
     parse/nodes/Global.cpp
+    parse/nodes/Start.cpp
     parse/nodes/instruction.cpp
     parse/nodes/instruction/numeric.cpp
     parse/nodes/instruction/const.cpp

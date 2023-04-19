@@ -441,6 +441,13 @@ struct Global {
     Token::Location location;
 };
 
+struct Start {
+    static std::optional<Start> get(TokenIter& begin, TokenHolder& holder);
+    Start(Index funcidx) : funcidx(funcidx) {}
+    Index funcidx;
+    Token::Location location;
+};
+
 }
 }
 #endif

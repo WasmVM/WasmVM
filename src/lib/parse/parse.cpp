@@ -46,5 +46,7 @@ invalid_folded_instruction::invalid_folded_instruction(Token::Location location)
     Parse("invalid folded instruction", location) {}
 invalid_immediate_value::invalid_immediate_value(Token::Location location, std::string message) :
     Parse(std::string("invalid immediate value") + message, location) {}
+multiple_start::multiple_start(Token::Location location) :
+    Parse(std::string("multiple start section"), location) {}
 unexpected_eof::unexpected_eof() :
     Exception(std::string("unexpected EOF")) {}
