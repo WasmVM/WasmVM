@@ -448,6 +448,15 @@ struct Start {
     Token::Location location;
 };
 
+struct Export {
+    static std::optional<Export> get(TokenIter& begin, TokenHolder& holder);
+    Export(Index index) : index(index) {}
+    std::string name;
+    WasmExport::DescType type;
+    Index index;
+    Token::Location location;
+};
+
 }
 }
 #endif

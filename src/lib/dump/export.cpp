@@ -10,18 +10,18 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmExport& export_){
     stream << "  (export " << export_.name;
     switch(export_.desc){
         case WasmExport::DescType::func :
-            stream << " func ";
+            stream << " (func ";
         break;
         case WasmExport::DescType::global :
-            stream << " global ";
+            stream << " (global ";
         break;
         case WasmExport::DescType::mem :
-            stream << " mem ";
+            stream << " (mem ";
         break;
         case WasmExport::DescType::table :
-            stream << " table ";
+            stream << " (table ";
         break;
     }
-    stream << export_.index << ")" << std::endl;
+    stream << export_.index << ") )" << std::endl;
     return stream;
 }

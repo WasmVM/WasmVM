@@ -40,6 +40,7 @@ add_library(WasmVM_obj OBJECT
     parse/nodes/Data.cpp
     parse/nodes/TypeUse.cpp
     parse/nodes/Global.cpp
+    parse/nodes/Export.cpp
     parse/nodes/Start.cpp
     parse/nodes/instruction.cpp
     parse/nodes/instruction/numeric.cpp
@@ -63,8 +64,12 @@ add_library(WasmVM_obj OBJECT
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
-add_library(WasmVM SHARED $<TARGET_OBJECTS:WasmVM_obj>)
-add_library(WasmVM_static STATIC $<TARGET_OBJECTS:WasmVM_obj>)
+add_library(WasmVM SHARED 
+    $<TARGET_OBJECTS:WasmVM_obj>
+)
+add_library(WasmVM_static STATIC 
+    $<TARGET_OBJECTS:WasmVM_obj>
+)
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 if(INSTALL_C)

@@ -18,6 +18,7 @@ WasmModule WasmVM::module_parse(std::string src){
         Parse::Table,
         Parse::Memory,
         Parse::Global,
+        Parse::Export,
         Parse::Start,
         Parse::Elem,
         Parse::Data,
