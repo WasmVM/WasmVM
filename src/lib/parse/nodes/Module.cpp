@@ -263,7 +263,7 @@ static void post_process(ModuleVisitor& visitor){
     }
 };
 
-WasmModule WasmVM::module_parse(std::string src){
+WasmModule WasmVM::module_parse(const std::string src){
     std::list<TokenType> tokens = tokenize(src);
 
     using modulefields = Parse::Repeat<Parse::OneOf<

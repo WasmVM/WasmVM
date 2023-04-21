@@ -204,7 +204,7 @@ static void next_char(std::string_view::const_iterator& it, Token::Location& loc
     }
     ++it;
 }
-std::list<TokenType> WasmVM::tokenize(std::string_view src){
+std::list<TokenType> WasmVM::tokenize(const std::string_view src){
     std::list<TokenType> tokens;
     Token::Location current {1, 1};
     for(auto it = src.begin(); it != src.end(); ){

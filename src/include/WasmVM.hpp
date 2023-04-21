@@ -8,9 +8,9 @@
 
 namespace WasmVM {
 
-WasmModule module_parse(std::string src);
+WasmModule module_parse(const std::string src);
 std::string module_dump(const WasmModule& module);
-std::vector<std::byte> module_encode(WasmModule& module);
+std::vector<std::byte> module_encode(const WasmModule& module);
 
 }
 
