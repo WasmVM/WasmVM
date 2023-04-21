@@ -1,4 +1,4 @@
-add_library(WasmVM_core SHARED
+add_library(WasmVM_c SHARED
     decode/decode.c
     decode/sections.c
     decode/utils.c
@@ -22,7 +22,7 @@ add_library(WasmVM_core SHARED
     instance.c
 )
 
-add_library(WasmVM_obj OBJECT
+add_library(WasmVM_textfmt OBJECT
     parse/parse.cpp
     parse/Token.cpp
     parse/nodes/Module.cpp
@@ -60,21 +60,33 @@ add_library(WasmVM_obj OBJECT
     dump/elem.cpp
     dump/data.cpp
     dump/global.cpp
+)
+
+add_library(WasmVM_binfmt OBJECT
+    
+)
+
+add_library(WasmVM_src OBJECT
     exception.cpp
     functype.cpp
 )
-set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(WasmVM SHARED 
-    $<TARGET_OBJECTS:WasmVM_obj>
+    $<TARGET_OBJECTS:WasmVM_textfmt>
+    $<TARGET_OBJECTS:WasmVM_binfmt>
+    $<TARGET_OBJECTS:WasmVM_src>
 )
+set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
+
 add_library(WasmVM_static STATIC 
-    $<TARGET_OBJECTS:WasmVM_obj>
+    $<TARGET_OBJECTS:WasmVM_textfmt>
+    $<TARGET_OBJECTS:WasmVM_binfmt>
+    $<TARGET_OBJECTS:WasmVM_src>
 )
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 if(INSTALL_C)
-install(TARGETS WasmVM_core
+install(TARGETS WasmVM_c
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )

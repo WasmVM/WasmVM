@@ -1,7 +1,7 @@
 add_library(WasmVM_host SHARED)
 
 target_link_libraries(WasmVM_host
-  WasmVM_core
+  WasmVM_c
 )
 
 # Macro for adding host modules
