@@ -6,13 +6,13 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmFunc& func){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmFunc& func){
     stream << "  (func (type " << func.typeidx << ")";
     for(ValueType local : func.locals){
         stream << " (local " << local << " )";
     }
     stream << std::endl;
-    for(WasmInstr& instr : func.body){
+    for(const WasmInstr& instr : func.body){
         stream << "    " << instr << std::endl;
     }
     stream << "  )" << std::endl;

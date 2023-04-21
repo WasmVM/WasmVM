@@ -6,7 +6,7 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmExport& export_){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmExport& export_){
     stream << "  (export " << export_.name;
     switch(export_.desc){
         case WasmExport::DescType::func :

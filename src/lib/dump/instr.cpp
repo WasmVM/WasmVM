@@ -11,15 +11,15 @@ struct InstrVisitor {
     InstrVisitor(std::ostream& stream) : stream(stream){}
 
 #define AtomicInstr(T, S) \
-    std::ostream& operator()(T&){ \
+    std::ostream& operator()(const T&){ \
         return stream << S; \
     }
 #define OneIndexInstr(T, S) \
-    std::ostream& operator()(T& instr){ \
+    std::ostream& operator()(const T& instr){ \
         return stream << S << " " << instr.index; \
     }
 #define MemoryInstr(T, S) \
-    std::ostream& operator()(T& instr){ \
+    std::ostream& operator()(const T& instr){ \
         return stream << S << " " << instr.memidx << " offset=" << (u64_t)instr.offset << " align=" << (u32_t)instr.align; \
     }
 
@@ -211,38 +211,38 @@ struct InstrVisitor {
     MemoryInstr(WasmVM::Instr::I64_store16, "i64.store16")
     MemoryInstr(WasmVM::Instr::I64_store32, "i64.store32")
 
-    std::ostream& operator()(WasmVM::Instr::Block& instr){
+    std::ostream& operator()(const WasmVM::Instr::Block& instr){
         stream << "block";
         if(instr.type){
             stream << " " << instr.type.value();
         }
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::Loop& instr){
+    std::ostream& operator()(const WasmVM::Instr::Loop& instr){
         stream << "loop";
         if(instr.type){
             stream << " " << instr.type.value();
         }
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::If& instr){
+    std::ostream& operator()(const WasmVM::Instr::If& instr){
         stream << "if";
         if(instr.type){
             stream << " " << instr.type.value();
         }
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::Br_table& instr){
+    std::ostream& operator()(const WasmVM::Instr::Br_table& instr){
         stream << "br_table";
         for(index_t index : instr.indices){
             stream << " " << index;
         }
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::Call_indirect& instr){
+    std::ostream& operator()(const WasmVM::Instr::Call_indirect& instr){
         return stream << "call_indirect " << instr.tableidx << " " << instr.typeidx;
     }
-    std::ostream& operator()(WasmVM::Instr::Ref_null& instr){
+    std::ostream& operator()(const WasmVM::Instr::Ref_null& instr){
         stream << "ref.null ";
         switch(instr.heaptype){
             case RefType::funcref:
@@ -253,35 +253,35 @@ struct InstrVisitor {
                 return stream;
         }
     }
-    std::ostream& operator()(WasmVM::Instr::Select& instr){
+    std::ostream& operator()(const WasmVM::Instr::Select& instr){
         stream << "select";
         for(ValueType type : instr.valtypes){
             stream << " " << type;
         }
         return stream;
     }
-    std::ostream& operator()(WasmVM::Instr::Table_copy& instr){
+    std::ostream& operator()(const WasmVM::Instr::Table_copy& instr){
         return stream << "table.copy " << instr.dstidx << " " << instr.srcidx;
     }
-    std::ostream& operator()(WasmVM::Instr::Table_init& instr){
+    std::ostream& operator()(const WasmVM::Instr::Table_init& instr){
         return stream << "table.init " << instr.tableidx << " " << instr.elemidx;
     }
-    std::ostream& operator()(WasmVM::Instr::Memory_copy& instr){
+    std::ostream& operator()(const WasmVM::Instr::Memory_copy& instr){
         return stream << "memory.copy " << instr.dstidx << " " << instr.srcidx;
     }
-    std::ostream& operator()(WasmVM::Instr::Memory_init& instr){
+    std::ostream& operator()(const WasmVM::Instr::Memory_init& instr){
         return stream << "memory.init " << instr.memidx << " " << instr.dataidx;
     }
-    std::ostream& operator()(WasmVM::Instr::I32_const& instr){
+    std::ostream& operator()(const WasmVM::Instr::I32_const& instr){
         return stream << "i32.const " << instr.value;
     }  
-    std::ostream& operator()(WasmVM::Instr::I64_const& instr){
+    std::ostream& operator()(const WasmVM::Instr::I64_const& instr){
         return stream << "i64.const " << instr.value;
     }
-    std::ostream& operator()(WasmVM::Instr::F32_const& instr){
+    std::ostream& operator()(const WasmVM::Instr::F32_const& instr){
         return stream << "f32.const " << instr.value;
     }
-    std::ostream& operator()(WasmVM::Instr::F64_const& instr){
+    std::ostream& operator()(const WasmVM::Instr::F64_const& instr){
         return stream << "f64.const " << instr.value;
     }
     
@@ -294,9 +294,9 @@ private:
     std::ostream& stream;
 };
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmInstr& instr){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmInstr& instr){
     return std::visit(InstrVisitor(stream), instr);
 }
-std::ostream& WasmVM::operator<<(std::ostream& stream, ConstInstr& instr){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const ConstInstr& instr){
     return std::visit(InstrVisitor(stream), instr);
 }

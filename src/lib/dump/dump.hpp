@@ -6,18 +6,18 @@
 
 namespace WasmVM {
 
-std::ostream& operator<<(std::ostream& stream, ValueType& type);
-std::ostream& operator<<(std::ostream& stream, FuncType& type);
-std::ostream& operator<<(std::ostream& stream, WasmImport& import);
-std::ostream& operator<<(std::ostream& stream, WasmFunc& func);
-std::ostream& operator<<(std::ostream& stream, WasmInstr& instr);
-std::ostream& operator<<(std::ostream& stream, ConstInstr& instr);
-std::ostream& operator<<(std::ostream& stream, TableType& table);
-std::ostream& operator<<(std::ostream& stream, MemType& mem);
-std::ostream& operator<<(std::ostream& stream, WasmGlobal& global);
-std::ostream& operator<<(std::ostream& stream, WasmExport& export_);
-std::ostream& operator<<(std::ostream& stream, WasmElem& elem);
-std::ostream& operator<<(std::ostream& stream, WasmData& data);
+std::ostream& operator<<(std::ostream& stream, const ValueType& type);
+std::ostream& operator<<(std::ostream& stream, const FuncType& type);
+std::ostream& operator<<(std::ostream& stream, const WasmImport& import);
+std::ostream& operator<<(std::ostream& stream, const WasmFunc& func);
+std::ostream& operator<<(std::ostream& stream, const WasmInstr& instr);
+std::ostream& operator<<(std::ostream& stream, const ConstInstr& instr);
+std::ostream& operator<<(std::ostream& stream, const TableType& table);
+std::ostream& operator<<(std::ostream& stream, const MemType& mem);
+std::ostream& operator<<(std::ostream& stream, const WasmGlobal& global);
+std::ostream& operator<<(std::ostream& stream, const WasmExport& export_);
+std::ostream& operator<<(std::ostream& stream, const WasmElem& elem);
+std::ostream& operator<<(std::ostream& stream, const WasmData& data);
 
 }
 

@@ -6,7 +6,7 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmElem& elem){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmElem& elem){
     stream << "  (elem ";
     switch(elem.mode.type){
         case WasmElem::ElemMode::Mode::active :
@@ -27,7 +27,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmElem& elem){
             stream << "funcref ";
         break;
     }
-    for(ConstInstr& instr : elem.elemlist){
+    for(const ConstInstr& instr : elem.elemlist){
         stream << std::endl << "    (item " << instr << ")";
     }
     return stream << std::endl << "  )" << std::endl;

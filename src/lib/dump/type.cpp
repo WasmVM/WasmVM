@@ -6,7 +6,7 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, ValueType& type){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
     switch(type){
         case ValueType::i32:
             stream << "i32";
@@ -30,7 +30,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, ValueType& type){
     return stream;
 }
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const FuncType& type){
     stream << "  (type (func";
     if(!type.params.empty()){
         stream << " (param";
@@ -50,7 +50,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, FuncType& type){
     return stream;
 }
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, TableType& table){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
     stream << "  (table " << table.limits.min;
     if(table.limits.max.has_value()){
         stream << " " << table.limits.max.value();
@@ -67,7 +67,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, TableType& table){
     return stream;
 }
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, MemType& mem){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const MemType& mem){
     stream << "  (memory " << mem.min;
     if(mem.max.has_value()){
         stream << " " << mem.max.value();

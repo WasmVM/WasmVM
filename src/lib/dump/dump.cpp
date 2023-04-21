@@ -12,37 +12,37 @@
 
 using namespace WasmVM;
 
-std::string WasmVM::module_dump(WasmModule& module){
+std::string WasmVM::module_dump(const WasmModule& module){
     std::stringstream stream;
     stream << "(module " << std::endl;
-    for(FuncType& type : module.types){
+    for(const FuncType& type : module.types){
         stream << type;
     }
-    for(WasmImport& import : module.imports){
+    for(const WasmImport& import : module.imports){
         stream << import;
     }
-    for(WasmFunc& func : module.funcs){
+    for(const WasmFunc& func : module.funcs){
         stream << func;
     }
-    for(TableType& table : module.tables){
+    for(const TableType& table : module.tables){
         stream << table;
     }
-    for(MemType& mem : module.mems){
+    for(const MemType& mem : module.mems){
         stream << mem;
     }
-    for(WasmGlobal& global : module.globals){
+    for(const WasmGlobal& global : module.globals){
         stream << global;
     }
-    for(WasmExport& export_ : module.exports){
+    for(const WasmExport& export_ : module.exports){
         stream << export_;
     }
     if(module.start){
         stream << "  (start " << module.start.value() << ")" << std::endl;
     }
-    for(WasmElem& elem : module.elems){
+    for(const WasmElem& elem : module.elems){
         stream << elem;
     }
-    for(WasmData& data : module.datas){
+    for(const WasmData& data : module.datas){
         stream << data;
     }
     stream << ")" << std::endl;

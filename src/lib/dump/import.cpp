@@ -7,7 +7,7 @@
 
 #include <variant>
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmImport& import){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmImport& import){
     stream << "  (import " << import.module << " " << import.name;
     std::visit(overloaded {
         [&](index_t typeidx){

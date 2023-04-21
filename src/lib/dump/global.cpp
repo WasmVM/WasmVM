@@ -6,7 +6,7 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmGlobal& global){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmGlobal& global){
     stream << "  (global ";
     if(global.type.mut == WasmVM::GlobalType::Mut::variable){
         stream << "(mut " << global.type.type << ") ";

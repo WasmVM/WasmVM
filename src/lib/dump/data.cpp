@@ -8,7 +8,7 @@
 
 using namespace WasmVM;
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, WasmData& data){
+std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmData& data){
     stream << "  (data ";
     switch(data.mode.type){
         case WasmData::DataMode::Mode::active :
@@ -20,7 +20,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, WasmData& data){
     }
     stream << std::endl << "    \"";
     auto old_fmt = stream.flags();
-    for(byte_t& item : data.init){
+    for(const byte_t& item : data.init){
         stream << "\\" << std::hex << std::setfill('0') << std::setw(2) << (int)item;
     }
     stream.flags(old_fmt);
