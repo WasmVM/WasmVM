@@ -42,7 +42,7 @@ void ModuleVisitor::operator()(Parse::Elem& node){
                 elem.elemlist.emplace_back(instrs.front());
             },
             [&](Parse::Index& index){
-                elem.elemlist.emplace_back(Instr::I32_const(std::visit(Parse::Index::Visitor(func_indices.id_map), index)));
+                elem.elemlist.emplace_back(Instr::Ref_func(std::visit(Parse::Index::Visitor(func_indices.id_map), index)));
             }
         }, item);
     }

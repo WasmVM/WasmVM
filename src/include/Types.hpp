@@ -8,6 +8,7 @@
 #include <string>
 #include <cstdint>
 #include <cstddef>
+#include <functional>
 
 namespace WasmVM {
 
@@ -55,31 +56,8 @@ enum class RefType {
 struct FuncType {
     std::vector<ValueType> params;
     std::vector<ValueType> results;
-    friend bool operator==(const FuncType& a, const FuncType& b){
-        // param
-        if(a.params.size() != b.params.size()){
-            return false;
-        }
-        for(size_t i = 0; i < a.params.size(); ++i){
-            if(a.params[i] != b.params[i]){
-                return false;
-            }
-        }
-        // result
-        if(a.results.size() != b.results.size()){
-            return false;
-        }
-        for(size_t i = 0; i < a.results.size(); ++i){
-            if(a.results[i] != b.results[i]){
-                return false;
-            }
-        }
-        return true;
-    }
-    friend bool operator!=(const FuncType& a, const FuncType& b){
-        return !(a == b);
-    }
 };
+bool operator==(const FuncType&, const FuncType&);
 
 struct Limits {
     index_t min;
@@ -102,5 +80,9 @@ struct GlobalType {
 };
 
 }
+
+template <> struct std::hash<WasmVM::FuncType> {
+    std::size_t operator()(const WasmVM::FuncType& functype) const;
+};
 
 #endif

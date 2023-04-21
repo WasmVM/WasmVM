@@ -202,18 +202,14 @@ struct MemoryInstr : public I {
         std::list<TokenType>::iterator it = begin;
         auto syntax = Rule<
             Token::Keyword<S>,
-            Optional<Token::Number>,
+            Optional<Index>,
             Optional<Token::MemArg<"offset">>,
             Optional<Token::MemArg<"align">>
         >::get(it, holder);
         if(syntax){
             MemoryInstr<I, S, N> instr;
             auto rule = syntax.value();
-            auto memidx = std::get<1>(rule);
-            if(memidx){
-                Token::Number value = memidx.value();
-                instr.memidx = value.unpack<u32_t>();
-            }
+            instr.index = std::get<1>(rule);
             auto offset = std::get<2>(rule);
             if(offset){
                 Token::MemArgBase value = offset.value();
@@ -229,6 +225,8 @@ struct MemoryInstr : public I {
         }
         return std::nullopt;
     }
+
+    std::optional<Index> index;
 };
 template<conststr S>
 struct MemoryOneIndex {

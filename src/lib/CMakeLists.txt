@@ -61,6 +61,7 @@ add_library(WasmVM_obj OBJECT
     dump/data.cpp
     dump/global.cpp
     exception.cpp
+    functype.cpp
 )
 set_property(TARGET WasmVM_obj PROPERTY POSITION_INDEPENDENT_CODE 1)
 
