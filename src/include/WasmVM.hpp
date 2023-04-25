@@ -6,6 +6,8 @@
 #include <cstddef>
 #include <structures/WasmModule.hpp>
 
+#define VERSION "v1.1"
+
 namespace WasmVM {
 
 WasmModule module_parse(const std::string src);

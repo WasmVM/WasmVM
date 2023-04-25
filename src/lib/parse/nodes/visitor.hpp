@@ -29,46 +29,6 @@ struct ModuleVisitor {
     std::map<std::string, index_t> dataid_map;
     std::vector<std::map<std::string, index_t>> paramid_maps;
 
-    // FIXME:
-    ~ModuleVisitor(){
-        std::cout << "== type index ==" << std::endl;
-        for(auto type_id : typeid_map){
-            std::cout << "  " << type_id.first << "(" << type_id.second << ")" << std::endl;
-        }
-        std::cout << "== param index ==" << std::endl;
-        for(size_t i = 0; i < paramid_maps.size(); ++i){
-            std::cout << "  " << i << " : ";
-            for(auto paramid : paramid_maps[i]){
-                std::cout << paramid.first << "(" << paramid.second << ") ";
-            }
-            std::cout << std::endl;
-        }
-        std::cout << "== func index ==" << std::endl;
-        for(auto func_id : func_indices.id_map){
-            std::cout << "  " << func_id.first << "(" << func_id.second << ")" << std::endl;
-        }
-        std::cout << "== table index ==" << std::endl;
-        for(auto table_id : table_indices.id_map){
-            std::cout << "  " << table_id.first << "(" << table_id.second << ")" << std::endl;
-        }
-        std::cout << "== mem index ==" << std::endl;
-        for(auto mem_id : mem_indices.id_map){
-            std::cout << "  " << mem_id.first << "(" << mem_id.second << ")" << std::endl;
-        }
-        std::cout << "== global index ==" << std::endl;
-        for(auto global_id : global_indices.id_map){
-            std::cout << "  " << global_id.first << "(" << global_id.second << ")" << std::endl;
-        }
-        std::cout << "== elem index ==" << std::endl;
-        for(auto elem_id : elemid_map){
-            std::cout << "  " << elem_id.first << "(" << elem_id.second << ")" << std::endl;
-        }
-        std::cout << "== data index ==" << std::endl;
-        for(auto data_id : dataid_map){
-            std::cout << "  " << data_id.first << "(" << data_id.second << ")" << std::endl;
-        }
-    }
-
     void operator()(Parse::Type& type);
     void operator()(Parse::Import& import);
     void operator()(Parse::Func& func);

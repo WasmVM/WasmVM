@@ -163,9 +163,18 @@ CommandParser::CommandParser(int argc, const char* argv[],
             }
         }else{
             // Too many arguments
-            std::cerr << COLOR_Error ": too many arguments" << std::endl;
+            std::cerr << "wasmvm-as : " COLOR_Error ": too many arguments" << std::endl;
             help(program, desc, options);
             std::exit(-1);
         }
     }
+}
+
+std::optional<CommandParser::Arg> CommandParser::operator[](const std::string key){
+    if(args.contains(key)){
+        return args[key];
+    }else if(args.contains(std::string("--") + key)){
+        return args[std::string("--") + key];
+    }
+    return std::nullopt;
 }
