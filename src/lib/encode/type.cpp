@@ -37,7 +37,7 @@ template<> Section::Stream& Section::Stream::operator<< <i64_t>(i64_t value){
 }
 
 template<> Section::Stream& Section::Stream::operator<< <std::string>(std::string value){
-    *this << (u32_t)value.size();
+    *this << (u64_t)value.size();
     stream.write(value.data(), value.size());
     return *this;
 }
@@ -71,11 +71,29 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::FuncType>(WasmV
     return *this;
 }
 
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::RefType>(WasmVM::RefType reftype){
+    return *this << (byte_t)((reftype == RefType::funcref) ? 0x70 : 0x6f);
+}
+
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Limits>(WasmVM::Limits limit){
+    if(limit.max){
+        return *this << (byte_t)0x01 << (u64_t)limit.min << (u64_t)limit.max.value();
+    }else{
+        return *this << (byte_t)0x00 << (u64_t)limit.min;
+    }
+}
+
 Section::Stream& Section::Stream::operator<<(std::stringstream& buffer){
-    return *this << buffer.str();
+    std::string bytes(buffer.str());
+    if(bytes.empty()){
+        return *this;
+    }
+    return *this << bytes;
 }
 
 Encode::Type::Type(const std::vector<FuncType>& types) : Section((byte_t)0x01){
-    Encode::Section::Stream stream(buffer);
-    stream << types;
+    if(!types.empty()){
+        Encode::Section::Stream stream(buffer);
+        stream << types;
+    }
 }

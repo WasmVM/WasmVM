@@ -77,8 +77,8 @@ std::optional<Parse::Import> Parse::Import::get(TokenIter& begin, TokenHolder& h
     if(syntax){
         Parse::Import import;
         auto rule = syntax.value();
-        import.module = std::get<2>(rule).value;
-        import.name = std::get<3>(rule).value;
+        import.module = std::get<2>(rule).value.substr(1, std::get<2>(rule).value.size() - 2);
+        import.name = std::get<3>(rule).value.substr(1, std::get<3>(rule).value.size() - 2);
         std::visit(ImportVisitor(import), std::get<4>(rule));
         begin = it;
         return import;

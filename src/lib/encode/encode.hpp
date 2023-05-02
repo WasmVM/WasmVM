@@ -46,6 +46,10 @@ struct Type : public Section {
     Type(const std::vector<FuncType>& types);
 };
 
+struct Import : public Section {
+    Import(const std::vector<WasmImport>& imports);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 
