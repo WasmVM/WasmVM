@@ -63,7 +63,7 @@ add_library(WasmVM_textfmt OBJECT
 )
 
 add_library(WasmVM_binfmt OBJECT
-    
+    encode/encode.cpp
 )
 
 add_library(WasmVM_src OBJECT

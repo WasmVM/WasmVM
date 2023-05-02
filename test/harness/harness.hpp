@@ -7,6 +7,7 @@
 #include <optional>
 #include <functional>
 #include <iostream>
+#include <fstream>
 #include <filesystem>
 
 #include <Util.hpp>
@@ -45,8 +46,6 @@ struct Suite {
     size_t total, failed;
 };
 
-std::string read_text(std::filesystem::path path);
-
 }
 
 #define Test(NAME, STMT) Testing::TestType(NAME, [](bool& _is_passed) { STMT }),
@@ -59,7 +58,9 @@ std::string read_text(std::filesystem::path path);
 
 #define Throw(EXCEPTION, STMT) try { STMT; _is_passed = false;} catch( EXCEPTION ){ _is_passed = true; }
 
-#define ParseFile(NAME, FILEPATH) WasmVM::WasmModule NAME = WasmVM::module_parse(read_text(FILEPATH))
+#define ParseFile(NAME, FILEPATH) \
+    std::ifstream NAME ## _stream(FILEPATH); \
+    WasmVM::WasmModule NAME = WasmVM::module_parse(NAME ## _stream)
 
 #define DecodeFile(NAME, FILEPATH) // TODO:
 

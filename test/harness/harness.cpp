@@ -44,12 +44,3 @@ CategoryType::CategoryType(std::string name, std::initializer_list<SuiteItem> it
 TestType::TestType(std::string name, TestFuncType func) :
     name(name), func(func), passed(true)
 {}
-
-std::string Testing::read_text(std::filesystem::path path){
-    std::ifstream fin(path);
-    size_t fsize = std::filesystem::file_size(path);
-    std::string src(fsize, ' ');
-    fin.read(src.data(), fsize);
-    fin.close();
-    return src;
-}

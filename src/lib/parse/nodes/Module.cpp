@@ -8,6 +8,7 @@
 
 #include <unordered_map>
 #include <queue>
+#include <iostream>
 
 #include "../../dump/dump.hpp"
 
@@ -263,8 +264,8 @@ static void post_process(ModuleVisitor& visitor){
     }
 };
 
-WasmModule WasmVM::module_parse(const std::string src){
-    std::list<TokenType> tokens = tokenize(src);
+WasmModule WasmVM::module_parse(std::istream& stream){
+    std::list<TokenType> tokens = tokenize(stream);
 
     using modulefields = Parse::Repeat<Parse::OneOf<
         Parse::Type,

@@ -5,11 +5,14 @@
 #include <harness.hpp>
 #include <WasmVM.hpp>
 
+#include <sstream>
+
 using namespace WasmVM;
 using namespace Testing;
 
 #define empty_check(SRC) \
-    WasmModule testmod = module_parse(SRC); \
+    std::istringstream teststream(SRC); \
+    WasmModule testmod = module_parse(teststream); \
     Expect(testmod.types.size() == 0); \
     Expect(testmod.imports.size() == 0); \
     Expect(testmod.funcs.size() == 0); \

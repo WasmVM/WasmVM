@@ -6,9 +6,15 @@
 #include <parse/parse.hpp>
 
 #include <variant>
+#include <sstream>
 
 using namespace WasmVM;
 using namespace Testing;
+
+static std::list<TokenType> tokenize(std::string src){
+    std::stringstream stream(src);
+    return tokenize(stream);
+}
 
 Suite token {
     Test("parentheses", {

@@ -5,32 +5,43 @@
 #include <harness.hpp>
 #include <parse/parse.hpp>
 
+#include <fstream>
+#include <sstream>
 #include <list>
 
 using namespace WasmVM;
 using namespace Testing;
 
 Suite comments {
-    Test("Line comments", 
-        Expect(tokenize(read_text("line.wat")).size() == 3);
-    )
+    Test("Line comments", {
+        std::ifstream stream("line.wat");
+        Expect(tokenize(stream).size() == 3);
+        stream.close();
+    })
 
     Category("Block comments", {
         Test("Regular", {
-            Expect(tokenize(read_text("block.wat")).size() == 3);
+            std::ifstream stream("block.wat");
+            Expect(tokenize(stream).size() == 3);
+            stream.close();
         })
         Test("Not close", {
+            std::ifstream stream("not_close.wat");
             Throw(WasmVM::Exception::block_comment_not_close, 
-                tokenize(read_text("not_close.wat"));
+                Expect(tokenize(stream).size() == 3);
             )
+            stream.close();
         })
     })
 
     Test("Nested comments", {
-        Expect(tokenize(read_text("nested.wat")).size() == 6);
+        std::ifstream stream("nested.wat");
+        Expect(tokenize(stream).size() == 6);
+        stream.close();
     })
 
     Test("Whitespace", {
-        Expect(tokenize("  \n \t").size() == 0);
+        std::stringstream stream("  \n \t");
+        Expect(tokenize(stream).size() == 0);
     })
 };

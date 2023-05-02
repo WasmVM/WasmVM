@@ -29,10 +29,14 @@ Suite type {
         Expect(param_i32.params[0] == ValueType::f32);
         Expect(param_i32.params[1] == ValueType::f64);
         Throw(Exception::invalid_functype, {
-            module_parse("(type (func (param $pdup i32 i64)))");
+            std::ifstream stream("(type (func (param $pdup i32 i64)))");
+            module_parse(stream);
+            stream.close();
         });
         Throw(Exception::invalid_functype, {
-            module_parse("(type (func (param $pnone)))");
+            std::ifstream stream("(type (func (param $pnone)))");
+            module_parse(stream);
+            stream.close();
         });
     })
     Test("result", {
@@ -69,6 +73,8 @@ Suite type {
         Expect(param_f32_result_i64.results[0] == ValueType::i64);
     })
     Test("with id", {
-        module_parse("(type $ty1 (func))");
+        std::ifstream stream("(type $ty1 (func))");
+        module_parse(stream);
+        stream.close();
     })
 };

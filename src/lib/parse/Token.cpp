@@ -195,42 +195,43 @@ static std::optional<Token::Number> number(Token::Location loc, std::string str)
 
 }
 
-static void next_char(std::string_view::const_iterator& it, Token::Location& loc){
-    if(*it == '\n'){
+static int next_char(std::istream& stream, Token::Location& loc){
+    int ch = stream.get();
+    if(ch == '\n'){
         loc.first += 1;
         loc.second = 1;
     }else{
         loc.second += 1;
     }
-    ++it;
+    return ch;
 }
-std::list<TokenType> WasmVM::tokenize(const std::string_view src){
+std::list<TokenType> WasmVM::tokenize(std::istream& stream){
     std::list<TokenType> tokens;
     Token::Location current {1, 1};
-    for(auto it = src.begin(); it != src.end(); ){
+    for(int ch = stream.get(); ch != std::istream::traits_type::eof() ; ){
         Token::Location location = current;
-        switch(*it){
+        switch(ch){
             // Line comment
             case ';':
-                if(*std::next(it) == ';'){
-                    for(next_char(it, current); (it != src.end()) && (*it != '\n'); next_char(it, current));
+                if(stream.get() == ';'){
+                    for(ch = next_char(stream, current); (ch != std::istream::traits_type::eof()) && (ch != '\n'); ch = next_char(stream, current));
                 }else{
                     throw Exception::unknown_token(location, ";");
                 }
             break;
             // Block comment
             case '(':
-                if(*std::next(it) == ';'){
-                    next_char(it, current);
+                if(stream.peek() == ';'){
+                    next_char(stream, current);
                     size_t depth = 1;
-                    for(next_char(it, current); (depth > 0) && (it != src.end()); next_char(it, current)){
-                        char pe = *std::next(it);
-                        if((*it == '(') && (pe == ';')){
+                    for(ch = next_char(stream, current); (depth > 0) && (ch != std::istream::traits_type::eof()); ch = next_char(stream, current)){
+                        char pe = stream.peek();
+                        if((ch == '(') && (pe == ';')){
                             depth += 1;
-                            next_char(it, current);
-                        }else if((*it == ';') && (pe == ')')){
+                            next_char(stream, current);
+                        }else if((ch == ';') && (pe == ')')){
                             depth -= 1;
-                            next_char(it, current);
+                            next_char(stream, current);
                         }
                     }
                     if(depth != 0){
@@ -239,42 +240,45 @@ std::list<TokenType> WasmVM::tokenize(const std::string_view src){
                 }else{
                     // Left parenthesis
                     tokens.emplace_back(Token::ParenL(location));
-                    next_char(it, current);
+                    ch = next_char(stream, current);
                 }
             break;
             // Right parenthesis
             case ')':
                 tokens.emplace_back(Token::ParenR(location));
-                next_char(it, current);
+                ch = next_char(stream, current);
             break;
             // Id
             case '$':{
-                std::string seq {*it};
-                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
-                    seq += *it;
+                std::string seq {(char)ch};
+                for(ch = next_char(stream, current); (ch != std::istream::traits_type::eof()) && (std::string(" \n\t\r()").find(ch) == std::string::npos); ch = next_char(stream, current)){
+                    seq += ch;
                 }
                 tokens.emplace_back(Token::Id(location, seq));
             }break;
             // String
             case '\"':{
-                std::string seq {*it};
+                std::string seq {(char)ch};
                 bool escape = false;
-                for(next_char(it, current); (it != src.end()) && (escape || (*it != '\"')); next_char(it, current)){
-                    if((u8_t)*it < 0x20){
+                for(ch = next_char(stream, current); (ch != std::istream::traits_type::eof()) && (escape || (ch != '\"')); ch = next_char(stream, current)){
+                    if(ch < 0x20){
                         throw Exception::invalid_character(location, ": control characters can only be specified by escape sequence");
                     }
-                    if((*it == '\\') && !escape){
+                    if((ch == '\\') && !escape){
                         escape = true;
                         continue;
                     }else if(escape){
-                        if(std::isxdigit(*it) && (it + 1) != src.end() && std::isxdigit(it[1])){
-                            std::string valstr {'0', 'x', *it, it[1]};
-                            next_char(it, current);
+                        if(std::isxdigit(ch) && stream.peek() != std::istream::traits_type::eof() && std::isxdigit(stream.peek())){
+                            std::string valstr {'0', 'x', (char)ch, (char)stream.peek()};
+                            next_char(stream, current);
                             seq += (unsigned char)std::stoul(valstr, nullptr, 16);
-                        }else if(*it == 'u' && (it + 1) != src.end() && it[1] == '{'){
+                        }else if(ch == 'u' && stream.peek() != std::istream::traits_type::eof() && stream.peek() == '{'){
                             std::string valstr = "0x";
-                            for(next_char(it, current), next_char(it, current); (it != src.end()) && (*it != '}'); next_char(it, current)){
-                                valstr += *it;
+                            for(next_char(stream, current), ch = next_char(stream, current);
+                                (ch != std::istream::traits_type::eof()) && (ch != '}'); 
+                                ch = next_char(stream, current)
+                            ){
+                                valstr += ch;
                             }
                             static std::regex hexnum("0x[0-9a-fA-F](_?[0-9a-fA-F])*");
                             if(std::regex_match(valstr, hexnum)){
@@ -294,7 +298,7 @@ std::list<TokenType> WasmVM::tokenize(const std::string_view src){
                                 throw Exception::invalid_character(location, ": invalid unicode format");
                             }
                         }else{
-                            switch(*it){
+                            switch(ch){
                                 case 't':
                                     seq += '\t';
                                 break;
@@ -308,21 +312,21 @@ std::list<TokenType> WasmVM::tokenize(const std::string_view src){
                                     seq += '"';
                                 break;
                                 default:
-                                    seq += *it;
+                                    seq += ch;
                                 break;
                             }
                         }
                         escape = false;
                     }else{
-                        seq += *it;
+                        seq += ch;
                     }
                 }
-                if(it == src.end()){
+                if(ch == std::istream::traits_type::eof()){
                     throw Exception::string_not_close(location);
                 }else{
-                    seq += *it;
+                    seq += ch;
                     tokens.emplace_back(Token::String(location, seq));
-                    next_char(it, current);
+                    ch = next_char(stream, current);
                 }
             } break;
             // White spaces
@@ -330,13 +334,16 @@ std::list<TokenType> WasmVM::tokenize(const std::string_view src){
             case '\n':
             case '\t':
             case '\r':
-                next_char(it, current);
+                ch = next_char(stream, current);
             break;
             // Others
             default:{
-                std::string seq {*it};
-                for(next_char(it, current); (it != src.end()) && (std::string(" \n\t\r()").find(*it) == std::string::npos); next_char(it, current)){
-                    seq += *it;
+                std::string seq {(char)ch};
+                for(ch = next_char(stream, current);
+                    (ch != std::istream::traits_type::eof()) && (std::string(" \n\t\r()").find(ch) == std::string::npos);
+                    ch = next_char(stream, current)
+                ){
+                    seq += ch;
                 }
                 std::optional<Token::Number> number = TokenCreate::number(location, seq);
                 if(number){

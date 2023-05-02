@@ -39,15 +39,29 @@ int main(int argc, char const *argv[]){
         std::cerr << "wasmvm-as : " COLOR_Error ": no input file" << std::endl;
         return -1;
     }
+    // Input path
     std::filesystem::path input_path(std::get<std::string>(args["input_file"].value()));
-    std::ifstream input_file(input_path);
-    size_t input_size = std::filesystem::file_size(input_path);
-    std::string src(input_size, ' ');
-    input_file.read(src.data(), input_size);
-    input_file.close();
+    if(!std::filesystem::exists(input_path)){
+        std::cerr << "wasmvm-as : " COLOR_Error ": no such file '" << input_path.string() << "'" << std::endl;
+        return -1;
+    }
+    // Output path
+    std::filesystem::path output_path(input_path);
+    if(args["output"]){
+        output_path = std::get<std::string>(args["output"].value());
+    }else{
+        output_path.replace_extension("wasm");
+    }
 
     try {
-        WasmModule result = module_parse(src);
+        // Parse
+        std::ifstream input_file(input_path);
+        WasmModule parsed_module = module_parse(input_file);
+        input_file.close();
+        // Encode
+        std::ofstream output_file(output_path, std::ios::binary | std::ios::trunc);
+        module_encode(parsed_module, output_file);
+        output_file.close();
         
     }catch(Exception::Parse &e){
         std::cerr << input_path.string() << ":" << e.location.first << ":" << e.location.second << " " COLOR_Error ": " << e.what() << std::endl;

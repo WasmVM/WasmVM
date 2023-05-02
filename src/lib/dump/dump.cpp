@@ -7,13 +7,12 @@
 #include "dump.hpp"
 
 #include <string>
-#include <sstream>
+#include <ostream>
 #include <utility>
 
 using namespace WasmVM;
 
-std::string WasmVM::module_dump(const WasmModule& module){
-    std::stringstream stream;
+std::ostream& WasmVM::module_dump(const WasmModule& module, std::ostream& stream){
     stream << "(module " << std::endl;
     for(const FuncType& type : module.types){
         stream << type;
@@ -46,5 +45,5 @@ std::string WasmVM::module_dump(const WasmModule& module){
         stream << data;
     }
     stream << ")" << std::endl;
-    return stream.str();
+    return stream;
 }

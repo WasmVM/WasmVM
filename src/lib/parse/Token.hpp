@@ -5,6 +5,7 @@
 #include <list>
 #include <utility>
 #include <optional>
+#include <iostream>
 
 #include <Util.hpp>
 #include <Types.hpp>
@@ -44,7 +45,7 @@ using TokenType = std::variant<
     Token::KeywordBase
 >;
 
-std::list<TokenType> tokenize(std::string_view src);
+std::list<TokenType> tokenize(std::istream& src);
 
 using TokenIter = std::list<TokenType>::iterator;
 
