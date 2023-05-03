@@ -25,5 +25,9 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Import(module.imports).write(ostream);
     // Func
     Encode::Func(module.funcs).write(ostream);
+    // Table
+    Encode::Table(module.tables).write(ostream);
+    // Memory
+    Encode::Memory(module.mems).write(ostream);
     return ostream;
 }

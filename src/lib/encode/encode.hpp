@@ -54,6 +54,14 @@ struct Func : public Section {
     Func(const std::vector<WasmFunc>& funcs);
 };
 
+struct Table : public Section {
+    Table(const std::vector<TableType>& tables);
+};
+
+struct Memory : public Section {
+    Memory(const std::vector<MemType>& mems);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 

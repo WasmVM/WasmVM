@@ -8,13 +8,9 @@
 using namespace WasmVM;
 using namespace Encode;
 
-template<> Section::Stream& Section::Stream::operator<< <TableType>(TableType table){
-    return *this << table.reftype << table.limits;
-}
-
-Encode::Table::Table(const std::vector<TableType>& tables) : Section((byte_t)0x04){
-    if(!tables.empty()){
+Encode::Memory::Memory(const std::vector<MemType>& mems) : Section((byte_t)0x05){
+    if(!mems.empty()){
         Encode::Section::Stream stream(buffer);
-        stream << tables;
+        stream << mems;
     }
 }
