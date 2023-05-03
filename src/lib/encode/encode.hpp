@@ -50,6 +50,10 @@ struct Import : public Section {
     Import(const std::vector<WasmImport>& imports);
 };
 
+struct Func : public Section {
+    Func(const std::vector<WasmFunc>& funcs);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 

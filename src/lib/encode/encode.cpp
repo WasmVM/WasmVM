@@ -23,6 +23,7 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Type(module.types).write(ostream);
     // Import
     Encode::Import(module.imports).write(ostream);
-
+    // Func
+    Encode::Func(module.funcs).write(ostream);
     return ostream;
 }
