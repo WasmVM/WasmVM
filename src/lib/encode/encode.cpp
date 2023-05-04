@@ -29,5 +29,7 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Table(module.tables).write(ostream);
     // Memory
     Encode::Memory(module.mems).write(ostream);
+    // Global
+    Encode::Global(module.globals).write(ostream);
     return ostream;
 }

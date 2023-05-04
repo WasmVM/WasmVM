@@ -36,6 +36,16 @@ template<> Section::Stream& Section::Stream::operator<< <i64_t>(i64_t value){
     return this->operator<<((u64_t)value);
 }
 
+template<> Section::Stream& Section::Stream::operator<< <f32_t>(f32_t value){
+    stream.write((const char*)&value, sizeof(f32_t));
+    return *this;
+}
+
+template<> Section::Stream& Section::Stream::operator<< <f64_t>(f64_t value){
+    stream.write((const char*)&value, sizeof(f64_t));
+    return *this;
+}
+
 template<> Section::Stream& Section::Stream::operator<< <std::string>(std::string value){
     *this << (u64_t)value.size();
     stream.write(value.data(), value.size());

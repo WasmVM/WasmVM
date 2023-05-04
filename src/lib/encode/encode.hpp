@@ -62,6 +62,10 @@ struct Memory : public Section {
     Memory(const std::vector<MemType>& mems);
 };
 
+struct Global : public Section {
+    Global(const std::vector<WasmGlobal>& globals);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 
