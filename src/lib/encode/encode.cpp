@@ -35,6 +35,8 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Export(module.exports).write(ostream);
     // Start
     Encode::Start(module.start).write(ostream);
+    // Elem
+    Encode::Elem(module.elems).write(ostream);
     return ostream;
 }
 

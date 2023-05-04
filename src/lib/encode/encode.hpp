@@ -74,6 +74,10 @@ struct Start : public Section {
     Start(const std::optional<index_t>& start);
 };
 
+struct Elem : public Section {
+    Elem(const std::vector<WasmElem>& elems);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 

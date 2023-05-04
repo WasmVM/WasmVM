@@ -315,5 +315,5 @@ template<> Section::Stream& Section::Stream::operator<< <ConstInstr>(ConstInstr 
             *this << ins;
         }
     }, instr);
-    return *this;
+    return *this << (byte_t)Opcode::End;
 }

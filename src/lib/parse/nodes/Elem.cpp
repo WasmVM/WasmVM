@@ -109,6 +109,7 @@ std::optional<Parse::Elem> Parse::Elem::get(TokenIter& begin, TokenHolder& holde
                 }
             },
             [&](itemabbr_rule& items){
+                elem.reftype = RefType::funcref;
                 for(Parse::Index& index : std::get<1>(items)){
                     elem.elemlist.emplace_back(index);
                 }

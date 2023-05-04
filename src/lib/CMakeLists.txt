@@ -72,6 +72,7 @@ add_library(WasmVM_binfmt OBJECT
     encode/memory.cpp
     encode/instr.cpp
     encode/export.cpp
+    encode/elem.cpp
 )
 
 add_library(WasmVM_src OBJECT
