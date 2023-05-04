@@ -82,7 +82,7 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
         table.id = id ? id->value : "";
         // export
         for(auto node : std::get<3>(rule)){
-            table.exports.emplace_back(std::get<2>(node).value);
+            table.exports.emplace_back(std::get<2>(node).value.substr(1, std::get<2>(node).value.size() - 2));
         }
         // import/elem
         std::visit(overloaded {
@@ -90,7 +90,7 @@ std::optional<Parse::Table> Parse::Table::get(TokenIter& begin, TokenHolder& hol
             [&](tablerule& node){
                 auto importnode = std::get<0>(node);
                 if(importnode){
-                    table.import = std::pair<std::string, std::string>(std::get<2>(importnode.value()).value, std::get<3>(importnode.value()).value);
+                    table.import = std::pair<std::string, std::string>(std::get<2>(importnode.value()).value.substr(1, std::get<2>(importnode.value()).value.size() - 2), std::get<3>(importnode.value()).value.substr(1, std::get<3>(importnode.value()).value.size() - 2));
                 }
                 table.tabletype = std::get<1>(node);
             },

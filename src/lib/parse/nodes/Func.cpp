@@ -89,7 +89,7 @@ std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holde
         func.id = id ? id->value : "";
         // export
         for(auto node : std::get<3>(rule)){
-            func.exports.emplace_back(std::get<2>(node).value);
+            func.exports.emplace_back(std::get<2>(node).value.substr(1, std::get<2>(node).value.size() - 2));
         }
         // rules
         std::visit(overloaded {

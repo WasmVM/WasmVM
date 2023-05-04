@@ -8,7 +8,7 @@
 namespace WasmVM {
 
 struct WasmExport {
-    enum class DescType {func, table, mem, global};
+    enum class DescType {func = 0x00, table = 0x01, mem = 0x02, global = 0x03};
     
     WasmExport(std::string name, DescType desc, index_t index) : name(name), desc(desc), index(index){}
     

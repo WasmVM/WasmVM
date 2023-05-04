@@ -31,5 +31,16 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Memory(module.mems).write(ostream);
     // Global
     Encode::Global(module.globals).write(ostream);
+    // Export
+    Encode::Export(module.exports).write(ostream);
+    // Start
+    Encode::Start(module.start).write(ostream);
     return ostream;
+}
+
+Encode::Start::Start(const std::optional<index_t>& start) : Section((byte_t)0x08){
+    if(start){
+        Encode::Section::Stream stream(buffer);
+        stream << start.value();
+    }
 }

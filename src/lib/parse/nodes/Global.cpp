@@ -68,13 +68,13 @@ std::optional<Parse::Global> Parse::Global::get(TokenIter& begin, TokenHolder& h
         global.id = id ? id->value : "";
         // export
         for(auto node : std::get<3>(rule)){
-            global.exports.emplace_back(std::get<2>(node).value);
+            global.exports.emplace_back(std::get<2>(node).value.substr(1, std::get<2>(node).value.size() - 2));
         }
         // import/global
         std::visit(overloaded {
             // import
             [&](importrule& node){
-                global.import = std::pair<std::string, std::string>(std::get<2>(node).value, std::get<3>(node).value);
+                global.import = std::pair<std::string, std::string>(std::get<2>(node).value.substr(1, std::get<2>(node).value.size() - 2), std::get<3>(node).value.substr(1, std::get<3>(node).value.size() - 2));
                 global.type = std::get<5>(node);
             },
             // global

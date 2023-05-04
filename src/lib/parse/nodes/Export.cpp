@@ -47,7 +47,7 @@ std::optional<Parse::Export> Parse::Export::get(TokenIter& begin, TokenHolder& h
         // location
         export_.location = std::get<0>(rule).location;
         // name
-        export_.name = std::get<2>(rule).value;
+        export_.name = std::get<2>(rule).value.substr(1, std::get<2>(rule).value.size() - 2);
         // desc
         std::visit(overloaded {
             [&](Token::Keyword<"func">&){

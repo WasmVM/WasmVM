@@ -66,6 +66,14 @@ struct Global : public Section {
     Global(const std::vector<WasmGlobal>& globals);
 };
 
+struct Export : public Section {
+    Export(const std::vector<WasmExport>& exports);
+};
+
+struct Start : public Section {
+    Start(const std::optional<index_t>& start);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 

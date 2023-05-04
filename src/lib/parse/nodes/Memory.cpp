@@ -77,7 +77,7 @@ std::optional<Parse::Memory> Parse::Memory::get(TokenIter& begin, TokenHolder& h
         memory.id = id ? id->value : "";
         // export
         for(auto node : std::get<3>(rule)){
-            memory.exports.emplace_back(std::get<2>(node).value);
+            memory.exports.emplace_back(std::get<2>(node).value.substr(1, std::get<2>(node).value.size() - 2));
         }
         // mem/data
         std::visit(overloaded {
@@ -85,7 +85,7 @@ std::optional<Parse::Memory> Parse::Memory::get(TokenIter& begin, TokenHolder& h
             [&](memrule& node){
                 auto importnode = std::get<0>(node);
                 if(importnode){
-                    memory.import = std::pair<std::string, std::string>(std::get<2>(importnode.value()).value, std::get<3>(importnode.value()).value);
+                    memory.import = std::pair<std::string, std::string>(std::get<2>(importnode.value()).value.substr(1, std::get<2>(importnode.value()).value.size() - 2), std::get<3>(importnode.value()).value.substr(1, std::get<3>(importnode.value()).value.size() - 2));
                 }
                 memory.memtype = std::get<1>(node);
             },
