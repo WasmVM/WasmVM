@@ -55,174 +55,271 @@ static void post_process(ModuleVisitor& visitor){
 
     // funcs
     for(WasmFunc& func : visitor.module.funcs){
-        func.typeidx = typemap[func.typeidx];
+        if(typemap.contains(func.typeidx)){
+            func.typeidx = typemap[func.typeidx];
+        }
         for(WasmInstr& instr : func.body){
             std::visit(overloaded {
                 [&](Instr::Block& instr){
-                    if(instr.type){
+                    if(instr.type && typemap.contains(instr.type.value())){
                         instr.type = typemap[instr.type.value()];
                     }
                 },
                 [&](Instr::Loop& instr){
-                    if(instr.type){
+                    if(instr.type && typemap.contains(instr.type.value())){
                         instr.type = typemap[instr.type.value()];
                     }
                 },
                 [&](Instr::If& instr){
-                    if(instr.type){
+                    if(instr.type && typemap.contains(instr.type.value())){
                         instr.type = typemap[instr.type.value()];
                     }
                 },
                 [&](Instr::Call& instr){
-                    instr.index = funcmap[instr.index];
+                    if(funcmap.contains(instr.index)){
+                        instr.index = funcmap[instr.index];
+                    }
                 },
                 [&](Instr::Call_indirect& instr){
-                    instr.tableidx = tablemap[instr.tableidx];
-                    instr.typeidx = typemap[instr.typeidx];
+                    if(tablemap.contains(instr.tableidx)){
+                        instr.tableidx = tablemap[instr.tableidx];
+                    }
+                    if(typemap.contains(instr.typeidx)){
+                        instr.typeidx = typemap[instr.typeidx];
+                    }
                 },
                 [&](Instr::Ref_func& instr){
-                    instr.index = funcmap[instr.index];
+                    if(funcmap.contains(instr.index)){
+                        instr.index = funcmap[instr.index];
+                    }
                 },
                 [&](Instr::Global_get& instr){
-                    instr.index = globalmap[instr.index];
+                    if(globalmap.contains(instr.index)){
+                        instr.index = globalmap[instr.index];
+                    }
                 },
                 [&](Instr::Global_set& instr){
-                    instr.index = globalmap[instr.index];
+                    if(globalmap.contains(instr.index)){
+                        instr.index = globalmap[instr.index];
+                    }
                 },
                 [&](Instr::Table_get& instr){
-                    instr.index = tablemap[instr.index];
+                    if(tablemap.contains(instr.index)){
+                        instr.index = tablemap[instr.index];
+                    }
                 },
                 [&](Instr::Table_set& instr){
-                    instr.index = tablemap[instr.index];
+                    if(tablemap.contains(instr.index)){
+                        instr.index = tablemap[instr.index];
+                    }
                 },
                 [&](Instr::Table_size& instr){
-                    instr.index = tablemap[instr.index];
+                    if(tablemap.contains(instr.index)){
+                        instr.index = tablemap[instr.index];
+                    }
                 },
                 [&](Instr::Table_grow& instr){
-                    instr.index = tablemap[instr.index];
+                    if(tablemap.contains(instr.index)){
+                        instr.index = tablemap[instr.index];
+                    }
                 },
                 [&](Instr::Table_fill& instr){
-                    instr.index = tablemap[instr.index];
+                    if(tablemap.contains(instr.index)){
+                        instr.index = tablemap[instr.index];
+                    }
                 },
                 [&](Instr::Table_copy& instr){
-                    instr.dstidx = tablemap[instr.dstidx];
-                    instr.srcidx = tablemap[instr.srcidx];
+                    if(tablemap.contains(instr.dstidx)){
+                        instr.dstidx = tablemap[instr.dstidx];
+                    }
+                    if(tablemap.contains(instr.srcidx)){
+                        instr.srcidx = tablemap[instr.srcidx];
+                    }
                 },
                 [&](Instr::Table_init& instr){
-                    instr.tableidx = tablemap[instr.tableidx];
+                    if(tablemap.contains(instr.tableidx)){
+                        instr.tableidx = tablemap[instr.tableidx];
+                    }
                 },
                 [&](Instr::I32_load& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::F32_load& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::F64_load& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_load8_s& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_load8_u& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_load16_s& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_load16_u& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load8_s& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load8_u& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load16_s& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load16_u& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load32_s& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_load32_u& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_store& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_store& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::F32_store& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::F64_store& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_store8& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I32_store16& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_store8& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_store16& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::I64_store32& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::Memory_size& instr){
-                    instr.index = memorymap[instr.index];
+                    if(memorymap.contains(instr.index)){
+                        instr.index = memorymap[instr.index];
+                    }
                 },
                 [&](Instr::Memory_grow& instr){
-                    instr.index = memorymap[instr.index];
+                    if(memorymap.contains(instr.index)){
+                        instr.index = memorymap[instr.index];
+                    }
                 },
                 [&](Instr::Memory_fill& instr){
-                    instr.index = memorymap[instr.index];
+                    if(memorymap.contains(instr.index)){
+                        instr.index = memorymap[instr.index];
+                    }
                 },
                 [&](Instr::Memory_init& instr){
-                    instr.memidx = memorymap[instr.memidx];
+                    if(memorymap.contains(instr.memidx)){
+                        instr.memidx = memorymap[instr.memidx];
+                    }
                 },
                 [&](Instr::Memory_copy& instr){
-                    instr.dstidx = memorymap[instr.dstidx];
-                    instr.srcidx = memorymap[instr.srcidx];
+                    if(memorymap.contains(instr.dstidx)){
+                        instr.dstidx = memorymap[instr.dstidx];
+                    }
+                    if(memorymap.contains(instr.srcidx)){
+                        instr.srcidx = memorymap[instr.srcidx];
+                    }
                 },
                 [](auto&){}
             }, instr);
         }
-        // TODO: func body
     }
     // elems
     for(WasmElem& elem : visitor.module.elems){
-        if(elem.mode.tableidx){
+        if(elem.mode.tableidx && tablemap.contains(elem.mode.tableidx.value())){
             elem.mode.tableidx = tablemap[elem.mode.tableidx.value()];
         }
         if(elem.type == RefType::funcref){
             for(ConstInstr& item : elem.elemlist){
                 std::visit(overloaded {
                     [&](Instr::Ref_func& instr){
-                        instr.index = funcmap[instr.index];
+                        if(funcmap.contains(instr.index)){
+                            instr.index = funcmap[instr.index];
+                        }
                     },
                     [&](Instr::I32_const& instr){
-                        instr.value = funcmap[instr.value];
+                        if(funcmap.contains(instr.value)){
+                            instr.value = funcmap[instr.value];
+                        }
                     },
                     [&](Instr::I64_const& instr){
-                        instr.value = funcmap[instr.value];
+                        if(funcmap.contains(instr.value)){
+                            instr.value = funcmap[instr.value];
+                        }
                     },
                     [&](Instr::F32_const& instr){
-                        instr.value = (instr.value - (index_t)instr.value) + funcmap[instr.value];
+                        if(funcmap.contains(instr.value)){
+                            instr.value = (instr.value - (index_t)instr.value) + funcmap[instr.value];
+                        }
                     },
                     [&](Instr::F64_const& instr){
-                        instr.value = (instr.value - (index_t)instr.value) + funcmap[instr.value];
+                        if(funcmap.contains(instr.value)){
+                            instr.value = (instr.value - (index_t)instr.value) + funcmap[instr.value];
+                        }
                     },
                     [](auto&){}
                 }, item);
@@ -231,34 +328,42 @@ static void post_process(ModuleVisitor& visitor){
     }
     // datas
     for(WasmData& data : visitor.module.datas){
-        if(data.mode.memidx){
+        if(data.mode.memidx && memorymap.contains(data.mode.memidx.value())){
             data.mode.memidx = memorymap[data.mode.memidx.value()];
         }
     }
     // start
-    if(visitor.module.start){
+    if(visitor.module.start && funcmap.contains(visitor.module.start.value())){
         visitor.module.start = funcmap[visitor.module.start.value()];
     }
     // exports
     for(WasmExport& export_ : visitor.module.exports){
         switch(export_.desc){
             case WasmExport::DescType::func :
-                export_.index = funcmap[export_.index];
+                if(funcmap.contains(export_.index)){
+                    export_.index = funcmap[export_.index];
+                }
             break;
             case WasmExport::DescType::table :
-                export_.index = tablemap[export_.index];
+                if(tablemap.contains(export_.index)){
+                    export_.index = tablemap[export_.index];
+                }
             break;
             case WasmExport::DescType::mem :
-                export_.index = memorymap[export_.index];
+                if(memorymap.contains(export_.index)){
+                    export_.index = memorymap[export_.index];
+                }
             break;
             case WasmExport::DescType::global :
-                export_.index = globalmap[export_.index];
+                if(globalmap.contains(export_.index)){
+                    export_.index = globalmap[export_.index];
+                }
             break;
         }
     }
     // imports
     for(WasmImport& import : visitor.module.imports){
-        if(std::holds_alternative<index_t>(import.desc)){
+        if(std::holds_alternative<index_t>(import.desc) && typemap.contains(std::get<index_t>(import.desc))){
             import.desc = typemap[std::get<index_t>(import.desc)];
         }
     }
