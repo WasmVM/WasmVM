@@ -78,6 +78,10 @@ struct Elem : public Section {
     Elem(const std::vector<WasmElem>& elems);
 };
 
+struct Code : public Section {
+    Code(const std::vector<WasmFunc>& funcs);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 
