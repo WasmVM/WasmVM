@@ -61,6 +61,7 @@ add_library(WasmVM_textfmt OBJECT
     dump/data.cpp
     dump/global.cpp
 )
+target_compile_options(WasmVM_textfmt PRIVATE -fPIC)
 
 add_library(WasmVM_binfmt OBJECT
     encode/encode.cpp
@@ -75,11 +76,13 @@ add_library(WasmVM_binfmt OBJECT
     encode/elem.cpp
     encode/data.cpp
 )
+target_compile_options(WasmVM_binfmt PRIVATE -fPIC)
 
 add_library(WasmVM_src OBJECT
     exception.cpp
     functype.cpp
 )
+target_compile_options(WasmVM_src PRIVATE -fPIC)
 
 add_library(WasmVM SHARED 
     $<TARGET_OBJECTS:WasmVM_textfmt>
@@ -87,6 +90,7 @@ add_library(WasmVM SHARED
     $<TARGET_OBJECTS:WasmVM_src>
 )
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_compile_options(WasmVM PRIVATE -fPIC)
 
 add_library(WasmVM_static STATIC 
     $<TARGET_OBJECTS:WasmVM_textfmt>
