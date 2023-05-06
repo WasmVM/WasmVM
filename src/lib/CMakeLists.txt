@@ -75,6 +75,7 @@ add_library(WasmVM_binfmt OBJECT
     encode/export.cpp
     encode/elem.cpp
     encode/data.cpp
+    decode/decode.cpp
 )
 target_compile_options(WasmVM_binfmt PRIVATE -fPIC)
 

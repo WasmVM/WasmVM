@@ -20,6 +20,10 @@ namespace Exception{
         Parse(std::string msg, std::pair<size_t, size_t> location) : Exception(msg), location(location) {}
         std::pair<size_t, size_t> location;
     };
+    struct Decode : public Exception {
+        Decode(std::string msg, size_t location) : Exception(msg), location(location) {}
+        size_t location;
+    };
 
     struct Warning {
         Warning(std::string msg){
