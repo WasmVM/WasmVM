@@ -18,10 +18,10 @@ using namespace WasmVM;
 int main(int argc, char const *argv[]){  
     // Parse argv
     CommandParser args(argc, argv, {
-        CommandParser::Optional {"--version", "Show version", .alias = "-v"},
-        CommandParser::Optional {"--force", "Skip validation", .alias = "-f"},
-        CommandParser::Optional {"--output", "Output file name", 1, .alias = "-o"},
-        CommandParser::Fixed {"input_file", "Input file in WebAssembly text format"},
+        CommandParser::Optional("--version", "Show version", "-v"),
+        CommandParser::Optional("--force", "Skip validation", "-f"),
+        CommandParser::Optional("--output", "Output file name", 1, "-o"),
+        CommandParser::Fixed("input_file", "Input file in WebAssembly text format"),
     },
         "wasmvm-as : WasmVM assembler"
     );

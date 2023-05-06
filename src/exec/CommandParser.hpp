@@ -15,12 +15,20 @@ struct CommandParser {
     using Arg = std::variant<std::monostate, std::string, std::vector<std::string>>;
 
     struct Fixed {
+
+        Fixed(std::string name, std::string desc = "", unsigned number = 0)
+            : name(name), desc(desc), number(number) {}
+
         std::string name;
-        std::string desc = "";
-        unsigned number = 0;
+        std::string desc;
+        unsigned number;
     };
     struct Optional : public Fixed {
-        std::string alias = "";
+        Optional(std::string name = "", std::string desc = "", unsigned number = 0, std::string alias = "")
+            : Fixed(name, desc, number), alias(alias) {}
+        Optional(std::string name, std::string desc = "", std::string alias = "")
+            : Fixed(name, desc, 0), alias(alias) {}
+        std::string alias;
     };
 
     CommandParser(int argc, const char* argv[],
