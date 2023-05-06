@@ -37,8 +37,12 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Start(module.start).write(ostream);
     // Elem
     Encode::Elem(module.elems).write(ostream);
+    // Data count
+    Encode::DataCount(module.datas).write(ostream);
     // Code
     Encode::Code(module.funcs).write(ostream);
+    // Data
+    Encode::Data(module.datas).write(ostream);
     return ostream;
 }
 

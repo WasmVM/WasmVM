@@ -82,6 +82,14 @@ struct Code : public Section {
     Code(const std::vector<WasmFunc>& funcs);
 };
 
+struct Data : public Section {
+    Data(const std::vector<WasmData>& funcs);
+};
+
+struct DataCount : public Section {
+    DataCount(const std::vector<WasmData>& funcs);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 
