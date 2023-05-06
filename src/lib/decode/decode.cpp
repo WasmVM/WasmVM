@@ -21,9 +21,9 @@ WasmModule WasmVM::module_decode(std::istream& stream){
             throw Exception::incorrect_magic();
         }
     }
-    
-    WasmModule module;
 
+    WasmModule module;
+    // Types
     return module;
 }
 
