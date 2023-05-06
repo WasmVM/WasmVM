@@ -1,27 +1,3 @@
-add_library(WasmVM_c SHARED
-    decode/decode.c
-    decode/sections.c
-    decode/utils.c
-    decode/parseFuncBody.c
-    instance/free.c
-    instance/module.c
-    instantiate/instantiate.c
-    instantiate/instrs.c
-    invoke/func_invoke.c
-    invoke/invoke.c
-    invoke/exec.c
-    error.c
-    defines.c
-    free.c
-    store.c
-    import.c
-    func.c
-    table.c
-    mem.c
-    global.c
-    instance.c
-)
-
 add_library(WasmVM_textfmt OBJECT
     parse/parse.cpp
     parse/Token.cpp
@@ -100,16 +76,7 @@ add_library(WasmVM_static STATIC
 )
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
-if(INSTALL_C)
-install(TARGETS WasmVM_c
-    ARCHIVE DESTINATION lib
-    LIBRARY DESTINATION lib
-)
-endif(INSTALL_C)
-
-if(INSTALL_CPP)
 install(TARGETS WasmVM WasmVM_static 
     ARCHIVE DESTINATION lib
     LIBRARY DESTINATION lib
 )
-endif(INSTALL_CPP)

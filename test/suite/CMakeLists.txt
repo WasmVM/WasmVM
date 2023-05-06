@@ -3,7 +3,7 @@ macro(add_test_suite suite_name)
     ${suite_name}/${suite_name}.cpp
   )
   target_link_libraries(suite_${suite_name}_target
-    harness_cpp
+    harness
     WasmVM
   )
   set_target_properties(suite_${suite_name}_target
