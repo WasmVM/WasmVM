@@ -35,6 +35,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmElem>(WasmElem elem
             return *this << (byte_t)0x07 << elem.type << elem.elemlist;
         break;
     }
+    return *this;
 }
 
 Encode::Elem::Elem(const std::vector<WasmElem>& elems) : Section((byte_t)0x09){

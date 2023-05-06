@@ -8,6 +8,7 @@
 #include <utility>
 #include <initializer_list>
 #include <filesystem>
+#include <optional>
 
 struct CommandParser {
 
