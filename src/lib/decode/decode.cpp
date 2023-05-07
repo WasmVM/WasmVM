@@ -30,6 +30,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Type(module.types);
     // Imports
     stream >> Decode::Import(module.imports);
+    // Funcs
+    stream >> Decode::Func(module.funcs);
     return module;
 }
 

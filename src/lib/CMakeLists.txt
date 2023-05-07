@@ -60,6 +60,7 @@ add_library(WasmVM_binfmt OBJECT
     decode/import.cpp
     decode/table.cpp
     decode/global.cpp
+    decode/func.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 
