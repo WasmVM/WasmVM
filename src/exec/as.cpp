@@ -63,9 +63,9 @@ int main(int argc, char const *argv[]){
         module_encode(parsed_module, output_file);
         output_file.close();
         
-    }catch(Exception::Parse &e){
+    }catch(Exception::Parse& e){
         std::cerr << input_path.string() << ":" << e.location.first << ":" << e.location.second << " " COLOR_Error ": " << e.what() << std::endl;
-    }catch(Exception::Exception &e){
+    }catch(Exception::Exception& e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
     }
 

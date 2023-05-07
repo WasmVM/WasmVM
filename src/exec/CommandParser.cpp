@@ -14,6 +14,7 @@
 static void help(std::filesystem::path program, std::string desc,
     std::vector<std::variant<CommandParser::Fixed, CommandParser::Optional>> options
 ){
+    std::cerr << desc << std::endl;
     // Usage
     std::cerr << std::endl << "Usage: " << program.filename().string() << " [-h | --help]";
     for(std::variant<CommandParser::Fixed, CommandParser::Optional> option : options){

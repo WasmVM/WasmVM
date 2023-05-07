@@ -24,6 +24,9 @@ namespace Exception{
         Decode(std::string msg, size_t location) : Exception(msg), location(location) {}
         size_t location;
     };
+    struct unexpected_eof : public Exception {
+        unexpected_eof();
+    };
 
     struct Warning {
         Warning(std::string msg){

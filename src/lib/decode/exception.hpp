@@ -8,6 +8,12 @@ namespace Exception {
     struct incorrect_magic : public Decode {
         incorrect_magic();
     };
+    struct invalid_functype : public Decode {
+        invalid_functype(size_t location);
+    };
+    struct invalid_valuetype : public Decode {
+        invalid_valuetype(size_t location);
+    };
 } // namespace Exception
 } // namespace WasmVM
 

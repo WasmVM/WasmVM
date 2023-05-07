@@ -12,6 +12,7 @@
 
 #include "CommandParser.hpp"
 #include "color.hpp"
+#include "../lib/dump/dump.hpp"
 
 using namespace WasmVM;
 
@@ -61,6 +62,22 @@ int main(int argc, char const *argv[]){
         WasmModule decoded_module = module_decode(input_file);
         input_file.close();
         // Dump
+        if(!args["type"] && !args["import"] && !args["func"] && !args["table"] && !args["memory"] &&
+            !args["global"] && !args["export"] && !args["start"] && !args["elem"] && !args["data"]
+        ){
+            module_dump(decoded_module, std::cout);
+            return 0;
+        }
+        if(args["type"]){
+            for(const FuncType& type : decoded_module.types){
+                std::cout << type;
+            }
+        }
+
+    }catch(Exception::Decode &e){
+        std::ios::fmtflags flags = std::cerr.flags();
+        std::cerr << input_path.string() << ":" << std::hex << std::showbase << e.location << " " COLOR_Error ": " << e.what() << std::endl;
+        std::cerr.setf(flags);
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
     }

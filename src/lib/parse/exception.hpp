@@ -42,9 +42,6 @@ namespace Exception {
     struct multiple_start : public Parse {
         multiple_start(Token::Location location);
     };
-    struct unexpected_eof : public Exception {
-        unexpected_eof();
-    };
 }
 }
 
