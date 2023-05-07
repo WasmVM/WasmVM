@@ -49,6 +49,14 @@ template<> Stream& Decode::operator>> <i64_t>(Stream& stream, i64_t& value){
     return stream;
 }
 
+template<> Stream& Decode::operator>> <std::string>(Stream& stream, std::string& value){
+    std::vector<byte_t> bytes;
+    stream >> bytes;
+    value.resize(bytes.size());
+    value.assign((const char*)bytes.data(), bytes.size());
+    return stream;
+}
+
 template<> Stream& Decode::operator>> <ValueType>(Stream& stream, ValueType& type){
     switch(stream.get<byte_t>()){
         case byte_t {0x7f}:
@@ -80,6 +88,35 @@ template<> Stream& Decode::operator>> <FuncType>(Stream& stream, FuncType& type)
         throw Exception::invalid_functype(stream.location());
     }
     return stream >> type.params >> type.results;
+}
+
+template<> Stream& Decode::operator>> <RefType>(Stream& stream, RefType& type){
+    switch(stream.get<byte_t>()){
+        case byte_t {0x70}:
+            type = RefType::funcref;
+        break;
+        case byte_t {0x6f}:
+            type = RefType::externref;
+        break;
+        default:
+            throw Exception::invalid_reftype(stream.location());
+    }
+    return stream;
+}
+
+template<> Stream& Decode::operator>> <Limits>(Stream& stream, Limits& limit){
+    limit.max.reset();
+    switch(stream.get<byte_t>()){
+        case byte_t {0x00}:
+            return stream >> limit.min;
+        break;
+        case byte_t {0x01}:
+            return stream >> limit.min >> limit.max.emplace();
+        break;
+        default:
+            throw Exception::invalid_reftype(stream.location());
+    }
+    return stream;
 }
 
 Stream& Decode::Type::read(Stream& stream){

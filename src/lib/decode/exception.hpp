@@ -14,6 +14,18 @@ namespace Exception {
     struct invalid_valuetype : public Decode {
         invalid_valuetype(size_t location);
     };
+    struct invalid_import : public Decode {
+        invalid_import(size_t location);
+    };
+    struct invalid_reftype : public Decode {
+        invalid_reftype(size_t location);
+    };
+    struct invalid_limit : public Decode {
+        invalid_limit(size_t location);
+    };
+    struct invalid_globaltype : public Decode {
+        invalid_globaltype(size_t location);
+    };
 } // namespace Exception
 } // namespace WasmVM
 

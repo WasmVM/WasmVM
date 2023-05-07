@@ -28,6 +28,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     Decode::Stream stream(istream);
     // Types
     stream >> Decode::Type(module.types);
+    // Imports
+    stream >> Decode::Import(module.imports);
     return module;
 }
 
@@ -72,3 +74,11 @@ Exception::invalid_functype::invalid_functype(size_t location) :
     Decode("invalid func type: func type should start with 0x60", location) {}
 Exception::invalid_valuetype::invalid_valuetype(size_t location) : 
     Decode("invalid value type", location) {}
+Exception::invalid_import::invalid_import(size_t location) : 
+    Decode("invalid import", location) {}
+Exception::invalid_reftype::invalid_reftype(size_t location) : 
+    Decode("invalid reference type", location) {}
+Exception::invalid_limit::invalid_limit(size_t location) : 
+    Decode("invalid limit", location) {}
+Exception::invalid_globaltype::invalid_globaltype(size_t location) : 
+    Decode("invalid global type", location) {}

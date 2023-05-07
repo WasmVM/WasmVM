@@ -59,6 +59,13 @@ protected:
     std::vector<FuncType>& types;
 };
 
+struct Import : public Section {
+    Import(std::vector<WasmImport>& imports) : Section((byte_t)0x02), imports(imports){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmImport>& imports;
+};
+
 } // namespace Decode
 } // namespace WasmVM
 

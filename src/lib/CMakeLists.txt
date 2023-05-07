@@ -1,4 +1,5 @@
 add_library(WasmVM_textfmt OBJECT
+    # parse
     parse/parse.cpp
     parse/Token.cpp
     parse/nodes/Module.cpp
@@ -27,6 +28,7 @@ add_library(WasmVM_textfmt OBJECT
     parse/nodes/instruction/variable.cpp
     parse/nodes/instruction/table.cpp
     parse/nodes/instruction/memory.cpp
+    # dump
     dump/dump.cpp
     dump/type.cpp
     dump/import.cpp
@@ -40,6 +42,7 @@ add_library(WasmVM_textfmt OBJECT
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(WasmVM_binfmt OBJECT
+    # encode
     encode/encode.cpp
     encode/type.cpp
     encode/import.cpp
@@ -51,9 +54,12 @@ add_library(WasmVM_binfmt OBJECT
     encode/export.cpp
     encode/elem.cpp
     encode/data.cpp
+    # decode
     decode/decode.cpp
     decode/type.cpp
     decode/import.cpp
+    decode/table.cpp
+    decode/global.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 

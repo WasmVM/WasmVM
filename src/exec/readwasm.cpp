@@ -68,6 +68,7 @@ int main(int argc, char const *argv[]){
             module_dump(decoded_module, std::cout);
             return 0;
         }
+        // Type
         if(args["type"]){
             for(const FuncType& type : decoded_module.types){
                 std::cout << type;
