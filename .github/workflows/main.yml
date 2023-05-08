@@ -32,4 +32,4 @@ jobs:
             ${{ github.workspace }}/build
           key: ${{ github.sha }}
       - name: Run CTest
-        run: cd build && ctest
+        run: cd build && ctest --output-on-failure
