@@ -11,3 +11,11 @@ using namespace Decode;
 template<> Stream& Decode::operator>> <TableType>(Stream& stream, TableType& type){
     return stream >> type.reftype >> type.limits;
 }
+
+Stream& Decode::Table::read(Stream& stream){
+    auto size = header(stream);
+    if(size){
+        stream >> tables;
+    }
+    return stream;
+}

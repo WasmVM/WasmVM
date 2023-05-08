@@ -65,8 +65,10 @@ int main(int argc, char const *argv[]){
         
     }catch(Exception::Parse& e){
         std::cerr << input_path.string() << ":" << e.location.first << ":" << e.location.second << " " COLOR_Error ": " << e.what() << std::endl;
+        return -1;
     }catch(Exception::Exception& e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
+        return -1;
     }
 
     return 0;

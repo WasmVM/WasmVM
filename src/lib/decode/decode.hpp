@@ -73,6 +73,13 @@ protected:
     std::vector<WasmFunc>& funcs;
 };
 
+struct Table : public Section {
+    Table(std::vector<TableType>& tables) : Section((byte_t)0x04), tables(tables){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<TableType>& tables;
+};
+
 } // namespace Decode
 } // namespace WasmVM
 
