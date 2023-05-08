@@ -31,7 +31,8 @@ Suite token {
     Test("string", {
         Expect(std::holds_alternative<Token::String>(tokenize("\"\"").front()));
         Expect(std::holds_alternative<Token::String>(tokenize("\"teststr\"").front()));
-        Expect(std::holds_alternative<Token::String>(tokenize("\"test\ns\ttr\"").front()));
+        Expect(std::holds_alternative<Token::String>(tokenize("\"test\\ns\\ttr\"").front()));
+        Throw(Exception::invalid_character, tokenize("\"test\ns\ttr\""))
         Throw(Exception::string_not_close, tokenize("\""))
         Throw(Exception::string_not_close, tokenize("\"qsedq\""))
         Throw(Exception::string_not_close, tokenize("\"qsedq\"\""))

@@ -6,6 +6,8 @@
 #include <WasmVM.hpp>
 #include <parse/exception.hpp>
 
+#include <sstream>
+
 using namespace WasmVM;
 using namespace Testing;
 
@@ -21,22 +23,20 @@ Suite type {
         Expect(param_i32.params.size() == 1);
         Expect(param_i32.params[0] == ValueType::i32);
         FuncType param_i32_i64 = test_module.types[1];
-        Expect(param_i32.params.size() == 2);
-        Expect(param_i32.params[0] == ValueType::i32);
-        Expect(param_i32.params[1] == ValueType::i64);
+        Expect(param_i32_i64.params.size() == 2);
+        Expect(param_i32_i64.params[0] == ValueType::i32);
+        Expect(param_i32_i64.params[1] == ValueType::i64);
         FuncType param_f32_f64 = test_module.types[2];
-        Expect(param_i32.params.size() == 2);
-        Expect(param_i32.params[0] == ValueType::f32);
-        Expect(param_i32.params[1] == ValueType::f64);
+        Expect(param_f32_f64.params.size() == 2);
+        Expect(param_f32_f64.params[0] == ValueType::f32);
+        Expect(param_f32_f64.params[1] == ValueType::f64);
         Throw(Exception::invalid_functype, {
-            std::ifstream stream("(type (func (param $pdup i32 i64)))");
+            std::stringstream stream("(type (func (param $pdup i32 i64)))");
             module_parse(stream);
-            stream.close();
         });
         Throw(Exception::invalid_functype, {
-            std::ifstream stream("(type (func (param $pnone)))");
+            std::stringstream stream("(type (func (param $pnone)))");
             module_parse(stream);
-            stream.close();
         });
     })
     Test("result", {
@@ -73,8 +73,7 @@ Suite type {
         Expect(param_f32_result_i64.results[0] == ValueType::i64);
     })
     Test("with id", {
-        std::ifstream stream("(type $ty1 (func))");
+        std::stringstream stream("(type $ty1 (func))");
         module_parse(stream);
-        stream.close();
     })
 };
