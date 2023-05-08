@@ -34,6 +34,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Func(module.funcs);
     // Tables
     stream >> Decode::Table(module.tables);
+    // Mems
+    stream >> Decode::Memory(module.mems);
     return module;
 }
 

@@ -80,6 +80,13 @@ protected:
     std::vector<TableType>& tables;
 };
 
+struct Memory : public Section {
+    Memory(std::vector<MemType>& mems) : Section((byte_t)0x05), mems(mems){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<MemType>& mems;
+};
+
 } // namespace Decode
 } // namespace WasmVM
 
