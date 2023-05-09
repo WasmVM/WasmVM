@@ -40,6 +40,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Global(module.globals);
     // Exports
     stream >> Decode::Export(module.exports);
+    // Start
+    stream >> Decode::Start(module.start);
     return module;
 }
 
