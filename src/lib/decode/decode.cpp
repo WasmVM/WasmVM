@@ -44,6 +44,10 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Start(module.start);
     // Elems
     stream >> Decode::Elem(module.elems);
+    // Data count
+    stream >> Decode::DataCount(module.datas);
+    // Datas
+    stream >> Decode::Data(module.datas);
     return module;
 }
 
@@ -104,3 +108,7 @@ Exception::expression_not_end::expression_not_end(size_t location) :
     Decode("expected end(0x0B) after expression", location) {}
 Exception::invalid_elem::invalid_elem(size_t location) : 
     Decode("invalid element", location) {}
+Exception::invalid_data::invalid_data(size_t location) : 
+    Decode("invalid data", location) {}
+Exception::datacount_mismatch::datacount_mismatch(size_t location) : 
+    Decode("number of datas should match data count", location) {}

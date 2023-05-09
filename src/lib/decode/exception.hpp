@@ -38,6 +38,12 @@ namespace Exception {
     struct invalid_elem : public Decode {
         invalid_elem(size_t location);
     };
+    struct invalid_data : public Decode {
+        invalid_data(size_t location);
+    };
+    struct datacount_mismatch : public Decode {
+        datacount_mismatch(size_t location);
+    };
 } // namespace Exception
 } // namespace WasmVM
 
