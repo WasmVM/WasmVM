@@ -35,6 +35,9 @@ namespace Exception {
     struct expression_not_end : public Decode {
         expression_not_end(size_t location);
     };
+    struct invalid_elem : public Decode {
+        invalid_elem(size_t location);
+    };
 } // namespace Exception
 } // namespace WasmVM
 

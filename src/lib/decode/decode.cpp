@@ -42,6 +42,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Export(module.exports);
     // Start
     stream >> Decode::Start(module.start);
+    // Elems
+    stream >> Decode::Elem(module.elems);
     return module;
 }
 
@@ -100,3 +102,5 @@ Exception::unknown_instruction::unknown_instruction(size_t location) :
     Decode("unknown instruction", location) {}
 Exception::expression_not_end::expression_not_end(size_t location) : 
     Decode("expected end(0x0B) after expression", location) {}
+Exception::invalid_elem::invalid_elem(size_t location) : 
+    Decode("invalid element", location) {}
