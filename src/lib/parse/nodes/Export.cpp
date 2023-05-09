@@ -7,26 +7,21 @@
 using namespace WasmVM;
 
 void ModuleVisitor::operator()(Parse::Export& node){
+    WasmExport& export_ = module.exports.emplace_back();
+    export_.name = node.name;
+    export_.desc = node.type;
     switch(node.type){
         case WasmExport::DescType::func :
-            module.exports.emplace_back(node.name, node.type,
-                std::visit(Parse::Index::Visitor(func_indices.id_map), node.index)
-            );
+            export_.index = std::visit(Parse::Index::Visitor(func_indices.id_map), node.index);
         break;
         case WasmExport::DescType::table :
-            module.exports.emplace_back(node.name, node.type,
-                std::visit(Parse::Index::Visitor(table_indices.id_map), node.index)
-            );
+            export_.index = std::visit(Parse::Index::Visitor(table_indices.id_map), node.index);
         break;
         case WasmExport::DescType::mem :
-            module.exports.emplace_back(node.name, node.type,
-                std::visit(Parse::Index::Visitor(mem_indices.id_map), node.index)
-            );
+            export_.index = std::visit(Parse::Index::Visitor(mem_indices.id_map), node.index);
         break;
         case WasmExport::DescType::global :
-            module.exports.emplace_back(node.name, node.type,
-                std::visit(Parse::Index::Visitor(global_indices.id_map), node.index)
-            );
+            export_.index = std::visit(Parse::Index::Visitor(global_indices.id_map), node.index);
         break;
     }
 }

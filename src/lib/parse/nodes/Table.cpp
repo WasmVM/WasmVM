@@ -10,7 +10,10 @@ void ModuleVisitor::operator()(Parse::Table& node){
     index_t tableidx = table_indices.records.size();
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::table, tableidx);
+        WasmExport& export_ = module.exports.emplace_back();
+        export_.name = name;
+        export_.desc = WasmExport::DescType::table;
+        export_.index = tableidx;
     }
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){

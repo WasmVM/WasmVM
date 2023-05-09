@@ -10,7 +10,10 @@ void ModuleVisitor::operator()(Parse::Memory& node){
     index_t memidx = mem_indices.records.size();
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::mem, memidx);
+        WasmExport& export_ = module.exports.emplace_back();
+        export_.name = name;
+        export_.desc = WasmExport::DescType::mem;
+        export_.index = memidx;
     }
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){

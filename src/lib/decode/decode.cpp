@@ -38,6 +38,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Memory(module.mems);
     // Globals
     stream >> Decode::Global(module.globals);
+    // Exports
+    stream >> Decode::Export(module.exports);
     return module;
 }
 
@@ -90,5 +92,9 @@ Exception::invalid_limit::invalid_limit(size_t location) :
     Decode("invalid limit", location) {}
 Exception::invalid_globaltype::invalid_globaltype(size_t location) : 
     Decode("invalid global type", location) {}
+Exception::invalid_export::invalid_export(size_t location) : 
+    Decode("invalid export", location) {}
 Exception::unknown_instruction::unknown_instruction(size_t location) : 
     Decode("unknown instruction", location) {}
+Exception::expression_not_end::expression_not_end(size_t location) : 
+    Decode("expected end(0x0B) after expression", location) {}

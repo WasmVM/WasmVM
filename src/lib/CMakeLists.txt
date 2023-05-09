@@ -63,6 +63,7 @@ add_library(WasmVM_binfmt OBJECT
     decode/func.cpp
     decode/memory.cpp
     decode/instr.cpp
+    decode/export.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 

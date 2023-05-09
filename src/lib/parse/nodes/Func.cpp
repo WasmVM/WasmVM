@@ -12,7 +12,10 @@ using namespace WasmVM;
 void ModuleVisitor::operator()(Parse::Func& node){
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::func, func_indices.records.size());
+        WasmExport& export_ = module.exports.emplace_back();
+        export_.name = name;
+        export_.desc = WasmExport::DescType::func;
+        export_.index = func_indices.records.size();
     }
 
     // import

@@ -10,7 +10,10 @@ void ModuleVisitor::operator()(Parse::Global& node){
     index_t globalidx = global_indices.records.size();
     // export
     for(std::string name : node.exports){
-        module.exports.emplace_back(name, WasmExport::DescType::global, globalidx);
+        WasmExport& export_ = module.exports.emplace_back();
+        export_.name = name;
+        export_.desc = WasmExport::DescType::global;
+        export_.index = globalidx;
     }
     // import
     if(!node.import.first.empty() || !node.import.second.empty()){

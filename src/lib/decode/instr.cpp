@@ -50,6 +50,9 @@ template<> Stream& Decode::operator>> <ConstInstr>(Stream& stream, ConstInstr& i
         default:
             throw Exception::unknown_instruction(stream.location());
     }
+    if(stream.get<byte_t>() != (byte_t)Opcode::End){
+        throw Exception::expression_not_end(stream.location());
+    }
     return stream;
 }
 
