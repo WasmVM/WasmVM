@@ -87,6 +87,55 @@ protected:
     std::vector<MemType>& mems;
 };
 
+struct Global : public Section {
+    Global(std::vector<WasmGlobal>& globals) : Section((byte_t)0x06), globals(globals){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmGlobal>& globals;
+};
+
+struct Export : public Section {
+    Export(std::vector<WasmExport>& exports) : Section((byte_t)0x07), exports(exports){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmExport>& exports;
+};
+
+struct Start : public Section {
+    Start(std::optional<index_t>& start) : Section((byte_t)0x08), start(start){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::optional<index_t>& start;
+};
+
+struct Elem : public Section {
+    Elem(std::vector<WasmElem>& elems) : Section((byte_t)0x09), elems(elems){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmElem>& elems;
+};
+
+struct Code : public Section {
+    Code(std::vector<WasmFunc>& funcs) : Section((byte_t)0x0a), funcs(funcs){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmFunc>& funcs;
+};
+
+struct Data : public Section {
+    Data(std::vector<WasmData>& datas) : Section((byte_t)0x0b), datas(datas){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmData>& datas;
+};
+
+struct DataCount : public Section {
+    DataCount(std::vector<WasmData>& datas) : Section((byte_t)0x0c), datas(datas){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<WasmData>& datas;
+};
+
 } // namespace Decode
 } // namespace WasmVM
 

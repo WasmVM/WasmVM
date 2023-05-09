@@ -48,6 +48,18 @@ template<> Stream& Decode::operator>> <i64_t>(Stream& stream, i64_t& value){
     value = read_leb<i64_t>(stream.istream);
     return stream;
 }
+template<> Stream& Decode::operator>> <f32_t>(Stream& stream, f32_t& value){
+    f32_t val;
+    stream.istream.read((char*)&val, sizeof(f32_t));
+    value = val;
+    return stream;
+}
+template<> Stream& Decode::operator>> <f64_t>(Stream& stream, f64_t& value){
+    f64_t val;
+    stream.istream.read((char*)&val, sizeof(f64_t));
+    value = val;
+    return stream;
+}
 
 template<> Stream& Decode::operator>> <std::string>(Stream& stream, std::string& value){
     std::vector<byte_t> bytes;

@@ -26,6 +26,9 @@ namespace Exception {
     struct invalid_globaltype : public Decode {
         invalid_globaltype(size_t location);
     };
+    struct unknown_instruction : public Decode {
+        unknown_instruction(size_t location);
+    };
 } // namespace Exception
 } // namespace WasmVM
 

@@ -22,3 +22,15 @@ template<> Stream& Decode::operator>> <GlobalType>(Stream& stream, GlobalType& g
     }
     return stream;
 }
+
+template<> Stream& Decode::operator>> <WasmGlobal>(Stream& stream, WasmGlobal& global){
+    return stream >> global.type >> global.init;
+}
+
+Stream& Decode::Global::read(Stream& stream){
+    auto size = header(stream);
+    if(size){
+        stream >> globals;
+    }
+    return stream;
+}
