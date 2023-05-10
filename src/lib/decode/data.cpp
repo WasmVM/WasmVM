@@ -25,7 +25,7 @@ Stream& Decode::Data::read(Stream& stream){
     auto size = header(stream);
     if(size){
         if(stream.get<u32_t>() != datas.size()){
-            throw Exception::datacount_mismatch(stream.location());
+            throw Exception::count_mismatch(stream.location());
         }
         for(WasmData& data : datas){
             stream >> data;

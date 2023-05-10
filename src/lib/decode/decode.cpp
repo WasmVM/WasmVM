@@ -25,7 +25,7 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     }
 
     WasmModule module;
-    Decode::Stream stream(istream);
+    Decode::Stream stream(istream, module);
     // Types
     stream >> Decode::Type(module.types);
     // Imports
@@ -46,6 +46,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Elem(module.elems);
     // Data count
     stream >> Decode::DataCount(module.datas);
+    // Code
+    stream >> Decode::Code(module.funcs);
     // Datas
     stream >> Decode::Data(module.datas);
     return module;
@@ -56,7 +58,13 @@ byte_t Decode::Stream::peek(){
 }
 
 size_t Decode::Stream::location(){
-    return istream.tellg();
+    ssize_t loc = istream.tellg();
+    if(loc == -1){
+        istream.seekg(0, std::ios_base::end);
+        loc = istream.tellg();
+        istream.seekg(-1);
+    }
+    return loc;
 }
 
 Stream& Decode::operator>>(Stream& stream, Decode::Section&& section){
@@ -110,5 +118,7 @@ Exception::invalid_elem::invalid_elem(size_t location) :
     Decode("invalid element", location) {}
 Exception::invalid_data::invalid_data(size_t location) : 
     Decode("invalid data", location) {}
-Exception::datacount_mismatch::datacount_mismatch(size_t location) : 
-    Decode("number of datas should match data count", location) {}
+Exception::count_mismatch::count_mismatch(size_t location) : 
+    Decode("vector length mismatch explicit defined size", location) {}
+Exception::invalid_instruction::invalid_instruction(size_t location) : 
+    Decode("invalid instruction", location) {}

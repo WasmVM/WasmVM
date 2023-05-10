@@ -255,8 +255,12 @@ struct InstrVisitor {
     }
     std::ostream& operator()(const WasmVM::Instr::Select& instr){
         stream << "select";
-        for(ValueType type : instr.valtypes){
-            stream << " " << type;
+        if(!instr.valtypes.empty()){
+            stream << " (result";
+            for(ValueType type : instr.valtypes){
+                stream << " " << type;
+            }
+            stream << ")";
         }
         return stream;
     }

@@ -4,6 +4,8 @@
 
 #include "encode.hpp"
 
+#include <deque>
+
 using namespace WasmVM;
 using namespace Encode;
 
@@ -28,12 +30,36 @@ template<> Section::Stream& Section::Stream::operator<< <u32_t>(u32_t value){
     return this->operator<<((u64_t)value);
 }
 
-template<> Section::Stream& Section::Stream::operator<< <i32_t>(i32_t value){
-    return this->operator<<((u32_t)value);
+template<> Section::Stream& Section::Stream::operator<< <i64_t>(i64_t value){
+    std::deque<byte_t> bytes;
+    for(size_t i = 0; i < 10; ++i){
+        bytes.emplace_front((byte_t)(value & 0x7f));
+        value >>= 7;
+    }; 
+    while((bytes.size() > 1) && (bytes[0] == bytes[1]) && ((bytes[0] == byte_t {0x00}) || (bytes[0] == byte_t {0x7f}))){
+        bytes.pop_front();
+    }
+    while(bytes.size() > 1){
+        *this << (bytes.back() | byte_t {0x80});
+        bytes.pop_back();
+    }
+    return *this << (bytes.back() & byte_t {0x7f});
 }
 
-template<> Section::Stream& Section::Stream::operator<< <i64_t>(i64_t value){
-    return this->operator<<((u64_t)value);
+template<> Section::Stream& Section::Stream::operator<< <i32_t>(i32_t value){
+    std::deque<byte_t> bytes;
+    for(size_t i = 0; i < 5; ++i){
+        bytes.emplace_front((byte_t)(value & 0x7f));
+        value >>= 7;
+    }; 
+    while((bytes.size() > 1) && (bytes[0] == bytes[1]) && ((bytes[0] == byte_t {0x00}) || (bytes[0] == byte_t {0x7f}))){
+        bytes.pop_front();
+    }
+    while(bytes.size() > 1){
+        *this << (bytes.back() | byte_t {0x80});
+        bytes.pop_back();
+    }
+    return *this << (bytes.back() & byte_t {0x7f});
 }
 
 template<> Section::Stream& Section::Stream::operator<< <f32_t>(f32_t value){

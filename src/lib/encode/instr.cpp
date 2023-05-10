@@ -237,21 +237,27 @@ MemoryInstr(WasmVM::Instr::I64_store32)
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Block>(WasmVM::Instr::Block instr){
     *this << (byte_t)instr.opcode;
     if(instr.type){
-        *this << instr.type.value();
+        *this << (i64_t)instr.type.value();
+    }else{
+        *this << (byte_t) 0x40;
     }
     return *this;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Loop>(WasmVM::Instr::Loop instr){
     *this << (byte_t)instr.opcode;
     if(instr.type){
-        *this << instr.type.value();
+        *this << (i64_t)instr.type.value();
+    }else{
+        *this << (byte_t) 0x40;
     }
     return *this;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::If>(WasmVM::Instr::If instr){
     *this << (byte_t)instr.opcode;
     if(instr.type){
-        *this << instr.type.value();
+        *this << (i64_t)instr.type.value();
+    }else{
+        *this << (byte_t) 0x40;
     }
     return *this;
 }
@@ -272,7 +278,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Select>(
     if(instr.valtypes.empty()){
         return *this << (byte_t)instr.opcode;
     }else{
-        return *this << (byte_t)0x1c << instr.valtypes;
+        return *this << (byte_t)Opcode::Select_t << instr.valtypes;
     }
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Table_copy>(WasmVM::Instr::Table_copy instr){

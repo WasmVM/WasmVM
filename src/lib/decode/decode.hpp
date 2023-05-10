@@ -4,6 +4,7 @@
 #include <WasmVM.hpp>
 #include <istream>
 #include <optional>
+#include <unordered_map>
 
 namespace WasmVM {
 namespace Decode {
@@ -12,7 +13,7 @@ constexpr u32_t magic = 0x6d736100;
 constexpr u32_t version = 0x01;
 
 struct Stream {
-    Stream(std::istream& istream) : istream(istream){}
+    Stream(std::istream& istream, WasmModule& module) : istream(istream), module(module){}
 
     template <typename T>
     friend Stream& operator>>(Stream& stream, T& value);
@@ -33,11 +34,13 @@ struct Stream {
         return stream;
     }
     friend class Section;
-
+    
     byte_t peek();
     size_t location();
 private:
     std::istream& istream;
+    WasmModule& module;
+    std::unordered_map<ValueType, index_t> typemap;
 };
 
 template <typename T>

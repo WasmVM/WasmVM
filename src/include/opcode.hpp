@@ -32,6 +32,7 @@ enum Opcode : opcode_t {
     // Parametric
     Drop = 0x1a,
     Select = 0x1b,
+    Select_t = 0x1c,
     // Variable
     Local_get = 0x20,
     Local_set = 0x21,

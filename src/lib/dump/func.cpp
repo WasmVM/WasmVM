@@ -9,7 +9,7 @@ using namespace WasmVM;
 std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmFunc& func){
     stream << "  (func (type " << func.typeidx << ")";
     for(ValueType local : func.locals){
-        stream << " (local " << local << " )";
+        stream << " (local " << local << ")";
     }
     stream << std::endl;
     for(const WasmInstr& instr : func.body){

@@ -28,7 +28,7 @@ struct OneIndex : public Base {
 template<Opcode::Opcode OP>
 struct BlockInstr : public Base {
     BlockInstr(): Base(OP){}
-    BlockInstr(index_t type): Base(OP), type(type){}
+    BlockInstr(std::optional<index_t> type): Base(OP), type(type){}
     std::optional<index_t> type;
 };
 
