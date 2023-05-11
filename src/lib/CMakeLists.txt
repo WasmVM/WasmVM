@@ -83,6 +83,7 @@ add_library(WasmVM SHARED
 )
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
+if(DEV_BUILD)
 add_library(WasmVM_static STATIC 
     $<TARGET_OBJECTS:WasmVM_textfmt>
     $<TARGET_OBJECTS:WasmVM_binfmt>
@@ -90,7 +91,11 @@ add_library(WasmVM_static STATIC
 )
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
-install(TARGETS WasmVM WasmVM_static 
+install(TARGETS WasmVM_static 
     ARCHIVE DESTINATION lib
+)
+endif(DEV_BUILD)
+
+install(TARGETS WasmVM
     LIBRARY DESTINATION lib
 )

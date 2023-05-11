@@ -1,13 +1,5 @@
 {
 	"name": "WasmVM",
-	"dockerFile": "../docker/Dockerfile.develop",
-	"runArgs": ["--cap-add=SYS_PTRACE"],
-	"extensions": [
-		"ms-vscode.cpptools",
-		"ms-vscode.cmake-tools",
-		"ms-vscode.hexeditor",
-		"ms-python.python",
-		"twxs.cmake",
-		"dtsvet.vscode-wasm"
-	]
+	"dockerFile": "../docker/Dockerfile.test",
+	"runArgs": ["--cap-add=SYS_PTRACE"]
 }

@@ -14,8 +14,6 @@ target_link_libraries(readwasm
     WasmVM
 )
 
-if(INSTALL_CPP)
 install(TARGETS wasmvm-as readwasm
     RUNTIME DESTINATION bin
 )
-endif(INSTALL_CPP)

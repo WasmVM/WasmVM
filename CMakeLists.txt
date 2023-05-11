@@ -7,6 +7,9 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED 20)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
+set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+set(DEV_BUILD ON CACHE BOOL "Build & install static library and headers")
 
 set(CONSOLE_COLOR ON CACHE BOOL "Turn on color in console result")
 if(CONSOLE_COLOR)
@@ -26,3 +29,5 @@ if(BUILD_TESTS)
     enable_testing()
     add_subdirectory(test)
 endif(BUILD_TESTS)
+
+include(pack_deb)
