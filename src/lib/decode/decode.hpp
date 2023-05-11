@@ -54,6 +54,7 @@ protected:
     virtual Stream& read(Stream& stream);
     std::optional<size_t> header(Stream& stream);
 };
+Stream& operator>>(Stream& stream, Section&& secion);
 
 struct Type : public Section {
     Type(std::vector<FuncType>& types) : Section((byte_t)0x01), types(types){}

@@ -17,10 +17,12 @@ using BlockType = std::optional<index_t>;
     case Opcode::I : \
         instr.emplace<Instr::I>(); \
     break;
+
 #define OneIndexInstr(I) \
     case Opcode::I : \
         instr.emplace<Instr::I>(stream.get<index_t>()); \
     break;
+
 #define MemoryInstr(I) \
     case Opcode::I :{ \
         u32_t align = stream.get<u32_t>(); \
@@ -282,14 +284,14 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         }break;
         case Opcode::Table_copy : {
             instr.emplace<Instr::Table_copy>(stream.get<index_t>(), stream.get<index_t>());
-        break;
+        }break;
         case Opcode::Table_init : {
             index_t elemidx = stream.get<index_t>();
             instr.emplace<Instr::Table_init>(stream.get<index_t>(), elemidx);
         }break;
         case Opcode::Memory_copy : {
             instr.emplace<Instr::Memory_copy>(stream.get<index_t>(), stream.get<index_t>());
-        break;
+        }break;
         case Opcode::Memory_init : {
             index_t dataidx = stream.get<index_t>();
             instr.emplace<Instr::Table_init>(stream.get<index_t>(), dataidx);
@@ -342,4 +344,5 @@ template<> Stream& Decode::operator>> <ConstInstr>(Stream& stream, ConstInstr& i
 
 #undef AtomicInstr
 #undef OneIndexInstr
+#undef MemoryInstr
 
