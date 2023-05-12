@@ -21,6 +21,10 @@ add_library(WasmVM_textfmt OBJECT
     parse/nodes/Start.cpp
     parse/nodes/instruction.cpp
     parse/nodes/instruction/numeric.cpp
+    parse/nodes/instruction/i32.cpp
+    parse/nodes/instruction/i64.cpp
+    parse/nodes/instruction/f32.cpp
+    parse/nodes/instruction/f64.cpp
     parse/nodes/instruction/const.cpp
     parse/nodes/instruction/control.cpp
     parse/nodes/instruction/reference.cpp

@@ -8,9 +8,6 @@
 
 #include <unordered_map>
 #include <queue>
-#include <iostream>
-
-#include "../../dump/dump.hpp"
 
 using namespace WasmVM;
 
