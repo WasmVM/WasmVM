@@ -32,6 +32,7 @@ add_library(WasmVM_textfmt OBJECT
     parse/nodes/instruction/variable.cpp
     parse/nodes/instruction/table.cpp
     parse/nodes/instruction/memory.cpp
+    parse/nodes/post_process.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
