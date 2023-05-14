@@ -58,6 +58,15 @@ int main(int argc, char const *argv[]){
         std::ifstream input_file(input_path);
         WasmModule parsed_module = module_parse(input_file);
         input_file.close();
+
+        // Validate
+        if(!args["force"]){
+            auto validate_result = module_validate(parsed_module);
+            if(validate_result){
+                throw validate_result.value();
+            }
+        }
+
         // Encode
         std::ofstream output_file(output_path, std::ios::binary | std::ios::trunc);
         module_encode(parsed_module, output_file);

@@ -5,7 +5,9 @@
 #include <vector>
 #include <cstddef>
 #include <iostream>
+#include <optional>
 #include <structures/WasmModule.hpp>
+#include <exception.hpp>
 
 #define VERSION "v1.1"
 
@@ -15,6 +17,7 @@ WasmModule module_parse(std::istream& stream);
 std::ostream& module_dump(const WasmModule& module, std::ostream& stream);
 std::ostream& module_encode(const WasmModule& module, std::ostream& stream);
 WasmModule module_decode(std::istream& stream);
+std::optional<Exception::Exception> module_validate(const WasmModule& module);
 
 }
 

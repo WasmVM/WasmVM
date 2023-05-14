@@ -62,6 +62,15 @@ int main(int argc, char const *argv[]){
         std::ifstream input_file(input_path);
         WasmModule decoded_module = module_decode(input_file);
         input_file.close();
+
+        // Validate
+        if(!args["force"]){
+            auto validate_result = module_validate(decoded_module);
+            if(validate_result){
+                throw validate_result.value();
+            }
+        }
+
         // Dump
         if(args["all"] || (!args["type"] && !args["import"] && !args["func"] && !args["table"] && !args["memory"] &&
             !args["global"] && !args["export"] && !args["start"] && !args["elem"] && !args["data"])
