@@ -61,6 +61,7 @@ void ModuleVisitor::operator()(Parse::Func& node){
     for(Parse::Instr::Instruction instrnode : node.body){
         std::visit(InstrVisitor::Sema(*this, func, labelid_map, localid_map), instrnode);
     }
+    func.body.emplace_back(WasmVM::Instr::End());
 }
 
 std::optional<Parse::Func> Parse::Func::get(TokenIter& begin, TokenHolder& holder){

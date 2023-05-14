@@ -164,7 +164,7 @@ CommandParser::CommandParser(int argc, const char* argv[],
             }
         }else{
             // Too many arguments
-            std::cerr << "wasmvm-as : " COLOR_Error ": too many arguments" << std::endl;
+            std::cerr << COLOR_Error ": too many arguments" << std::endl;
             help(program, desc, options);
             std::exit(-1);
         }

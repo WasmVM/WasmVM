@@ -32,7 +32,6 @@ template<> Section::Stream& Section::Stream::operator<< <WasmFunc>(WasmFunc func
     for(WasmInstr& instr : func.body){
         stream << instr;
     }
-    stream << (byte_t) Opcode::End;
     // Update output
     return *this << buffer;
 }
