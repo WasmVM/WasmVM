@@ -38,6 +38,8 @@ struct State {
     template<typename T>
     T pop(T);
 
+    StackValue pop(StackValue expect);
+
     void unreachable();
 
 };
