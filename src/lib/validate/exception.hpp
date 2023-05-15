@@ -19,6 +19,9 @@ struct Validate_type_not_match : public Exception {
 struct Validate_invalid_type : public Exception {
     Validate_invalid_type(std::string message) : Exception(message){};
 };
+struct Validate_invalid_operation : public Exception {
+    Validate_invalid_operation(std::string message) : Exception(message){};
+};
 }
 }
 #endif

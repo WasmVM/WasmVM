@@ -34,14 +34,12 @@ static bool is_ref(Validate::State::StackValue value){
 template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     // type
     assert(func.typeidx < context.types.size());
-    FuncType type = context.types[func.typeidx];
+    FuncType func_type = context.types[func.typeidx];
     // state (context C')
     State state;
-    state.locals.insert(state.locals.end(), type.params.begin(), type.params.end());
+    state.locals.insert(state.locals.end(), func_type.params.begin(), func_type.params.end());
     state.locals.insert(state.locals.end(), func.locals.begin(), func.locals.end());
-    FuncType type_r = type;
-    type_r.params.clear();
-    state.push(Opcode::Nop, type_r);
+    state.push(Opcode::Nop, func_type);
     // body
     for(const WasmInstr& instr : func.body){
         Opcode::opcode_t opcode = std::visit(overloaded {[](auto& ins){return ins.opcode;}}, instr);
@@ -197,7 +195,62 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                 }
             }break;
+            // [t1*] -> [t2*]
+            case Opcode::Block : {
+                const Instr::Block& ins = std::get<Instr::Block>(instr);
+                FuncType type;
+                if(ins.type){
+                    if(ins.type.value() >= context.types.size()){
+                        throw Exception::Validate_index_not_found("type index not found for block type");
+                    }
+                    type = context.types[ins.type.value()];
+                }
+                state.pop(type.params);
+                state.push(Opcode::Block, type);
+                state.push(type.params);
+            }break;
+            case Opcode::Loop : {
+                const Instr::Loop& ins = std::get<Instr::Loop>(instr);
+                FuncType type;
+                if(ins.type){
+                    if(ins.type.value() >= context.types.size()){
+                        throw Exception::Validate_index_not_found("type index not found for loop type");
+                    }
+                    type = context.types[ins.type.value()];
+                }
+                state.pop(type.params);
+                state.push(Opcode::Loop, type);
+                state.push(type.params);
+            }break;
+            case Opcode::Else : {
+                State::CtrlFrame ctrl = state.pop<State::CtrlFrame>();
+                if(ctrl.opcode != Opcode::If){
+                    throw Exception::Validate_invalid_operation("else should be used with if");
+                }
+                state.push(Opcode::If, ctrl.type);
+                state.push(ctrl.type.params);
+            }break;
+            // [t1* i32] -> [t2*]
+            case Opcode::If : {
+                state.pop(ValueType::i32);
+                const Instr::If& ins = std::get<Instr::If>(instr);
+                FuncType type;
+                if(ins.type){
+                    if(ins.type.value() >= context.types.size()){
+                        throw Exception::Validate_index_not_found("type index not found for if type");
+                    }
+                    type = context.types[ins.type.value()];
+                }
+                state.pop(type.params);
+                state.push(Opcode::If, type);
+                state.push(type.params);
+            }break;
+            // unreachable
+            case Opcode::Unreachable :
+                state.unreachable();
+            break;
             default:
+            // nop
             break;
         }
     }

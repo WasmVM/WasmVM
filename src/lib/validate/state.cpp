@@ -33,11 +33,6 @@ void Validate::State::push(std::vector<ValueType> vlist){
 
 void Validate::State::push(Opcode::opcode_t opcode, FuncType type){
     ctrls.emplace_back(opcode, type, vals.size());
-    std::vector<StackValue> values;
-    std::transform(type.params.begin(), type.params.end(), std::back_inserter(values), [](ValueType t){
-        return StackValue(t);
-    });
-    push(values);
 }
 
 template<> State::StackValue State::pop<State::StackValue>(){
@@ -77,10 +72,25 @@ template<> State::CtrlFrame State::pop<State::CtrlFrame>(){
     if(ctrls.empty()){
         throw Exception::Validate_empty_stack("empty validate control stack");
     }
-    CtrlFrame& ctrl = ctrls.back();
+    CtrlFrame ctrl = ctrls.back();
     pop(ctrl.type.results);
     if(vals.size() != ctrl.height){
-        throw Exception::Validate_type_not_match("validate frame type not match");
+        std::string msg("control frame type not match ");
+        switch(ctrl.opcode){
+            case Opcode::Nop :
+                msg += "func result";
+            break;
+            case Opcode::Block :
+                msg += "block result";
+            break;
+            case Opcode::Loop :
+                msg += "loop result";
+            break;
+            case Opcode::If :
+                msg += "if result";
+            break;
+        }
+        throw Exception::Validate_type_not_match(msg);
     }
     ctrls.pop_back();
     return ctrl;
