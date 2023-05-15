@@ -25,6 +25,11 @@ void Validate::State::push(std::vector<StackValue> vlist){
         vals.emplace_back(val);
     }
 }
+void Validate::State::push(std::vector<ValueType> vlist){
+    for(ValueType& val : vlist){
+        vals.emplace_back(val);
+    }
+}
 
 void Validate::State::push(Opcode::opcode_t opcode, FuncType type){
     ctrls.emplace_back(opcode, type, vals.size());
@@ -48,7 +53,7 @@ template<> State::StackValue State::pop<State::StackValue>(){
     vals.pop_back();
     return result;
 }
-template<> State::StackValue State::pop<State::StackValue>(State::StackValue expect){
+State::StackValue State::pop(State::StackValue expect){
     State::StackValue actual = vals.back();
     vals.pop_back();
     if(std::holds_alternative<std::monostate>(actual)){
@@ -62,10 +67,10 @@ template<> State::StackValue State::pop<State::StackValue>(State::StackValue exp
     }
     return actual;
 }
-template<> std::vector<ValueType> State::pop<std::vector<ValueType>>(std::vector<ValueType> expects){
-    std::vector<ValueType> popped;
+std::vector<State::StackValue> State::pop(std::vector<ValueType> expects){
+    std::vector<StackValue> popped;
     for(auto it = expects.rbegin(); it != expects.rend(); it = std::next(it)){
-        popped.emplace_back(std::get<ValueType>(pop<State::StackValue>(StackValue(*it))));
+        popped.emplace_back(pop(*it));
     }
     return popped;
 }
@@ -74,7 +79,7 @@ template<> State::CtrlFrame State::pop<State::CtrlFrame>(){
         throw Exception::Validate_empty_stack("empty validate control stack");
     }
     CtrlFrame& ctrl = ctrls.back();
-    pop<std::vector<ValueType>>(ctrl.type.results);
+    pop(ctrl.type.results);
     if(vals.size() != ctrl.height){
         throw Exception::Validate_type_not_match("validate frame type not match");
     }

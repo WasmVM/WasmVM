@@ -50,7 +50,7 @@ static_assert(Value(std::in_place_type<externref_t>).index() == ValueType::exter
 
 enum class RefType {
     funcref = ValueType::funcref,
-    externref,
+    externref = ValueType::externref,
 };
 
 struct FuncType {

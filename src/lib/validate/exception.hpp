@@ -16,7 +16,9 @@ struct Validate_empty_stack : public Exception {
 struct Validate_type_not_match : public Exception {
     Validate_type_not_match(std::string message) : Exception(message){};
 };
-
+struct Validate_invalid_type : public Exception {
+    Validate_invalid_type(std::string message) : Exception(message){};
+};
 }
 }
 #endif

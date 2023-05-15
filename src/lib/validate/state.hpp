@@ -13,6 +13,8 @@ namespace Validate {
 
 struct State {
 
+    using StackValue = std::variant<std::monostate, ValueType>;
+
     struct CtrlFrame {
         CtrlFrame(Opcode::opcode_t opcode, const FuncType& type, size_t height = 0)
             : opcode(opcode), type(type), height(height) {}
@@ -23,20 +25,19 @@ struct State {
         const std::vector<ValueType>& types();
     };
 
-    std::vector<const ValueType> locals;
-    using StackValue = std::variant<std::monostate, ValueType>;
+    std::vector<ValueType> locals;
     std::deque<StackValue> vals;
     std::deque<CtrlFrame> ctrls;
 
     void push(StackValue val);
     void push(std::vector<StackValue> vlist);
+    void push(std::vector<ValueType> vlist);
     void push(Opcode::opcode_t opcode, FuncType type);
 
     template<typename T>
     T pop();
 
-    template<typename T>
-    T pop(T);
+    std::vector<StackValue> pop(std::vector<ValueType> expects);
 
     StackValue pop(StackValue expect);
 

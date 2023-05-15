@@ -1,9 +1,9 @@
 # Difference from spec
 
 * No SIMD
-* Allow multiple results in function & block
+* Allow multiple results in function & block & select
 * Multiple memories
-* Memory 64 as default
+* Memory offset 64 as default
 * While parsing text format, indices are assigned in the parse order. Imports are not preceded then other definitions. After converted to structure, indices will be fixed to the import-preceded order.
   - Ex:
     (func $fu1)
