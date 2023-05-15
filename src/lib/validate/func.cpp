@@ -46,10 +46,24 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     for(const WasmInstr& instr : func.body){
         Opcode::opcode_t opcode = std::visit(overloaded {[](auto& ins){return ins.opcode;}}, instr);
         switch(opcode){
+            // [] -> []
+            case Opcode::Elem_drop : {
+                const Instr::Elem_drop& ins = std::get<Instr::Elem_drop>(instr);
+                if(ins.index >= context.elems.size()){
+                    throw Exception::Validate_index_not_found("elem index not found in elem.drop");
+                }
+            }break;
             // [] -> [i32]
             case Opcode::I32_const :
                 state.push(ValueType::i32);
             break;
+            case Opcode::Table_size : {
+                const Instr::Table_size& ins = std::get<Instr::Table_size>(instr);
+                if(ins.index >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.size");
+                }
+                state.push(ValueType::i32);
+            }break;
             // [] -> [i64]
             case Opcode::I64_const :
                 state.push(ValueType::i64);
@@ -75,6 +89,25 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 const Instr::Ref_null& ins = std::get<Instr::Ref_null>(instr);
                 state.push((ValueType)ins.heaptype);
             }break;
+            // [i32] -> [t]
+            case Opcode::Table_get : {
+                const Instr::Table_get& ins = std::get<Instr::Table_get>(instr);
+                if(ins.index >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.get");
+                }
+                const TableType& type = context.tables[ins.index].get();
+                state.pop(ValueType::i32);
+                state.push((ValueType)type.reftype);
+            }break;
+            // [i32 t] -> []
+            case Opcode::Table_set : {
+                const Instr::Table_set& ins = std::get<Instr::Table_set>(instr);
+                if(ins.index >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.set");
+                }
+                const TableType& type = context.tables[ins.index].get();
+                state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype});
+            }break;
             // [t] -> []
             case Opcode::Drop :
                 state.pop<State::StackValue>();
@@ -91,6 +124,52 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }
                 state.push(ValueType::i32);
             break;
+            // [t i32] -> [i32]
+            case Opcode::Table_grow : {
+                const Instr::Table_grow& ins = std::get<Instr::Table_grow>(instr);
+                if(ins.index >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.grow");
+                }
+                const TableType& type = context.tables[ins.index].get();
+                state.pop(std::vector<ValueType> {(ValueType)type.reftype, ValueType::i32});
+                state.push(ValueType::i32);
+            }break;
+            // [i32 i32 i32] -> []
+            case Opcode::Table_copy : {
+                const Instr::Table_copy& ins = std::get<Instr::Table_copy>(instr);
+                if(ins.dstidx >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table destination index not found in table.copy");
+                }
+                if(ins.srcidx >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table source index not found in table.copy");
+                }
+                if(context.tables[ins.dstidx].get().reftype != context.tables[ins.srcidx].get().reftype){
+                    throw Exception::Validate_type_not_match("table types not match in table.copy");
+                };
+                state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+            }break;
+            case Opcode::Table_init : {
+                const Instr::Table_init& ins = std::get<Instr::Table_init>(instr);
+                if(ins.tableidx >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.init");
+                }
+                if(ins.elemidx >= context.elems.size()){
+                    throw Exception::Validate_index_not_found("elem source index not found in table.init");
+                }
+                if(context.tables[ins.tableidx].get().reftype != context.elems[ins.elemidx].type){
+                    throw Exception::Validate_type_not_match("table & elem types not match in table.init");
+                };
+                state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+            }break;
+            // [i32 t i32] -> []
+            case Opcode::Table_fill : {
+                const Instr::Table_fill& ins = std::get<Instr::Table_fill>(instr);
+                if(ins.index >= context.tables.size()){
+                    throw Exception::Validate_index_not_found("table index not found in table.fill");
+                }
+                const TableType& type = context.tables[ins.index].get();
+                state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype, ValueType::i32});
+            }break;
             // [t t i32] -> [t]
             case Opcode::Select : {
                 const Instr::Select& ins = std::get<Instr::Select>(instr);
@@ -102,7 +181,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Validate_invalid_type("select without explicit types declared should be numeric types");
                     }
                     if(!is_unknown(op1) && !is_unknown(op2) && (std::get<ValueType>(op1) != std::get<ValueType>(op2))){
-                        throw Exception::Validate_invalid_type("select types mismatch");
+                        throw Exception::Validate_type_not_match("select types mismatch");
                     }
                     state.push(is_unknown(op1) ? op2 : op1);
                 }else{
@@ -112,7 +191,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         State::StackValue& op1 = ops1[i];
                         State::StackValue& op2 = ops2[i];
                         if(!is_unknown(op1) && !is_unknown(op2) && (std::get<ValueType>(op1) != std::get<ValueType>(op2))){
-                            throw Exception::Validate_invalid_type("select types mismatch");
+                            throw Exception::Validate_type_not_match("select types mismatch");
                         }
                         state.push(is_unknown(op1) ? op2 : op1);
                     }

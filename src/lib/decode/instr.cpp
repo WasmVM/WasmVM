@@ -35,7 +35,7 @@ using BlockType = std::optional<index_t>;
 
 template<> Opcode::opcode_t Stream::get<Opcode::opcode_t>(){
     Opcode::opcode_t opcode = (Opcode::opcode_t) get<byte_t>();
-    if(opcode > 0xff){
+    if(opcode == 0xfc){
         opcode = (opcode << 8) | (Opcode::opcode_t) get<byte_t>();
     }
     return opcode;

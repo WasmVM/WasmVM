@@ -16,8 +16,16 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
     try {
         Validator validator(module);
         // funcs
+        size_t idx = 0;
         for(const WasmFunc& func : module.funcs){
-            validator(func);
+            try {
+                validator(func);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "func[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
         }
         // tables
         // mems

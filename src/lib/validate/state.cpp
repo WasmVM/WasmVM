@@ -54,8 +54,7 @@ template<> State::StackValue State::pop<State::StackValue>(){
     return result;
 }
 State::StackValue State::pop(State::StackValue expect){
-    State::StackValue actual = vals.back();
-    vals.pop_back();
+    State::StackValue actual = pop<State::StackValue>();
     if(std::holds_alternative<std::monostate>(actual)){
         return expect;
     }
