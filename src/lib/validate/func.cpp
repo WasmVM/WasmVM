@@ -132,6 +132,17 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 state.pop(std::vector<ValueType> {(ValueType)type.reftype, ValueType::i32});
                 state.push(ValueType::i32);
             }break;
+            // [t* i32] -> [t*]
+            case Opcode::Br_if : {
+                state.pop(ValueType::i32);
+                const Instr::Br_if& ins = std::get<Instr::Br_if>(instr);
+                if(ins.index >= state.ctrls.size()){
+                    throw Exception::Validate_index_not_found("label index not found in br_if");
+                }
+                std::vector<ValueType> label_type = state.ctrls[state.ctrls.size() - 1 - ins.index].types();
+                state.pop(label_type);
+                state.push(label_type);
+            }break;
             // [i32 i32 i32] -> []
             case Opcode::Table_copy : {
                 const Instr::Table_copy& ins = std::get<Instr::Table_copy>(instr);
@@ -249,6 +260,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
             case Opcode::Unreachable :
                 state.unreachable();
             break;
+            case Opcode::Br : {
+                const Instr::Br& ins = std::get<Instr::Br>(instr);
+                if(ins.index >= state.ctrls.size()){
+                    throw Exception::Validate_index_not_found("label index not found in br");
+                }
+                state.pop(state.ctrls[state.ctrls.size() - 1 - ins.index].types());
+                state.unreachable();
+            }break;
             default:
             // nop
             break;

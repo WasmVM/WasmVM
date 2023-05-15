@@ -214,21 +214,21 @@ struct InstrVisitor {
     std::ostream& operator()(const WasmVM::Instr::Block& instr){
         stream << "block";
         if(instr.type){
-            stream << " " << instr.type.value();
+            stream << " (type " << instr.type.value() << ")";
         }
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::Loop& instr){
         stream << "loop";
         if(instr.type){
-            stream << " " << instr.type.value();
+            stream << " (type " << instr.type.value() << ")";
         }
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::If& instr){
         stream << "if";
         if(instr.type){
-            stream << " " << instr.type.value();
+            stream << " (type " << instr.type.value() << ")";
         }
         return stream;
     }
