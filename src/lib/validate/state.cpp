@@ -41,7 +41,7 @@ template<> State::StackValue State::pop<State::StackValue>(){
         if(ctrl.unreachable){
             return std::monostate();
         }else{
-            throw Exception::Validate_empty_stack("empty validate value stack");
+            throw Exception::Exception("empty validate value stack");
         }
     }
     State::StackValue result = vals.back();
@@ -57,7 +57,7 @@ State::StackValue State::pop(State::StackValue expect){
         return actual;
     }
     if(std::get<ValueType>(actual) != std::get<ValueType>(expect)){
-        throw Exception::Validate_type_not_match("validate value type not match");
+        throw Exception::Exception("validate value type not match");
     }
     return actual;
 }
@@ -70,7 +70,7 @@ std::vector<State::StackValue> State::pop(std::vector<ValueType> expects){
 }
 template<> State::CtrlFrame State::pop<State::CtrlFrame>(){
     if(ctrls.empty()){
-        throw Exception::Validate_empty_stack("empty validate control stack");
+        throw Exception::Exception("empty validate control stack");
     }
     CtrlFrame ctrl = ctrls.back();
     pop(ctrl.type.results);
@@ -90,11 +90,12 @@ template<> State::CtrlFrame State::pop<State::CtrlFrame>(){
                 msg += "if result";
             break;
         }
-        throw Exception::Validate_type_not_match(msg);
+        throw Exception::Exception(msg);
     }
     ctrls.pop_back();
     return ctrl;
 }
+
 void State::unreachable(){
     CtrlFrame& ctrl = ctrls.back();
     vals.resize(ctrl.height);

@@ -5,9 +5,9 @@
 #include <WasmVM.hpp>
 #include <Util.hpp>
 #include <sstream>
+#include <exception.hpp>
 
 #include "validate.hpp"
-#include "exception.hpp"
 
 using namespace WasmVM;
 using namespace Validate;
@@ -22,7 +22,7 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
                 validator(func);
             } catch (Exception::Exception e){
                 std::stringstream ss;
-                ss << "func[" << idx << "]: " << e.what();
+                ss << "func[" << idx << "]:" << e.what();
                 return Exception::Exception(ss.str());
             }
             idx += 1;
@@ -45,7 +45,7 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
                 if(index >= module.types.size()){
                     std::stringstream ss;
                     ss << "import[" << idx << "]: type index " << index << " not exist";
-                    throw Exception::Validate_index_not_found(ss.str());
+                    throw Exception::Exception(ss.str());
                 }
                 context.funcs.emplace_back(module.types[index]);
             },
@@ -67,7 +67,7 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
         if(func.typeidx >= module.types.size()){
             std::stringstream ss;
             ss << "func [" << idx << "]: type index " << func.typeidx << " not exist";
-            throw Exception::Validate_index_not_found(ss.str());
+            throw Exception::Exception(ss.str());
         }
         context.funcs.emplace_back(module.types[func.typeidx]);
         idx += 1;
