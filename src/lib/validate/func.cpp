@@ -43,7 +43,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     state.push(Opcode::Nop, func_type);
     // body
     std::stringstream msg;
-    size_t instridx = 0;
+    size_t instridx = 1;
     for(const WasmInstr& instr : func.body){
         Opcode::opcode_t opcode = std::visit(overloaded {[](auto& ins){return ins.opcode;}}, instr);
         try{
@@ -91,6 +91,20 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const Instr::Ref_null& ins = std::get<Instr::Ref_null>(instr);
                     state.push((ValueType)ins.heaptype);
                 }break;
+                case Opcode::Local_get : {
+                    const Instr::Local_get& ins = std::get<Instr::Local_get>(instr);
+                    if(ins.index >= state.locals.size()){
+                        throw Exception::Exception("local index not found in local.get");
+                    }
+                    state.push(state.locals[ins.index]);
+                }break;
+                case Opcode::Global_get : {
+                    const Instr::Global_get& ins = std::get<Instr::Global_get>(instr);
+                    if(ins.index >= context.globals.size()){
+                        throw Exception::Exception("global index not found in global.get");
+                    }
+                    state.push(context.globals[ins.index].get().type);
+                }break;
                 // [i32] -> [t]
                 case Opcode::Table_get : {
                     const Instr::Table_get& ins = std::get<Instr::Table_get>(instr);
@@ -114,6 +128,20 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 case Opcode::Drop :
                     state.pop<State::StackValue>();
                 break;
+                case Opcode::Local_set : {
+                    const Instr::Local_set& ins = std::get<Instr::Local_set>(instr);
+                    if(ins.index >= state.locals.size()){
+                        throw Exception::Exception("local index not found in local.set");
+                    }
+                    state.pop(state.locals[ins.index]);
+                }break;
+                case Opcode::Global_set : {
+                    const Instr::Global_set& ins = std::get<Instr::Global_set>(instr);
+                    if(ins.index >= context.globals.size()){
+                        throw Exception::Exception("global index not found in global.set");
+                    }
+                    state.pop(context.globals[ins.index].get().type);
+                }break;
                 // [t*] -> []
                 case Opcode::End : {
                     State::CtrlFrame ctrl = state.pop<State::CtrlFrame>();
@@ -126,6 +154,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.push(ValueType::i32);
                 break;
+                // [t] -> [t]
+                case Opcode::Local_tee : {
+                    const Instr::Local_tee& ins = std::get<Instr::Local_tee>(instr);
+                    if(ins.index >= state.locals.size()){
+                        throw Exception::Exception("local index not found in local.tee");
+                    }
+                    state.push(state.pop(state.locals[ins.index]));
+                }break;
                 // [t i32] -> [i32]
                 case Opcode::Table_grow : {
                     const Instr::Table_grow& ins = std::get<Instr::Table_grow>(instr);
