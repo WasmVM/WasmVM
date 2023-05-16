@@ -8,6 +8,7 @@
 
 #include <vector>
 #include <cassert>
+#include <sstream>
 
 using namespace WasmVM;
 
@@ -268,6 +269,37 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 state.pop(state.ctrls[state.ctrls.size() - 1 - ins.index].types());
                 state.unreachable();
             }break;
+            case Opcode::Br_table : {
+                state.pop(ValueType::i32);
+                const Instr::Br_table& ins = std::get<Instr::Br_table>(instr);
+                index_t m = ins.indices.back();
+                if(m >= state.ctrls.size()){
+                    std::stringstream ss;
+                    ss << "label index " << m << "not found in br_table";
+                    throw Exception::Validate_index_not_found(ss.str());
+                }
+                size_t arity = state.ctrls[m].types().size();
+                for(auto it = ins.indices.begin(); it != (ins.indices.end() - 1); it = std::next(it)){
+                    if(*it >= state.ctrls.size()){
+                        std::stringstream ss;
+                        ss << "label index " << *it << "not found in br_table";
+                        throw Exception::Validate_index_not_found(ss.str());
+                    }
+                    std::vector<ValueType> label = state.ctrls[*it].types();
+                    if(label.size() != arity){
+                        std::stringstream ss;
+                        ss << "label index " << *it << " has invalid type to br_table";
+                        throw Exception::Validate_invalid_type(ss.str());
+                    }
+                    state.push(state.pop(label));
+                }
+                state.pop(state.ctrls[m].types());
+                state.unreachable();
+            }break;
+            case Opcode::Return :
+                state.pop(state.ctrls.front().type.results);
+                state.unreachable();
+            break;
             default:
             // nop
             break;
