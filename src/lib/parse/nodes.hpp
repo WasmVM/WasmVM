@@ -7,6 +7,7 @@
 #include <structures/WasmInstr.hpp>
 
 #include <map>
+#include <bit>
 #include <type_traits>
 
 namespace WasmVM {
@@ -196,7 +197,7 @@ template<typename I, conststr S, align_t N>
 struct MemoryInstr : public I {
 
     MemoryInstr(const MemoryInstr&) = default;
-    MemoryInstr() : I(0, 0, N) {}
+    MemoryInstr() : I(0, 0, std::countr_zero(N)) {}
 
     static std::optional<MemoryInstr<I, S, N>> get(TokenIter& begin, TokenHolder& holder){
         std::list<TokenType>::iterator it = begin;
@@ -218,7 +219,16 @@ struct MemoryInstr : public I {
             auto align = std::get<3>(rule);
             if(align){
                 Token::MemArgBase value = align.value();
-                instr.align = value.unpack<u32_t>();
+                u32_t val = value.unpack<u32_t>();
+                if(!std::has_single_bit(val)){
+                    throw Exception::invalid_immediate_value(align.value().location, "aligh should be power of 2");
+                }
+                if(std::countr_zero(val) > std::countr_zero(N)){
+                    throw Exception::invalid_immediate_value(align.value().location, "aligh should not greater than natural align");
+                }
+                instr.align = std::countr_zero(val);
+            }else{
+                instr.align = std::countr_zero(N);
             }
             begin = it;
             return instr;

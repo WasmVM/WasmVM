@@ -29,7 +29,7 @@ using BlockType = std::optional<index_t>;
         if(align >= 0x40){ \
             instr.emplace<Instr::I>(stream.get<u32_t>(), stream.get<u32_t>(), align - 0x40); \
         }else{ \
-            instr.emplace<Instr::I>(0, stream.get<u32_t>(), align - 0x40); \
+            instr.emplace<Instr::I>(0, stream.get<u32_t>(), align); \
         } \
     }break;
 
