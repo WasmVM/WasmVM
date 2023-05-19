@@ -379,7 +379,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 2){
                         throw Exception::Exception("align should be 0-2");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load8_s : {
@@ -390,7 +390,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 0){
                         throw Exception::Exception("align should be 0");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load8_u : {
@@ -401,7 +401,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 0){
                         throw Exception::Exception("align should be 0");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load16_s : {
@@ -412,7 +412,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 1){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load16_u : {
@@ -423,7 +423,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 1){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I64_load : {
@@ -434,7 +434,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 3){
                         throw Exception::Exception("align should be 0-3");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load8_s : {
@@ -445,7 +445,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 0){
                         throw Exception::Exception("align should be 0");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load8_u : {
@@ -456,7 +456,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 0){
                         throw Exception::Exception("align should be 0");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load16_s : {
@@ -467,7 +467,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 1){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load16_u : {
@@ -478,7 +478,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 1){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load32_s : {
@@ -489,7 +489,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 2){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load32_u : {
@@ -500,7 +500,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 2){
                         throw Exception::Exception("align should be 0-1");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::F32_load : {
@@ -511,7 +511,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 2){
                         throw Exception::Exception("align should be 0-2");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::f32);
                 }break;
                 case Opcode::F64_load : {
@@ -522,7 +522,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.align > 3){
                         throw Exception::Exception("align should be 0-3");
                     }
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::f64);
                 }break;
                 // [i32 t] -> []
@@ -543,7 +543,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i32);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I32_store8 : {
                     const Instr::I32_store8& ins = std::get<Instr::I32_store8>(instr);
@@ -554,7 +554,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0");
                     }
                     state.pop(ValueType::i32);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I32_store16 : {
                     const Instr::I32_store16& ins = std::get<Instr::I32_store16>(instr);
@@ -565,7 +565,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-1");
                     }
                     state.pop(ValueType::i32);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store : {
                     const Instr::I64_store& ins = std::get<Instr::I64_store>(instr);
@@ -576,7 +576,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store8 : {
                     const Instr::I64_store8& ins = std::get<Instr::I64_store8>(instr);
@@ -587,7 +587,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0");
                     }
                     state.pop(ValueType::i64);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store16 : {
                     const Instr::I64_store16& ins = std::get<Instr::I64_store16>(instr);
@@ -598,7 +598,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-1");
                     }
                     state.pop(ValueType::i64);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store32 : {
                     const Instr::I64_store32& ins = std::get<Instr::I64_store32>(instr);
@@ -609,7 +609,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-1");
                     }
                     state.pop(ValueType::i64);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::F32_store : {
                     const Instr::F32_store& ins = std::get<Instr::F32_store>(instr);
@@ -620,7 +620,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::f32);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::F64_store : {
                     const Instr::F64_store& ins = std::get<Instr::F64_store>(instr);
@@ -631,7 +631,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::f64);
-                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 // [t] -> []
                 case Opcode::Drop :

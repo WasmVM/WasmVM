@@ -61,6 +61,16 @@ State::StackValue State::pop(State::StackValue expect){
     }
     return actual;
 }
+State::StackValue State::pop(ValueType expect1, ValueType expect2){
+    State::StackValue actual = pop<State::StackValue>();
+    if(std::holds_alternative<std::monostate>(actual)){
+        return expect1;
+    }
+    if((std::get<ValueType>(actual) != expect1) && (std::get<ValueType>(actual) != expect2)){
+        throw Exception::Exception("validate value type not match");
+    }
+    return actual;
+}
 std::vector<State::StackValue> State::pop(std::vector<ValueType> expects){
     std::vector<StackValue> popped;
     for(auto it = expects.rbegin(); it != expects.rend(); it = std::next(it)){

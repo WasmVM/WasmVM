@@ -40,6 +40,7 @@ struct State {
     std::vector<StackValue> pop(std::vector<ValueType> expects);
 
     StackValue pop(StackValue expect);
+    StackValue pop(ValueType expect1, ValueType expect2);
 
     void unreachable();
 
