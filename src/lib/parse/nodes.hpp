@@ -221,10 +221,10 @@ struct MemoryInstr : public I {
                 Token::MemArgBase value = align.value();
                 u32_t val = value.unpack<u32_t>();
                 if(!std::has_single_bit(val)){
-                    throw Exception::invalid_immediate_value(align.value().location, "aligh should be power of 2");
+                    throw Exception::invalid_immediate_value(align.value().location, ": align should be power of 2");
                 }
                 if(std::countr_zero(val) > std::countr_zero(N)){
-                    throw Exception::invalid_immediate_value(align.value().location, "aligh should not greater than natural align");
+                    throw Exception::invalid_immediate_value(align.value().location, ": align should not greater than natural align");
                 }
                 instr.align = std::countr_zero(val);
             }else{

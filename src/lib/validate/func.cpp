@@ -247,6 +247,28 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
+                case Opcode::F32_load : {
+                    const Instr::F32_load& ins = std::get<Instr::F32_load>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 2){
+                        throw Exception::Exception("align should be 0-2");
+                    }
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::f32);
+                }break;
+                case Opcode::F64_load : {
+                    const Instr::F64_load& ins = std::get<Instr::F64_load>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 3){
+                        throw Exception::Exception("align should be 0-3");
+                    }
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::f64);
+                }break;
                 // [i32 t] -> []
                 case Opcode::Table_set : {
                     const Instr::Table_set& ins = std::get<Instr::Table_set>(instr);
@@ -255,6 +277,105 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     const TableType& type = context.tables[ins.index].get();
                     state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype});
+                }break;
+                case Opcode::I32_store : {
+                    const Instr::I32_store& ins = std::get<Instr::I32_store>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 2){
+                        throw Exception::Exception("align should be 0-2");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I32_store8 : {
+                    const Instr::I32_store8& ins = std::get<Instr::I32_store8>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 0){
+                        throw Exception::Exception("align should be 0");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I32_store16 : {
+                    const Instr::I32_store16& ins = std::get<Instr::I32_store16>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 1){
+                        throw Exception::Exception("align should be 0-1");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I64_store : {
+                    const Instr::I64_store& ins = std::get<Instr::I64_store>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 2){
+                        throw Exception::Exception("align should be 0-2");
+                    }
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I64_store8 : {
+                    const Instr::I64_store8& ins = std::get<Instr::I64_store8>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 0){
+                        throw Exception::Exception("align should be 0");
+                    }
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I64_store16 : {
+                    const Instr::I64_store16& ins = std::get<Instr::I64_store16>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 1){
+                        throw Exception::Exception("align should be 0-1");
+                    }
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::I64_store32 : {
+                    const Instr::I64_store32& ins = std::get<Instr::I64_store32>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 2){
+                        throw Exception::Exception("align should be 0-1");
+                    }
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::F32_store : {
+                    const Instr::F32_store& ins = std::get<Instr::F32_store>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 2){
+                        throw Exception::Exception("align should be 0-2");
+                    }
+                    state.pop(ValueType::f32);
+                    state.pop(ValueType::i32);
+                }break;
+                case Opcode::F64_store : {
+                    const Instr::F64_store& ins = std::get<Instr::F64_store>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found");
+                    }
+                    if(ins.align > 3){
+                        throw Exception::Exception("align should be 0-2");
+                    }
+                    state.pop(ValueType::f64);
+                    state.pop(ValueType::i32);
                 }break;
                 // [t] -> []
                 case Opcode::Drop :
