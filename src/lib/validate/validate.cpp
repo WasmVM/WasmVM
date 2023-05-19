@@ -28,6 +28,17 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
             idx += 1;
         }
         // tables
+        idx = 0;
+        for(const TableType& table : module.tables){
+            try {
+                validator(table);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "table[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
         // mems
         // globals
     } catch (Exception::Exception e){
