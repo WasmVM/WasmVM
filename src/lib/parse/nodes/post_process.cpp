@@ -288,9 +288,13 @@ void post_process(ModuleVisitor& visitor){
         if(elem.mode.tableidx && tablemap.contains(elem.mode.tableidx.value())){
             elem.mode.tableidx = tablemap[elem.mode.tableidx.value()];
         }
-        if(elem.type == RefType::funcref){
-            for(ConstInstr& item : elem.elemlist){
+        for(ConstInstr& item : elem.elemlist){
                 std::visit(overloaded {
+                    [&](Instr::Global_get& instr){
+                        if(globalmap.contains(instr.index)){
+                            instr.index = globalmap[instr.index];
+                        }
+                    },
                     [&](Instr::Ref_func& instr){
                         if(funcmap.contains(instr.index)){
                             instr.index = funcmap[instr.index];
@@ -319,12 +323,31 @@ void post_process(ModuleVisitor& visitor){
                     [](auto&){}
                 }, item);
             }
+        if(elem.mode.offset){
+            std::visit(overloaded {
+                [&](Instr::Global_get& instr){
+                    if(globalmap.contains(instr.index)){
+                        instr.index = globalmap[instr.index];
+                    }
+                },
+                [](auto&){}
+            }, elem.mode.offset.value());
         }
     }
     // datas
     for(WasmData& data : visitor.module.datas){
         if(data.mode.memidx && memorymap.contains(data.mode.memidx.value())){
             data.mode.memidx = memorymap[data.mode.memidx.value()];
+        }
+        if(data.mode.offset){
+            std::visit(overloaded {
+                [&](Instr::Global_get& instr){
+                    if(globalmap.contains(instr.index)){
+                        instr.index = globalmap[instr.index];
+                    }
+                },
+                [](auto&){}
+            }, data.mode.offset.value());
         }
     }
     // start

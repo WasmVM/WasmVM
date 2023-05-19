@@ -22,10 +22,10 @@ protected:
     struct Context {
         Context(const std::vector<FuncType>& types, const std::vector<WasmElem>& elems, const std::vector<WasmData>& datas) : types(types), elems(elems), datas(datas) {}
         const std::vector<FuncType>& types;
-        std::vector<std::reference_wrapper<const FuncType>> funcs;
-        std::vector<std::reference_wrapper<const TableType>> tables;
-        std::vector<std::reference_wrapper<const MemType>> mems;
-        std::vector<std::reference_wrapper<const GlobalType>> globals;
+        std::vector<FuncType> funcs;
+        std::vector<TableType> tables;
+        std::vector<MemType> mems;
+        std::vector<GlobalType> globals;
         const std::vector<WasmElem>& elems;
         const std::vector<WasmData>& datas;
     };

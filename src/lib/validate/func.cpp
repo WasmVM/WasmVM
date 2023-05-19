@@ -116,7 +116,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.get");
                     }
-                    state.push(context.globals[ins.index].get().type);
+                    state.push(context.globals[ins.index].type);
                 }break;
                 // [i32] -> [i32]
                 case Opcode::Memory_grow : {
@@ -367,7 +367,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.get");
                     }
-                    const TableType& type = context.tables[ins.index].get();
+                    const TableType& type = context.tables[ins.index];
                     state.pop(ValueType::i32);
                     state.push((ValueType)type.reftype);
                 }break;
@@ -531,7 +531,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.set");
                     }
-                    const TableType& type = context.tables[ins.index].get();
+                    const TableType& type = context.tables[ins.index];
                     state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype});
                 }break;
                 case Opcode::I32_store : {
@@ -649,7 +649,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.set");
                     }
-                    state.pop(context.globals[ins.index].get().type);
+                    state.pop(context.globals[ins.index].type);
                 }break;
                 // [t*] -> []
                 case Opcode::End : {
@@ -677,7 +677,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.grow");
                     }
-                    const TableType& type = context.tables[ins.index].get();
+                    const TableType& type = context.tables[ins.index];
                     state.pop(std::vector<ValueType> {(ValueType)type.reftype, ValueType::i32});
                     state.push(ValueType::i32);
                 }break;
@@ -701,7 +701,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.srcidx >= context.tables.size()){
                         throw Exception::Exception("table source index not found in table.copy");
                     }
-                    if(context.tables[ins.dstidx].get().reftype != context.tables[ins.srcidx].get().reftype){
+                    if(context.tables[ins.dstidx].reftype != context.tables[ins.srcidx].reftype){
                         throw Exception::Exception("table types not match in table.copy");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
@@ -714,7 +714,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.elemidx >= context.elems.size()){
                         throw Exception::Exception("elem index not found in table.init");
                     }
-                    if(context.tables[ins.tableidx].get().reftype != context.elems[ins.elemidx].type){
+                    if(context.tables[ins.tableidx].reftype != context.elems[ins.elemidx].type){
                         throw Exception::Exception("table & elem types not match in table.init");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
@@ -752,7 +752,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.fill");
                     }
-                    const TableType& type = context.tables[ins.index].get();
+                    const TableType& type = context.tables[ins.index];
                     state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype, ValueType::i32});
                 }break;
                 // [t t i32] -> [t]
@@ -822,7 +822,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.funcs.size()){
                         throw Exception::Exception("function index not found for call");
                     }
-                    FuncType type = context.funcs[ins.index].get();
+                    FuncType type = context.funcs[ins.index];
                     state.pop(type.params);
                     state.push(type.results);
                 }break;
@@ -831,7 +831,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.tableidx >= context.tables.size()){
                         throw Exception::Exception("table index not found for call_indirect");
                     }
-                    if(context.tables[ins.tableidx].get().reftype != RefType::funcref){
+                    if(context.tables[ins.tableidx].reftype != RefType::funcref){
                         throw Exception::Exception("table type should be funcref for call_indirect");
                     }
                     if(ins.typeidx >= context.types.size()){

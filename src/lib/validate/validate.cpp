@@ -63,6 +63,22 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
             }
             idx += 1;
         }
+        // elems
+        idx = 0;
+        for(const WasmElem& elem : module.elems){
+            try {
+                validator(elem);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "elem[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
+        // datas
+        // start
+        // imports
+        // exports
     } catch (Exception::Exception e){
         return e;
     }
