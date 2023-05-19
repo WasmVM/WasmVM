@@ -127,6 +127,240 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i32);
                     state.push(ValueType::i32);
                 }break;
+                case Opcode::I32_clz :
+                case Opcode::I32_ctz :
+                case Opcode::I32_popcnt :
+                case Opcode::I32_eqz :
+                case Opcode::I32_extend8_s :
+                case Opcode::I32_extend16_s :
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::i32);
+                break;
+                // [i32] -> [i64]
+                case Opcode::I64_extend_s_i32 :
+                case Opcode::I64_extend_u_i32 :
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::i64);
+                break;
+                // [i32] -> [f32]
+                case Opcode::F32_convert_s_i32 :
+                case Opcode::F32_convert_u_i32 :
+                case Opcode::F32_reinterpret_i32 :
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::f32);
+                break;
+                // [i32] -> [f64]
+                case Opcode::F64_convert_s_i32 :
+                case Opcode::F64_convert_u_i32 :
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::f64);
+                break;
+                // [i64] -> [i64]
+                case Opcode::I64_clz :
+                case Opcode::I64_ctz :
+                case Opcode::I64_popcnt :
+                case Opcode::I64_extend8_s :
+                case Opcode::I64_extend16_s :
+                case Opcode::I64_extend32_s :
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::i64);
+                break;
+                // [i64] -> [i32]
+                case Opcode::I64_eqz :
+                case Opcode::I32_wrap_i64 :
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::i32);
+                break;
+                // [i64] -> [f32]
+                case Opcode::F32_convert_s_i64 :
+                case Opcode::F32_convert_u_i64 :
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::f32);
+                break;
+                // [i64] -> [f64]
+                case Opcode::F64_convert_s_i64 :
+                case Opcode::F64_convert_u_i64 :
+                case Opcode::F64_reinterpret_i64 :
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::f64);
+                break;
+                // [f32] -> [f32]
+                case Opcode::F32_abs :
+                case Opcode::F32_neg :
+                case Opcode::F32_ceil :
+                case Opcode::F32_floor :
+                case Opcode::F32_trunc :
+                case Opcode::F32_nearest :
+                case Opcode::F32_sqrt :
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::f32);
+                break;
+                // [f32] -> [i32]
+                case Opcode::I32_trunc_s_f32 :
+                case Opcode::I32_trunc_u_f32 :
+                case Opcode::I32_trunc_sat_f32_s :
+                case Opcode::I32_trunc_sat_f32_u :
+                case Opcode::I32_reinterpret_f32 :
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::i32);
+                break;
+                // [f32] -> [i64]
+                case Opcode::I64_trunc_s_f32 :
+                case Opcode::I64_trunc_u_f32 :
+                case Opcode::I64_trunc_sat_f32_s :
+                case Opcode::I64_trunc_sat_f32_u :
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::i64);
+                break;
+                // [f32] -> [f64]
+                case Opcode::F64_promote_f32 :
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::f64);
+                break;
+                // [f64] -> [f64]
+                case Opcode::F64_abs :
+                case Opcode::F64_neg :
+                case Opcode::F64_ceil :
+                case Opcode::F64_floor :
+                case Opcode::F64_trunc :
+                case Opcode::F64_nearest :
+                case Opcode::F64_sqrt :
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::f64);
+                break;
+                // [f64] -> [i32]
+                case Opcode::I32_trunc_s_f64 :
+                case Opcode::I32_trunc_u_f64 :
+                case Opcode::I32_trunc_sat_f64_s :
+                case Opcode::I32_trunc_sat_f64_u :
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::i32);
+                break;
+                // [f64] -> [i64]
+                case Opcode::I64_trunc_s_f64 :
+                case Opcode::I64_trunc_u_f64 :
+                case Opcode::I64_trunc_sat_f64_s :
+                case Opcode::I64_trunc_sat_f64_u :
+                case Opcode::I64_reinterpret_f64 :
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::i64);
+                break;
+                // [f64] -> [f32]
+                case Opcode::F32_demote_f64 :
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::f32);
+                break;
+                // [i32 i32] -> [i32]
+                case Opcode::I32_add :
+                case Opcode::I32_sub :
+                case Opcode::I32_mul :
+                case Opcode::I32_div_s :
+                case Opcode::I32_div_u :
+                case Opcode::I32_rem_s :
+                case Opcode::I32_rem_u :
+                case Opcode::I32_and :
+                case Opcode::I32_or :
+                case Opcode::I32_xor :
+                case Opcode::I32_shl :
+                case Opcode::I32_shr_s :
+                case Opcode::I32_shr_u :
+                case Opcode::I32_rotl :
+                case Opcode::I32_rotr :
+                case Opcode::I32_eq :
+                case Opcode::I32_ne :
+                case Opcode::I32_lt_s :
+                case Opcode::I32_lt_u :
+                case Opcode::I32_gt_s :
+                case Opcode::I32_gt_u :
+                case Opcode::I32_le_s :
+                case Opcode::I32_le_u :
+                case Opcode::I32_ge_s :
+                case Opcode::I32_ge_u :
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::i32);
+                break;
+                // [i64 i64] -> [i64]
+                case Opcode::I64_add :
+                case Opcode::I64_sub :
+                case Opcode::I64_mul :
+                case Opcode::I64_div_s :
+                case Opcode::I64_div_u :
+                case Opcode::I64_rem_s :
+                case Opcode::I64_rem_u :
+                case Opcode::I64_and :
+                case Opcode::I64_or :
+                case Opcode::I64_xor :
+                case Opcode::I64_shl :
+                case Opcode::I64_shr_s :
+                case Opcode::I64_shr_u :
+                case Opcode::I64_rotl :
+                case Opcode::I64_rotr :
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::i64);
+                break;
+                // [i64 i64] -> [i32]
+                case Opcode::I64_eq :
+                case Opcode::I64_ne :
+                case Opcode::I64_lt_s :
+                case Opcode::I64_lt_u :
+                case Opcode::I64_gt_s :
+                case Opcode::I64_gt_u :
+                case Opcode::I64_le_s :
+                case Opcode::I64_le_u :
+                case Opcode::I64_ge_s :
+                case Opcode::I64_ge_u :
+                    state.pop(ValueType::i64);
+                    state.pop(ValueType::i64);
+                    state.push(ValueType::i32);
+                break;
+                // [f32 f32] -> [f32]
+                case Opcode::F32_add :
+                case Opcode::F32_sub :
+                case Opcode::F32_mul :
+                case Opcode::F32_div :
+                case Opcode::F32_min :
+                case Opcode::F32_max :
+                case Opcode::F32_copysign :
+                    state.pop(ValueType::f32);
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::f32);
+                break;
+                // [f32 f32] -> [i32]
+                case Opcode::F32_eq :
+                case Opcode::F32_ne :
+                case Opcode::F32_lt :
+                case Opcode::F32_gt :
+                case Opcode::F32_le :
+                case Opcode::F32_ge :
+                    state.pop(ValueType::f32);
+                    state.pop(ValueType::f32);
+                    state.push(ValueType::i32);
+                break;
+                // [f64 f64] -> [f64]
+                case Opcode::F64_add :
+                case Opcode::F64_sub :
+                case Opcode::F64_mul :
+                case Opcode::F64_div :
+                case Opcode::F64_min :
+                case Opcode::F64_max :
+                case Opcode::F64_copysign :
+                    state.pop(ValueType::f64);
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::f64);
+                break;
+                // [f64 f64] -> [i32]
+                case Opcode::F64_eq :
+                case Opcode::F64_ne :
+                case Opcode::F64_lt :
+                case Opcode::F64_gt :
+                case Opcode::F64_le :
+                case Opcode::F64_ge :
+                    state.pop(ValueType::f64);
+                    state.pop(ValueType::f64);
+                    state.push(ValueType::i32);
+                break;
                 // [i32] -> [t]
                 case Opcode::Table_get : {
                     const Instr::Table_get& ins = std::get<Instr::Table_get>(instr);
