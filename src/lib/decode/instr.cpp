@@ -294,7 +294,7 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         }break;
         case Opcode::Memory_init : {
             index_t dataidx = stream.get<index_t>();
-            instr.emplace<Instr::Table_init>(stream.get<index_t>(), dataidx);
+            instr.emplace<Instr::Memory_init>(stream.get<index_t>(), dataidx);
         }break;
         case Opcode::I32_const :
             instr.emplace<Instr::I32_const>(stream.get<i32_t>());

@@ -55,10 +55,23 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("elem index not found in elem.drop");
                     }
                 }break;
+                case Opcode::Data_drop : {
+                    const Instr::Data_drop& ins = std::get<Instr::Data_drop>(instr);
+                    if(ins.index >= context.datas.size()){
+                        throw Exception::Exception("data index not found in data.drop");
+                    }
+                }break;
                 // [] -> [i32]
                 case Opcode::I32_const :
                     state.push(ValueType::i32);
                 break;
+                case Opcode::Memory_size : {
+                    const Instr::Memory_size& ins = std::get<Instr::Memory_size>(instr);
+                    if(ins.index >= context.mems.size()){
+                        throw Exception::Exception("memory index not found in memory.size");
+                    }
+                    state.push(ValueType::i32);
+                }break;
                 case Opcode::Table_size : {
                     const Instr::Table_size& ins = std::get<Instr::Table_size>(instr);
                     if(ins.index >= context.tables.size()){
@@ -104,6 +117,15 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("global index not found in global.get");
                     }
                     state.push(context.globals[ins.index].get().type);
+                }break;
+                // [i32] -> [i32]
+                case Opcode::Memory_grow : {
+                    const Instr::Memory_grow& ins = std::get<Instr::Memory_grow>(instr);
+                    if(ins.index >= context.mems.size()){
+                        throw Exception::Exception("memory index not found in memory.grow");
+                    }
+                    state.pop(ValueType::i32);
+                    state.push(ValueType::i32);
                 }break;
                 // [i32] -> [t]
                 case Opcode::Table_get : {
@@ -456,11 +478,38 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("table index not found in table.init");
                     }
                     if(ins.elemidx >= context.elems.size()){
-                        throw Exception::Exception("elem source index not found in table.init");
+                        throw Exception::Exception("elem index not found in table.init");
                     }
                     if(context.tables[ins.tableidx].get().reftype != context.elems[ins.elemidx].type){
                         throw Exception::Exception("table & elem types not match in table.init");
                     };
+                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                }break;
+                case Opcode::Memory_fill : {
+                    const Instr::Memory_fill& ins = std::get<Instr::Memory_fill>(instr);
+                    if(ins.index >= context.mems.size()){
+                        throw Exception::Exception("memory index not found in memory.fill");
+                    }
+                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                }break;
+                case Opcode::Memory_copy : {
+                    const Instr::Memory_copy& ins = std::get<Instr::Memory_copy>(instr);
+                    if(ins.dstidx >= context.mems.size()){
+                        throw Exception::Exception("memory destination index not found in memory.copy");
+                    }
+                    if(ins.srcidx >= context.mems.size()){
+                        throw Exception::Exception("memory source index not found in memory.copy");
+                    }
+                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                }break;
+                case Opcode::Memory_init : {
+                    const Instr::Memory_init& ins = std::get<Instr::Memory_init>(instr);
+                    if(ins.memidx >= context.mems.size()){
+                        throw Exception::Exception("memory index not found in memory.init");
+                    }
+                    if(ins.dataidx >= context.datas.size()){
+                        throw Exception::Exception("data index not found in memory.init");
+                    }
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
                 }break;
                 // [i32 t i32] -> []
