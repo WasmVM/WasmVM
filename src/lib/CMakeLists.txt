@@ -86,6 +86,7 @@ add_library(WasmVM_validate OBJECT
     validate/func.cpp
     validate/state.cpp
     validate/table.cpp
+    validate/mem.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
 

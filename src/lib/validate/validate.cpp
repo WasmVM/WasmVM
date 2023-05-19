@@ -40,6 +40,17 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
             idx += 1;
         }
         // mems
+        idx = 0;
+        for(const MemType& mem : module.mems){
+            try {
+                validator(mem);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "memory[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
         // globals
     } catch (Exception::Exception e){
         return e;

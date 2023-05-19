@@ -60,8 +60,8 @@ struct FuncType {
 bool operator==(const FuncType&, const FuncType&);
 
 struct Limits {
-    index_t min;
-    std::optional<index_t> max;
+    offset_t min;
+    std::optional<offset_t> max;
 };
 
 struct TableType {
