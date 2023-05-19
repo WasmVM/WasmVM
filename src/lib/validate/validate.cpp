@@ -52,6 +52,17 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
             idx += 1;
         }
         // globals
+        idx = 0;
+        for(const WasmGlobal& global : module.globals){
+            try {
+                validator(global, idx);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "global[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
     } catch (Exception::Exception e){
         return e;
     }

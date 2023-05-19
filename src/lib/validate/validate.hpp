@@ -15,6 +15,7 @@ struct Validator {
 
     template<typename T>
     void operator()(const T&);
+    void operator()(const WasmGlobal&, index_t);
     
 protected:
 
