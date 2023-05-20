@@ -17,8 +17,6 @@ struct Validator {
     void operator()(const T&);
     void operator()(const WasmGlobal&, index_t);
     
-protected:
-
     struct Context {
         Context(const std::vector<FuncType>& types, const std::vector<WasmElem>& elems, const std::vector<WasmData>& datas) : types(types), elems(elems), datas(datas) {}
         const std::vector<FuncType>& types;

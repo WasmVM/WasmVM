@@ -88,6 +88,15 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
             idx += 1;
         }
         // start
+        if(module.start){
+            if(module.start.value() >= validator.context.funcs.size()){
+                return Exception::Exception("start function not found");
+            }
+            const FuncType& startfunc = validator.context.funcs[module.start.value()];
+            if(!startfunc.params.empty() || !startfunc.results.empty()){
+                return Exception::Exception("start function should be void and no parameter");
+            }
+        }
         // imports
         // exports
     } catch (Exception::Exception e){
