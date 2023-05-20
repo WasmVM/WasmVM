@@ -89,6 +89,7 @@ add_library(WasmVM_validate OBJECT
     validate/mem.cpp
     validate/global.cpp
     validate/elem.cpp
+    validate/data.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
 
