@@ -90,6 +90,8 @@ add_library(WasmVM_validate OBJECT
     validate/global.cpp
     validate/elem.cpp
     validate/data.cpp
+    validate/export.cpp
+    validate/import.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
 

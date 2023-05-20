@@ -97,8 +97,30 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
                 return Exception::Exception("start function should be void and no parameter");
             }
         }
-        // imports
         // exports
+        idx = 0;
+        for(const WasmExport& export_ : module.exports){
+            try {
+                validator(export_);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "export[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
+        // imports
+        idx = 0;
+        for(const WasmImport& import : module.imports){
+            try {
+                validator(import);
+            } catch (Exception::Exception e){
+                std::stringstream ss;
+                ss << "import[" << idx << "]: " << e.what();
+                return Exception::Exception(ss.str());
+            }
+            idx += 1;
+        }
     } catch (Exception::Exception e){
         return e;
     }
