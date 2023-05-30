@@ -7,17 +7,17 @@
 #include <map>
 #include <optional>
 
-#include <Types.hpp>
+#include <WasmVM.hpp>
 
 using namespace WasmVM;
 
 struct ModuleQueue {
     struct Node {
-        std::filesystem::path path;
-        std::string name;
-        size_t needs;
+        std::filesystem::path file_path;
+        WasmModule module;
+        std::vector<std::filesystem::path> import_paths;
     };
-    ModuleQueue(std::filesystem::path main_module, std::vector<std::filesystem::path> extra_paths, std::optional<std::filesystem::path> current_path = std::nullopt, std::optional<std::filesystem::path> system_path = std::nullopt);
+    ModuleQueue(std::filesystem::path main_module, std::vector<std::filesystem::path> extra_paths,std::optional<std::filesystem::path> system_path = std::nullopt, bool check_parent = true);
     Node pop();
     inline bool empty() {
         return modules.empty();
@@ -25,10 +25,10 @@ struct ModuleQueue {
 
 protected:
     std::queue<Node> modules;
-    std::optional<std::filesystem::path> current_path;
+    bool check_parent;
     std::optional<std::filesystem::path> system_path;
     std::vector<std::filesystem::path> extra_paths;
-    std::filesystem::path resolve(std::string module_name);
+    std::filesystem::path resolve(std::string module_name, std::filesystem::path parent);
 };
 
 #endif
