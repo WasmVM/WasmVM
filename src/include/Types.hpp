@@ -18,6 +18,8 @@ using i32_t = int32_t;
 using i64_t = int64_t;
 using f32_t = float;
 using f64_t = double;
+static_assert(sizeof(f32_t) == sizeof(i32_t));
+static_assert(sizeof(f64_t) == sizeof(i64_t));
 
 using u8_t = uint8_t;
 using i8_t = int8_t;
@@ -31,9 +33,9 @@ using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
+using hostfunc_t = void*; // TODO:
+
 constexpr u64_t page_size = 65536;
-static_assert(sizeof(f32_t) == sizeof(i32_t));
-static_assert(sizeof(f64_t) == sizeof(i64_t));
 
 using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>;
 
@@ -77,6 +79,11 @@ struct GlobalType {
     };
     Mut mut;
     ValueType type;
+};
+
+struct ExternVal {
+    enum {Func, Mem, Table, Global} type;
+    index_t addr;
 };
 
 }

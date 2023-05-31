@@ -10,6 +10,7 @@
 
 #include <WasmVM.hpp>
 #include <exception.hpp>
+#include <instances/Store.hpp>
 
 #include "CommandParser.hpp"
 #include "ModuleQueue.hpp"
@@ -21,8 +22,8 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
-        CommandParser::Optional("--no-system", "Disable modules from system module path", "-ns"),
-        CommandParser::Optional("--no-current", "Disable modules from current path", "-nc"),
+        CommandParser::Optional("--no-system", "Disable import modules from system module path", "-ns"),
+        CommandParser::Optional("--no-parent", "Disable import modules from module parent path", "-np"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
         CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos)
     },
@@ -41,7 +42,7 @@ int main(int argc, char const *argv[]){
     try {
         // Specify paths
         std::vector<std::filesystem::path> extra_paths;
-        std::optional<std::filesystem::path> current_path;
+        bool check_parent = true;
         std::optional<std::filesystem::path> system_path;
         if(args["extra_path"]){
             std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra_path"].value());
@@ -52,8 +53,8 @@ int main(int argc, char const *argv[]){
         if(!args["main_module"]){
             throw Exception::Exception("no main module");
         }
-        if(!args["no-current"]){
-            current_path = std::filesystem::current_path();
+        if(args["no-parent"]){
+            check_parent = false;
         }
         if(!args["no-sysyem"]){
             system_path = DEFAULT_MODULE_PATH;
@@ -61,8 +62,14 @@ int main(int argc, char const *argv[]){
 
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
-        ModuleQueue module_queue(main_module, extra_paths, current_path, system_path);
+        ModuleQueue module_queue(main_module, extra_paths, system_path, check_parent);
 
+        // Instanciate
+        Store store;
+        while(!module_queue.empty()){
+            ModuleQueue::Node node = module_queue.pop();
+            // TODO:
+        }
         
     }catch(Exception::Exception &e){
         std::cerr << std::filesystem::path(argv[0]).filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
