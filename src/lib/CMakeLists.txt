@@ -95,17 +95,17 @@ add_library(WasmVM_validate OBJECT
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
 
-# add_library(WasmVM_instanciate OBJECT
-
-# )
-# set_property(TARGET WasmVM_instanciate PROPERTY POSITION_INDEPENDENT_CODE 1)
+add_library(WasmVM_exec OBJECT
+    instanciate.cpp
+)
+set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(WasmVM SHARED 
     $<TARGET_OBJECTS:WasmVM_textfmt>
     $<TARGET_OBJECTS:WasmVM_binfmt>
     $<TARGET_OBJECTS:WasmVM_src>
     $<TARGET_OBJECTS:WasmVM_validate>
-    # $<TARGET_OBJECTS:WasmVM_instanciate>
+    $<TARGET_OBJECTS:WasmVM_exec>
 )
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
@@ -115,7 +115,7 @@ add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_binfmt>
     $<TARGET_OBJECTS:WasmVM_src>
     $<TARGET_OBJECTS:WasmVM_validate>
-    # $<TARGET_OBJECTS:WasmVM_instanciate>
+    $<TARGET_OBJECTS:WasmVM_exec>
 )
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 

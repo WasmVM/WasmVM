@@ -649,6 +649,10 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.set");
                     }
+                    GlobalType& global = context.globals[ins.index];
+                    if(global.mut != GlobalType::variable){
+                        throw Exception::Exception("global should be mutable in global.set");
+                    }
                     state.pop(context.globals[ins.index].type);
                 }break;
                 // [t*] -> []

@@ -5,6 +5,7 @@
 * Multiple memories
 * Memories are all 64 bit, allow both i32 & i64 address, offset as u64
 * Element segments can initialize external reference
+* global.get in constant expression could get mutable global
 * While parsing text format, indices are assigned in the parse order. Imports are not preceded then other definitions. After converted to structure, indices will be fixed to the import-preceded order.
   - Ex:
     (func $fu1)
