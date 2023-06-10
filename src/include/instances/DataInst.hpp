@@ -6,11 +6,7 @@
 
 namespace WasmVM {
 
-struct DataInst {
-    using Ref = std::variant<funcref_t, externref_t>;
-    RefType type;
-    std::vector<Ref> elem;
-};
+using DataInst = std::vector<byte_t>;
 
 }
 

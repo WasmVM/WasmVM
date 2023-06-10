@@ -55,14 +55,11 @@ template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
                     throw Exception::Exception("global index not found in global.get");
                 }
                 const GlobalType& globaltype = context.globals[ins.index];
-                if(globaltype.type != ValueType::i32){
-                    throw Exception::Exception("offset should be i32");
+                if(globaltype.type != ValueType::i32 && globaltype.type != ValueType::i64){
+                    throw Exception::Exception("offset should be i32 or i64");
                 }
-                if(globaltype.mut != GlobalType::constant){
-                    throw Exception::Exception("offset should be constant");
-                }
-            }else if(!std::holds_alternative<Instr::I32_const>(elem.mode.offset.value())){
-                throw Exception::Exception("offset should be i32");
+            }else if(!std::holds_alternative<Instr::I32_const>(elem.mode.offset.value()) && !std::holds_alternative<Instr::I64_const>(elem.mode.offset.value())){
+                throw Exception::Exception("offset should be i32 or i64");
             }
         }
     }

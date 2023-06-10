@@ -8,7 +8,6 @@
 namespace WasmVM {
 
 struct TableInst {
-    using Ref = std::variant<funcref_t, externref_t>;
     TableType type;
     std::vector<Ref> elems;
 };

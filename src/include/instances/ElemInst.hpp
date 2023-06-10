@@ -7,7 +7,6 @@
 namespace WasmVM {
 
 struct ElemInst {
-    using Ref = std::variant<funcref_t, externref_t>;
     RefType type;
     std::vector<Ref> elem;
 };

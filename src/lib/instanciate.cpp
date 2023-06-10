@@ -8,6 +8,85 @@
 
 using namespace WasmVM;
 
+static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, ModuleInst& moduleInst, Store& store){
+    for(ConstInstr instr : elem.elemlist){
+        std::visit(overloaded {
+            [&](const Instr::Ref_null& ins){
+                switch(elem.type){
+                    case RefType::funcref :
+                        it->emplace<funcref_t>(std::nullopt);
+                    break;
+                    case RefType::externref :
+                        it->emplace<externref_t>(nullptr);
+                    break;
+                }
+            },
+            [&](const Instr::Ref_func& ins){
+                it->emplace<funcref_t>(ins.index);
+            },
+            [&](const Instr::Global_get& ins){
+                index_t globaladdr = moduleInst.globaladdrs[ins.index];
+                if(globaladdr >= store.globals.size()){
+                    throw Exception::Exception("invalid global address in const global.get");
+                }
+                const GlobalInst& got = store.globals[globaladdr];
+                if(static_cast<ValueType>(elem.type) != got.type){
+                    throw Exception::Exception("global type not match in const global.get");
+                }
+                switch(elem.type){
+                    case RefType::funcref :
+                        it->emplace<funcref_t>(std::get<funcref_t>(got.value));
+                    break;
+                    case RefType::externref :
+                        it->emplace<externref_t>(std::get<externref_t>(got.value));
+                    break;
+                }
+            },
+            [](auto&){
+                throw Exception::Exception("invalid item in element segment");
+            }
+        }, instr);
+    }
+}
+
+static offset_t eval_offset(const std::optional<ConstInstr>& instr, ModuleInst& moduleInst, Store& store){
+    if(instr.has_value()){
+        return std::visit<offset_t>(overloaded {
+            [&](const Instr::Global_get& ins){
+                index_t globaladdr = moduleInst.globaladdrs[ins.index];
+                if(globaladdr >= store.globals.size()){
+                    throw Exception::Exception("invalid global address in const global.get");
+                }
+                const GlobalInst& got = store.globals[globaladdr];
+                return std::visit<offset_t>(overloaded {
+                    [&](i32_t val){
+                        return (offset_t)val;
+                    },
+                    [&](i64_t val){
+                        return (offset_t)val;
+                    },
+                    [](auto){
+                        throw Exception::Exception("invalid element offset in global.get");
+                        return 0;
+                    }
+                }, got.value);
+            },
+            [&](const Instr::I32_const& ins){
+                return (offset_t)ins.value;
+            },
+            [&](const Instr::I64_const& ins){
+                return (offset_t)ins.value;
+            },
+            [](auto){
+                throw Exception::Exception("invalid element offset expression");
+                return 0;
+            }
+        }, instr.value());
+    }else{
+        return 0;
+    }
+}
+
 ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, std::vector<ExternVal> externvals){
     ModuleInst moduleInst;
     // Check external value
@@ -57,9 +136,9 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
             break;
         }
     }
-    // Allocate types
+    // Types
     moduleInst.types = module.types;
-    // Allocate funcs
+    // Funcs
     for(size_t idx = 0; idx < module.funcs.size(); ++idx){
         index_t address = store.funcs.size();
         FuncInst funcinst = store.funcs.emplace_back();
@@ -68,13 +147,13 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         body.func = module.funcs[idx];
         funcinst.type = moduleInst.types[body.func.typeidx];
     }
-    // Allocate tables
+    // Tables
     for(size_t idx = 0; idx < module.tables.size(); ++idx){
         index_t address = store.tables.size();
         TableInst tableinst = store.tables.emplace_back();
         moduleInst.tableaddrs.emplace_back(address);
         tableinst.type = module.tables[idx];
-        TableInst::Ref initval;
+        Ref initval;
         switch(tableinst.type.reftype){
             case RefType::funcref :
                 initval.emplace<funcref_t>(std::nullopt);
@@ -85,7 +164,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         }
         tableinst.elems.resize(tableinst.type.limits.min, initval);
     }
-    // Allocate mems
+    // Memories
     for(size_t idx = 0; idx < module.mems.size(); ++idx){
         index_t address = store.mems.size();
         MemInst meminst = store.mems.emplace_back();
@@ -93,7 +172,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         meminst.type = module.mems[idx];
         meminst.data.resize(meminst.type.min * page_size);
     }
-    // Allocate globals
+    // Globals
     for(size_t idx = 0; idx < module.globals.size(); ++idx){
         index_t address = store.globals.size();
         GlobalInst& globalinst = store.globals.emplace_back();
@@ -142,5 +221,42 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
             }
         }, global.init);
     }
+    // Elems
+    for(size_t idx = 0; idx < module.elems.size(); ++idx){
+        const WasmElem& elem = module.elems[idx];
+        switch(elem.mode.type){
+            case WasmElem::ElemMode::Mode::declarative :
+            break;
+            case WasmElem::ElemMode::Mode::passive : {
+                index_t address = store.elems.size();
+                ElemInst& eleminst = store.elems.emplace_back();
+                moduleInst.elemaddrs.emplace_back(address);
+                eleminst.type = elem.type;
+                eleminst.elem.resize(elem.elemlist.size());
+                init_table(eleminst.elem.begin(), elem, moduleInst, store);
+            }break;
+            case WasmElem::ElemMode::Mode::active :
+                index_t tableidx = elem.mode.tableidx.value_or(0);
+                if(tableidx >= moduleInst.tableaddrs.size()){
+                    throw Exception::Exception("table not exist in module");
+                }
+                index_t tableaddr = moduleInst.tableaddrs[tableidx];
+                if(tableaddr >= store.tables.size()){
+                    throw Exception::Exception("table not found in store");
+                }
+                TableInst& table = store.tables[tableaddr];
+                offset_t offset = eval_offset(elem.mode.offset, moduleInst, store);
+                if((offset + elem.elemlist.size()) > table.elems.size()){
+                    throw Exception::Exception("insufficient size while initialize table");
+                }
+                if(table.type.reftype != elem.type){
+                    throw Exception::Exception("elem type not match table type");
+                }
+                init_table(table.elems.begin() + offset, elem, moduleInst, store);
+            break;
+        }
+    }
+    // Datas
+    
     return moduleInst;
 }

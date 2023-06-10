@@ -27,7 +27,7 @@ using u16_t = uint16_t;
 using i16_t = int16_t;
 
 using byte_t = std::byte;
-using index_t = uint32_t;
+using index_t = u32_t;
 using offset_t = u64_t;
 using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
@@ -54,6 +54,8 @@ enum class RefType {
     funcref = ValueType::funcref,
     externref = ValueType::externref,
 };
+
+using Ref = std::variant<funcref_t, externref_t>;
 
 struct FuncType {
     std::vector<ValueType> params;
