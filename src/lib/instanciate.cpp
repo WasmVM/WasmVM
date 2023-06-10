@@ -221,6 +221,41 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
             }
         }, global.init);
     }
+    // Exports
+    for(WasmExport export_ : module.exports){
+        ExportInst& exportinst = moduleInst.exports.emplace_back();
+        exportinst.name = export_.name;
+        switch(export_.desc){
+            case WasmExport::DescType::func :
+                if(moduleInst.funcaddrs[export_.index] >= store.funcs.size()){
+                    throw Exception::Exception("exported function not exist in store");
+                }
+                exportinst.value.type = ExternVal::Func;
+                exportinst.value.addr = moduleInst.funcaddrs[export_.index];
+            break;
+            case WasmExport::DescType::table :
+                if(moduleInst.tableaddrs[export_.index] >= store.tables.size()){
+                    throw Exception::Exception("exported table not exist in store");
+                }
+                exportinst.value.type = ExternVal::Table;
+                exportinst.value.addr = moduleInst.tableaddrs[export_.index];
+            break;
+            case WasmExport::DescType::mem :
+                if(moduleInst.memaddrs[export_.index] >= store.mems.size()){
+                    throw Exception::Exception("exported memory not exist in store");
+                }
+                exportinst.value.type = ExternVal::Mem;
+                exportinst.value.addr = moduleInst.memaddrs[export_.index];
+            break;
+            case WasmExport::DescType::global :
+                if(moduleInst.globaladdrs[export_.index] >= store.globals.size()){
+                    throw Exception::Exception("exported global not exist in store");
+                }
+                exportinst.value.type = ExternVal::Global;
+                exportinst.value.addr = moduleInst.globaladdrs[export_.index];
+            break;
+        }
+    }
     // Elems
     for(size_t idx = 0; idx < module.elems.size(); ++idx){
         const WasmElem& elem = module.elems[idx];
