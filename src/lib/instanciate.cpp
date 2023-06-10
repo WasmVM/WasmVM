@@ -257,6 +257,30 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         }
     }
     // Datas
-    
+    for(size_t idx = 0; idx < module.datas.size(); ++idx){
+        const WasmData& data = module.datas[idx];
+        switch(data.mode.type){
+            case WasmData::DataMode::Mode::passive :
+                moduleInst.dataaddrs.emplace_back(store.datas.size());
+                store.datas.emplace_back(data.init);
+            break;
+            case WasmData::DataMode::Mode::active :
+                index_t memidx = data.mode.memidx.value_or(0);
+                if(memidx >= moduleInst.memaddrs.size()){
+                    throw Exception::Exception("memory not exist in module");
+                }
+                index_t memaddr = moduleInst.memaddrs[memidx];
+                if(memaddr >= store.tables.size()){
+                    throw Exception::Exception("memory not found in store");
+                }
+                MemInst& memory = store.mems[memaddr];
+                offset_t offset = eval_offset(data.mode.offset, moduleInst, store);
+                if((offset + data.init.size()) > memory.data.size()){
+                    throw Exception::Exception("insufficient size while initialize memory");
+                }
+                std::copy(data.init.begin(), data.init.end(), memory.data.begin() + offset);
+            break;
+        }
+    }
     return moduleInst;
 }
