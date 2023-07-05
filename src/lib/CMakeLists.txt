@@ -97,6 +97,8 @@ set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_library(WasmVM_exec OBJECT
     instanciate.cpp
+    invoke/invoke.cpp
+    invoke/control.cpp
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
 

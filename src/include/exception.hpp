@@ -7,6 +7,7 @@
 #include <functional>
 #include <utility>
 
+#include <Types.hpp>
 #include <Util.hpp>
 
 namespace WasmVM {

@@ -5,6 +5,7 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 #include <Util.hpp>
+#include <instances/Stack.hpp>
 
 using namespace WasmVM;
 
@@ -141,7 +142,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
     // Funcs
     for(size_t idx = 0; idx < module.funcs.size(); ++idx){
         index_t address = store.funcs.size();
-        FuncInst funcinst = store.funcs.emplace_back();
+        FuncInst& funcinst = store.funcs.emplace_back();
         moduleInst.funcaddrs.emplace_back(address);
         FuncInst::Body& body = funcinst.body.emplace<FuncInst::Body>(moduleInst);
         body.func = module.funcs[idx];
@@ -316,6 +317,20 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                 std::copy(data.init.begin(), data.init.end(), memory.data.begin() + offset);
             break;
         }
+    }
+    // Start
+    if(module.start){
+        index_t start_index = module.start.value();
+        if(start_index >= moduleInst.funcaddrs.size()){
+            throw Exception::Exception("start function not exist in module instance");
+        }
+        index_t start_addr = moduleInst.funcaddrs[start_index];
+        if(start_addr >= store.funcs.size()){
+            throw Exception::Exception("start function not exist in store");
+        }
+        Stack stack(store);
+        stack.invoke(store.funcs[start_addr], {});
+        stack.run();
     }
     return moduleInst;
 }
