@@ -13,6 +13,7 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 #include <instances/Store.hpp>
+#include <host.hpp>
 
 #include "CommandParser.hpp"
 #include "ModuleQueue.hpp"
@@ -132,14 +133,20 @@ int main(int argc, char const *argv[]){
         if(!args["no-sysyem"]){
             system_path = DEFAULT_MODULE_PATH;
         }
+        // Runtime structures
+        Store store;
+        std::map<std::filesystem::path, ModuleInst> moduleinsts;
+
+        // Host modules
+        #ifdef HOST_MODULES
+        host_modules_instanciate(moduleinsts, store);
+        #endif
 
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
         ModuleQueue module_queue(main_module, extra_paths, system_path, check_parent);
 
         // Instanciate
-        Store store;
-        std::map<std::filesystem::path, ModuleInst> moduleinsts;
         while(!module_queue.empty()){
             ModuleQueue::Node node = module_queue.pop();
             std::vector<ExternVal> externvals = match_imports(store, moduleinsts, node);
