@@ -19,7 +19,6 @@ struct RunVisitor {
     void operator()(Instr::Unreachable&);
 
     Stack& stack;
-    std::vector<Value> results;
 };
 
 #endif

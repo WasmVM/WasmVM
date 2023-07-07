@@ -16,13 +16,13 @@ if(CONSOLE_COLOR)
   add_compile_definitions(CONSOLE_COLOR)
 endif(CONSOLE_COLOR)
 
-add_subdirectory(src)
-
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")
 if(BUILD_HOST_MODULES)
   add_subdirectory(host)
   add_compile_definitions(HOST_MODULES)
 endif(BUILD_HOST_MODULES)
+
+add_subdirectory(src)
 
 set(BUILD_TESTS ON CACHE BOOL "Build tests")
 if(BUILD_TESTS)

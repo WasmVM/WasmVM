@@ -52,8 +52,12 @@ void Stack::invoke(FuncInst funcinst, std::vector<Value> args){
         label.continuation = body.func.body.end();
         label.current = body.func.body.begin();
     }else{
-        // TODO:
-        throw Exception::Exception("host func haven't implemented yet");
+        hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
+        if(frames.empty() || frames.top().labels.empty()){
+            results = func(*this);
+        }else{
+            frames.top().labels.top().values.insert(func(*this));
+        }
     }
 }
 
@@ -67,11 +71,15 @@ std::vector<Value> Stack::run(){
         }
         std::visit(visitor, *label.current);
     }
-    return visitor.results;
+    return results;
 }
 
 std::vector<Value> Label::Values::get(){
     return std::vector<Value>(c.begin(), c.end());
+}
+
+void Label::Values::insert(std::vector<Value> values){
+    c.insert(c.end(), values.begin(), values.end());
 }
 
 using namespace Exception;

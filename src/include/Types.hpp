@@ -33,7 +33,6 @@ using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
-using hostfunc_t = void*; // TODO:
 
 constexpr u64_t page_size = 65536;
 

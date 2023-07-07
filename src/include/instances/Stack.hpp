@@ -34,12 +34,13 @@ struct Frame {
     std::vector<WasmInstr>::iterator end;
 };
 
-struct Stack : protected std::stack<Frame> {
+struct Stack {
     Stack(Store& store) : store(store){}
     void invoke(FuncInst funcinst, std::vector<Value> args);
     std::vector<Value> run();
     Store& store;
     std::stack<Frame> frames;
+    std::vector<Value> results;
 };
 
 }

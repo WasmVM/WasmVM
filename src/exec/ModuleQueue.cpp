@@ -13,8 +13,13 @@
 
 using namespace WasmVM;
 
-ModuleQueue::ModuleQueue(std::filesystem::path main_module, std::vector<std::filesystem::path> extra_paths, std::optional<std::filesystem::path> system_path, bool check_parent)
-    : system_path(system_path), check_parent(check_parent){
+ModuleQueue::ModuleQueue(
+    std::filesystem::path main_module,
+    std::map<std::filesystem::path, ModuleInst>& module_insts,
+    std::vector<std::filesystem::path> extra_paths,
+    std::optional<std::filesystem::path> system_path,
+    bool check_parent
+) : module_insts(module_insts), system_path(system_path), check_parent(check_parent){
     
     if(!std::filesystem::exists(main_module)){
         throw Exception::Exception("main module not found");
@@ -38,6 +43,10 @@ ModuleQueue::ModuleQueue(std::filesystem::path main_module, std::vector<std::fil
         if(!node.module.imports.empty()){
             ancestors.emplace(file_path);
             for(WasmImport& import : node.module.imports){
+                if(module_insts.contains(import.module)){
+                    node.import_paths.emplace_back(import.module);
+                    continue;
+                }
                 std::filesystem::path import_path = std::filesystem::canonical(resolve(import.module, file_path.parent_path()));
                 if(ancestors.contains(import_path)){
                     throw Exception::Exception(std::string("invalid loop dependency of '") + import.module + "'");

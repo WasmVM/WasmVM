@@ -144,7 +144,7 @@ int main(int argc, char const *argv[]){
 
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
-        ModuleQueue module_queue(main_module, extra_paths, system_path, check_parent);
+        ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent);
 
         // Instanciate
         while(!module_queue.empty()){

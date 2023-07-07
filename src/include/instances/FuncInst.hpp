@@ -10,6 +10,10 @@
 
 namespace WasmVM {
 
+struct Stack;
+
+using hostfunc_t = std::vector<Value>(*)(Stack&);
+
 struct FuncInst {
 
     struct Body {
