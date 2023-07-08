@@ -8,7 +8,13 @@
 
 using namespace WasmVM;
 
-void Stack::invoke(FuncInst funcinst, std::vector<Value> args){
+void Stack::invoke(index_t funcaddr, std::vector<Value> args){
+    // Check funcaddr
+    if(funcaddr >= store.funcs.size()){
+        throw Exception::func_not_exist();
+    }
+    // Check func type
+    FuncInst& funcinst = store.funcs[funcaddr];
     if(args.size() != funcinst.type.params.size()){
         throw Exception::invalid_argument();
     }
@@ -17,14 +23,16 @@ void Stack::invoke(FuncInst funcinst, std::vector<Value> args){
             throw Exception::invalid_argument();
         }
     }
-    if(std::holds_alternative<FuncInst::Body>(funcinst.body)){
-        // Frame
-        FuncInst::Body& body = std::get<FuncInst::Body>(funcinst.body);
-        Frame& frame = frames.emplace(body.module);
-        frame.end = body.func.body.end();
+    // Frame & Label
+    Frame& frame = frames.emplace(funcinst.module, funcaddr);
+    Label& label = frame.labels.emplace();
+    label.arity =  funcinst.type.results.size();
+    // Function
+    if(std::holds_alternative<WasmFunc>(funcinst.body)){
+        WasmFunc& func = std::get<WasmFunc>(funcinst.body);
         // Locals
         frame.locals.insert(frame.locals.end(), args.begin(), args.end());
-        for(ValueType type : body.func.locals){
+        for(ValueType type : func.locals){
             switch(type){
                 case ValueType::i32 :
                     frame.locals.emplace_back((i32_t)0);
@@ -46,30 +54,44 @@ void Stack::invoke(FuncInst funcinst, std::vector<Value> args){
                 break;
             }
         }
-        // Label
-        Label& label = frame.labels.emplace(Label());
-        label.arity = funcinst.type.results.size();
-        label.continuation = body.func.body.end();
-        label.current = body.func.body.begin();
-    }else{
-        hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
-        if(frames.empty() || frames.top().labels.empty()){
-            results = func(*this);
-        }else{
-            frames.top().labels.top().values.insert(func(*this));
-        }
+        // Program counters
+        Label::Counters& pc = label.pc.emplace();
+        pc.current = 0;
+        pc.continuation = func.body.size() - 1;
     }
 }
 
 std::vector<Value> Stack::run(){
     RunVisitor visitor(*this);
-    while(!frames.empty() && !frames.top().labels.empty()){
+    while(!frames.empty()){
         Frame& frame = frames.top();
-        Label& label = frame.labels.top();
-        if(label.current == frame.end){
-            throw Exception::no_end_of_func();
+        if(frame.labels.empty()){
+            throw Exception::invalid_label();
         }
-        std::visit(visitor, *label.current);
+        Label& label = frame.labels.top();
+        FuncInst& funcinst = store.funcs[frame.funcaddr];
+        if(std::holds_alternative<WasmFunc>(funcinst.body)){
+            if(!label.pc.has_value()){
+                throw Exception::invalid_label();
+            }
+            WasmFunc& func = std::get<WasmFunc>(funcinst.body);
+            if(label.pc->current >= func.body.size()){
+                throw Exception::no_end_of_func();
+            }
+            std::visit(visitor, func.body[label.pc->current]);
+            label.pc->current += 1;
+        }else{
+            hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
+            auto results = func(*this);
+            frames.pop();
+            if(frames.empty()){
+                this->results = results;
+            }else if(!frames.top().labels.empty()){
+                frames.top().labels.top().values.insert(results);
+            }else{
+                throw Exception::invalid_label();
+            }
+        }
     }
     return results;
 }
@@ -91,3 +113,7 @@ unreachable::unreachable() :
     Exception("unreachable") {}
 no_end_of_func::no_end_of_func() :
     Exception("function reach end without 'end' instruction") {}
+func_not_exist::func_not_exist() :
+    Exception("function not exist") {}
+invalid_label::invalid_label() :
+    Exception("invalid label") {}

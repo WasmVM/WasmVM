@@ -143,10 +143,10 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
     for(size_t idx = 0; idx < module.funcs.size(); ++idx){
         index_t address = store.funcs.size();
         FuncInst& funcinst = store.funcs.emplace_back();
+        funcinst.body = module.funcs[idx];
+        funcinst.type = moduleInst.types[module.funcs[idx].typeidx];
+        funcinst.module = moduleInst;
         moduleInst.funcaddrs.emplace_back(address);
-        FuncInst::Body& body = funcinst.body.emplace<FuncInst::Body>(moduleInst);
-        body.func = module.funcs[idx];
-        funcinst.type = moduleInst.types[body.func.typeidx];
     }
     // Tables
     for(size_t idx = 0; idx < module.tables.size(); ++idx){
@@ -329,7 +329,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
             throw Exception::Exception("start function not exist in store");
         }
         Stack stack(store);
-        stack.invoke(store.funcs[start_addr], {});
+        stack.invoke(start_addr, {});
         stack.run();
     }
     return moduleInst;

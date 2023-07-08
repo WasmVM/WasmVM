@@ -17,6 +17,12 @@ namespace Exception {
     struct no_end_of_func : public Exception {
         no_end_of_func();
     };
+    struct func_not_exist : public Exception {
+        func_not_exist();
+    };
+    struct invalid_label : public Exception {
+        invalid_label();
+    };
 }
 }
 

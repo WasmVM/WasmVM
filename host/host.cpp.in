@@ -2,10 +2,7 @@
 
 #include <host.hpp>
 
-#define MOD_instanciate(MOD_NAME) \
-if(!moduleinsts.contains(#MOD_NAME)){ \
-    moduleinsts[#MOD_NAME] = MOD_NAME##_instanciate(moduleinsts, store); \
-}
+#define MOD_instanciate(MOD_NAME) MOD_NAME##_instanciate(moduleinsts, store); \
 
 @HOST_defs@
 

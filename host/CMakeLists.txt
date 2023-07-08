@@ -18,7 +18,7 @@ add_host_module(testhost "Test host module")
 
 # ---  End  ---
 
-list(TRANSFORM HOST_Modules PREPEND "ModuleInst " OUTPUT_VARIABLE HOST_defs)
+list(TRANSFORM HOST_Modules PREPEND "void " OUTPUT_VARIABLE HOST_defs)
 list(TRANSFORM HOST_defs APPEND "_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleinsts, Store& store)\;")
 list(JOIN HOST_defs "\n" HOST_defs)
 
