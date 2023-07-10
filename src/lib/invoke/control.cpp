@@ -8,8 +8,6 @@
 
 using namespace WasmVM;
 
-#include <iostream>
-
 void RunVisitor::operator()(Instr::Nop&){}
 
 void RunVisitor::operator()(Instr::Unreachable&){
@@ -42,4 +40,25 @@ void RunVisitor::operator()(Instr::End&){
       frame.labels.top().pc->current = current;
     }
   }
+}
+
+void RunVisitor::operator()(Instr::Call& instr){
+  Frame& frame = stack.frames.top();
+  if(frame.labels.empty()){
+    throw Exception::invalid_label();
+  }
+  Label& label = frame.labels.top();
+  index_t funcaddr = frame.module.funcaddrs[instr.index];
+  if(funcaddr >= stack.store.funcs.size()){
+    throw Exception::func_not_exist();
+  }
+  FuncType& type = stack.store.funcs[funcaddr].type;
+  std::vector<Value> args;
+  if(type.params.size() > 0){
+    for(size_t i = type.params.size() - 1; i >= 0; --i){
+      args[i] = label.values.top();
+      label.values.pop();
+    }
+  }
+  stack.invoke(funcaddr, args);
 }

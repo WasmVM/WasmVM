@@ -26,7 +26,7 @@ void testhost_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleins
     index_t funcaddr = store.funcs.size();
     moduleinst.funcaddrs.emplace_back(funcaddr);
 
-    FuncInst& funcinst = store.funcs.emplace_back();
+    FuncInst& funcinst = store.funcs.emplace_back(moduleinst);
     funcinst.module = moduleinst;
     //funcinst.type.params.emplace_back(ValueType::i32);
     funcinst.body.emplace<hostfunc_t>(print_i32);

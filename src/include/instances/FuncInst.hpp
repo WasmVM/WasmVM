@@ -16,8 +16,9 @@ struct Stack;
 using hostfunc_t = std::vector<Value>(*)(Stack&);
 
 struct FuncInst {
+    FuncInst(ModuleInst& module) : module(module){}
     FuncType type;
-    std::optional<std::reference_wrapper<ModuleInst>> module;
+    ModuleInst& module;
     std::variant<hostfunc_t, WasmFunc> body;
 };
 

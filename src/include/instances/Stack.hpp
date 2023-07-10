@@ -35,10 +35,10 @@ struct Label {
 };
 
 struct Frame {
-    Frame(std::optional<std::reference_wrapper<ModuleInst>> module, index_t funcaddr) : module(module), funcaddr(funcaddr){}
+    Frame(ModuleInst& module, index_t funcaddr) : module(module), funcaddr(funcaddr){}
     std::stack<Label> labels;
     std::vector<Value> locals;
-    std::optional<std::reference_wrapper<ModuleInst>> module;
+    ModuleInst& module;
     index_t funcaddr;
 };
 

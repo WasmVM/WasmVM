@@ -142,10 +142,9 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
     // Funcs
     for(size_t idx = 0; idx < module.funcs.size(); ++idx){
         index_t address = store.funcs.size();
-        FuncInst& funcinst = store.funcs.emplace_back();
+        FuncInst& funcinst = store.funcs.emplace_back(moduleInst);
         funcinst.body = module.funcs[idx];
         funcinst.type = moduleInst.types[module.funcs[idx].typeidx];
-        funcinst.module = moduleInst;
         moduleInst.funcaddrs.emplace_back(address);
     }
     // Tables

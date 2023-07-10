@@ -19,6 +19,7 @@ struct RunVisitor {
     void operator()(Instr::Nop&);
     void operator()(Instr::Unreachable&);
     void operator()(Instr::End&);
+    void operator()(Instr::Call&);
 
     Stack& stack;
 };
