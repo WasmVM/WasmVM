@@ -23,15 +23,15 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
             throw Exception::invalid_argument();
         }
     }
-    // Frame & Label
+    // Frame
     Frame& frame = frames.emplace(funcinst.module, funcaddr);
+    frame.locals.insert(frame.locals.end(), args.begin(), args.end());
+    // Label
     Label& label = frame.labels.emplace();
     label.arity =  funcinst.type.results.size();
     // Function
     if(std::holds_alternative<WasmFunc>(funcinst.body)){
         WasmFunc& func = std::get<WasmFunc>(funcinst.body);
-        // Locals
-        frame.locals.insert(frame.locals.end(), args.begin(), args.end());
         for(ValueType type : func.locals){
             switch(type){
                 case ValueType::i32 :
@@ -54,7 +54,6 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
                 break;
             }
         }
-        // Program counters
         Label::Counters& pc = label.pc.emplace();
         pc.current = 0;
         pc.continuation = func.body.size() - 1;

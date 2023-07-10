@@ -55,7 +55,8 @@ void RunVisitor::operator()(Instr::Call& instr){
   FuncType& type = stack.store.funcs[funcaddr].type;
   std::vector<Value> args;
   if(type.params.size() > 0){
-    for(size_t i = type.params.size() - 1; i >= 0; --i){
+    args.resize(type.params.size());
+    for(int i = type.params.size() - 1; i >= 0; --i){
       args[i] = label.values.top();
       label.values.pop();
     }

@@ -21,6 +21,8 @@ struct RunVisitor {
     void operator()(Instr::End&);
     void operator()(Instr::Call&);
 
+    void operator()(Instr::I32_const&);
+
     Stack& stack;
 };
 
