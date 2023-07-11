@@ -16,9 +16,11 @@ struct RunVisitor {
         throw Exception::Exception("unimplemented");
     }
 
-    void operator()(Instr::Nop&);
     void operator()(Instr::Unreachable&);
+    void operator()(Instr::Nop&);
+    void operator()(Instr::Block&);
     void operator()(Instr::End&);
+    void operator()(Instr::Br&);
     void operator()(Instr::Call&);
 
     void operator()(Instr::I32_const&);

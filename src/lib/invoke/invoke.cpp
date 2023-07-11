@@ -9,20 +9,8 @@
 using namespace WasmVM;
 
 void Stack::invoke(index_t funcaddr, std::vector<Value> args){
-    // Check funcaddr
-    if(funcaddr >= store.funcs.size()){
-        throw Exception::func_not_exist();
-    }
     // Check func type
     FuncInst& funcinst = store.funcs[funcaddr];
-    if(args.size() != funcinst.type.params.size()){
-        throw Exception::invalid_argument();
-    }
-    for(size_t i = 0; i < args.size(); ++i){
-        if(args[i].index() != funcinst.type.params[i]){
-            throw Exception::invalid_argument();
-        }
-    }
     // Frame
     Frame& frame = frames.emplace(funcinst.module, funcaddr);
     frame.locals.insert(frame.locals.end(), args.begin(), args.end());
@@ -64,9 +52,6 @@ std::vector<Value> Stack::run(){
     RunVisitor visitor(*this);
     while(!frames.empty()){
         Frame& frame = frames.top();
-        if(frame.labels.empty()){
-            throw Exception::invalid_label();
-        }
         Label& label = frame.labels.top();
         FuncInst& funcinst = store.funcs[frame.funcaddr];
         if(std::holds_alternative<WasmFunc>(funcinst.body)){
@@ -77,8 +62,7 @@ std::vector<Value> Stack::run(){
             if(label.pc->current >= func.body.size()){
                 throw Exception::no_end_of_func();
             }
-            std::visit(visitor, func.body[label.pc->current]);
-            label.pc->current += 1;
+            std::visit(visitor, func.body[label.pc->current++]);
         }else{
             hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
             auto results = func(*this);
