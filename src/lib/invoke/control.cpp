@@ -68,6 +68,33 @@ void RunVisitor::operator()(Instr::Block& instr){
   }
 }
 
+void RunVisitor::operator()(Instr::Loop& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  WasmFunc& func = std::get<WasmFunc>(stack.store.funcs[frame.funcaddr].body);
+  // Get type
+  FuncType type;
+  if(instr.type){
+    type = frame.module.types[instr.type.value()];
+  }
+  // Pop values
+  std::vector<Value> args;
+  if(type.params.size() > 0){
+    args.resize(type.params.size());
+    for(int i = type.params.size() - 1; i >= 0; --i){
+      args[i] = label.values.top();
+      label.values.pop();
+    }
+  }
+  // Create label
+  Label& new_label = frame.labels.emplace();
+  new_label.arity = type.results.size();
+  new_label.values.insert(args);
+  new_label.pc.emplace();
+  new_label.pc->current = label.pc->current;
+  new_label.pc->continuation = label.pc->current;
+}
+
 void RunVisitor::operator()(Instr::End&){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
