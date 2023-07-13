@@ -237,6 +237,29 @@ void RunVisitor::operator()(Instr::Br_if& instr){
   }
 }
 
+void RunVisitor::operator()(Instr::Br_table& instr){
+  Frame& frame = stack.frames.top();
+  i32_t operant = std::get<i32_t>(frame.labels.top().values.top());
+  frame.labels.top().values.pop();
+  if(operant >= instr.indices.size()){
+    operant = instr.indices.size() - 1;
+  }
+  // Pop values
+  std::vector<Value> values = frame.labels.top().values.get();
+  // Branch
+  for(index_t i = instr.indices[operant]; i > 0; --i){
+    frame.labels.pop();
+  }
+  Label& label = frame.labels.top();
+  // Push values
+  if(label.arity > 0){
+    label.values.insert(std::vector<Value>(values.end() - label.arity, values.end()));
+  }
+  // Continuation
+  label.pc->current = label.pc->continuation;
+}
+
+
 void RunVisitor::operator()(Instr::Call& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
