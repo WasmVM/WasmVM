@@ -24,6 +24,7 @@ struct RunVisitor {
     void operator()(Instr::Else&);
     void operator()(Instr::End&);
     void operator()(Instr::Br&);
+    void operator()(Instr::Br_if&);
     void operator()(Instr::Call&);
 
     void operator()(Instr::I32_const&);

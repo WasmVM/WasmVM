@@ -216,6 +216,27 @@ void RunVisitor::operator()(Instr::Br& instr){
   label.pc->current = label.pc->continuation;
 }
 
+void RunVisitor::operator()(Instr::Br_if& instr){
+  Frame& frame = stack.frames.top();
+  bool doBr = (std::get<i32_t>(frame.labels.top().values.top()) != 0);
+  frame.labels.top().values.pop();
+  if(doBr){
+    // Pop values
+    std::vector<Value> values = frame.labels.top().values.get();
+    // Branch
+    for(index_t i = instr.index; i > 0; --i){
+      frame.labels.pop();
+    }
+    Label& label = frame.labels.top();
+    // Push values
+    if(label.arity > 0){
+      label.values.insert(std::vector<Value>(values.end() - label.arity, values.end()));
+    }
+    // Continuation
+    label.pc->current = label.pc->continuation;
+  }
+}
+
 void RunVisitor::operator()(Instr::Call& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
