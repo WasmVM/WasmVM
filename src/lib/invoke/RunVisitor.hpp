@@ -20,6 +20,8 @@ struct RunVisitor {
     void operator()(Instr::Nop&);
     void operator()(Instr::Block&);
     void operator()(Instr::Loop&);
+    void operator()(Instr::If&);
+    void operator()(Instr::Else&);
     void operator()(Instr::End&);
     void operator()(Instr::Br&);
     void operator()(Instr::Call&);
