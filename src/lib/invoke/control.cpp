@@ -259,6 +259,18 @@ void RunVisitor::operator()(Instr::Br_table& instr){
   label.pc->current = label.pc->continuation;
 }
 
+void RunVisitor::operator()(Instr::Return&){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  std::vector<Value> values = label.values.get();
+  std::vector<Value> results(values.end() - label.arity, values.end());
+  stack.frames.pop();
+  if(stack.frames.empty()){
+    stack.results = results;
+  }else{
+    stack.frames.top().labels.top().values.insert(results);
+  }
+}
 
 void RunVisitor::operator()(Instr::Call& instr){
   Frame& frame = stack.frames.top();
