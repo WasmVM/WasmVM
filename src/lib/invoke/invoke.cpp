@@ -100,3 +100,9 @@ func_not_exist::func_not_exist() :
     Exception("function not exist") {}
 invalid_label::invalid_label() :
     Exception("invalid label") {}
+invalid_elem_index::invalid_elem_index() :
+    Exception("invalid index of element") {}
+invalid_reference::invalid_reference() :
+    Exception("invalid reference") {}
+function_type_unmatch::function_type_unmatch() :
+    Exception("function type unmatch") {}

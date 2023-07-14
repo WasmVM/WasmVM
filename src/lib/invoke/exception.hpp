@@ -23,6 +23,15 @@ namespace Exception {
     struct invalid_label : public Exception {
         invalid_label();
     };
+    struct invalid_elem_index : public Exception {
+        invalid_elem_index();
+    };
+    struct invalid_reference : public Exception {
+        invalid_reference();
+    };
+    struct function_type_unmatch : public Exception {
+        function_type_unmatch();
+    };
 }
 }
 

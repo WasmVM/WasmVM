@@ -28,6 +28,7 @@ struct RunVisitor {
     void operator()(Instr::Br_table&);
     void operator()(Instr::Return&);
     void operator()(Instr::Call&);
+    void operator()(Instr::Call_indirect&);
 
     void operator()(Instr::I32_const&);
 

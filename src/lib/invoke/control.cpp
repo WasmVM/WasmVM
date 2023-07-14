@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include <structures/WasmInstr.hpp>
+#include <instances/TableInst.hpp>
 #include <Util.hpp>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
@@ -277,6 +278,35 @@ void RunVisitor::operator()(Instr::Call& instr){
   Label& label = frame.labels.top();
   index_t funcaddr = frame.module.funcaddrs[instr.index];
   FuncType& type = stack.store.funcs[funcaddr].type;
+  std::vector<Value> args;
+  if(type.params.size() > 0){
+    args.resize(type.params.size());
+    for(int i = type.params.size() - 1; i >= 0; --i){
+      args[i] = label.values.top();
+      label.values.pop();
+    }
+  }
+  stack.invoke(funcaddr, args);
+}
+
+void RunVisitor::operator()(Instr::Call_indirect& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  TableInst& table = stack.store.tables[frame.module.tableaddrs[instr.tableidx]];
+  i32_t operant = std::get<i32_t>(frame.labels.top().values.top());
+  frame.labels.top().values.pop();
+  if(operant >= table.elems.size()){
+    throw Exception::invalid_elem_index();
+  }
+  funcref_t funcref = std::get<funcref_t>(table.elems[operant]);
+  if(!funcref.has_value()){
+    throw Exception::invalid_reference();
+  }
+  index_t funcaddr = funcref.value();
+  FuncType& type = stack.store.funcs[funcaddr].type;
+  if(type != frame.module.types[instr.typeidx]){
+    throw Exception::function_type_unmatch();
+  }
   std::vector<Value> args;
   if(type.params.size() > 0){
     args.resize(type.params.size());

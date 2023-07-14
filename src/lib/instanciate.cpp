@@ -12,7 +12,7 @@ using namespace WasmVM;
 static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, ModuleInst& moduleInst, Store& store){
     for(ConstInstr instr : elem.elemlist){
         std::visit(overloaded {
-            [&](const Instr::Ref_null& ins){
+            [&](Instr::Ref_null& ins){
                 switch(elem.type){
                     case RefType::funcref :
                         it->emplace<funcref_t>(std::nullopt);
@@ -22,10 +22,10 @@ static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, Modu
                     break;
                 }
             },
-            [&](const Instr::Ref_func& ins){
+            [&](Instr::Ref_func& ins){
                 it->emplace<funcref_t>(ins.index);
             },
-            [&](const Instr::Global_get& ins){
+            [&](Instr::Global_get& ins){
                 index_t globaladdr = moduleInst.globaladdrs[ins.index];
                 if(globaladdr >= store.globals.size()){
                     throw Exception::Exception("invalid global address in const global.get");
@@ -150,7 +150,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
     // Tables
     for(size_t idx = 0; idx < module.tables.size(); ++idx){
         index_t address = store.tables.size();
-        TableInst tableinst = store.tables.emplace_back();
+        TableInst& tableinst = store.tables.emplace_back();
         moduleInst.tableaddrs.emplace_back(address);
         tableinst.type = module.tables[idx];
         Ref initval;
