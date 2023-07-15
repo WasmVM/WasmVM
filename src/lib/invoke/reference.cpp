@@ -9,12 +9,31 @@
 
 using namespace WasmVM;
 
-void RunVisitor::operator()(Instr::Ref_null&){
-    // TODO:
+void RunVisitor::operator()(Instr::Ref_null& instr){
+    Label& label = stack.frames.top().labels.top();
+    switch(instr.heaptype){
+        case RefType::funcref :
+            label.values.emplace(Value(funcref_t(std::nullopt)));
+        break;
+        case RefType::externref :
+            label.values.emplace(Value(externref_t(nullptr)));
+        break;
+    }
 }
 void RunVisitor::operator()(Instr::Ref_is_null&){
-    // TODO:
+    Label& label = stack.frames.top().labels.top();
+    Value val = label.values.top();
+    label.values.pop();
+    if(std::holds_alternative<funcref_t>(val)){
+        label.values.emplace(Value((i32_t) !std::get<funcref_t>(val).has_value()));
+    }else if(std::holds_alternative<externref_t>(val)){
+        label.values.emplace(Value((i32_t)(std::get<externref_t>(val) == nullptr)));
+    }else{
+        throw Exception::invalid_reference();
+    }
 }
-void RunVisitor::operator()(Instr::Ref_func&){
-    // TODO:
+void RunVisitor::operator()(Instr::Ref_func& instr){
+    Frame& frame = stack.frames.top();
+    Label& label = frame.labels.top();
+    label.values.emplace(Value(funcref_t(frame.module.funcaddrs[instr.index])));
 }

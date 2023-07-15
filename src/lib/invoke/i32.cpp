@@ -9,8 +9,8 @@
 
 using namespace WasmVM;
 
-void RunVisitor::operator()(Instr::I32_const&){
-    // TODO:
+void RunVisitor::operator()(Instr::I32_const& instr){
+    stack.frames.top().labels.top().values.emplace(Value(instr.value));
 }
 void RunVisitor::operator()(Instr::I32_eqz&){
     // TODO:
