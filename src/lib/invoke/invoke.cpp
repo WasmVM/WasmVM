@@ -106,3 +106,5 @@ invalid_reference::invalid_reference() :
     Exception("invalid reference") {}
 function_type_unmatch::function_type_unmatch() :
     Exception("function type unmatch") {}
+invalid_value::invalid_value() :
+    Exception("invalid value") {}

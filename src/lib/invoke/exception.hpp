@@ -29,6 +29,9 @@ namespace Exception {
     struct invalid_reference : public Exception {
         invalid_reference();
     };
+    struct invalid_value : public Exception {
+        invalid_value();
+    };
     struct function_type_unmatch : public Exception {
         function_type_unmatch();
     };
