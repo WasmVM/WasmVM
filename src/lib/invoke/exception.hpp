@@ -35,6 +35,9 @@ namespace Exception {
     struct function_type_unmatch : public Exception {
         function_type_unmatch();
     };
+    struct length_too_long : public Exception {
+        length_too_long();
+    };
 }
 }
 

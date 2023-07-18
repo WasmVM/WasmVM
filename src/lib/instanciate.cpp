@@ -23,7 +23,11 @@ static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, Modu
                 }
             },
             [&](Instr::Ref_func& ins){
-                it->emplace<funcref_t>(ins.index);
+                index_t funcaddr = moduleInst.funcaddrs[ins.index];
+                if(funcaddr >= store.funcs.size()){
+                    throw Exception::Exception("invalid function address in ref.func");
+                }
+                it->emplace<funcref_t>(funcaddr);
             },
             [&](Instr::Global_get& ins){
                 index_t globaladdr = moduleInst.globaladdrs[ins.index];

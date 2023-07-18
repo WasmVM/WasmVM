@@ -108,3 +108,5 @@ function_type_unmatch::function_type_unmatch() :
     Exception("function type unmatch") {}
 invalid_value::invalid_value() :
     Exception("invalid value") {}
+length_too_long::length_too_long() :
+    Exception("length too long") {}
