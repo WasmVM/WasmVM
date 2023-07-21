@@ -79,17 +79,47 @@ void RunVisitor::operator()(Instr::Table_fill& instr){
   if((index + count) > table.elems.size()){
     throw Exception::length_too_long();
   }
-  if(count == 0){
-    return;
-  }
   std::fill_n(table.elems.begin() + index, count, ref);
 }
-void RunVisitor::operator()(Instr::Table_copy&){
-    // TODO:
+void RunVisitor::operator()(Instr::Table_copy& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t src_addr = frame.module.tableaddrs[instr.srcidx];
+  TableInst& src_table = stack.store.tables[src_addr];
+  index_t dst_addr = frame.module.tableaddrs[instr.dstidx];
+  TableInst& dst_table = stack.store.tables[dst_addr];
+  i32_t count = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  i32_t src_idx = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  i32_t dst_idx = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  if(((src_idx + count) > src_table.elems.size()) || ((dst_idx + count) > dst_table.elems.size())){
+    throw Exception::length_too_long();
+  }
+  std::copy_n(src_table.elems.begin() + src_idx, count, dst_table.elems.begin() + dst_idx);
 }
-void RunVisitor::operator()(Instr::Table_init&){
-    // TODO:
+void RunVisitor::operator()(Instr::Table_init& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t table_addr = frame.module.tableaddrs[instr.tableidx];
+  TableInst& table = stack.store.tables[table_addr];
+  index_t elem_addr = frame.module.elemaddrs[instr.elemidx];
+  ElemInst& elem = stack.store.elems[elem_addr];
+  i32_t count = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  i32_t src_idx = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  i32_t dst_idx = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  if(((src_idx + count) > elem.elem.size()) || ((dst_idx + count) > table.elems.size())){
+    throw Exception::length_too_long();
+  }
+  std::copy_n(elem.elem.begin() + src_idx, count, table.elems.begin() + dst_idx);
 }
-void RunVisitor::operator()(Instr::Elem_drop&){
-    // TODO:
+void RunVisitor::operator()(Instr::Elem_drop& instr){
+  Frame& frame = stack.frames.top();
+  index_t addr = frame.module.elemaddrs[instr.index];
+  ElemInst& elem = stack.store.elems[addr];
+  elem.elem.clear();
 }

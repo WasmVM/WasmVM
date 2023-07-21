@@ -51,6 +51,7 @@ static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, Modu
                 throw Exception::Exception("invalid item in element segment");
             }
         }, instr);
+        it = std::next(it);
     }
 }
 
