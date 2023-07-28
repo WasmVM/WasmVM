@@ -172,7 +172,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
     // Memories
     for(size_t idx = 0; idx < module.mems.size(); ++idx){
         index_t address = store.mems.size();
-        MemInst meminst = store.mems.emplace_back();
+        MemInst& meminst = store.mems.emplace_back();
         moduleInst.memaddrs.emplace_back(address);
         meminst.type = module.mems[idx];
         meminst.data.resize(meminst.type.min * page_size);
@@ -310,7 +310,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                     throw Exception::Exception("memory not exist in module");
                 }
                 index_t memaddr = moduleInst.memaddrs[memidx];
-                if(memaddr >= store.tables.size()){
+                if(memaddr >= store.mems.size()){
                     throw Exception::Exception("memory not found in store");
                 }
                 MemInst& memory = store.mems[memaddr];
