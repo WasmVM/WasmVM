@@ -45,7 +45,7 @@ void RunVisitor::operator()(Instr::Table_size& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
   index_t addr = frame.module.tableaddrs[instr.index];
-  label.values.emplace(Value((i32_t)stack.store.tables[addr].elems.size()));
+  label.values.emplace<i32_t>(stack.store.tables[addr].elems.size());
 }
 void RunVisitor::operator()(Instr::Table_grow& instr){
   Frame& frame = stack.frames.top();
@@ -58,12 +58,12 @@ void RunVisitor::operator()(Instr::Table_grow& instr){
   label.values.pop();
   size_t len = count + table.elems.size();
   if((len >= (u32_t)-1) || (table.type.limits.max && (len > table.type.limits.max.value()))){
-    label.values.emplace(Value((i32_t)-1));
+    label.values.emplace<i32_t>(-1);
     return;
   }
   table.elems.resize(len, ref);
   table.type.limits.min = len;
-  label.values.emplace(Value((i32_t)len));
+  label.values.emplace<i32_t>(len);
 }
 void RunVisitor::operator()(Instr::Table_fill& instr){
   Frame& frame = stack.frames.top();

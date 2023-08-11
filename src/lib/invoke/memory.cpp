@@ -154,11 +154,28 @@ void RunVisitor::operator()(Instr::I64_store16& instr){
 void RunVisitor::operator()(Instr::I64_store32& instr){
   store_mem<i64_t, i32_t>(stack, instr);
 }
-void RunVisitor::operator()(Instr::Memory_size&){
-    // TODO:
+void RunVisitor::operator()(Instr::Memory_size& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t addr = frame.module.memaddrs[instr.index];
+  MemInst& mem = stack.store.mems[addr];
+  label.values.emplace<i32_t>(mem.data.size() / page_size);
 }
-void RunVisitor::operator()(Instr::Memory_grow&){
-    // TODO:
+void RunVisitor::operator()(Instr::Memory_grow& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t addr = frame.module.memaddrs[instr.index];
+  MemInst& mem = stack.store.mems[addr];
+  u32_t val = std::get<i32_t>(label.values.top());
+  label.values.pop();
+  u64_t len = (mem.data.size() / page_size) + val;
+  if((len > (1UL << 48UL)) || (mem.type.max && (len > mem.type.max.value()))) {
+    label.values.emplace<i32_t>(-1);
+    return;
+  }
+  mem.data.resize(len * page_size, (byte_t)0x00);
+  mem.type.min = len;
+  label.values.emplace<i32_t>(len);
 }
 void RunVisitor::operator()(Instr::Memory_fill&){
     // TODO:
