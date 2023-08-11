@@ -3,7 +3,7 @@
 * No SIMD
 * Allow multiple results in function & block & select
 * Multiple memories
-* Memories are all 64 bit, allow both i32 & i64 address, offset as u64
+* Memories are all wasm 64, allow both i32 & i64 address, offset as u64
 * Element segments can initialize external reference by ref.null 
 * Element segments can use local global as item
 * global.get in constant expression could get mutable global

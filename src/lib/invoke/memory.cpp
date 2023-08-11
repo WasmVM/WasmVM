@@ -140,19 +140,19 @@ void RunVisitor::operator()(Instr::F64_store& instr){
   store_mem<f64_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::I32_store8& instr){
-  store_mem<i32_t, i8_t>(stack, instr);
+  store_mem<i32_t, u8_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::I32_store16& instr){
-  store_mem<i32_t, i16_t>(stack, instr);
+  store_mem<i32_t, u16_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::I64_store8& instr){
-  store_mem<i64_t, i8_t>(stack, instr);
+  store_mem<i64_t, u8_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::I64_store16& instr){
-  store_mem<i64_t, i16_t>(stack, instr);
+  store_mem<i64_t, u16_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::I64_store32& instr){
-  store_mem<i64_t, i32_t>(stack, instr);
+  store_mem<i64_t, u32_t>(stack, instr);
 }
 void RunVisitor::operator()(Instr::Memory_size& instr){
   Frame& frame = stack.frames.top();
@@ -166,8 +166,7 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
   Label& label = frame.labels.top();
   index_t addr = frame.module.memaddrs[instr.index];
   MemInst& mem = stack.store.mems[addr];
-  u32_t val = std::get<i32_t>(label.values.top());
-  label.values.pop();
+  u64_t val = get_base(label);
   u64_t len = (mem.data.size() / page_size) + val;
   if((len > (1UL << 48UL)) || (mem.type.max && (len > mem.type.max.value()))) {
     label.values.emplace<i32_t>(-1);
@@ -177,15 +176,53 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
   mem.type.min = len;
   label.values.emplace<i32_t>(len);
 }
-void RunVisitor::operator()(Instr::Memory_fill&){
-    // TODO:
+void RunVisitor::operator()(Instr::Memory_fill& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t addr = frame.module.memaddrs[instr.index];
+  MemInst& mem = stack.store.mems[addr];
+  u64_t count = get_base(label);
+  byte_t val = (byte_t)std::get<i32_t>(label.values.top());
+  label.values.pop();
+  u64_t index = get_base(label);
+  if((index + count) > mem.data.size()){
+    throw Exception::length_too_long();
+  }
+  std::fill_n(mem.data.begin() + index, count, val);
 }
-void RunVisitor::operator()(Instr::Memory_init&){
-    // TODO:
+void RunVisitor::operator()(Instr::Memory_copy& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t src_addr = frame.module.memaddrs[instr.srcidx];
+  MemInst& src_mem = stack.store.mems[src_addr];
+  index_t dst_addr = frame.module.memaddrs[instr.dstidx];
+  MemInst& dst_mem = stack.store.mems[dst_addr];
+  u64_t count = get_base(label);
+  u64_t src_idx = get_base(label);
+  u64_t dst_idx = get_base(label);
+  if(((src_idx + count) > src_mem.data.size()) || ((dst_idx + count) > src_mem.data.size())){
+    throw Exception::length_too_long();
+  }
+  std::copy_n(src_mem.data.begin() + src_idx, count, dst_mem.data.begin() + dst_idx);
 }
-void RunVisitor::operator()(Instr::Data_drop&){
-    // TODO:
+void RunVisitor::operator()(Instr::Memory_init& instr){
+  Frame& frame = stack.frames.top();
+  Label& label = frame.labels.top();
+  index_t mem_addr = frame.module.memaddrs[instr.memidx];
+  MemInst& mem = stack.store.mems[mem_addr];
+  index_t data_addr = frame.module.dataaddrs[instr.dataidx];
+  DataInst& data = stack.store.datas[data_addr];
+  u64_t count = get_base(label);
+  u64_t src_idx = get_base(label);
+  u64_t dst_idx = get_base(label);
+  if(((src_idx + count) > data.size()) || ((dst_idx + count) > mem.data.size())){
+    throw Exception::length_too_long();
+  }
+  std::copy_n(data.begin() + src_idx, count, mem.data.begin() + dst_idx);
 }
-void RunVisitor::operator()(Instr::Memory_copy&){
-    // TODO:
+void RunVisitor::operator()(Instr::Data_drop& instr){
+  Frame& frame = stack.frames.top();
+  index_t addr = frame.module.dataaddrs[instr.index];
+  DataInst& data = stack.store.datas[addr];
+  data.clear();
 }
