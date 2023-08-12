@@ -108,6 +108,7 @@ add_library(WasmVM_exec OBJECT
     invoke/i64.cpp
     invoke/f32.cpp
     invoke/f64.cpp
+    invoke/numeric.cpp
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
 

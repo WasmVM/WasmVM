@@ -6,6 +6,10 @@
 #include <Util.hpp>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
+#include "numeric.hpp"
+#include <bit>
+#include <cmath>
+#include <limits>
 
 using namespace WasmVM;
 
@@ -13,125 +17,195 @@ void RunVisitor::operator()(Instr::I32_const& instr){
     stack.frames.top().labels.top().values.emplace(Value(instr.value));
 }
 void RunVisitor::operator()(Instr::I32_eqz&){
-    // TODO:
+    put_op(stack, (i32_t)(get_op<i32_t>(stack) == 0));
 }
 void RunVisitor::operator()(Instr::I32_eq&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first == ops.second));
 }
 void RunVisitor::operator()(Instr::I32_ne&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first != ops.second));
 }
 void RunVisitor::operator()(Instr::I32_lt_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first < ops.second));
 }
 void RunVisitor::operator()(Instr::I32_lt_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first < (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_gt_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first > ops.second));
 }
 void RunVisitor::operator()(Instr::I32_gt_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first > (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_le_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first <= ops.second));
 }
 void RunVisitor::operator()(Instr::I32_le_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first <= (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_ge_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)(ops.first >= ops.second));
 }
 void RunVisitor::operator()(Instr::I32_ge_u&){
-    // TODO:
-}
-void RunVisitor::operator()(Instr::I32_wrap_i64&){
-    // TODO:
-}
-void RunVisitor::operator()(Instr::I32_trunc_s_f32&){
-    // TODO:
-}
-void RunVisitor::operator()(Instr::I32_trunc_u_f32&){
-    // TODO:
-}
-void RunVisitor::operator()(Instr::I32_trunc_s_f64&){
-    // TODO:
-}
-void RunVisitor::operator()(Instr::I32_trunc_u_f64&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first >= (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_clz&){
-    // TODO:
+    put_op(stack, (i32_t)std::countl_zero((u32_t)get_op<i32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::I32_ctz&){
-    // TODO:
+    put_op(stack, (i32_t)std::countr_zero((u32_t)get_op<i32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::I32_popcnt&){
-    // TODO:
+    put_op(stack, (i32_t)std::popcount((u32_t)get_op<i32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::I32_add&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first + ops.second);
 }
 void RunVisitor::operator()(Instr::I32_sub&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first - ops.second);
 }
 void RunVisitor::operator()(Instr::I32_mul&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first * ops.second);
 }
 void RunVisitor::operator()(Instr::I32_div_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first / ops.second);
 }
 void RunVisitor::operator()(Instr::I32_div_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first / (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_rem_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first % ops.second);
 }
 void RunVisitor::operator()(Instr::I32_rem_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first % (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_and&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first & (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_or&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first | (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_xor&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first ^ (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_shl&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first << (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_shr_s&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, ops.first >> ops.second);
 }
 void RunVisitor::operator()(Instr::I32_shr_u&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)((u32_t)ops.first >> (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_rotl&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)std::rotl((u32_t)ops.first, (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_rotr&){
-    // TODO:
+    auto ops = get_ops<i32_t>(stack);
+    put_op(stack, (i32_t)std::rotr((u32_t)ops.first, (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_reinterpret_f32&){
-    // TODO:
+    f32_t value = get_op<f32_t>(stack);
+    put_op(stack, *reinterpret_cast<i32_t*>(&value));
 }
 void RunVisitor::operator()(Instr::I32_extend8_s&){
-    // TODO:
+    put_op(stack, (i32_t)(i8_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::I32_extend16_s&){
-    // TODO:
+    put_op(stack, (i32_t)(i16_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::I32_trunc_sat_f32_s&){
-    // TODO:
+    f32_t value = get_op<f32_t>(stack);
+    if(std::isnan(value)){
+        put_op(stack, (i32_t)0);
+    }else if(std::isinf(value)){
+        put_op(stack, (i32_t)((value < 0) ? INT32_MIN : INT32_MAX));
+    }else if(value < (f32_t)INT32_MIN){
+        put_op(stack, (i32_t)INT32_MIN);
+    }else if(value > (f32_t)INT32_MAX){
+        put_op(stack, (i32_t)INT32_MAX);
+    }else{
+        put_op(stack, (i32_t)value);
+    }
 }
 void RunVisitor::operator()(Instr::I32_trunc_sat_f32_u&){
-    // TODO:
+    f32_t value = get_op<f32_t>(stack);
+    if(std::isnan(value)){
+        put_op(stack, (i32_t)0);
+    }else if(std::isinf(value)){
+        put_op(stack, (i32_t)((value < 0) ? 0 : UINT32_MAX));
+    }else if(value < 0){
+        put_op(stack, (i32_t)0);
+    }else if(value > (f32_t)UINT32_MAX){
+        put_op(stack, (i32_t)UINT32_MAX);
+    }else{
+        put_op(stack, (i32_t)value);
+    }
 }
 void RunVisitor::operator()(Instr::I32_trunc_sat_f64_s&){
-    // TODO:
+    f64_t value = get_op<f64_t>(stack);
+    if(std::isnan(value)){
+        put_op(stack, (i32_t)0);
+    }else if(std::isinf(value)){
+        put_op(stack, (i32_t)((value < 0) ? INT32_MIN : INT32_MAX));
+    }else if(value < (f64_t)INT32_MIN){
+        put_op(stack, (i32_t)INT32_MIN);
+    }else if(value > (f64_t)INT32_MAX){
+        put_op(stack, (i32_t)INT32_MAX);
+    }else{
+        put_op(stack, (i32_t)value);
+    }
 }
 void RunVisitor::operator()(Instr::I32_trunc_sat_f64_u&){
-    // TODO:
+    f64_t value = get_op<f64_t>(stack);
+    if(std::isnan(value)){
+        put_op(stack, (i32_t)0);
+    }else if(std::isinf(value)){
+        put_op(stack, (i32_t)((value < 0) ? 0 : UINT32_MAX));
+    }else if(value < 0){
+        put_op(stack, (i32_t)0);
+    }else if(value > (f64_t)UINT32_MAX){
+        put_op(stack, (i32_t)UINT32_MAX);
+    }else{
+        put_op(stack, (i32_t)value);
+    }
+}
+void RunVisitor::operator()(Instr::I32_wrap_i64&){
+    put_op(stack, (i32_t)get_op<i64_t>(stack));
+}
+void RunVisitor::operator()(Instr::I32_trunc_s_f32&){
+    put_op(stack, (i32_t)get_op<f32_t>(stack));
+}
+void RunVisitor::operator()(Instr::I32_trunc_u_f32&){
+    put_op(stack, (i32_t)(u32_t)get_op<f32_t>(stack));
+}
+void RunVisitor::operator()(Instr::I32_trunc_s_f64&){
+    put_op(stack, (i32_t)get_op<f64_t>(stack));
+}
+void RunVisitor::operator()(Instr::I32_trunc_u_f64&){
+    put_op(stack, (i32_t)(u64_t)get_op<f64_t>(stack));
 }
