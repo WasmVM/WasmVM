@@ -6,6 +6,8 @@
 #include <Util.hpp>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
+#include "numeric.hpp"
+#include <cmath>
 
 using namespace WasmVM;
 
@@ -13,7 +15,8 @@ void RunVisitor::operator()(Instr::F64_const& instr){
     stack.frames.top().labels.top().values.emplace(Value(instr.value));
 }
 void RunVisitor::operator()(Instr::F64_eq&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    put_op(stack, (i32_t)(ops.first == ops.second));
 }
 void RunVisitor::operator()(Instr::F64_ne&){
     // TODO:
@@ -88,5 +91,18 @@ void RunVisitor::operator()(Instr::F64_convert_u_i64&){
     // TODO:
 }
 void RunVisitor::operator()(Instr::F64_promote_f32&){
-    // TODO:
+    f32_t value = get_op<f32_t>(stack);
+    if(std::isnan(value)){
+        u32_t val32 = *reinterpret_cast<u32_t*>(&value);
+        u64_t result = ((val32 >> 31) ? 0x8000000000000000ULL : 0);
+        if((val32 & 0x7fffffffUL) == 0x7fc00000UL){
+            // canonical nan
+            result |= 0x7ff8000000000000ULL;
+        }else{
+            result |= 0x7ff0000000000001ULL;
+        }
+        put_op(stack, *reinterpret_cast<f64_t*>(&result));
+    }else{
+        put_op(stack, (f64_t)value);
+    }
 }

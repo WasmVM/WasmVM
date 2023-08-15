@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <vector>
 #include <iostream>
+#include <cmath>
 
 using namespace WasmVM;
 
@@ -26,13 +27,47 @@ static std::vector<Value> print_i64(Stack& stack){
 
 static std::vector<Value> print_f32(Stack& stack){
   Frame frame = stack.frames.top();
-  std::cout << "print_f32 " << std::get<f32_t>(frame.locals[0]) << std::endl;
+  std::cout << "print_f32 ";
+  f32_t value = std::get<f32_t>(frame.locals[0]);
+  if(std::isnan(value)){
+    u32_t uvalue = *(u32_t*)(&value);
+    if(uvalue & 0x80000000UL){
+      std::cout << "-";
+    }
+    std::cout << "nan";
+    u32_t mantissa = uvalue & 0x7fffffUL;
+    if(mantissa != 0x400000UL){
+      auto old_fmt = std::cout.flags();
+      std::cout << ":0x" << std::hex << mantissa;
+      std::cout.flags(old_fmt);
+    }
+  }else{
+    std::cout << value;
+  }
+  std::cout << std::endl;
   return {};
 }
 
 static std::vector<Value> print_f64(Stack& stack){
   Frame frame = stack.frames.top();
-  std::cout << "print_f64 " << std::get<f64_t>(frame.locals[0]) << std::endl;
+  std::cout << "print_f64 ";
+  f64_t value = std::get<f64_t>(frame.locals[0]);
+  if(std::isnan(value)){
+    u64_t uvalue = *reinterpret_cast<u64_t*>(&value);
+    if(uvalue & 0x8000000000000000ULL){
+      std::cout << "-";
+    }
+    std::cout << "nan";
+    u64_t mantissa = uvalue & 0xfffffffffffffULL;
+    if(mantissa != 0x8000000000000ULL){
+      auto old_fmt = std::cout.flags();
+      std::cout << ":0x" << std::hex << mantissa;
+      std::cout.flags(old_fmt);
+    }
+  }else{
+    std::cout << value;
+  }
+  std::cout << std::endl;
   return {};
 }
 

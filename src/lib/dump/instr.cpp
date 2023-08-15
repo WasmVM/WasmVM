@@ -308,11 +308,12 @@ struct InstrVisitor {
         stream << "f64.const ";
         if(std::isnan(instr.value)){
             f64_t value = instr.value;
-            if(*reinterpret_cast<u64_t*>(&value) & 0x8000000000000000ULL){
+            u64_t uvalue = *reinterpret_cast<u64_t*>(&value);
+            if(uvalue & 0x8000000000000000ULL){
                 stream << "-";
             }
             stream << "nan";
-            u64_t mantissa = *reinterpret_cast<u64_t*>(&value) & 0xfffffffffffffULL;
+            u64_t mantissa = uvalue & 0xfffffffffffffULL;
             if(mantissa != 0x8000000000000ULL){
                 auto old_fmt = stream.flags();
                 stream << ":0x" << std::hex << mantissa;
