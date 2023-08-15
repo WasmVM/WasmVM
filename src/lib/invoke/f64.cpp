@@ -16,22 +16,85 @@ void RunVisitor::operator()(Instr::F64_const& instr){
 }
 void RunVisitor::operator()(Instr::F64_eq&){
     auto ops = get_ops<f64_t>(stack);
-    put_op(stack, (i32_t)(ops.first == ops.second));
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO){
+        put_op(stack, (i32_t)1);
+    }else{
+        put_op(stack, (i32_t)(ops.first == ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_ne&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO){
+        put_op(stack, (i32_t)0);
+    }else{
+        put_op(stack, (i32_t)(ops.first != ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_lt&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)
+        || ((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO))
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first < ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_gt&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)
+        || ((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO))
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first > ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_le&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO)
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first <= ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_ge&){
-    // TODO:
+    auto ops = get_ops<f64_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO)
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first >= ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F64_abs&){
     // TODO:
@@ -76,26 +139,26 @@ void RunVisitor::operator()(Instr::F64_copysign&){
     // TODO:
 }
 void RunVisitor::operator()(Instr::F64_reinterpret_i64&){
-    // TODO:
+    i64_t value = get_op<i64_t>(stack);
+    put_op(stack, *reinterpret_cast<f64_t*>(&value));
 }
 void RunVisitor::operator()(Instr::F64_convert_s_i32&){
-    // TODO:
+    put_op(stack, (f64_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_convert_u_i32&){
-    // TODO:
+    put_op(stack, (f64_t)(u64_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_convert_s_i64&){
-    // TODO:
+    put_op(stack, (f64_t)get_op<i64_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_convert_u_i64&){
-    // TODO:
+    put_op(stack, (f64_t)(u64_t)get_op<i64_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_promote_f32&){
     f32_t value = get_op<f32_t>(stack);
     if(std::isnan(value)){
-        u32_t val32 = *reinterpret_cast<u32_t*>(&value);
-        u64_t result = ((val32 >> 31) ? 0x8000000000000000ULL : 0);
-        if((val32 & 0x7fffffffUL) == 0x7fc00000UL){
+        u64_t result = (std::signbit(value) ? 0x8000000000000000ULL : 0);
+        if((*reinterpret_cast<u32_t*>(&value) & 0x7fffffffUL) == 0x7fc00000UL){
             // canonical nan
             result |= 0x7ff8000000000000ULL;
         }else{

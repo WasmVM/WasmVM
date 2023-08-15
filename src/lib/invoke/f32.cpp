@@ -16,22 +16,85 @@ void RunVisitor::operator()(Instr::F32_const& instr){
 }
 void RunVisitor::operator()(Instr::F32_eq&){
     auto ops = get_ops<f32_t>(stack);
-    put_op(stack, (i32_t)(ops.first == ops.second));
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO){
+        put_op(stack, (i32_t)1);
+    }else{
+        put_op(stack, (i32_t)(ops.first == ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_ne&){
-    // TODO:
+    auto ops = get_ops<f32_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO){
+        put_op(stack, (i32_t)0);
+    }else{
+        put_op(stack, (i32_t)(ops.first != ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_lt&){
-    // TODO:
+    auto ops = get_ops<f32_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)
+        || ((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO))
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first < ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_gt&){
-    // TODO:
+    auto ops = get_ops<f32_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)
+        || ((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO))
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)0);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first > ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_le&){
-    // TODO:
+    auto ops = get_ops<f32_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO)
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first <= ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_ge&){
-    // TODO:
+    auto ops = get_ops<f32_t>(stack);
+    if(std::isnan(ops.first) || std::isnan(ops.second)){
+        put_op(stack, (i32_t)0);
+    }else if((std::fpclassify(ops.first) == FP_ZERO && std::fpclassify(ops.second) == FP_ZERO)
+        || (ops.first == ops.second)
+    ){
+        put_op(stack, (i32_t)1);
+    }else if(std::fpclassify(ops.first) == FP_INFINITE){
+        put_op(stack, (i32_t)!std::signbit(ops.first));
+    }else if(std::fpclassify(ops.second) == FP_INFINITE){
+        put_op(stack, (i32_t)std::signbit(ops.second));
+    }else{
+        put_op(stack, (i32_t)(ops.first >= ops.second));
+    }
 }
 void RunVisitor::operator()(Instr::F32_abs&){
     // TODO:
@@ -94,9 +157,8 @@ void RunVisitor::operator()(Instr::F32_convert_u_i64&){
 void RunVisitor::operator()(Instr::F32_demote_f64&){
     f64_t value = get_op<f64_t>(stack);
     if(std::isnan(value)){
-        u64_t val64 = *reinterpret_cast<u64_t*>(&value);
-        u32_t result = ((val64 >> 63) ? 0x80000000UL : 0);
-        if((val64 & 0x7fffffffffffffffULL) == 0x7ff8000000000000ULL){
+        u32_t result = std::signbit(value) ? 0x80000000UL : 0;
+        if((*reinterpret_cast<u64_t*>(&value) & 0x7fffffffffffffffULL) == 0x7ff8000000000000ULL){
             // canonical nan
             result |= 0x7fc00000UL;
         }else{
