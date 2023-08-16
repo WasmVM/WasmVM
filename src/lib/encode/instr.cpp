@@ -269,7 +269,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Br_table
     return *this;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Call_indirect>(WasmVM::Instr::Call_indirect instr){
-    return *this << (byte_t)instr.opcode << instr.tableidx << instr.typeidx;
+    return *this << (byte_t)instr.opcode << instr.typeidx << instr.tableidx;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_null>(WasmVM::Instr::Ref_null instr){
     return *this << (byte_t)instr.opcode << instr.heaptype;

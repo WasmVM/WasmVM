@@ -371,6 +371,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i32);
                     state.push((ValueType)type.reftype);
                 }break;
+                // [i32|i64] -> [t]
                 case Opcode::I32_load : {
                     const Instr::I32_load& ins = std::get<Instr::I32_load>(instr);
                     if(ins.memidx >= context.mems.size()){
@@ -534,6 +535,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const TableType& type = context.tables[ins.index];
                     state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype});
                 }break;
+                // [i32|i64 t] -> []
                 case Opcode::I32_store : {
                     const Instr::I32_store& ins = std::get<Instr::I32_store>(instr);
                     if(ins.memidx >= context.mems.size()){
@@ -649,6 +651,10 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.set");
                     }
+                    GlobalType& global = context.globals[ins.index];
+                    if(global.mut != GlobalType::variable){
+                        throw Exception::Exception("global should be mutable in global.set");
+                    }
                     state.pop(context.globals[ins.index].type);
                 }break;
                 // [t*] -> []
@@ -719,13 +725,17 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
                 }break;
+                // [i32|i64 i32 i32|i64] -> []
                 case Opcode::Memory_fill : {
                     const Instr::Memory_fill& ins = std::get<Instr::Memory_fill>(instr);
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.fill");
                     }
-                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                    state.pop(ValueType::i64, ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
+                // [i32|i64 i32|i64 i32|i64] -> []
                 case Opcode::Memory_copy : {
                     const Instr::Memory_copy& ins = std::get<Instr::Memory_copy>(instr);
                     if(ins.dstidx >= context.mems.size()){
@@ -734,7 +744,9 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.srcidx >= context.mems.size()){
                         throw Exception::Exception("memory source index not found in memory.copy");
                     }
-                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                    state.pop(ValueType::i64, ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::Memory_init : {
                     const Instr::Memory_init& ins = std::get<Instr::Memory_init>(instr);
@@ -744,7 +756,9 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.dataidx >= context.datas.size()){
                         throw Exception::Exception("data index not found in memory.init");
                     }
-                    state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
+                    state.pop(ValueType::i64, ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
+                    state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 // [i32 t i32] -> []
                 case Opcode::Table_fill : {

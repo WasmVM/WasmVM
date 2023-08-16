@@ -5,6 +5,7 @@
 #include <WasmVM.hpp>
 #include <Util.hpp>
 #include <sstream>
+#include <set>
 #include <exception.hpp>
 
 #include "validate.hpp"
@@ -99,9 +100,14 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
         }
         // exports
         idx = 0;
+        std::set<std::string> export_names;
         for(const WasmExport& export_ : module.exports){
             try {
                 validator(export_);
+                if(export_names.contains(export_.name)){
+                    throw Exception::Exception("export name should be unique in module scope");
+                }
+                export_names.insert(export_.name);
             } catch (Exception::Exception e){
                 std::stringstream ss;
                 ss << "export[" << idx << "]: " << e.what();

@@ -1,4 +1,4 @@
-#include "decode.hpp"
+#include <decode.hpp>
 #include "exception.hpp"
 
 using namespace WasmVM;

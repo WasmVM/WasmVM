@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
-#include "decode.hpp"
+#include <decode.hpp>
 #include "exception.hpp"
 
 using namespace WasmVM;
@@ -16,12 +16,13 @@ Stream& Decode::Code::read(Stream& stream){
             throw Exception::count_mismatch(stream.location());
         }
         for(WasmFunc& func : funcs){
-            u32_t code_end = stream.location() + stream.get<u32_t>();
+            u32_t code_end = stream.get<u32_t>();
+            code_end += stream.location();
             // Locals
             for(u32_t local_count = stream.get<u32_t>(); local_count > 0; --local_count){
                 func.locals.insert(func.locals.end(), stream.get<u32_t>(), stream.get<ValueType>());
             }
-            while(stream.location() <= code_end){
+            while(stream.location() < code_end){
                 stream >> func.body.emplace_back();
             }
         }

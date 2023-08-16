@@ -4,6 +4,7 @@
 
 #include "dump.hpp"
 #include <Util.hpp>
+#include <cmath>
 
 using namespace WasmVM;
 
@@ -283,10 +284,45 @@ struct InstrVisitor {
         return stream << "i64.const " << instr.value;
     }
     std::ostream& operator()(const WasmVM::Instr::F32_const& instr){
-        return stream << "f32.const " << instr.value;
+        stream << "f32.const ";
+        if(std::isnan(instr.value)){
+            f32_t value = instr.value;
+            u32_t uvalue = *(u32_t*)(&value);
+            if(uvalue & 0x80000000UL){
+                stream << "-";
+            }
+            stream << "nan";
+            u32_t mantissa = uvalue & 0x7fffffUL;
+            if(mantissa != 0x400000UL){
+                auto old_fmt = stream.flags();
+                stream << ":0x" << std::hex << mantissa;
+                stream.flags(old_fmt);
+                
+            }
+        }else{
+            stream << instr.value;
+        }
+        return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::F64_const& instr){
-        return stream << "f64.const " << instr.value;
+        stream << "f64.const ";
+        if(std::isnan(instr.value)){
+            f64_t value = instr.value;
+            u64_t uvalue = *reinterpret_cast<u64_t*>(&value);
+            if(uvalue & 0x8000000000000000ULL){
+                stream << "-";
+            }
+            stream << "nan";
+            u64_t mantissa = uvalue & 0xfffffffffffffULL;
+            if(mantissa != 0x8000000000000ULL){
+                auto old_fmt = stream.flags();
+                stream << ":0x" << std::hex << mantissa;
+                stream.flags(old_fmt);
+            }
+        }else{
+            stream << instr.value;
+        }
+        return stream;
     }
     
 

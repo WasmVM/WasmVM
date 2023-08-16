@@ -120,7 +120,7 @@ template<> u32_t Token::Number::unpack<u32_t>(){
 
 template<> u64_t Token::Number::unpack<u64_t>(){
     size_t len;
-    u64_t imm = std::stoul(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    u64_t imm = std::stoull(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
     if(len != value.length()){
         throw Exception::invalid_immediate_value(location, " '" + value + "'");
     }
@@ -138,27 +138,55 @@ template<> i32_t Token::Number::unpack<i32_t>(){
 
 template<> i64_t Token::Number::unpack<i64_t>(){
     size_t len;
-    i64_t imm = std::stol(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
+    i64_t imm = std::stoll(value, &len, (value.find("0x") == std::string::npos) ? 10 : 16);
     if(len != value.length()){
         throw Exception::invalid_immediate_value(location, " '" + value + "'");
     }
     return imm;
 }
 
+static const std::regex nan_regex = std::regex("[\\+\\-]?nan:(0x[0-9a-fA-F]+)?");
+
 template<> f32_t Token::Number::unpack<f32_t>(){
     size_t len;
-    f32_t imm = std::stof(value, &len);
-    if(len != value.length()){
-        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    std::smatch result;
+    f32_t imm = 0.0f;
+    if(std::regex_match(value, result, nan_regex) && (result.size() == 2)){
+        u32_t nan_imm = 0x7f800000UL + std::stoul(result.str(1), &len, 16);
+        if(len != result.str(1).length()){
+            throw Exception::invalid_immediate_value(location, " '" + value + "'");
+        }
+        if(value[0] == '-'){
+            nan_imm += 0x80000000UL;
+        }
+        imm = *reinterpret_cast<f32_t*>(&nan_imm);
+    }else{
+        imm = std::stof(value, &len);
+        if(len != value.length()){
+            throw Exception::invalid_immediate_value(location, " '" + value + "'");
+        }
     }
     return imm;
 }
 
 template<> f64_t Token::Number::unpack<f64_t>(){
     size_t len;
-    f64_t imm = std::stod(value, &len);
-    if(len != value.length()){
-        throw Exception::invalid_immediate_value(location, " '" + value + "'");
+    std::smatch result;
+    f64_t imm = 0.0;
+    if(std::regex_match(value, result, nan_regex) && (result.size() == 2)){
+        u64_t nan_imm = 0x7ff0000000000000ULL + std::stoull(result.str(1), &len, 16);
+        if(len != result.str(1).length()){
+            throw Exception::invalid_immediate_value(location, " '" + value + "'");
+        }
+        if(value[0] == '-'){
+            nan_imm += 0x8000000000000000ULL;
+        }
+        imm = *reinterpret_cast<f64_t*>(&nan_imm);
+    }else{
+        imm = std::stod(value, &len);
+        if(len != value.length()){
+            throw Exception::invalid_immediate_value(location, " '" + value + "'");
+        }
     }
     return imm;
 }
