@@ -41,14 +41,18 @@ static T read_leb(std::istream& stream){
 template<typename T>
     requires (std::is_integral_v<T> && std::is_unsigned_v<T>)
 static T read_leb(std::istream& stream){
-    T value = 0;
+    std::stack<byte_t> bytes;
     for(size_t i = ((sizeof(T) * 8 + 7) / 7); (i > 0); --i){
-        byte_t byte = (byte_t) stream.get();
-        value = (value << 7) & (~0x7f);
-        value |= (T)byte & 0x7f;
-        if((((u8_t)byte) & 0x80) == 0){
+        bytes.push((byte_t)stream.get());
+        if((((u8_t)bytes.top()) & 0x80) == 0){
             break;
         }
+    }
+    T value = 0;
+    while(!bytes.empty()){
+        value = (value << 7) & (~0x7f);
+        value |= (T)bytes.top() & 0x7f;
+        bytes.pop();
     }
     return value;
 }
