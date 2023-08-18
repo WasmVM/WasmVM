@@ -99,28 +99,28 @@ void RunVisitor::operator()(Instr::F32_ge&){
     }
 }
 void RunVisitor::operator()(Instr::F32_abs&){
-    put_op(stack, std::fabsf(get_op<f32_t>(stack)));
+    put_op(stack, std::fabs(get_op<f32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F32_neg&){
     put_op(stack, -get_op<f32_t>(stack));
 }
 void RunVisitor::operator()(Instr::F32_ceil&){
-    put_op(stack, std::ceilf(get_op<f32_t>(stack)));
+    put_op(stack, std::ceil(get_op<f32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F32_floor&){
-    put_op(stack, std::floorf(get_op<f32_t>(stack)));
+    put_op(stack, std::floor(get_op<f32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F32_trunc&){
-    put_op(stack, std::truncf(get_op<f32_t>(stack)));
+    put_op(stack, std::trunc(get_op<f32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F32_nearest&){
     auto old_env = std::fegetround();
     std::fesetround(FE_TONEAREST);
-    put_op(stack, std::nearbyintf(get_op<f32_t>(stack)));
+    put_op(stack, std::nearbyint(get_op<f32_t>(stack)));
     std::fesetround(old_env);
 }
 void RunVisitor::operator()(Instr::F32_sqrt&){
-    put_op(stack, std::sqrtf(get_op<f32_t>(stack)));
+    put_op(stack, std::sqrt(get_op<f32_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F32_add&){
     auto ops = get_ops<f32_t>(stack);
