@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     container:
-      image: wasmvm/wasmvm:ci
+      image: wasmvm/wasmvm:amd64
     steps:
       - uses: actions/checkout@v2
       - run: mkdir -p build && cd build && cmake -G Ninja -D CMAKE_BUILD_TYPE=Release .. && ninja
@@ -22,7 +22,7 @@ jobs:
   test:
     runs-on: ubuntu-latest
     container:
-      image: wasmvm/wasmvm:ci
+      image: wasmvm/wasmvm:amd64
     needs: build
     steps:
       - uses: actions/checkout@v2
