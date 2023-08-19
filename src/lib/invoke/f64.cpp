@@ -119,7 +119,7 @@ void RunVisitor::operator()(Instr::F64_nearest&){
     std::fesetround(old_env);
 }
 void RunVisitor::operator()(Instr::F64_sqrt&){
-    put_op(stack, std::sqrtf(get_op<f64_t>(stack)));
+    put_op(stack, std::sqrt(get_op<f64_t>(stack)));
 }
 void RunVisitor::operator()(Instr::F64_add&){
     auto ops = get_ops<f64_t>(stack);
