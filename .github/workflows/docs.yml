@@ -1,0 +1,39 @@
+name: Generate & deploy docs
+
+on:
+  push:
+  pull_request:
+    branches: ["master"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    runs-on: ubuntu-latest
+    container:
+        image: wasmvm/wasmvm:amd64
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Setup Pages
+        uses: actions/configure-pages@v3
+      - run: mkdir -p build && cd build && cmake -G Ninja -D CMAKE_BUILD_TYPE=Release .. && ninja docs
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: ${{ github.workspace }}/build/docs/html
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v2
+        
