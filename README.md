@@ -38,6 +38,22 @@ mkdir build && cd build && cmake ..
 make -j4
 ```
 
+## 產生 HTML 文件
+
+1. 執行 CMake
+
+```shell
+mkdir build && cd build && cmake ..
+```
+
+1. 執行 Make
+
+```shell
+make docs
+```
+
+產生出的文件會在 `build/docs/html` 之下
+
 ## 測試
 
 ```shell
