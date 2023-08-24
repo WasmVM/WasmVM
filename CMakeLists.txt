@@ -24,6 +24,11 @@ endif(BUILD_HOST_MODULES)
 
 add_subdirectory(src)
 
+set(BUILD_DOCS ON CACHE BOOL "Build documentation")
+if(BUILD_DOCS)
+  add_subdirectory(docs)
+endif(BUILD_DOCS)
+
 set(BUILD_TESTS ON CACHE BOOL "Build tests")
 if(BUILD_TESTS)
   include(CTest)
