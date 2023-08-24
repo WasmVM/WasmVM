@@ -29,3 +29,19 @@ mkdir build && cd build && cmake ..
 ```shell
 make -j4
 ```
+
+## Generate HTML documents
+
+1. Run CMake
+
+```shell
+mkdir build && cd build && cmake ..
+```
+
+2. Run Make
+
+```shell
+make docs
+```
+
+The generated document will under `build/docs/html`
