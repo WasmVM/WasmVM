@@ -1,9 +1,0 @@
-
-Types
-=====
-
-Structure
-=========
-
-Instance
-========
