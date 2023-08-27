@@ -3,7 +3,7 @@ Structure
 
 Data structures of WasmVM objects for general use.
 
-.. cpp:struct:: WasmFunc
+.. cpp:struct:: WasmVM::WasmFunc
 
     Function in WebAssembly
 
@@ -19,13 +19,13 @@ Data structures of WasmVM objects for general use.
 
         Function body
 
-.. cpp:struct:: WasmGlobal
+.. cpp:struct:: WasmVM::WasmGlobal
 
     .. cpp:member:: GlobalType type
 
     .. cpp:member:: ConstInstr init
 
-.. cpp:struct:: WasmElem
+.. cpp:struct:: WasmVM::WasmElem
 
     .. cpp:member:: RefType type
 
@@ -49,7 +49,7 @@ Data structures of WasmVM objects for general use.
 
         .. cpp:member:: std::optional<ConstInstr> offset
 
-.. cpp:struct:: WasmData
+.. cpp:struct:: WasmVM::WasmData
 
     .. cpp:member:: std::vector<byte_t> init
         
@@ -69,7 +69,7 @@ Data structures of WasmVM objects for general use.
 
         .. cpp:member:: std::optional<ConstInstr> offset
 
-.. cpp:struct:: WasmExport
+.. cpp:struct:: WasmVM::WasmExport
 
     .. cpp:enum:: DescType
 
@@ -87,7 +87,7 @@ Data structures of WasmVM objects for general use.
 
     .. cpp:member:: index_t index
 
-.. cpp:struct:: WasmImport
+.. cpp:struct:: WasmVM::WasmImport
     
     .. cpp:member:: std::string module
 

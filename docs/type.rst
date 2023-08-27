@@ -10,85 +10,85 @@ Fundamental types
 
 Represent basic values or date references
 
-.. cpp:type:: i32_t = int32_t
+.. cpp:type:: WasmVM::i32_t = int32_t
 
     32-bit signed integer
 
-.. cpp:type:: i64_t = int64_t
+.. cpp:type:: WasmVM::i64_t = int64_t
 
     64-bit signed integer
 
-.. cpp:type:: f32_t = float
+.. cpp:type:: WasmVM::f32_t = float
 
     32-bit (single precision) floating-point number
 
-.. cpp:type:: f64_t = double
+.. cpp:type:: WasmVM::f64_t = double
 
     64-bit (double precision) floating-point number
 
-.. cpp:type:: funcref_t = std::optional<index_t>
+.. cpp:type:: WasmVM::funcref_t = std::optional<index_t>
 
     Nullable reference of function
 
-.. cpp:type:: externref_t = void*
+.. cpp:type:: WasmVM::externref_t = void*
 
     Nullable reference of external objects
 
-.. cpp:type:: i8_t = int8_t 
+.. cpp:type:: WasmVM::i8_t = int8_t 
 
     **[ext]** 8-bit signed integer
 
-.. cpp:type:: u8_t = uint8_t 
+.. cpp:type:: WasmVM::u8_t = uint8_t 
 
     **[ext]** 8-bit unsigned integer
 
-.. cpp:type:: i16_t = int16_t 
+.. cpp:type:: WasmVM::i16_t = int16_t 
 
     **[ext]** 16-bit signed integer
 
-.. cpp:type:: u16_t = uint16_t 
+.. cpp:type:: WasmVM::u16_t = uint16_t 
 
     **[ext]** 16-bit unsigned integer
 
-.. cpp:type:: u32_t = uint32_t 
+.. cpp:type:: WasmVM::u32_t = uint32_t 
 
     **[ext]** 32-bit unsigned integer
 
-.. cpp:type:: u64_t = uint64_t 
+.. cpp:type:: WasmVM::u64_t = uint64_t 
 
     **[ext]** 64-bit unsigned integer
 
-.. cpp:type:: byte_t = std::byte 
+.. cpp:type:: WasmVM::byte_t = std::byte 
 
     **[ext]** Single byte
 
-.. cpp:type:: index_t = u32_t
+.. cpp:type:: WasmVM::index_t = u32_t
 
     **[ext]** Index of objects
 
-.. cpp:type:: offset_t = u64_t
+.. cpp:type:: WasmVM::offset_t = u64_t
 
     **[ext]** Offset of objects
 
-.. cpp:type:: align_t = uint8_t
+.. cpp:type:: WasmVM::align_t = uint8_t
 
     **[ext]** Memory alignment
 
 Constants
 ---------
 
-.. cpp:var:: constexpr u64_t page_size = 65536
+.. cpp:var:: constexpr u64_t WasmVM::page_size = 65536
 
     Memory page size
 
-.. cpp:var:: constexpr index_t index_npos = -1
+.. cpp:var:: constexpr index_t WasmVM::index_npos = -1
 
     **[ext]** Undefined (non-existing) index
 
 Enumerations
 ------------
 
-.. cpp:enum:: ValueType
+.. cpp:enum:: WasmVM::ValueType
 
     .. cpp:enumerator:: i32
         
@@ -114,7 +114,7 @@ Enumerations
         
         Denote externref_t value
 
-.. cpp:enum:: RefType
+.. cpp:enum:: WasmVM::RefType
 
     .. cpp:enumerator:: funcref
         
@@ -127,11 +127,11 @@ Enumerations
 Object types
 ------------
 
-.. cpp:type:: Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>
+.. cpp:type:: WasmVM::Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>
 
     General type of value
 
-.. cpp:struct:: Limits
+.. cpp:struct:: WasmVM::Limits
 
     Limits of ranged objects or values
 
@@ -143,7 +143,7 @@ Object types
 
         **[Optional]** Maximum value
 
-.. cpp:struct:: FuncType
+.. cpp:struct:: WasmVM::FuncType
 
     Declarational type (signature) of function
 
@@ -155,11 +155,11 @@ Object types
 
         Value types of function results (return values)
 
-.. cpp:type:: MemType = Limits
+.. cpp:type:: WasmVM::MemType = Limits
 
     Declarational type (signature) of memory
 
-.. cpp:struct:: TableType
+.. cpp:struct:: WasmVM::TableType
 
     Declarational type (signature) of table
 
@@ -171,7 +171,7 @@ Object types
 
         Specify the reference type of table elements
 
-.. cpp:struct:: GlobalType
+.. cpp:struct:: WasmVM::GlobalType
 
     Declarational type (signature) of global
 
@@ -195,7 +195,7 @@ Object types
 
         Specify the type of global value
 
-.. cpp:struct:: ExternVal
+.. cpp:struct:: WasmVM::ExternVal
 
     Declarational type (signature) of external values or objects
 
