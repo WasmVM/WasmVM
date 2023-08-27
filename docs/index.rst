@@ -7,6 +7,6 @@ WasmVM documentation
    type
    structure
    instance
-   API
+   API Functions <API>
 
 * :ref:`search`

@@ -1,7 +1,7 @@
 Type
 =====
 
-Entities for represent values or compose objects used within WasmVM
+Entities for represent values or objects used within WasmVM
 
 Types out of WebAssembly specification (extended) are denoted as **[ext]**
 
