@@ -199,6 +199,8 @@ Object types
 
     Declarational type (signature) of external values or objects
 
+    .. cpp:enum:: ExternType 
+
     .. cpp:enumerator:: Func
 
         Indicate the external value is function
@@ -215,7 +217,7 @@ Object types
 
         Indicate the external value is global
     
-    .. cpp:member:: type
+    .. cpp:member:: ExternType type
 
     .. cpp:member:: index_t addr
 

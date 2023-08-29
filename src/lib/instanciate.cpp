@@ -104,7 +104,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         ExternVal& externval = externvals[i];
         const WasmImport& import = module.imports[i];
         switch(externval.type){
-            case ExternVal::Func :
+            case ExternVal::ExternType::Func :
                 if(!std::holds_alternative<index_t>(import.desc)){
                     throw Exception::Exception("import type not match external value");
                 }
@@ -113,7 +113,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                 }
                 moduleInst.funcaddrs.emplace_back(externval.addr);
             break;
-            case ExternVal::Table :
+            case ExternVal::ExternType::Table :
                 if(!std::holds_alternative<TableType>(import.desc)){
                     throw Exception::Exception("import type not match external value");
                 }
@@ -122,7 +122,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                 }
                 moduleInst.tableaddrs.emplace_back(externval.addr);
             break;
-            case ExternVal::Mem :
+            case ExternVal::ExternType::Mem :
                 if(!std::holds_alternative<MemType>(import.desc)){
                     throw Exception::Exception("import type not match external value");
                 }
@@ -131,7 +131,7 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                 }
                 moduleInst.memaddrs.emplace_back(externval.addr);
             break;
-            case ExternVal::Global :
+            case ExternVal::ExternType::Global :
                 if(!std::holds_alternative<GlobalType>(import.desc)){
                     throw Exception::Exception("import type not match external value");
                 }
@@ -235,28 +235,28 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
                 if(moduleInst.funcaddrs[export_.index] >= store.funcs.size()){
                     throw Exception::Exception("exported function not exist in store");
                 }
-                exportinst.value.type = ExternVal::Func;
+                exportinst.value.type = ExternVal::ExternType::Func;
                 exportinst.value.addr = moduleInst.funcaddrs[export_.index];
             break;
             case WasmExport::DescType::table :
                 if(moduleInst.tableaddrs[export_.index] >= store.tables.size()){
                     throw Exception::Exception("exported table not exist in store");
                 }
-                exportinst.value.type = ExternVal::Table;
+                exportinst.value.type = ExternVal::ExternType::Table;
                 exportinst.value.addr = moduleInst.tableaddrs[export_.index];
             break;
             case WasmExport::DescType::mem :
                 if(moduleInst.memaddrs[export_.index] >= store.mems.size()){
                     throw Exception::Exception("exported memory not exist in store");
                 }
-                exportinst.value.type = ExternVal::Mem;
+                exportinst.value.type = ExternVal::ExternType::Mem;
                 exportinst.value.addr = moduleInst.memaddrs[export_.index];
             break;
             case WasmExport::DescType::global :
                 if(moduleInst.globaladdrs[export_.index] >= store.globals.size()){
                     throw Exception::Exception("exported global not exist in store");
                 }
-                exportinst.value.type = ExternVal::Global;
+                exportinst.value.type = ExternVal::ExternType::Global;
                 exportinst.value.addr = moduleInst.globaladdrs[export_.index];
             break;
         }
