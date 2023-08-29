@@ -9,9 +9,10 @@ Instructions
    Parametric instructions <instr/parametric>
    Variable instructions <instr/variable>
    Table instructions <instr/table>
+   Memory instructions <instr/memory>
 
-Types & Templates
------------------
+Definitions & Templates
+-----------------------
 
 .. cpp:type:: WasmVM::Opcode::opcode_t = int16_t
 

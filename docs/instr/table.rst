@@ -1,11 +1,11 @@
 Table instructions
 ==================
 
-.. cpp:type:: Table_get = WasmVM::Instr::OneIndex<Opcode::Table_get>
-.. cpp:enumerator:: Opcode::Table_get = 0x25
+.. cpp:type:: WasmVM::Instr::Table_get = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_get>
+.. cpp:enumerator:: WasmVM::Opcode::Table_get = 0x25
 
-.. cpp:type:: Table_set = WasmVM::Instr::OneIndex<Opcode::Table_set>
-.. cpp:enumerator:: Opcode::Table_set = 0x26
+.. cpp:type:: WasmVM::Instr::Table_set = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_set>
+.. cpp:enumerator:: WasmVM::Opcode::Table_set = 0x26
 
 .. cpp:struct:: WasmVM::Instr::Table_init : public Base
 
@@ -15,13 +15,13 @@ Table instructions
 
     .. cpp:member:: index_t elemidx = 0
 
-.. cpp:enumerator:: Opcode::Table_init = 0xFC0C
+.. cpp:enumerator:: WasmVM::Opcode::Table_init = 0xFC0C
 
-.. cpp:type:: Elem_drop = WasmVM::Instr::OneIndex<Opcode::Elem_drop>
-.. cpp:enumerator:: Opcode::Elem_drop = 0xFC0D
+.. cpp:type:: WasmVM::Instr::Elem_drop = WasmVM::Instr::OneIndex<WasmVM::Opcode::Elem_drop>
+.. cpp:enumerator:: WasmVM::Opcode::Elem_drop = 0xFC0D
 
-.. cpp:type:: Table_grow = WasmVM::Instr::OneIndex<Opcode::Table_grow>
-.. cpp:enumerator:: Opcode::Table_grow = 0xFC0E
+.. cpp:type:: WasmVM::Instr::Table_grow = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_grow>
+.. cpp:enumerator:: WasmVM::Opcode::Table_grow = 0xFC0E
 
 .. cpp:struct:: WasmVM::Instr::Table_copy : public Base
 
@@ -31,11 +31,11 @@ Table instructions
 
     .. cpp:member:: index_t srcidx = 0
 
-.. cpp:enumerator:: Opcode::Table_copy = 0xFC0F
+.. cpp:enumerator:: WasmVM::Opcode::Table_copy = 0xFC0F
 
-.. cpp:type:: Table_size = WasmVM::Instr::OneIndex<Opcode::Table_size>
-.. cpp:enumerator:: Opcode::Table_size = 0xFC10
+.. cpp:type:: WasmVM::Instr::Table_size = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_size>
+.. cpp:enumerator:: WasmVM::Opcode::Table_size = 0xFC10
 
-.. cpp:type:: Table_fill = WasmVM::Instr::OneIndex<Opcode::Table_fill>
-.. cpp:enumerator:: Opcode::Table_fill = 0xFC11
+.. cpp:type:: WasmVM::Instr::Table_fill = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_fill>
+.. cpp:enumerator:: WasmVM::Opcode::Table_fill = 0xFC11
 
