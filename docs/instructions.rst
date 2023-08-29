@@ -10,6 +10,7 @@ Instructions
    Variable instructions <instr/variable>
    Table instructions <instr/table>
    Memory instructions <instr/memory>
+   Control instructions <instr/control>
 
 Definitions & Templates
 -----------------------
