@@ -6,6 +6,7 @@ Instructions
    
    Numeric instructions <instr/numeric>
    Reference instructions <instr/reference>
+   Parametric instructions <instr/parametric>
 
 Types & Templates
 -----------------
