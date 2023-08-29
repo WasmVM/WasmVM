@@ -2,9 +2,10 @@ Instructions
 ============
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 1
    
    Numeric instructions <instr/numeric>
+   Reference instructions <instr/reference>
 
 Types & Templates
 -----------------
