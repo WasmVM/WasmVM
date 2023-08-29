@@ -2,7 +2,7 @@ Instructions
 ============
 
 .. toctree::
-   :maxdepth: 1
+   :maxdepth: 2
    
    Numeric instructions <instr/numeric>
 

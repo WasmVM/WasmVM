@@ -1,5 +1,11 @@
 Numeric instructions
---------------------
+====================
+
+.. contents::
+    :local:
+
+i32
+---
 
 .. cpp:struct:: WasmVM::Instr::I32_const : public Base
 
@@ -7,35 +13,7 @@ Numeric instructions
 
     .. cpp:member:: i32_t value = 0
 
-.. cpp:struct:: WasmVM::Instr::I64_const : public Base
-
-    .. cpp:function:: I64_const(i64_t value)
-
-    .. cpp:member:: i64_t value = 0
-
-.. cpp:struct:: WasmVM::Instr::F32_const : public Base
-
-    .. cpp:function:: F32_const(f32_t value)
-
-    .. cpp:member:: f32_t value = 0
-
-.. cpp:struct:: WasmVM::Instr::F64_const : public Base
-
-    .. cpp:function:: F64_const(f64_t value)
-
-    .. cpp:member:: f64_t value = 0
-
-.. cpp:type:: I32_const = WasmVM::Instr::Atomic<Opcode::I32_const>
 .. cpp:enumerator:: Opcode::I32_const = 0x41
-
-.. cpp:type:: I64_const = WasmVM::Instr::Atomic<Opcode::I64_const>
-.. cpp:enumerator:: Opcode::I64_const = 0x42
-
-.. cpp:type:: F32_const = WasmVM::Instr::Atomic<Opcode::F32_const>
-.. cpp:enumerator:: Opcode::F32_const = 0x43
-
-.. cpp:type:: F64_const = WasmVM::Instr::Atomic<Opcode::F64_const>
-.. cpp:enumerator:: Opcode::F64_const = 0x44
 
 .. cpp:type:: I32_eqz = WasmVM::Instr::Atomic<Opcode::I32_eqz>
 .. cpp:enumerator:: Opcode::I32_eqz = 0x45
@@ -69,75 +47,6 @@ Numeric instructions
 
 .. cpp:type:: I32_ge_u = WasmVM::Instr::Atomic<Opcode::I32_ge_u>
 .. cpp:enumerator:: Opcode::I32_ge_u = 0x4F
-
-.. cpp:type:: I64_eqz = WasmVM::Instr::Atomic<Opcode::I64_eqz>
-.. cpp:enumerator:: Opcode::I64_eqz = 0x50
-
-.. cpp:type:: I64_eq = WasmVM::Instr::Atomic<Opcode::I64_eq>
-.. cpp:enumerator:: Opcode::I64_eq = 0x51
-
-.. cpp:type:: I64_ne = WasmVM::Instr::Atomic<Opcode::I64_ne>
-.. cpp:enumerator:: Opcode::I64_ne = 0x52
-
-.. cpp:type:: I64_lt_s = WasmVM::Instr::Atomic<Opcode::I64_lt_s>
-.. cpp:enumerator:: Opcode::I64_lt_s = 0x53
-
-.. cpp:type:: I64_lt_u = WasmVM::Instr::Atomic<Opcode::I64_lt_u>
-.. cpp:enumerator:: Opcode::I64_lt_u = 0x54
-
-.. cpp:type:: I64_gt_s = WasmVM::Instr::Atomic<Opcode::I64_gt_s>
-.. cpp:enumerator:: Opcode::I64_gt_s = 0x55
-
-.. cpp:type:: I64_gt_u = WasmVM::Instr::Atomic<Opcode::I64_gt_u>
-.. cpp:enumerator:: Opcode::I64_gt_u = 0x56
-
-.. cpp:type:: I64_le_s = WasmVM::Instr::Atomic<Opcode::I64_le_s>
-.. cpp:enumerator:: Opcode::I64_le_s = 0x57
-
-.. cpp:type:: I64_le_u = WasmVM::Instr::Atomic<Opcode::I64_le_u>
-.. cpp:enumerator:: Opcode::I64_le_u = 0x58
-
-.. cpp:type:: I64_ge_s = WasmVM::Instr::Atomic<Opcode::I64_ge_s>
-.. cpp:enumerator:: Opcode::I64_ge_s = 0x59
-
-.. cpp:type:: I64_ge_u = WasmVM::Instr::Atomic<Opcode::I64_ge_u>
-.. cpp:enumerator:: Opcode::I64_ge_u = 0x5A
-
-.. cpp:type:: F32_eq = WasmVM::Instr::Atomic<Opcode::F32_eq>
-.. cpp:enumerator:: Opcode::F32_eq = 0x5B
-
-.. cpp:type:: F32_ne = WasmVM::Instr::Atomic<Opcode::F32_ne>
-.. cpp:enumerator:: Opcode::F32_ne = 0x5C
-
-.. cpp:type:: F32_lt = WasmVM::Instr::Atomic<Opcode::F32_lt>
-.. cpp:enumerator:: Opcode::F32_lt = 0x5D
-
-.. cpp:type:: F32_gt = WasmVM::Instr::Atomic<Opcode::F32_gt>
-.. cpp:enumerator:: Opcode::F32_gt = 0x5E
-
-.. cpp:type:: F32_le = WasmVM::Instr::Atomic<Opcode::F32_le>
-.. cpp:enumerator:: Opcode::F32_le = 0x5F
-
-.. cpp:type:: F32_ge = WasmVM::Instr::Atomic<Opcode::F32_ge>
-.. cpp:enumerator:: Opcode::F32_ge = 0x60
-
-.. cpp:type:: F64_eq = WasmVM::Instr::Atomic<Opcode::F64_eq>
-.. cpp:enumerator:: Opcode::F64_eq = 0x61
-
-.. cpp:type:: F64_ne = WasmVM::Instr::Atomic<Opcode::F64_ne>
-.. cpp:enumerator:: Opcode::F64_ne = 0x62
-
-.. cpp:type:: F64_lt = WasmVM::Instr::Atomic<Opcode::F64_lt>
-.. cpp:enumerator:: Opcode::F64_lt = 0x63
-
-.. cpp:type:: F64_gt = WasmVM::Instr::Atomic<Opcode::F64_gt>
-.. cpp:enumerator:: Opcode::F64_gt = 0x64
-
-.. cpp:type:: F64_le = WasmVM::Instr::Atomic<Opcode::F64_le>
-.. cpp:enumerator:: Opcode::F64_le = 0x65
-
-.. cpp:type:: F64_ge = WasmVM::Instr::Atomic<Opcode::F64_ge>
-.. cpp:enumerator:: Opcode::F64_ge = 0x66
 
 .. cpp:type:: I32_clz = WasmVM::Instr::Atomic<Opcode::I32_clz>
 .. cpp:enumerator:: Opcode::I32_clz = 0x67
@@ -193,6 +102,86 @@ Numeric instructions
 .. cpp:type:: I32_rotr = WasmVM::Instr::Atomic<Opcode::I32_rotr>
 .. cpp:enumerator:: Opcode::I32_rotr = 0x78
 
+.. cpp:type:: I32_wrap_i64 = WasmVM::Instr::Atomic<Opcode::I32_wrap_i64>
+.. cpp:enumerator:: Opcode::I32_wrap_i64 = 0xA7
+
+.. cpp:type:: I32_trunc_s_f32 = WasmVM::Instr::Atomic<Opcode::I32_trunc_s_f32>
+.. cpp:enumerator:: Opcode::I32_trunc_s_f32 = 0xA8
+
+.. cpp:type:: I32_trunc_u_f32 = WasmVM::Instr::Atomic<Opcode::I32_trunc_u_f32>
+.. cpp:enumerator:: Opcode::I32_trunc_u_f32 = 0xA9
+
+.. cpp:type:: I32_trunc_s_f64 = WasmVM::Instr::Atomic<Opcode::I32_trunc_s_f64>
+.. cpp:enumerator:: Opcode::I32_trunc_s_f64 = 0xAA
+
+.. cpp:type:: I32_trunc_u_f64 = WasmVM::Instr::Atomic<Opcode::I32_trunc_u_f64>
+.. cpp:enumerator:: Opcode::I32_trunc_u_f64 = 0xAB
+
+.. cpp:type:: I32_reinterpret_f32 = WasmVM::Instr::Atomic<Opcode::I32_reinterpret_f32>
+.. cpp:enumerator:: Opcode::I32_reinterpret_f32 = 0xBC
+
+.. cpp:type:: I32_extend8_s = WasmVM::Instr::Atomic<Opcode::I32_extend8_s>
+.. cpp:enumerator:: Opcode::I32_extend8_s = 0xC0
+
+.. cpp:type:: I32_extend16_s = WasmVM::Instr::Atomic<Opcode::I32_extend16_s>
+.. cpp:enumerator:: Opcode::I32_extend16_s = 0xC1
+
+.. cpp:type:: I32_trunc_sat_f32_s = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f32_s>
+.. cpp:enumerator:: Opcode::I32_trunc_sat_f32_s = 0xFC00
+
+.. cpp:type:: I32_trunc_sat_f32_u = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f32_u>
+.. cpp:enumerator:: Opcode::I32_trunc_sat_f32_u = 0xFC01
+
+.. cpp:type:: I32_trunc_sat_f64_s = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f64_s>
+.. cpp:enumerator:: Opcode::I32_trunc_sat_f64_s = 0xFC02
+
+.. cpp:type:: I32_trunc_sat_f64_u = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f64_u>
+.. cpp:enumerator:: Opcode::I32_trunc_sat_f64_u = 0xFC03
+
+i64
+---
+
+.. cpp:struct:: WasmVM::Instr::I64_const : public Base
+
+    .. cpp:function:: I64_const(i64_t value)
+
+    .. cpp:member:: i64_t value = 0
+
+.. cpp:enumerator:: Opcode::I64_const = 0x42
+
+.. cpp:type:: I64_eqz = WasmVM::Instr::Atomic<Opcode::I64_eqz>
+.. cpp:enumerator:: Opcode::I64_eqz = 0x50
+
+.. cpp:type:: I64_eq = WasmVM::Instr::Atomic<Opcode::I64_eq>
+.. cpp:enumerator:: Opcode::I64_eq = 0x51
+
+.. cpp:type:: I64_ne = WasmVM::Instr::Atomic<Opcode::I64_ne>
+.. cpp:enumerator:: Opcode::I64_ne = 0x52
+
+.. cpp:type:: I64_lt_s = WasmVM::Instr::Atomic<Opcode::I64_lt_s>
+.. cpp:enumerator:: Opcode::I64_lt_s = 0x53
+
+.. cpp:type:: I64_lt_u = WasmVM::Instr::Atomic<Opcode::I64_lt_u>
+.. cpp:enumerator:: Opcode::I64_lt_u = 0x54
+
+.. cpp:type:: I64_gt_s = WasmVM::Instr::Atomic<Opcode::I64_gt_s>
+.. cpp:enumerator:: Opcode::I64_gt_s = 0x55
+
+.. cpp:type:: I64_gt_u = WasmVM::Instr::Atomic<Opcode::I64_gt_u>
+.. cpp:enumerator:: Opcode::I64_gt_u = 0x56
+
+.. cpp:type:: I64_le_s = WasmVM::Instr::Atomic<Opcode::I64_le_s>
+.. cpp:enumerator:: Opcode::I64_le_s = 0x57
+
+.. cpp:type:: I64_le_u = WasmVM::Instr::Atomic<Opcode::I64_le_u>
+.. cpp:enumerator:: Opcode::I64_le_u = 0x58
+
+.. cpp:type:: I64_ge_s = WasmVM::Instr::Atomic<Opcode::I64_ge_s>
+.. cpp:enumerator:: Opcode::I64_ge_s = 0x59
+
+.. cpp:type:: I64_ge_u = WasmVM::Instr::Atomic<Opcode::I64_ge_u>
+.. cpp:enumerator:: Opcode::I64_ge_u = 0x5A
+
 .. cpp:type:: I64_clz = WasmVM::Instr::Atomic<Opcode::I64_clz>
 .. cpp:enumerator:: Opcode::I64_clz = 0x79
 
@@ -247,6 +236,77 @@ Numeric instructions
 .. cpp:type:: I64_rotr = WasmVM::Instr::Atomic<Opcode::I64_rotr>
 .. cpp:enumerator:: Opcode::I64_rotr = 0x8A
 
+.. cpp:type:: I64_extend_s_i32 = WasmVM::Instr::Atomic<Opcode::I64_extend_s_i32>
+.. cpp:enumerator:: Opcode::I64_extend_s_i32 = 0xAC
+
+.. cpp:type:: I64_extend_u_i32 = WasmVM::Instr::Atomic<Opcode::I64_extend_u_i32>
+.. cpp:enumerator:: Opcode::I64_extend_u_i32 = 0xAD
+
+.. cpp:type:: I64_trunc_s_f32 = WasmVM::Instr::Atomic<Opcode::I64_trunc_s_f32>
+.. cpp:enumerator:: Opcode::I64_trunc_s_f32 = 0xAE
+
+.. cpp:type:: I64_trunc_u_f32 = WasmVM::Instr::Atomic<Opcode::I64_trunc_u_f32>
+.. cpp:enumerator:: Opcode::I64_trunc_u_f32 = 0xAF
+
+.. cpp:type:: I64_trunc_s_f64 = WasmVM::Instr::Atomic<Opcode::I64_trunc_s_f64>
+.. cpp:enumerator:: Opcode::I64_trunc_s_f64 = 0xB0
+
+.. cpp:type:: I64_trunc_u_f64 = WasmVM::Instr::Atomic<Opcode::I64_trunc_u_f64>
+.. cpp:enumerator:: Opcode::I64_trunc_u_f64 = 0xB1
+
+.. cpp:type:: I64_reinterpret_f64 = WasmVM::Instr::Atomic<Opcode::I64_reinterpret_f64>
+.. cpp:enumerator:: Opcode::I64_reinterpret_f64 = 0xBD
+
+.. cpp:type:: I64_extend8_s = WasmVM::Instr::Atomic<Opcode::I64_extend8_s>
+.. cpp:enumerator:: Opcode::I64_extend8_s = 0xC2
+
+.. cpp:type:: I64_extend16_s = WasmVM::Instr::Atomic<Opcode::I64_extend16_s>
+.. cpp:enumerator:: Opcode::I64_extend16_s = 0xC3
+
+.. cpp:type:: I64_extend32_s = WasmVM::Instr::Atomic<Opcode::I64_extend32_s>
+.. cpp:enumerator:: Opcode::I64_extend32_s = 0xC4
+
+.. cpp:type:: I64_trunc_sat_f32_s = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f32_s>
+.. cpp:enumerator:: Opcode::I64_trunc_sat_f32_s = 0xFC04
+
+.. cpp:type:: I64_trunc_sat_f32_u = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f32_u>
+.. cpp:enumerator:: Opcode::I64_trunc_sat_f32_u = 0xFC05
+
+.. cpp:type:: I64_trunc_sat_f64_s = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f64_s>
+.. cpp:enumerator:: Opcode::I64_trunc_sat_f64_s = 0xFC06
+
+.. cpp:type:: I64_trunc_sat_f64_u = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f64_u>
+.. cpp:enumerator:: Opcode::I64_trunc_sat_f64_u = 0xFC07
+
+f32
+---
+
+.. cpp:struct:: WasmVM::Instr::F32_const : public Base
+
+    .. cpp:function:: F32_const(f32_t value)
+
+    .. cpp:member:: f32_t value = 0
+
+.. cpp:enumerator:: Opcode::F32_const = 0x43
+
+.. cpp:type:: F32_eq = WasmVM::Instr::Atomic<Opcode::F32_eq>
+.. cpp:enumerator:: Opcode::F32_eq = 0x5B
+
+.. cpp:type:: F32_ne = WasmVM::Instr::Atomic<Opcode::F32_ne>
+.. cpp:enumerator:: Opcode::F32_ne = 0x5C
+
+.. cpp:type:: F32_lt = WasmVM::Instr::Atomic<Opcode::F32_lt>
+.. cpp:enumerator:: Opcode::F32_lt = 0x5D
+
+.. cpp:type:: F32_gt = WasmVM::Instr::Atomic<Opcode::F32_gt>
+.. cpp:enumerator:: Opcode::F32_gt = 0x5E
+
+.. cpp:type:: F32_le = WasmVM::Instr::Atomic<Opcode::F32_le>
+.. cpp:enumerator:: Opcode::F32_le = 0x5F
+
+.. cpp:type:: F32_ge = WasmVM::Instr::Atomic<Opcode::F32_ge>
+.. cpp:enumerator:: Opcode::F32_ge = 0x60
+
 .. cpp:type:: F32_abs = WasmVM::Instr::Atomic<Opcode::F32_abs>
 .. cpp:enumerator:: Opcode::F32_abs = 0x8B
 
@@ -288,6 +348,53 @@ Numeric instructions
 
 .. cpp:type:: F32_copysign = WasmVM::Instr::Atomic<Opcode::F32_copysign>
 .. cpp:enumerator:: Opcode::F32_copysign = 0x98
+
+.. cpp:type:: F32_convert_s_i32 = WasmVM::Instr::Atomic<Opcode::F32_convert_s_i32>
+.. cpp:enumerator:: Opcode::F32_convert_s_i32 = 0xB2
+
+.. cpp:type:: F32_convert_u_i32 = WasmVM::Instr::Atomic<Opcode::F32_convert_u_i32>
+.. cpp:enumerator:: Opcode::F32_convert_u_i32 = 0xB3
+
+.. cpp:type:: F32_convert_s_i64 = WasmVM::Instr::Atomic<Opcode::F32_convert_s_i64>
+.. cpp:enumerator:: Opcode::F32_convert_s_i64 = 0xB4
+
+.. cpp:type:: F32_convert_u_i64 = WasmVM::Instr::Atomic<Opcode::F32_convert_u_i64>
+.. cpp:enumerator:: Opcode::F32_convert_u_i64 = 0xB5
+
+.. cpp:type:: F32_demote_f64 = WasmVM::Instr::Atomic<Opcode::F32_demote_f64>
+.. cpp:enumerator:: Opcode::F32_demote_f64 = 0xB6
+
+.. cpp:type:: F32_reinterpret_i32 = WasmVM::Instr::Atomic<Opcode::F32_reinterpret_i32>
+.. cpp:enumerator:: Opcode::F32_reinterpret_i32 = 0xBE
+
+f64
+---
+
+.. cpp:struct:: WasmVM::Instr::F64_const : public Base
+
+    .. cpp:function:: F64_const(f64_t value)
+
+    .. cpp:member:: f64_t value = 0
+
+.. cpp:enumerator:: Opcode::F64_const = 0x44
+
+.. cpp:type:: F64_eq = WasmVM::Instr::Atomic<Opcode::F64_eq>
+.. cpp:enumerator:: Opcode::F64_eq = 0x61
+
+.. cpp:type:: F64_ne = WasmVM::Instr::Atomic<Opcode::F64_ne>
+.. cpp:enumerator:: Opcode::F64_ne = 0x62
+
+.. cpp:type:: F64_lt = WasmVM::Instr::Atomic<Opcode::F64_lt>
+.. cpp:enumerator:: Opcode::F64_lt = 0x63
+
+.. cpp:type:: F64_gt = WasmVM::Instr::Atomic<Opcode::F64_gt>
+.. cpp:enumerator:: Opcode::F64_gt = 0x64
+
+.. cpp:type:: F64_le = WasmVM::Instr::Atomic<Opcode::F64_le>
+.. cpp:enumerator:: Opcode::F64_le = 0x65
+
+.. cpp:type:: F64_ge = WasmVM::Instr::Atomic<Opcode::F64_ge>
+.. cpp:enumerator:: Opcode::F64_ge = 0x66
 
 .. cpp:type:: F64_abs = WasmVM::Instr::Atomic<Opcode::F64_abs>
 .. cpp:enumerator:: Opcode::F64_abs = 0x99
@@ -331,54 +438,6 @@ Numeric instructions
 .. cpp:type:: F64_copysign = WasmVM::Instr::Atomic<Opcode::F64_copysign>
 .. cpp:enumerator:: Opcode::F64_copysign = 0xA6
 
-.. cpp:type:: I32_wrap_i64 = WasmVM::Instr::Atomic<Opcode::I32_wrap_i64>
-.. cpp:enumerator:: Opcode::I32_wrap_i64 = 0xA7
-
-.. cpp:type:: I32_trunc_s_f32 = WasmVM::Instr::Atomic<Opcode::I32_trunc_s_f32>
-.. cpp:enumerator:: Opcode::I32_trunc_s_f32 = 0xA8
-
-.. cpp:type:: I32_trunc_u_f32 = WasmVM::Instr::Atomic<Opcode::I32_trunc_u_f32>
-.. cpp:enumerator:: Opcode::I32_trunc_u_f32 = 0xA9
-
-.. cpp:type:: I32_trunc_s_f64 = WasmVM::Instr::Atomic<Opcode::I32_trunc_s_f64>
-.. cpp:enumerator:: Opcode::I32_trunc_s_f64 = 0xAA
-
-.. cpp:type:: I32_trunc_u_f64 = WasmVM::Instr::Atomic<Opcode::I32_trunc_u_f64>
-.. cpp:enumerator:: Opcode::I32_trunc_u_f64 = 0xAB
-
-.. cpp:type:: I64_extend_s_i32 = WasmVM::Instr::Atomic<Opcode::I64_extend_s_i32>
-.. cpp:enumerator:: Opcode::I64_extend_s_i32 = 0xAC
-
-.. cpp:type:: I64_extend_u_i32 = WasmVM::Instr::Atomic<Opcode::I64_extend_u_i32>
-.. cpp:enumerator:: Opcode::I64_extend_u_i32 = 0xAD
-
-.. cpp:type:: I64_trunc_s_f32 = WasmVM::Instr::Atomic<Opcode::I64_trunc_s_f32>
-.. cpp:enumerator:: Opcode::I64_trunc_s_f32 = 0xAE
-
-.. cpp:type:: I64_trunc_u_f32 = WasmVM::Instr::Atomic<Opcode::I64_trunc_u_f32>
-.. cpp:enumerator:: Opcode::I64_trunc_u_f32 = 0xAF
-
-.. cpp:type:: I64_trunc_s_f64 = WasmVM::Instr::Atomic<Opcode::I64_trunc_s_f64>
-.. cpp:enumerator:: Opcode::I64_trunc_s_f64 = 0xB0
-
-.. cpp:type:: I64_trunc_u_f64 = WasmVM::Instr::Atomic<Opcode::I64_trunc_u_f64>
-.. cpp:enumerator:: Opcode::I64_trunc_u_f64 = 0xB1
-
-.. cpp:type:: F32_convert_s_i32 = WasmVM::Instr::Atomic<Opcode::F32_convert_s_i32>
-.. cpp:enumerator:: Opcode::F32_convert_s_i32 = 0xB2
-
-.. cpp:type:: F32_convert_u_i32 = WasmVM::Instr::Atomic<Opcode::F32_convert_u_i32>
-.. cpp:enumerator:: Opcode::F32_convert_u_i32 = 0xB3
-
-.. cpp:type:: F32_convert_s_i64 = WasmVM::Instr::Atomic<Opcode::F32_convert_s_i64>
-.. cpp:enumerator:: Opcode::F32_convert_s_i64 = 0xB4
-
-.. cpp:type:: F32_convert_u_i64 = WasmVM::Instr::Atomic<Opcode::F32_convert_u_i64>
-.. cpp:enumerator:: Opcode::F32_convert_u_i64 = 0xB5
-
-.. cpp:type:: F32_demote_f64 = WasmVM::Instr::Atomic<Opcode::F32_demote_f64>
-.. cpp:enumerator:: Opcode::F32_demote_f64 = 0xB6
-
 .. cpp:type:: F64_convert_s_i32 = WasmVM::Instr::Atomic<Opcode::F64_convert_s_i32>
 .. cpp:enumerator:: Opcode::F64_convert_s_i32 = 0xB7
 
@@ -394,54 +453,5 @@ Numeric instructions
 .. cpp:type:: F64_promote_f32 = WasmVM::Instr::Atomic<Opcode::F64_promote_f32>
 .. cpp:enumerator:: Opcode::F64_promote_f32 = 0xBB
 
-.. cpp:type:: I32_reinterpret_f32 = WasmVM::Instr::Atomic<Opcode::I32_reinterpret_f32>
-.. cpp:enumerator:: Opcode::I32_reinterpret_f32 = 0xBC
-
-.. cpp:type:: I64_reinterpret_f64 = WasmVM::Instr::Atomic<Opcode::I64_reinterpret_f64>
-.. cpp:enumerator:: Opcode::I64_reinterpret_f64 = 0xBD
-
-.. cpp:type:: F32_reinterpret_i32 = WasmVM::Instr::Atomic<Opcode::F32_reinterpret_i32>
-.. cpp:enumerator:: Opcode::F32_reinterpret_i32 = 0xBE
-
 .. cpp:type:: F64_reinterpret_i64 = WasmVM::Instr::Atomic<Opcode::F64_reinterpret_i64>
 .. cpp:enumerator:: Opcode::F64_reinterpret_i64 = 0xBF
-
-.. cpp:type:: I32_extend8_s = WasmVM::Instr::Atomic<Opcode::I32_extend8_s>
-.. cpp:enumerator:: Opcode::I32_extend8_s = 0xC0
-
-.. cpp:type:: I32_extend16_s = WasmVM::Instr::Atomic<Opcode::I32_extend16_s>
-.. cpp:enumerator:: Opcode::I32_extend16_s = 0xC1
-
-.. cpp:type:: I64_extend8_s = WasmVM::Instr::Atomic<Opcode::I64_extend8_s>
-.. cpp:enumerator:: Opcode::I64_extend8_s = 0xC2
-
-.. cpp:type:: I64_extend16_s = WasmVM::Instr::Atomic<Opcode::I64_extend16_s>
-.. cpp:enumerator:: Opcode::I64_extend16_s = 0xC3
-
-.. cpp:type:: I64_extend32_s = WasmVM::Instr::Atomic<Opcode::I64_extend32_s>
-.. cpp:enumerator:: Opcode::I64_extend32_s = 0xC4
-
-.. cpp:type:: I32_trunc_sat_f32_s = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f32_s>
-.. cpp:enumerator:: Opcode::I32_trunc_sat_f32_s = 0xFC00
-
-.. cpp:type:: I32_trunc_sat_f32_u = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f32_u>
-.. cpp:enumerator:: Opcode::I32_trunc_sat_f32_u = 0xFC01
-
-.. cpp:type:: I32_trunc_sat_f64_s = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f64_s>
-.. cpp:enumerator:: Opcode::I32_trunc_sat_f64_s = 0xFC02
-
-.. cpp:type:: I32_trunc_sat_f64_u = WasmVM::Instr::Atomic<Opcode::I32_trunc_sat_f64_u>
-.. cpp:enumerator:: Opcode::I32_trunc_sat_f64_u = 0xFC03
-
-.. cpp:type:: I64_trunc_sat_f32_s = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f32_s>
-.. cpp:enumerator:: Opcode::I64_trunc_sat_f32_s = 0xFC04
-
-.. cpp:type:: I64_trunc_sat_f32_u = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f32_u>
-.. cpp:enumerator:: Opcode::I64_trunc_sat_f32_u = 0xFC05
-
-.. cpp:type:: I64_trunc_sat_f64_s = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f64_s>
-.. cpp:enumerator:: Opcode::I64_trunc_sat_f64_s = 0xFC06
-
-.. cpp:type:: I64_trunc_sat_f64_u = WasmVM::Instr::Atomic<Opcode::I64_trunc_sat_f64_u>
-.. cpp:enumerator:: Opcode::I64_trunc_sat_f64_u = 0xFC07
-
