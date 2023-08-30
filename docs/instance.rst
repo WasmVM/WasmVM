@@ -1,6 +1,9 @@
 Instance
 ========
 
+Stack
+-----
+
 .. cpp:struct:: WasmVM::Stack
 
     .. cpp:function:: Stack(Store& store)
@@ -9,15 +12,6 @@ Instance
     .. cpp:member:: std::vector<Value> locals
     .. cpp:member:: ModuleInst& module
     .. cpp:member:: index_t funcaddr
-
-.. cpp:struct:: WasmVM::Store
-
-    .. cpp:member:: std::vector<FuncInst> funcs
-    .. cpp:member:: std::vector<TableInst> tables
-    .. cpp:member:: std::vector<MemInst> mems
-    .. cpp:member:: std::vector<GlobalInst> globals
-    .. cpp:member:: std::vector<ElemInst> elems
-    .. cpp:member:: std::vector<DataInst> datas
 
 .. cpp:struct:: WasmVM::Label
     
@@ -34,6 +28,21 @@ Instance
 
     .. cpp:member:: size_t& current
     .. cpp:member:: size_t& continuation
+
+Store
+-----
+
+.. cpp:struct:: WasmVM::Store
+
+    .. cpp:member:: std::vector<FuncInst> funcs
+    .. cpp:member:: std::vector<TableInst> tables
+    .. cpp:member:: std::vector<MemInst> mems
+    .. cpp:member:: std::vector<GlobalInst> globals
+    .. cpp:member:: std::vector<ElemInst> elems
+    .. cpp:member:: std::vector<DataInst> datas
+
+Instances
+---------
 
 .. cpp:type:: WasmVM::hostfunc_t = std::vector<Value>(*)(Stack&)
 

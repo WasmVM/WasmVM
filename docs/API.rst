@@ -1,6 +1,9 @@
 API Functions
 =============
 
+Function
+--------
+
 .. cpp:function:: WasmModule WasmVM::module_parse(std::istream& stream)
 .. cpp:function:: std::ostream& WasmVM::module_dump(const WasmModule& module, std::ostream& stream)
 .. cpp:function:: std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& stream)
