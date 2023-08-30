@@ -37,7 +37,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
             throw Exception::Exception(std::string("import '") + import.name + "' not found in module '" + import_path.filename().string() + "'");
         }
         switch(export_it->value.type){
-            case ExternVal::Func :
+            case ExternVal::ExternType::Func :
                 if(!std::holds_alternative<index_t>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }
@@ -45,7 +45,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                     throw Exception::Exception(std::string("import '") + import.name + "' not match function type");
                 }
             break;
-            case ExternVal::Table : {
+            case ExternVal::ExternType::Table : {
                 if(!std::holds_alternative<TableType>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }
@@ -63,7 +63,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                     throw Exception::Exception(std::string("import '") + import.name + "' not match reference type");
                 }
             }break;
-            case ExternVal::Mem : {
+            case ExternVal::ExternType::Mem : {
                 if(!std::holds_alternative<MemType>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }
@@ -78,7 +78,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                     }
                 }
             }break;
-            case ExternVal::Global :
+            case ExternVal::ExternType::Global :
                 if(!std::holds_alternative<GlobalType>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }

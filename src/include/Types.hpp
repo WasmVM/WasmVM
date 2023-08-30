@@ -83,7 +83,7 @@ struct GlobalType {
 };
 
 struct ExternVal {
-    enum {Func, Mem, Table, Global} type;
+    enum ExternType {Func, Mem, Table, Global} type;
     index_t addr;
 };
 

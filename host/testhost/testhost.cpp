@@ -123,26 +123,26 @@ void testhost_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleins
 
   ExportInst& export_i32 = moduleinst.exports.emplace_back();
   export_i32.name = "print_i32";
-  export_i32.value.type = ExternVal::Func;
+  export_i32.value.type = ExternVal::ExternType::Func;
   export_i32.value.addr = moduleinst.funcaddrs[0];
 
   ExportInst& export_i64 = moduleinst.exports.emplace_back();
   export_i64.name = "print_i64";
-  export_i64.value.type = ExternVal::Func;
+  export_i64.value.type = ExternVal::ExternType::Func;
   export_i64.value.addr = moduleinst.funcaddrs[1];
 
   ExportInst& export_f32 = moduleinst.exports.emplace_back();
   export_f32.name = "print_f32";
-  export_f32.value.type = ExternVal::Func;
+  export_f32.value.type = ExternVal::ExternType::Func;
   export_f32.value.addr = moduleinst.funcaddrs[2];
 
   ExportInst& export_f64 = moduleinst.exports.emplace_back();
   export_f64.name = "print_f64";
-  export_f64.value.type = ExternVal::Func;
+  export_f64.value.type = ExternVal::ExternType::Func;
   export_f64.value.addr = moduleinst.funcaddrs[3];
 
   ExportInst& export_funcref = moduleinst.exports.emplace_back();
   export_funcref.name = "print_funcref";
-  export_funcref.value.type = ExternVal::Func;
+  export_funcref.value.type = ExternVal::ExternType::Func;
   export_funcref.value.addr = moduleinst.funcaddrs[4];
 }
