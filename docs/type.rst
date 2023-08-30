@@ -131,6 +131,10 @@ Object types
 
     General type of value
 
+.. cpp:type:: WasmVM::Ref = std::variant<funcref_t, externref_t>
+
+    Reference type
+
 .. cpp:struct:: WasmVM::Limits
 
     Limits of ranged objects or values
