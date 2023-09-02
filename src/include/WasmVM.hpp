@@ -12,7 +12,7 @@
 #include <instances/Store.hpp>
 #include <instances/ModuleInst.hpp>
 
-#define VERSION "v1.1"
+#define VERSION "v1.2"
 
 namespace WasmVM {
 
@@ -21,7 +21,7 @@ std::ostream& module_dump(const WasmModule& module, std::ostream& stream);
 std::ostream& module_encode(const WasmModule& module, std::ostream& stream);
 WasmModule module_decode(std::istream& stream);
 std::optional<Exception::Exception> module_validate(const WasmModule& module);
-ModuleInst module_instanciate(Store& store, const WasmModule& module, std::vector<ExternVal> externval);
+ModuleInst& module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externval);
 
 }
 

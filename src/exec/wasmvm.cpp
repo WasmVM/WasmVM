@@ -151,7 +151,8 @@ int main(int argc, char const *argv[]){
             ModuleQueue::Node node = module_queue.pop();
             std::vector<ExternVal> externvals = match_imports(store, moduleinsts, node);
             try {
-                moduleinsts[node.file_path] = module_instanciate(store, node.module, externvals);
+                moduleinsts.emplace(node.file_path, ModuleInst());
+                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals);
             }catch(Exception::Exception &e){
                 throw Exception::Exception(node.file_path.filename().string() + ": " + e.what());
             }

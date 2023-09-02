@@ -55,7 +55,9 @@ Instances
     .. cpp:member:: std::vector<index_t> globaladdrs
     .. cpp:member:: std::vector<index_t> elemaddrs
     .. cpp:member:: std::vector<index_t> dataaddrs
-    .. cpp:member:: std::vector<ExportInst> exports;
+    .. cpp:member:: std::vector<ExportInst> exports
+
+    .. cpp:function:: void reset()
 
 .. cpp:struct:: WasmVM::FuncInst
 

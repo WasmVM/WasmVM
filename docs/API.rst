@@ -9,7 +9,7 @@ Function
 .. cpp:function:: std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& stream)
 .. cpp:function:: WasmModule WasmVM::module_decode(std::istream& stream)
 .. cpp:function:: std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& module)
-.. cpp:function:: ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, std::vector<ExternVal> externval)
+.. cpp:function:: ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externval)
 
 Exception
 ---------

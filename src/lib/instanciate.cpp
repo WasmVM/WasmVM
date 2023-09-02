@@ -93,12 +93,15 @@ static offset_t eval_offset(const std::optional<ConstInstr>& instr, ModuleInst& 
     }
 }
 
-ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, std::vector<ExternVal> externvals){
-    ModuleInst moduleInst;
+ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externvals){
     // Check external value
     if(externvals.size() != module.imports.size()){
         throw Exception::Exception("external value count not match import count");
     }
+
+    // Reset moduleInst
+    moduleInst.reset();
+
     // Insert external values
     for(size_t i = 0; i < externvals.size(); ++i){
         ExternVal& externval = externvals[i];
@@ -337,4 +340,15 @@ ModuleInst WasmVM::module_instanciate(Store& store, const WasmModule& module, st
         stack.run();
     }
     return moduleInst;
+}
+
+void ModuleInst::reset(){
+    types.clear();
+    funcaddrs.clear();
+    tableaddrs.clear();
+    memaddrs.clear();
+    globaladdrs.clear();
+    elemaddrs.clear();
+    dataaddrs.clear();
+    exports.clear();
 }
