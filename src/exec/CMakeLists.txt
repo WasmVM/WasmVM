@@ -6,6 +6,15 @@ target_link_libraries(wasmvm-as
     WasmVM
 )
 
+add_executable(wasmvm-ld
+    ld.cpp
+    CommandParser.cpp
+    Linker.cpp
+)
+target_link_libraries(wasmvm-ld
+    WasmVM
+)
+
 add_executable(readwasm
     readwasm.cpp
     CommandParser.cpp
