@@ -8,6 +8,8 @@
 #include <string>
 #include <variant>
 #include <utility>
+#include <optional>
+#include <functional>
 #include <WasmVM.hpp>
 
 namespace WasmVM {
@@ -17,33 +19,59 @@ struct Linker {
     void consume(std::filesystem::path module_path);
     WasmModule get();
 
+    struct ExternEntry {
+        index_t module;
+        index_t address;
+    };
+
 private:
-    struct ImportCounter {
-        index_t func = 0;
-        index_t table = 0;
-        index_t mem = 0;
-        index_t global = 0;
+
+    struct IndexEntry {
+        index_t index;
+        enum {Import, Address} kind;
     };
     
-    using ExternEntry = std::pair<size_t, index_t>; // (module_index, desc_index)
-    using IndexEntry = std::variant<index_t, WasmImport, ExternEntry>; // resolved_index | import | extern_entry
+    using Descriptor = std::variant<IndexEntry, WasmImport, ExternEntry>;
     
     struct ModuleEntry {
         std::filesystem::path path;
         std::vector<index_t> types;
-        std::vector<IndexEntry> funcs;
-        std::unordered_map<std::string, std::pair<ExternVal::ExternType, index_t>> exports;
-        ImportCounter counter;
+        std::vector<Descriptor> funcs;
+        std::vector<Descriptor> tables;
+        std::vector<Descriptor> mems;
+        std::vector<Descriptor> globals;
+        std::vector<index_t> elems;
+        std::vector<index_t> datas;
+        std::vector<WasmExport> exports;
+        std::optional<index_t> start;
     };
 
-    std::unordered_map<FuncType, index_t> typemap;
-    std::vector<ModuleEntry> entries;
-    std::unordered_map<std::string, std::unordered_map<std::string, index_t>> resolved; // resolved imports (module_name, (import_names, desc_index))
+    std::vector<ModuleEntry> modules;
+
+    struct {
+        index_t func = 0;
+        index_t table = 0;
+        index_t mem = 0;
+        index_t global = 0;
+    } counter;
+
+    std::unordered_map<FuncType, index_t> type_map;
+    std::unordered_map<std::string, std::unordered_map<std::string, index_t>> import_map;
 
     WasmModule output;
-    ImportCounter counter;
+
+    void resolve_imports(std::unordered_map<std::string, std::unordered_map<std::string, ExternEntry>> &export_map, std::vector<Descriptor> &descs);
+    void instr_update_indices(WasmInstr& instr);
 };
 
 }
+
+template <> struct std::hash<WasmVM::Linker::ExternEntry> {
+    std::size_t operator()(const WasmVM::Linker::ExternEntry&) const;
+};
+
+template <> struct std::equal_to<WasmVM::Linker::ExternEntry> {
+    bool operator()(const WasmVM::Linker::ExternEntry&, const WasmVM::Linker::ExternEntry&) const;
+};
 
 #endif
