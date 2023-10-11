@@ -53,15 +53,22 @@ private:
         index_t table = 0;
         index_t mem = 0;
         index_t global = 0;
-    } counter;
+    } import_counter;
 
     std::unordered_map<FuncType, index_t> type_map;
-    std::unordered_map<std::string, std::unordered_map<std::string, index_t>> import_map;
+    std::unordered_map<std::string, std::unordered_map<std::string, index_t>> import_map; // Map import name to output address
+
+    struct {
+        std::vector<index_t> funcs;
+        std::vector<index_t> globals;
+        std::vector<index_t> elems;
+        std::vector<index_t> datas;
+    } module_index_list;
 
     WasmModule output;
 
     void resolve_imports(std::unordered_map<std::string, std::unordered_map<std::string, ExternEntry>> &export_map, std::vector<Descriptor> &descs);
-    void instr_update_indices(WasmInstr& instr);
+    void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
 };
 
 }

@@ -18,6 +18,7 @@ void Linker::consume(std::filesystem::path module_path){
     module_file.close();
 
     // Create module entry
+    index_t module_index = modules.size();
     ModuleEntry& module_entry = modules.emplace_back();
     module_entry.path = module_path;
 
@@ -58,16 +59,16 @@ void Linker::consume(std::filesystem::path module_path){
             std::visit(overloaded {
                 [&](index_t& idx){
                     idx = type_map[module.types[idx]];
-                    import_map[import.module][import.name] = counter.func++;
+                    import_map[import.module][import.name] = import_counter.func++;
                 },
                 [&](TableType){
-                    import_map[import.module][import.name] = counter.table++;
+                    import_map[import.module][import.name] = import_counter.table++;
                 },
                 [&](MemType){
-                    import_map[import.module][import.name] = counter.mem++;
+                    import_map[import.module][import.name] = import_counter.mem++;
                 },
                 [&](GlobalType){
-                    import_map[import.module][import.name] = counter.global++;
+                    import_map[import.module][import.name] = import_counter.global++;
                 },
             }, import.desc);
             output.imports.emplace_back(import);
@@ -125,6 +126,7 @@ void Linker::consume(std::filesystem::path module_path){
             .kind = IndexEntry::Address
         });
         func.typeidx = type_map[module.types[func.typeidx]];
+        module_index_list.funcs.emplace_back(module_index);
         output.funcs.emplace_back(func);
     }
 
@@ -150,17 +152,20 @@ void Linker::consume(std::filesystem::path module_path){
             .index = (index_t)output.globals.size(),
             .kind = IndexEntry::Address
         });
+        module_index_list.globals.emplace_back(module_index);
         output.globals.emplace_back(global);
     }
 
     // Elems
     for(WasmElem& elem : module.elems){
         module_entry.elems.emplace_back((index_t)output.elems.size());
+        module_index_list.elems.emplace_back(module_index);
         output.elems.emplace_back(elem);
     }
     // Datas
     for(WasmData& data : module.datas){
         module_entry.datas.emplace_back((index_t)output.datas.size());
+        module_index_list.datas.emplace_back(module_index);
         output.datas.emplace_back(data);
     }
     // Start
@@ -210,7 +215,6 @@ WasmModule Linker::get(){
         resolve_imports(export_map, module_entry.mems);
         resolve_imports(export_map, module_entry.globals);
     }
-
     // Trace exports
     for(index_t module_idx = 0; module_idx < modules.size(); ++module_idx){
         trace_extern_entries(funcs)
@@ -218,8 +222,15 @@ WasmModule Linker::get(){
         trace_extern_entries(mems)
         trace_extern_entries(globals)
     }
+    
     /** Update indices **/
-    // Instructions
+    // Funcs
+    for(index_t func_idx = 0; func_idx < output.funcs.size(); ++func_idx){
+        WasmFunc& func = output.funcs[func_idx];
+        for(WasmInstr& instr : func.body){
+            instr_update_indices(instr, modules[module_index_list.funcs[func_idx]]);
+        }
+    }
     // TODO: Globals
     // TODO: Elems
     // TODO: Datas
@@ -249,3 +260,16 @@ bool std::equal_to<WasmVM::Linker::ExternEntry>::operator()(const WasmVM::Linker
     return (a.address == b.address) && (a.module == b.module);
 }
 
+void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
+    std::visit(overloaded {
+        [](auto&){},
+        [&](Instr::Call& ins){
+            IndexEntry& index_entry = std::get<IndexEntry>(module_entry.funcs[ins.index]);
+            if(index_entry.kind == IndexEntry::Address){
+                ins.index = index_entry.index + import_counter.func;
+            }else{
+                ins.index = index_entry.index;
+            }
+        }
+    }, instr);
+}
