@@ -222,7 +222,9 @@ WasmModule Linker::get(){
         trace_extern_entries(mems)
         trace_extern_entries(globals)
     }
-    
+
+    /** TODO: Compose starts **/
+
     /** Update indices **/
     // Funcs
     for(index_t func_idx = 0; func_idx < output.funcs.size(); ++func_idx){
@@ -234,7 +236,7 @@ WasmModule Linker::get(){
     // TODO: Globals
     // TODO: Elems
     // TODO: Datas
-    /** TODO: Compose starts **/
+    
     return output;
 }
 
@@ -260,16 +262,109 @@ bool std::equal_to<WasmVM::Linker::ExternEntry>::operator()(const WasmVM::Linker
     return (a.address == b.address) && (a.module == b.module);
 }
 
+#define update_index(INDEX, DESC) { \
+    IndexEntry& index_entry = std::get<IndexEntry>(module_entry.DESC ## s[INDEX]); \
+    if(index_entry.kind == IndexEntry::Address){ \
+        INDEX = index_entry.index + import_counter.DESC; \
+    }else{ \
+        INDEX = index_entry.index; \
+    } \
+}
+
 void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
     std::visit(overloaded {
         [](auto&){},
         [&](Instr::Call& ins){
-            IndexEntry& index_entry = std::get<IndexEntry>(module_entry.funcs[ins.index]);
-            if(index_entry.kind == IndexEntry::Address){
-                ins.index = index_entry.index + import_counter.func;
-            }else{
-                ins.index = index_entry.index;
+            update_index(ins.index, func)
+        },
+        [&](Instr::Block& ins){
+            if(ins.type){
+                ins.type = module_entry.types[ins.type.value()];
             }
+        },
+        [&](Instr::Loop& ins){
+            if(ins.type){
+                ins.type = module_entry.types[ins.type.value()];
+            }
+        },
+        [&](Instr::If& ins){
+            if(ins.type){
+                ins.type = module_entry.types[ins.type.value()];
+            }
+        },
+        [&](Instr::Call_indirect& ins){
+            ins.typeidx = module_entry.types[ins.typeidx];
+            update_index(ins.tableidx, table)
+        },
+        [&](Instr::Ref_func& ins){
+            update_index(ins.index, func)
+        },
+        [&](Instr::Global_get& ins){
+            update_index(ins.index, global)
+        },
+        [&](Instr::Global_set& ins){
+            update_index(ins.index, global)
+        },
+        [&](Instr::Table_get& ins){
+            update_index(ins.index, table)
+        },
+        [&](Instr::Table_set& ins){
+            update_index(ins.index, table)
+        },
+        [&](Instr::Table_size& ins){
+            update_index(ins.index, table)
+        },
+        [&](Instr::Table_grow& ins){
+            update_index(ins.index, table)
+        },
+        [&](Instr::Table_fill& ins){
+            update_index(ins.index, table)
+        },
+        [&](Instr::Table_copy& ins){
+            update_index(ins.dstidx, table)
+            update_index(ins.srcidx, table)
+        },
+        [&](Instr::Table_init& ins){
+            // TODO:
+        },
+        [&](Instr::Elem_drop& ins){
+            // TODO:
+        },
+        [&](Instr::MemoryInstr::Base& ins){
+            // TODO:
+        },
+        [&](Instr::Memory_size& ins){
+            // TODO:
+        },
+        [&](Instr::Memory_grow& ins){
+            // TODO:
+        },
+        [&](Instr::Memory_fill& ins){
+            // TODO:
+        },
+        [&](Instr::Memory_init& ins){
+            // TODO:
+        },
+        [&](Instr::Memory_copy& ins){
+            // TODO:
+        },
+        [&](Instr::Data_drop& ins){
+            // TODO:
         }
     }, instr);
 }
+
+void Linker::instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry){
+    std::visit(overloaded {
+        [](auto&){},
+        [&](Instr::Ref_func& ins){
+            update_index(ins.index, func)
+        },
+        [&](Instr::Global_get& ins){
+            update_index(ins.index, global)
+        }
+    }, instr);
+}
+
+#undef trace_extern_entries
+#undef update_index

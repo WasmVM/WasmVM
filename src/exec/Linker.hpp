@@ -69,6 +69,7 @@ private:
 
     void resolve_imports(std::unordered_map<std::string, std::unordered_map<std::string, ExternEntry>> &export_map, std::vector<Descriptor> &descs);
     void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
+    void instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry);
 };
 
 }

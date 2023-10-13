@@ -21,7 +21,7 @@ using namespace WasmVM;
 
 /* TODO: Support linker config:
  * exports
- * start function: explicit, merged, partial_merged
+ * start function: explicit, merge, concat
  * explicit imports
  */
 
