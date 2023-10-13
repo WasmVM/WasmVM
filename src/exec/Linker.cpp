@@ -234,7 +234,13 @@ WasmModule Linker::get(){
         }
     }
     // TODO: Globals
-    // TODO: Elems
+    // Elems
+    for(index_t elem_idx = 0; elem_idx < output.elems.size(); ++elem_idx){
+        WasmElem& elem = output.elems[elem_idx];
+        for(ConstInstr& instr : elem.elemlist){
+            instr_update_indices(instr, modules[module_index_list.elems[elem_idx]]);
+        }
+    }
     // TODO: Datas
     
     return output;
