@@ -198,6 +198,15 @@ for(index_t desc_idx = 0; desc_idx < modules[module_idx].DESCS.size(); ++desc_id
     } \
 }
 
+#define update_index(INDEX, DESC) { \
+    IndexEntry& index_entry = std::get<IndexEntry>(module_entry.DESC ## s[INDEX]); \
+    if(index_entry.kind == IndexEntry::Address){ \
+        INDEX = index_entry.index + import_counter.DESC; \
+    }else{ \
+        INDEX = index_entry.index; \
+    } \
+}
+
 WasmModule Linker::get(){
     /** Resolve pending imports **/
     // Create export map
@@ -237,12 +246,24 @@ WasmModule Linker::get(){
     // Elems
     for(index_t elem_idx = 0; elem_idx < output.elems.size(); ++elem_idx){
         WasmElem& elem = output.elems[elem_idx];
+        ModuleEntry& module_entry = modules[module_index_list.elems[elem_idx]];
         for(ConstInstr& instr : elem.elemlist){
-            instr_update_indices(instr, modules[module_index_list.elems[elem_idx]]);
+            instr_update_indices(instr, module_entry);
+        }
+        IndexEntry& index_entry = std::get<IndexEntry>(module_entry.tables[elem.mode.tableidx.value_or(0)]); \
+        if(index_entry.kind == IndexEntry::Address){
+            elem.mode.tableidx = index_entry.index + import_counter.table;
+        }else{
+            elem.mode.tableidx = index_entry.index;
+        }
+        if(elem.mode.offset){
+            instr_update_indices(elem.mode.offset.value(), module_entry);
         }
     }
-    // TODO: Datas
-    
+    // Datas
+    for(index_t data_idx = 0; data_idx < output.datas.size(); ++data_idx){
+        WasmData& data = output.datas[data_idx];
+    }
     return output;
 }
 
@@ -266,15 +287,6 @@ std::size_t std::hash<WasmVM::Linker::ExternEntry>::operator()(const WasmVM::Lin
 
 bool std::equal_to<WasmVM::Linker::ExternEntry>::operator()(const WasmVM::Linker::ExternEntry& a, const WasmVM::Linker::ExternEntry& b) const{
     return (a.address == b.address) && (a.module == b.module);
-}
-
-#define update_index(INDEX, DESC) { \
-    IndexEntry& index_entry = std::get<IndexEntry>(module_entry.DESC ## s[INDEX]); \
-    if(index_entry.kind == IndexEntry::Address){ \
-        INDEX = index_entry.index + import_counter.DESC; \
-    }else{ \
-        INDEX = index_entry.index; \
-    } \
 }
 
 void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
@@ -331,31 +343,100 @@ void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
             update_index(ins.srcidx, table)
         },
         [&](Instr::Table_init& ins){
-            // TODO:
+            update_index(ins.tableidx, table)
+            ins.elemidx = module_entry.elems[ins.elemidx];
         },
         [&](Instr::Elem_drop& ins){
-            // TODO:
+            ins.index = module_entry.elems[ins.index];
         },
-        [&](Instr::MemoryInstr::Base& ins){
-            // TODO:
+        [&](Instr::I32_load& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::F32_load& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::F64_load& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_load8_s& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_load8_u& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_load16_s& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_load16_u& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load8_s& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load8_u& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load16_s& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load16_u& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load32_s& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_load32_u& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_store& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_store& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::F32_store& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::F64_store& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_store8& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I32_store16& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_store8& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_store16& ins){
+            update_index(ins.memidx, mem)
+        },
+        [&](Instr::I64_store32& ins){
+            update_index(ins.memidx, mem)
         },
         [&](Instr::Memory_size& ins){
-            // TODO:
+            update_index(ins.index, mem)
         },
         [&](Instr::Memory_grow& ins){
-            // TODO:
+            update_index(ins.index, mem)
         },
         [&](Instr::Memory_fill& ins){
-            // TODO:
-        },
-        [&](Instr::Memory_init& ins){
-            // TODO:
+            update_index(ins.index, mem)
         },
         [&](Instr::Memory_copy& ins){
-            // TODO:
+            update_index(ins.dstidx, mem)
+            update_index(ins.srcidx, mem)
+        },
+        [&](Instr::Memory_init& ins){
+            update_index(ins.memidx, mem)
+            ins.dataidx = module_entry.datas[ins.dataidx];
         },
         [&](Instr::Data_drop& ins){
-            // TODO:
+            ins.index = module_entry.datas[ins.index];
         }
     }, instr);
 }
