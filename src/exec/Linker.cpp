@@ -242,7 +242,11 @@ WasmModule Linker::get(){
             instr_update_indices(instr, modules[module_index_list.funcs[func_idx]]);
         }
     }
-    // TODO: Globals
+    // Globals
+    for(index_t global_idx = 0; global_idx < output.globals.size(); ++global_idx){
+        WasmGlobal& global = output.globals[global_idx];
+        instr_update_indices(global.init, modules[module_index_list.globals[global_idx]]);
+    }
     // Elems
     for(index_t elem_idx = 0; elem_idx < output.elems.size(); ++elem_idx){
         WasmElem& elem = output.elems[elem_idx];
