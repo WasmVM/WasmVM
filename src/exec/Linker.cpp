@@ -11,6 +11,8 @@
 
 using namespace WasmVM;
 
+Linker::Linker(Config config): config(config){}
+
 void Linker::consume(std::filesystem::path module_path){
     // Decode
     std::ifstream module_file(module_path);
@@ -138,6 +140,7 @@ void Linker::consume(std::filesystem::path module_path){
         });
         output.tables.emplace_back(table);
     }
+    
     // Mems
     for(MemType& mem : module.mems){
         module_entry.mems.emplace_back(IndexEntry {
@@ -146,6 +149,7 @@ void Linker::consume(std::filesystem::path module_path){
         });
         output.mems.emplace_back(mem);
     }
+    
     // Globals
     for(WasmGlobal& global : module.globals){
         module_entry.globals.emplace_back(IndexEntry {
@@ -162,12 +166,14 @@ void Linker::consume(std::filesystem::path module_path){
         module_index_list.elems.emplace_back(module_index);
         output.elems.emplace_back(elem);
     }
+    
     // Datas
     for(WasmData& data : module.datas){
         module_entry.datas.emplace_back((index_t)output.datas.size());
         module_index_list.datas.emplace_back(module_index);
         output.datas.emplace_back(data);
     }
+    
     // Start
     module_entry.start = module.start;
 
@@ -232,7 +238,23 @@ WasmModule Linker::get(){
         trace_extern_entries(globals)
     }
 
-    /** TODO: Compose starts **/
+    /** Starts **/
+    std::visit(overloaded {
+        // Empty
+        [](std::monostate&){},
+        // Explicit
+        [&](std::pair<std::filesystem::path, index_t>& start_pair){
+            explicit_start_func(start_pair.first, start_pair.second);
+        },
+        // Compose/merge
+        [&](Config::StartMode& mode){
+            if(mode == Config::Merge){
+                merge_start_funcs();
+            }else{
+                compose_start_funcs();
+            }
+        },
+    }, config.start_func);
 
     /** Update indices **/
     // Funcs
@@ -254,7 +276,7 @@ WasmModule Linker::get(){
         for(ConstInstr& instr : elem.elemlist){
             instr_update_indices(instr, module_entry);
         }
-        IndexEntry& index_entry = std::get<IndexEntry>(module_entry.tables[elem.mode.tableidx.value_or(0)]); \
+        IndexEntry& index_entry = std::get<IndexEntry>(module_entry.tables[elem.mode.tableidx.value_or(0)]);
         if(index_entry.kind == IndexEntry::Address){
             elem.mode.tableidx = index_entry.index + import_counter.table;
         }else{
@@ -267,6 +289,16 @@ WasmModule Linker::get(){
     // Datas
     for(index_t data_idx = 0; data_idx < output.datas.size(); ++data_idx){
         WasmData& data = output.datas[data_idx];
+        ModuleEntry& module_entry = modules[module_index_list.datas[data_idx]];
+        IndexEntry& index_entry = std::get<IndexEntry>(module_entry.mems[data.mode.memidx.value_or(0)]);
+        if(index_entry.kind == IndexEntry::Address){
+            data.mode.memidx = index_entry.index + import_counter.mem;
+        }else{
+            data.mode.memidx = index_entry.index;
+        }
+        if(data.mode.offset){
+            instr_update_indices(data.mode.offset.value(), module_entry);
+        }
     }
     return output;
 }
@@ -457,5 +489,49 @@ void Linker::instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry){
     }, instr);
 }
 
-#undef trace_extern_entries
-#undef update_index
+void Linker::compose_start_funcs(){
+
+}
+
+void Linker::merge_start_funcs(){
+
+}
+
+void Linker::explicit_start_func(std::filesystem::path module_path, index_t index){
+    for(ModuleEntry& module_entry : modules){
+        // Module path
+        if(module_path == module_entry.path){
+            // Function index
+            if(index >= module_entry.funcs.size()){
+                throw Exception::Exception("explicit start function not found");
+            }
+            update_index(index, func)
+            // Check type
+            FuncType type;
+            if(index < import_counter.func){
+                index_t count = 0;
+                bool found = false;
+                for(WasmImport& import : output.imports){
+                    if(std::holds_alternative<index_t>(import.desc)){
+                        if(count++ == index){
+                            type = output.types[std::get<index_t>(import.desc)];
+                            found = true;
+                            break;
+                        }
+                    }
+                }
+                if(!found){
+                    throw Exception::Exception("explicit start type not found");
+                }
+            }else{
+                type = output.types[output.funcs[index - import_counter.func].typeidx];
+            }
+            if(type != FuncType()){
+                throw Exception::Exception("invalid explicit start type");
+            }
+            output.start.emplace(index);
+            return;
+        }
+    }
+    throw Exception::Exception("explicit start module not found");
+}

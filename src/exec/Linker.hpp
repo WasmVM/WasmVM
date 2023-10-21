@@ -16,13 +16,20 @@ namespace WasmVM {
 
 struct Linker {
 
-    void consume(std::filesystem::path module_path);
-    WasmModule get();
-
     struct ExternEntry {
         index_t module;
         index_t address;
     };
+
+    struct Config {
+        enum StartMode {Compose, Merge};
+        std::variant<std::monostate, std::pair<std::filesystem::path, index_t>, StartMode> start_func;
+    };
+
+    Linker(Config config);
+
+    void consume(std::filesystem::path module_path);
+    WasmModule get();
 
 private:
 
@@ -66,10 +73,14 @@ private:
     } module_index_list;
 
     WasmModule output;
+    Config config;
 
     void resolve_imports(std::unordered_map<std::string, std::unordered_map<std::string, ExternEntry>> &export_map, std::vector<Descriptor> &descs);
     void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
     void instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry);
+    void compose_start_funcs();
+    void merge_start_funcs();
+    void explicit_start_func(std::filesystem::path module_path, index_t index);
 };
 
 }

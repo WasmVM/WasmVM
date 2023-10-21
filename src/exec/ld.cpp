@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <set>
+#include <regex>
 #include <algorithm>
 
 #include <WasmVM.hpp>
@@ -29,6 +30,7 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
+        CommandParser::Optional("--start", "Specify start function", 1, "-s"),
         CommandParser::Fixed("output", "File name of output module"),
         CommandParser::Fixed("modules", "Path of modules", (unsigned int)index_npos)
     },
@@ -66,8 +68,31 @@ int main(int argc, char const *argv[]){
             }
         }
 
+        // Config
+        Linker::Config config;
+        // Start
+        if(args["start"]){
+            std::string start_str = std::get<std::string>(args["start"].value());
+            if(start_str == "compose"){
+                config.start_func.emplace<Linker::Config::StartMode>(Linker::Config::Compose);
+            }else if(start_str == "merge"){
+                config.start_func.emplace<Linker::Config::StartMode>(Linker::Config::Merge);
+            }else{
+                const std::regex start_regex("(.*):(\\d+)");
+                std::smatch start_match;
+                if(std::regex_match(start_str, start_match, start_regex)){
+                    config.start_func.emplace<std::pair<std::filesystem::path, index_t>>(
+                        std::filesystem::canonical(start_match[1].str()),
+                        std::stoi(start_match[2].str())
+                    );
+                }else{
+                    throw Exception::Exception("invalid start function config");
+                }
+            }
+        }
+
         // Link
-        Linker linker;
+        Linker linker(config);
         for(std::filesystem::path module_path : module_paths){
             // TODO: support static lib
             linker.consume(module_path);
