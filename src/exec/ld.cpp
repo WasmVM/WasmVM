@@ -22,8 +22,8 @@ using namespace WasmVM;
 
 /* TODO: Support linker config:
  * exports
- * start function: explicit, merge, concat
- * explicit imports
+ * start function: explicit (module:func_index), compose
+ * explicit imports (module:name)
  */
 
 int main(int argc, char const *argv[]){
@@ -31,6 +31,8 @@ int main(int argc, char const *argv[]){
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
         CommandParser::Optional("--start", "Specify start function", 1, "-s"),
+        CommandParser::Optional("--exports", "Specify exports function", 1, "-e"),
+        CommandParser::Optional("--imports", "Specify explicit imports", 1, "-i"),
         CommandParser::Fixed("output", "File name of output module"),
         CommandParser::Fixed("modules", "Path of modules", (unsigned int)index_npos)
     },
@@ -75,8 +77,6 @@ int main(int argc, char const *argv[]){
             std::string start_str = std::get<std::string>(args["start"].value());
             if(start_str == "compose"){
                 config.start_func.emplace<Linker::Config::StartMode>(Linker::Config::Compose);
-            }else if(start_str == "merge"){
-                config.start_func.emplace<Linker::Config::StartMode>(Linker::Config::Merge);
             }else{
                 const std::regex start_regex("(.*):(\\d+)");
                 std::smatch start_match;
@@ -88,6 +88,19 @@ int main(int argc, char const *argv[]){
                 }else{
                     throw Exception::Exception("invalid start function config");
                 }
+            }
+        }
+        // Imports
+        if(args["imports"]){
+            std::string import_str = std::get<std::string>(args["imports"].value());
+            const std::regex import_regex("^([^,:]*):([^,]*)(,|$)");
+            std::smatch import_match;
+            while(std::regex_search(import_str, import_match, import_regex)){
+                config.explicit_imports[import_match[1].str()].emplace(import_match[2].str());
+                import_str = import_str.substr(import_match[0].length());
+            }
+            if(!import_str.empty()){
+                throw Exception::Exception("invalid explicit import config");
             }
         }
 

@@ -22,8 +22,9 @@ struct Linker {
     };
 
     struct Config {
-        enum StartMode {Compose, Merge};
+        enum StartMode {Compose};
         std::variant<std::monostate, std::pair<std::filesystem::path, index_t>, StartMode> start_func;
+        std::unordered_map<std::string, std::unordered_set<std::string>> explicit_imports;
     };
 
     Linker(Config config);
@@ -79,7 +80,6 @@ private:
     void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
     void instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry);
     void compose_start_funcs();
-    void merge_start_funcs();
     void explicit_start_func(std::filesystem::path module_path, index_t index);
 };
 

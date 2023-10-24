@@ -39,7 +39,9 @@ void Linker::consume(std::filesystem::path module_path){
     // Imports
     for(WasmImport& import : module.imports){
         bool pending = false;
-        if(import.module.starts_with("./") || import.module.starts_with("../") || import.module.starts_with("/")){
+        if(!(config.explicit_imports.contains(import.module) && config.explicit_imports[import.module].contains(import.name)) 
+            && (import.module.starts_with("./") || import.module.starts_with("../") || import.module.starts_with("/"))
+        ){
             std::filesystem::path import_path;
             // Extend path
             if(import.module.starts_with("/")){
@@ -238,24 +240,6 @@ WasmModule Linker::get(){
         trace_extern_entries(globals)
     }
 
-    /** Starts **/
-    std::visit(overloaded {
-        // Empty
-        [](std::monostate&){},
-        // Explicit
-        [&](std::pair<std::filesystem::path, index_t>& start_pair){
-            explicit_start_func(start_pair.first, start_pair.second);
-        },
-        // Compose/merge
-        [&](Config::StartMode& mode){
-            if(mode == Config::Merge){
-                merge_start_funcs();
-            }else{
-                compose_start_funcs();
-            }
-        },
-    }, config.start_func);
-
     /** Update indices **/
     // Funcs
     for(index_t func_idx = 0; func_idx < output.funcs.size(); ++func_idx){
@@ -300,6 +284,22 @@ WasmModule Linker::get(){
             instr_update_indices(data.mode.offset.value(), module_entry);
         }
     }
+
+    /** Starts **/
+    std::visit(overloaded {
+        // Empty
+        [](std::monostate&){},
+        // Explicit
+        [&](std::pair<std::filesystem::path, index_t>& start_pair){
+            explicit_start_func(start_pair.first, start_pair.second);
+        },
+        // Compose
+        [&](Config::StartMode& mode){
+            if(mode == Config::Compose){
+                compose_start_funcs();
+            }
+        },
+    }, config.start_func);
     return output;
 }
 
@@ -490,11 +490,23 @@ void Linker::instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry){
 }
 
 void Linker::compose_start_funcs(){
-
-}
-
-void Linker::merge_start_funcs(){
-
+    output.start.emplace<index_t>(output.funcs.size() + import_counter.func);
+    WasmFunc& start_func = output.funcs.emplace_back();
+    FuncType type;
+    if(type_map.contains(type)){
+        start_func.typeidx = type_map[type];
+    }else{
+        start_func.typeidx = output.types.size();
+        output.types.emplace_back(type);
+    }
+    for(ModuleEntry& module_entry : modules){
+        if(module_entry.start){
+            index_t index = module_entry.start.value();
+            update_index(index, func)
+            start_func.body.emplace_back<Instr::Call>(Instr::Call(index));
+        }
+    }
+    start_func.body.emplace_back(Instr::End());
 }
 
 void Linker::explicit_start_func(std::filesystem::path module_path, index_t index){
