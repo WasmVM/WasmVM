@@ -25,6 +25,7 @@ struct Linker {
         enum StartMode {Compose};
         std::variant<std::monostate, std::pair<std::filesystem::path, index_t>, StartMode> start_func;
         std::unordered_map<std::string, std::unordered_set<std::string>> explicit_imports;
+        std::unordered_map<std::string, std::vector<WasmExport>> explicit_exports;
     };
 
     Linker(Config config);

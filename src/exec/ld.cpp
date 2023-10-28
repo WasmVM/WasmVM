@@ -21,7 +21,7 @@
 using namespace WasmVM;
 
 /* TODO: Support linker config:
- * exports
+ * exports (module:name:desc:index)
  * start function: explicit (module:func_index), compose
  * explicit imports (module:name)
  */
@@ -101,6 +101,50 @@ int main(int argc, char const *argv[]){
             }
             if(!import_str.empty()){
                 throw Exception::Exception("invalid explicit import config");
+            }
+        }
+        // Exports
+        if(args["exports"]){
+            std::string export_str = std::get<std::string>(args["exports"].value());
+            const std::regex export_regex("^([^,:]*):([^,:]*):([^,:]*):([^,]*)(,|$)");
+            std::smatch export_match;
+            while(std::regex_search(export_str, export_match, export_regex)){
+                std::string export_module = export_match[1].str();
+                std::filesystem::path export_path;
+                // Extend path
+                if(export_module.starts_with("/")){
+                    export_path = export_module;
+                }else{
+                    export_path = std::filesystem::current_path() / export_module;
+                }
+                // Check existance
+                if(!std::filesystem::exists(export_path)){
+                    export_path.replace_extension(".wasm");
+                }
+                if(std::filesystem::exists(export_path)){
+                    export_path = std::filesystem::canonical(export_path);
+                }else{
+                    throw Exception::Exception(std::string("export module '" ) + export_module + "' not found");
+                }
+                WasmExport& export_ = config.explicit_exports[export_path.string()].emplace_back();
+                export_.name = export_match[2].str();
+                std::string desc_type = export_match[3].str();
+                if(desc_type == "func"){
+                    export_.desc = WasmExport::DescType::func;
+                }else if(desc_type == "table"){
+                    export_.desc = WasmExport::DescType::table;
+                }else if(desc_type == "mem"){
+                    export_.desc = WasmExport::DescType::mem;
+                }else if(desc_type == "global"){
+                    export_.desc = WasmExport::DescType::global;
+                }else{
+                    throw Exception::Exception("invalid explicit export type");
+                }
+                export_.index = std::stoi(export_match[4].str());
+                export_str = export_str.substr(export_match[0].length());
+            }
+            if(!export_str.empty()){
+                throw Exception::Exception("invalid explicit export config");
             }
         }
 

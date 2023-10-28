@@ -207,6 +207,9 @@ for(index_t desc_idx = 0; desc_idx < modules[module_idx].DESCS.size(); ++desc_id
 }
 
 #define update_index(INDEX, DESC) { \
+    if(INDEX >= module_entry.DESC ## s.size()){ \
+        throw Exception::Exception(# DESC " index not found"); \
+    } \
     IndexEntry& index_entry = std::get<IndexEntry>(module_entry.DESC ## s[INDEX]); \
     if(index_entry.kind == IndexEntry::Address){ \
         INDEX = index_entry.index + import_counter.DESC; \
@@ -300,6 +303,28 @@ WasmModule Linker::get(){
             }
         },
     }, config.start_func);
+    /** Exports **/
+    for(ModuleEntry& module_entry : modules){
+        if(config.explicit_exports.contains(module_entry.path.string())){
+            for(WasmExport export_ : config.explicit_exports[module_entry.path.string()]){
+                switch(export_.desc){
+                    case WasmExport::DescType::func :
+                        update_index(export_.index, func)
+                    break;
+                    case WasmExport::DescType::table :
+                        update_index(export_.index, table)
+                    break;
+                    case WasmExport::DescType::mem :
+                        update_index(export_.index, mem)
+                    break;
+                    case WasmExport::DescType::global :
+                        update_index(export_.index, global)
+                    break;
+                }
+                output.exports.emplace_back(export_);
+            }
+        }
+    }
     return output;
 }
 
