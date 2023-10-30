@@ -27,7 +27,8 @@ class Value {
 
     using Null = std::monostate;
     using Bool = bool;
-    std::variant<Null, Bool> value;
+    using Number = double;
+    std::variant<Null, Bool, Number> value;
 
     friend std::istream& operator>>(std::istream&, Value&);
     friend std::ostream& operator<<(std::ostream&, const Value&);

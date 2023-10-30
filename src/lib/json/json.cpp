@@ -37,9 +37,29 @@ std::istream& Json::operator>>(std::istream& fin, Value& val){
             case '7':
             case '8':
             case '9':
-            case '-': // Number
-                // TODO:
-            break;
+            case '-':{ // Number
+                std::string literal;
+                literal += ch; ch = fin.get();
+                while((ch >= '0') && (ch <= '9')){ // integer
+                    literal += ch; ch = fin.get();
+                }
+                if(ch == '.'){ // fraction
+                    literal += ch; ch = fin.get();
+                    while((ch >= '0') && (ch <= '9')){
+                        literal += ch; ch = fin.get();
+                    }
+                }
+                if(ch == 'e' || ch == 'E'){ // exponent
+                    literal += ch; ch = fin.get();
+                    if(ch == '-' || ch == '+'){ // sign
+                        literal += ch; ch = fin.get();
+                    }
+                    while((ch >= '0') && (ch <= '9')){ // digits
+                        literal += ch; ch = fin.get();
+                    }
+                }
+                val.value.emplace<Value::Number>(std::stod(literal));
+            }break;
             case 't':{ // true
                 char remain[4];
                 fin.read(remain, 3);
@@ -114,8 +134,11 @@ std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
         [&](Value::Null){
             stream << "null";
         },
-        [&](bool data){
+        [&](Value::Bool data){
             stream << (data ? "true" : "false");
+        },
+        [&](Value::Number data){
+            stream << data;
         }
     }, val.value);
     return stream;
