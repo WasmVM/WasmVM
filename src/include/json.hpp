@@ -26,7 +26,8 @@ std::ostream& operator<<(std::ostream&, const indent&);
 class Value {
 
     using Null = std::monostate;
-    std::variant<Null> value;
+    using Bool = bool;
+    std::variant<Null, Bool> value;
 
     friend std::istream& operator>>(std::istream&, Value&);
     friend std::ostream& operator<<(std::ostream&, const Value&);

@@ -9,8 +9,8 @@
 using namespace WasmVM;
 using namespace Json;
 
-std::istream& Json::operator>>(std::istream& fin, Value& value){
-    for(int ch = fin.get(); ch != std::istream::traits_type::eof() ;){
+std::istream& Json::operator>>(std::istream& fin, Value& val){
+    for(int ch = fin.get(); ch != std::istream::traits_type::eof(); ch = fin.get()){
         switch(ch){
             case '\0':
             case ' ':
@@ -19,13 +19,13 @@ std::istream& Json::operator>>(std::istream& fin, Value& value){
             case '\n': // whitespace
             break;
             case '{': // Object
-
+                // TODO:
             break;
             case '[': // Array
-
+                // TODO:
             break;
             case '"': // String
-
+                // TODO:
             break;
             case '0':
             case '1':
@@ -38,14 +38,35 @@ std::istream& Json::operator>>(std::istream& fin, Value& value){
             case '8':
             case '9':
             case '-': // Number
+                // TODO:
             break;
-            case 't': // true
-            break;
-            case 'f': // false
-            break;
-            case 'n': // null
-
-            break;
+            case 't':{ // true
+                char remain[4];
+                fin.read(remain, 3);
+                if(remain[0] == 'r' && remain[1] == 'u' && remain[2] == 'e'){
+                    val.value.emplace<Value::Bool>(true);
+                }else{
+                    throw Exception::Exception(std::string("unknown token 't") + remain + "' while parsing JSON");
+                }
+            }break;
+            case 'f':{ // false
+                char remain[5];
+                fin.read(remain, 4);
+                if(remain[0] == 'a' && remain[1] == 'l' && remain[2] == 's' && remain[3] == 'e'){
+                    val.value.emplace<Value::Bool>(false);
+                }else{
+                    throw Exception::Exception(std::string("unknown token 'f") + remain + "' while parsing JSON");
+                }
+            }break;
+            case 'n':{// null
+                char remain[4];
+                fin.read(remain, 3);
+                if(remain[0] == 'u' && remain[1] == 'l' && remain[2] == 'l'){
+                    val.value.emplace<Value::Null>();
+                }else{
+                    throw Exception::Exception(std::string("unknown token 'n") + remain + "' while parsing JSON");
+                }
+            }break;
             default:
                 throw Exception::Exception(std::string("unknown character '") + (char)ch + "' while parsing JSON");
             break;
@@ -88,7 +109,14 @@ std::ostream& Json::operator<<(std::ostream& stream, const indent& val){
     return stream;
 }
 
-std::ostream& Json::operator<<(std::ostream& stream, const Value& value){
-
+std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
+    std::visit(overloaded {
+        [&](Value::Null){
+            stream << "null";
+        },
+        [&](bool data){
+            stream << (data ? "true" : "false");
+        }
+    }, val.value);
     return stream;
 }
