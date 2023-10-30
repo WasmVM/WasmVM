@@ -112,22 +112,29 @@ add_library(WasmVM_exec OBJECT
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
 
-add_library(WasmVM SHARED 
+add_library(WasmVM_json OBJECT
+    json/json.cpp
+)
+set_property(TARGET WasmVM_json PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+add_library(WasmVM SHARED
     $<TARGET_OBJECTS:WasmVM_textfmt>
     $<TARGET_OBJECTS:WasmVM_binfmt>
     $<TARGET_OBJECTS:WasmVM_src>
     $<TARGET_OBJECTS:WasmVM_validate>
     $<TARGET_OBJECTS:WasmVM_exec>
+    $<TARGET_OBJECTS:WasmVM_json>
 )
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if(DEV_BUILD)
-add_library(WasmVM_static STATIC 
+add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_textfmt>
     $<TARGET_OBJECTS:WasmVM_binfmt>
     $<TARGET_OBJECTS:WasmVM_src>
     $<TARGET_OBJECTS:WasmVM_validate>
     $<TARGET_OBJECTS:WasmVM_exec>
+    $<TARGET_OBJECTS:WasmVM_json>
 )
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 

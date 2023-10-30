@@ -12,6 +12,7 @@
 #include <algorithm>
 
 #include <WasmVM.hpp>
+#include <json.hpp>
 #include <exception.hpp>
 
 #include "CommandParser.hpp"
@@ -30,6 +31,7 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
+        CommandParser::Optional("--config", "Specify config JSON file", 1, "-c"),
         CommandParser::Optional("--start", "Specify start function", 1, "-s"),
         CommandParser::Optional("--exports", "Specify exports function", 1, "-e"),
         CommandParser::Optional("--imports", "Specify explicit imports", 1, "-i"),
@@ -50,6 +52,15 @@ int main(int argc, char const *argv[]){
     }
 
     try {
+        // Config
+        Linker::Config config;
+        if(args["config"]){
+            Json::Value config_json;
+            std::ifstream config_file(std::get<std::string>(args["config"].value()));
+            config_file >> config_json;
+            config_file.close();
+            std::cout << config_json << std::endl; // FIXME:
+        }
         // Output path
         if(!args["output"] || !args["modules"]){
             throw Exception::Exception("no module");
@@ -69,9 +80,6 @@ int main(int argc, char const *argv[]){
                 }
             }
         }
-
-        // Config
-        Linker::Config config;
         // Start
         if(args["start"]){
             std::string start_str = std::get<std::string>(args["start"].value());

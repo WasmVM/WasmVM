@@ -1,3 +1,4 @@
 *.wat
 *.sh
 *.wasm
+*.json
