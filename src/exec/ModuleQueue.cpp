@@ -18,7 +18,8 @@ ModuleQueue::ModuleQueue(
     std::map<std::filesystem::path, ModuleInst>& module_insts,
     std::vector<std::filesystem::path> extra_paths,
     std::optional<std::filesystem::path> system_path,
-    bool check_parent
+    bool check_parent,
+    bool validate
 ) : module_insts(module_insts), system_path(system_path), check_parent(check_parent){
     
     if(!std::filesystem::exists(main_module)){
@@ -39,6 +40,12 @@ ModuleQueue::ModuleQueue(
         node.file_path = file_path;
         std::ifstream istream(file_path);
         node.module = module_decode(istream);
+        if(validate){
+            std::optional<Exception::Exception> err = module_validate(node.module);
+            if(err){
+                throw err.value();
+            }
+        }
         istream.close();
         if(!node.module.imports.empty()){
             ancestors.emplace(file_path);

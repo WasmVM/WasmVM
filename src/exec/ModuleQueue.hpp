@@ -21,7 +21,8 @@ struct ModuleQueue {
         std::map<std::filesystem::path, ModuleInst>& module_insts,
         std::vector<std::filesystem::path> extra_paths,
         std::optional<std::filesystem::path> system_path = std::nullopt,
-        bool check_parent = true
+        bool check_parent = true,
+        bool validate = true
     );
     Node pop();
     inline bool empty() {

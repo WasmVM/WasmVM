@@ -98,6 +98,7 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--version", "Show version", "-v"),
         CommandParser::Optional("--no-system", "Disable import modules from system module path", "-ns"),
         CommandParser::Optional("--no-parent", "Disable import modules from module parent path", "-np"),
+        CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
         CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos)
     },
@@ -118,6 +119,7 @@ int main(int argc, char const *argv[]){
         std::vector<std::filesystem::path> extra_paths;
         bool check_parent = true;
         std::optional<std::filesystem::path> system_path;
+        bool run_validate = true;
         if(args["extra_path"]){
             std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra_path"].value());
             for(std::string path : paths){
@@ -133,6 +135,9 @@ int main(int argc, char const *argv[]){
         if(!args["no-sysyem"]){
             system_path = DEFAULT_MODULE_PATH;
         }
+        if(args["force"]){
+            run_validate = false;
+        }
         // Runtime structures
         Store store;
         std::map<std::filesystem::path, ModuleInst> moduleinsts;
@@ -144,7 +149,7 @@ int main(int argc, char const *argv[]){
 
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
-        ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent);
+        ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent, run_validate);
 
         // Instanciate
         while(!module_queue.empty()){
