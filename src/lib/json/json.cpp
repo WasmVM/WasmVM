@@ -2,31 +2,84 @@
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
+#include <cctype>
+#include <optional>
+#include <functional>
 #include <json.hpp>
 #include <exception.hpp>
 #include <Util.hpp>
 
-using namespace WasmVM;
 using namespace Json;
+using namespace WasmVM::Exception;
 
-std::istream& Json::operator>>(std::istream& fin, Value& val){
-    for(int ch = fin.get(); ch != std::istream::traits_type::eof(); ch = fin.get()){
+std::istream& Json::operator>>(std::istream& fin, Value& elem){
+    std::function<void(Value&)> parse_value = [&](Value& val){
+        int ch = '\0';
+        // trim leading whiltespace
+        while(((ch = fin.get()) == '\0') || (ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
         switch(ch){
-            case '\0':
-            case ' ':
-            case '\t':
-            case '\r':
-            case '\n': // whitespace
-            break;
             case '{': // Object
                 // TODO:
             break;
-            case '[': // Array
-                // TODO:
-            break;
-            case '"': // String
-                // TODO:
-            break;
+            case '[':{ // Array
+                Value::Array& array = val.value.emplace<Value::Array>();
+                do{
+                    parse_value(array.emplace_back());
+                    ch = fin.get();
+                }while(ch == ',');
+                if(ch != ']'){
+                    throw Exception("JSON: unclosed array");
+                }
+            }break;
+            case '"':{ // String
+                std::string literal;
+                for(ch = fin.get(); ch != '"'; ch = fin.get()){
+                    if(ch == '\\'){
+                        ch = fin.get();
+                        switch(ch){
+                            case '"':
+                            case '\\':
+                            case '/':
+                                literal += ch;
+                            break;
+                            case 'b':
+                                literal += '\b';
+                            break;
+                            case 'f':
+                                literal += '\f';
+                            break;
+                            case 'n':
+                                literal += '\n';
+                            break;
+                            case 'r':
+                                literal += '\r';
+                            break;
+                            case 't':
+                                literal += '\t';
+                            break;
+                            case 'u':{
+                                std::string udigits(4, '\0');
+                                fin.read(udigits.data(), 4);
+                                size_t count = 0;
+                                wchar_t uchar = std::stoi(udigits, &count, 16);
+                                if(count != 4){
+                                    throw Exception("JSON: invalid character value in string");
+                                }
+                                if(uchar > 0xff){
+                                    literal += (char)((uchar >> 8) & 0xff);
+                                }
+                                literal += (char)(uchar & 0xff);
+                            }break;
+                            default:
+                                throw Exception("JSON: unknown escape sequence in string");
+                            break;
+                        }
+                    }else{
+                        literal += ch;
+                    }
+                }
+                val.value.emplace<Value::String>(literal);
+            }break;
             case '0':
             case '1':
             case '2':
@@ -39,7 +92,6 @@ std::istream& Json::operator>>(std::istream& fin, Value& val){
             case '9':
             case '-':{ // Number
                 std::string literal;
-                literal += ch; ch = fin.get();
                 while((ch >= '0') && (ch <= '9')){ // integer
                     literal += ch; ch = fin.get();
                 }
@@ -58,6 +110,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& val){
                         literal += ch; ch = fin.get();
                     }
                 }
+                fin.unget();
                 val.value.emplace<Value::Number>(std::stod(literal));
             }break;
             case 't':{ // true
@@ -66,7 +119,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& val){
                 if(remain[0] == 'r' && remain[1] == 'u' && remain[2] == 'e'){
                     val.value.emplace<Value::Bool>(true);
                 }else{
-                    throw Exception::Exception(std::string("unknown token 't") + remain + "' while parsing JSON");
+                    throw Exception(std::string("JSON: unknown token 't") + remain + "'");
                 }
             }break;
             case 'f':{ // false
@@ -75,22 +128,29 @@ std::istream& Json::operator>>(std::istream& fin, Value& val){
                 if(remain[0] == 'a' && remain[1] == 'l' && remain[2] == 's' && remain[3] == 'e'){
                     val.value.emplace<Value::Bool>(false);
                 }else{
-                    throw Exception::Exception(std::string("unknown token 'f") + remain + "' while parsing JSON");
+                    throw Exception(std::string("JSON: unknown token 'f") + remain + "'");
                 }
             }break;
-            case 'n':{// null
+            case 'n':{ // null
                 char remain[4];
                 fin.read(remain, 3);
                 if(remain[0] == 'u' && remain[1] == 'l' && remain[2] == 'l'){
                     val.value.emplace<Value::Null>();
                 }else{
-                    throw Exception::Exception(std::string("unknown token 'n") + remain + "' while parsing JSON");
+                    throw Exception(std::string("JSON: unknown token 'n") + remain + "'");
                 }
             }break;
             default:
-                throw Exception::Exception(std::string("unknown character '") + (char)ch + "' while parsing JSON");
+                throw Exception(std::string("JSON: unknown character '") + (char)ch + "'");
             break;
         }
+        // trim trailing whiltespace
+        while(((ch = fin.get()) == '\0') || (ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
+        fin.unget();
+    };
+    parse_value(elem);
+    if(fin.get() != std::istream::traits_type::eof()){
+        throw Exception("JSON: root value only allowed one element");
     }
     return fin;
 }
@@ -139,6 +199,19 @@ std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
         },
         [&](Value::Number data){
             stream << data;
+        },
+        [&](Value::String data){
+            stream << '"' << data << '"';
+        },
+        [&](Value::Array data){
+            stream << "[";
+            for(auto it = data.begin(); it != data.end(); it = std::next(it)){
+                if(it != data.begin()){
+                    stream << ", ";
+                }
+                stream << *it;
+            }
+            stream << "]";
         }
     }, val.value);
     return stream;

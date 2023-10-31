@@ -2,6 +2,7 @@
 #define WASMVM_JSON_DEF
 
 #include <variant>
+#include <vector>
 #include <string>
 #include <iostream>
 #include <type_traits>
@@ -28,7 +29,10 @@ class Value {
     using Null = std::monostate;
     using Bool = bool;
     using Number = double;
-    std::variant<Null, Bool, Number> value;
+    using String = std::string;
+    using Array = std::vector<Value>;
+    
+    std::variant<Null, Bool, Number, String, Array> value;
 
     friend std::istream& operator>>(std::istream&, Value&);
     friend std::ostream& operator<<(std::ostream&, const Value&);
