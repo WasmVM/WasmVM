@@ -14,7 +14,7 @@ Description
 ``wasmvm`` is the main program to execute a WebAssembly application. It's responsible for providing host modules, resolving runtime dependencies, verifying binary codes, instanciating modules, and finally launch the application.
 
 Command line arguments and options
---------------------
+----------------------------------
 
 Arguments
 ^^^^^^^^^
@@ -29,16 +29,16 @@ Options
 ^^^^^^^
 
 --help, -h
-    Show usage and additional help messages
+    Show usage and additional help messages.
 
 --version, -v
-    Print version information
+    Print version information.
 
 --no-system, -ns
-    Disable importing modules from system module path
+    Disable importing modules from system module path.
 
 --no-parent, -np
-    Disable importing modules from parent path of main module
+    Disable importing modules from parent path of main module.
 
 --force, -f
-    Skip validation and directly execute applicaion
+    Skip validation and directly execute applicaion.
