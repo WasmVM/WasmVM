@@ -6,7 +6,6 @@
 #include <optional>
 #include <functional>
 #include <json.hpp>
-#include <exception.hpp>
 #include <Util.hpp>
 
 using namespace Json;
@@ -18,9 +17,27 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
         // trim leading whiltespace
         while(((ch = fin.get()) == '\0') || (ch == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
         switch(ch){
-            case '{': // Object
-                // TODO:
-            break;
+            case '{':{ // Object
+                Value::Object& object = val.value.emplace<Value::Object>();
+                while(((ch = fin.get()) != '}') && (object.empty() || (ch == ','))){
+                    if(object.empty()){
+                        fin.unget();
+                    }
+                    Value obj_key;
+                    parse_value(obj_key);
+                    if(obj_key.type() != Value::Type::String){
+                        throw Exception("JSON: object key should be string");
+                    }
+                    if(fin.get() != ':'){
+                        throw Exception("JSON: expected ':' after object key");
+                    }
+                    Value& obj_value = object[obj_key.get<std::string>()];
+                    parse_value(obj_value);
+                };
+                if(ch != '}'){
+                    throw Exception("JSON: unclosed object");
+                }
+            }break;
             case '[':{ // Array
                 Value::Array& array = val.value.emplace<Value::Array>();
                 do{
@@ -115,6 +132,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             }break;
             case 't':{ // true
                 char remain[4];
+                remain[3] = '\0';
                 fin.read(remain, 3);
                 if(remain[0] == 'r' && remain[1] == 'u' && remain[2] == 'e'){
                     val.value.emplace<Value::Bool>(true);
@@ -124,6 +142,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             }break;
             case 'f':{ // false
                 char remain[5];
+                remain[4] = '\0';
                 fin.read(remain, 4);
                 if(remain[0] == 'a' && remain[1] == 'l' && remain[2] == 's' && remain[3] == 'e'){
                     val.value.emplace<Value::Bool>(false);
@@ -133,6 +152,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             }break;
             case 'n':{ // null
                 char remain[4];
+                remain[3] = '\0';
                 fin.read(remain, 3);
                 if(remain[0] == 'u' && remain[1] == 'l' && remain[2] == 'l'){
                     val.value.emplace<Value::Null>();
@@ -212,7 +232,39 @@ std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
                 stream << *it;
             }
             stream << "]";
-        }
+        },
+        [&](Value::Object data){
+            // Get flags
+            static int level_idx = stream.xalloc();
+            long &level = stream.iword(level_idx);
+            std::string indent_str = use_indent(stream);
+            bool has_newline = use_newline(stream);
+
+            // Compose indent
+            std::string indent_output = "";
+            for(long i = 0; i < level + 1; ++i){
+                indent_output += indent_str;
+            }
+            // Output
+            stream << "{";
+            if(!data.empty()){
+                level += 1;
+                for(auto it = data.begin(); it != data.end(); it = std::next(it)){
+                    if(it != data.begin()){
+                        stream << ',';
+                    }
+                    if(has_newline){
+                        stream << std::endl << indent_output;
+                    }
+                    stream << '"' << it->first << "\": " << it->second;
+                }
+                if(has_newline){
+                    stream << std::endl;
+                }
+                level -= 1;
+            }
+            stream << "}";
+        },
     }, val.value);
     return stream;
 }

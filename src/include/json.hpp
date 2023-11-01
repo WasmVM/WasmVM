@@ -4,8 +4,10 @@
 #include <variant>
 #include <vector>
 #include <string>
+#include <map>
 #include <iostream>
 #include <type_traits>
+#include <exception.hpp>
 
 namespace Json {
 
@@ -24,20 +26,40 @@ struct indent {
 };
 std::ostream& operator<<(std::ostream&, const indent&);
 
-class Value {
+struct Value {
 
     using Null = std::monostate;
     using Bool = bool;
     using Number = double;
     using String = std::string;
     using Array = std::vector<Value>;
-    
-    std::variant<Null, Bool, Number, String, Array> value;
+    using Object = std::map<String, Value>;
+
+    enum class Type {
+        Null, Bool, Number, String, Array, Object
+    };
+    constexpr Type type(){
+        return static_cast<const Type>(value.index());
+    }
+    template<typename T> T& get(){
+        if(std::holds_alternative<T>(value)){
+            return std::get<T>(value);
+        }else{
+            throw WasmVM::Exception::Exception("JSON: value type mismatch");
+        }
+    }
+    template<class Visitor> void visit(Visitor&& visitor){
+        std::visit(visitor, value);
+    }
+    template<class R, class Visitor> R visit(Visitor&& visitor){
+        return std::visit(visitor, value);
+    }
+
+private:
+    std::variant<Null, Bool, Number, String, Array, Object> value;
 
     friend std::istream& operator>>(std::istream&, Value&);
     friend std::ostream& operator<<(std::ostream&, const Value&);
-
-public:
 };
 
 std::istream& operator>>(std::istream&, Value&);
