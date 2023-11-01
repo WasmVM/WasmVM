@@ -96,8 +96,8 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
-        CommandParser::Optional("--no-system", "Disable import modules from system module path", "-ns"),
-        CommandParser::Optional("--no-parent", "Disable import modules from module parent path", "-np"),
+        CommandParser::Optional("--no-system", "Disable importing modules from system module path", "-ns"),
+        CommandParser::Optional("--no-parent", "Disable importing modules from module parent path", "-np"),
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
         CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos)
