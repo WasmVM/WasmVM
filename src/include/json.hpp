@@ -35,6 +35,8 @@ struct Value {
     using Array = std::vector<Value>;
     using Object = std::map<String, Value>;
 
+    Value() : value(Object()){}
+
     enum class Type {
         Null, Bool, Number, String, Array, Object
     };

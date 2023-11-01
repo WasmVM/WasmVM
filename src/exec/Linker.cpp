@@ -289,20 +289,8 @@ WasmModule Linker::get(){
     }
 
     /** Starts **/
-    std::visit(overloaded {
-        // Empty
-        [](std::monostate&){},
-        // Explicit
-        [&](std::pair<std::filesystem::path, index_t>& start_pair){
-            explicit_start_func(start_pair.first, start_pair.second);
-        },
-        // Compose
-        [&](Config::StartMode& mode){
-            if(mode == Config::Compose){
-                compose_start_funcs();
-            }
-        },
-    }, config.start_func);
+    compose_start_funcs();
+
     /** Exports **/
     for(ModuleEntry& module_entry : modules){
         if(config.explicit_exports.contains(module_entry.path.string())){
@@ -515,60 +503,59 @@ void Linker::instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry){
 }
 
 void Linker::compose_start_funcs(){
-    output.start.emplace<index_t>(output.funcs.size() + import_counter.func);
-    WasmFunc& start_func = output.funcs.emplace_back();
-    FuncType type;
-    if(type_map.contains(type)){
-        start_func.typeidx = type_map[type];
-    }else{
-        start_func.typeidx = output.types.size();
-        output.types.emplace_back(type);
-    }
-    for(ModuleEntry& module_entry : modules){
-        if(module_entry.start){
-            index_t index = module_entry.start.value();
-            update_index(index, func)
-            start_func.body.emplace_back<Instr::Call>(Instr::Call(index));
-        }
-    }
-    start_func.body.emplace_back(Instr::End());
-}
-
-void Linker::explicit_start_func(std::filesystem::path module_path, index_t index){
-    for(ModuleEntry& module_entry : modules){
-        // Module path
-        if(module_path == module_entry.path){
-            // Function index
-            if(index >= module_entry.funcs.size()){
-                throw Exception::Exception("explicit start function not found");
-            }
-            update_index(index, func)
-            // Check type
-            FuncType type;
-            if(index < import_counter.func){
-                index_t count = 0;
-                bool found = false;
-                for(WasmImport& import : output.imports){
-                    if(std::holds_alternative<index_t>(import.desc)){
-                        if(count++ == index){
-                            type = output.types[std::get<index_t>(import.desc)];
-                            found = true;
-                            break;
-                        }
+    // Collect start functions
+    std::vector<index_t> func_indices;
+    std::visit(overloaded {
+        [&](Config::StartMode& mode){
+            if(mode == Config::StartMode::All){
+                for(ModuleEntry& module_entry : modules){
+                    if(module_entry.start){
+                        index_t index = module_entry.start.value();
+                        update_index(index, func)
+                        func_indices.emplace_back(index);
                     }
                 }
-                if(!found){
-                    throw Exception::Exception("explicit start type not found");
+            }
+        },
+        [&](std::vector<Config::StartEntry>& entries){
+            for(Config::StartEntry& entry : entries){
+                for(ModuleEntry& module_entry : modules){
+                    if(module_entry.path == entry.first){
+                        if(!entry.second && !module_entry.start){
+                            throw Exception::Exception("start section not exists in explicit start entry");
+                        }
+                        index_t index;
+                        if(entry.second){
+                            index = entry.second.value();
+                        }else{
+                            index = module_entry.start.value();
+                        }
+                        update_index(index, func)
+                        func_indices.emplace_back(index);
+                    }
                 }
+            }
+        }
+    }, config.start_func);
+
+    // Compose
+    if(func_indices.size() > 0){
+        if(func_indices.size() > 1){
+            output.start.emplace<index_t>(output.funcs.size() + import_counter.func);
+            WasmFunc& start_func = output.funcs.emplace_back();
+            FuncType type;
+            if(type_map.contains(type)){
+                start_func.typeidx = type_map[type];
             }else{
-                type = output.types[output.funcs[index - import_counter.func].typeidx];
+                start_func.typeidx = output.types.size();
+                output.types.emplace_back(type);
             }
-            if(type != FuncType()){
-                throw Exception::Exception("invalid explicit start type");
+            for(index_t index : func_indices){
+                start_func.body.emplace_back<Instr::Call>(Instr::Call(index));
             }
-            output.start.emplace(index);
-            return;
+            start_func.body.emplace_back(Instr::End());
+        }else{
+            output.start.emplace(func_indices[0]);
         }
     }
-    throw Exception::Exception("explicit start module not found");
 }

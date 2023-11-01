@@ -10,6 +10,7 @@
 #include <utility>
 #include <optional>
 #include <functional>
+#include <set>
 #include <WasmVM.hpp>
 
 namespace WasmVM {
@@ -22,8 +23,10 @@ struct Linker {
     };
 
     struct Config {
-        enum StartMode {Compose};
-        std::variant<std::monostate, std::pair<std::filesystem::path, index_t>, StartMode> start_func;
+        enum StartMode {None, All};
+        using StartEntry = std::pair<std::filesystem::path, std::optional<index_t>>;
+        
+        std::variant<StartMode, std::vector<StartEntry>> start_func;
         std::unordered_map<std::string, std::unordered_set<std::string>> explicit_imports;
         std::unordered_map<std::string, std::vector<WasmExport>> explicit_exports;
     };
@@ -81,7 +84,6 @@ private:
     void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
     void instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry);
     void compose_start_funcs();
-    void explicit_start_func(std::filesystem::path module_path, index_t index);
 };
 
 }
