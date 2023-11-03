@@ -27,7 +27,7 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--func", "Show functions (ignored by --all)", "-c"),
         CommandParser::Optional("--table", "Show tables (ignored by --all)", "-b"),
         CommandParser::Optional("--memory", "Show memories (ignored by --all)", "-m"),
-        CommandParser::Optional("--global", "Show globlas (ignored by --all)", "-g"),
+        CommandParser::Optional("--global", "Show globals (ignored by --all)", "-g"),
         CommandParser::Optional("--export", "Show exports (ignored by --all)", "-x"),
         CommandParser::Optional("--start", "Show start (ignored by --all)", "-s"),
         CommandParser::Optional("--elem", "Show elements (ignored by --all)", "-e"),
