@@ -77,7 +77,7 @@ Options
         --imports mod1.wasm:table1,mod2.wasm:m1
 
 Configuration file
-^^^^^^^^^^^^^^^^^^
+------------------
 
 The configuration file is in JSON format. It'll replace the default values, however, it will be overrided by command line option.
 

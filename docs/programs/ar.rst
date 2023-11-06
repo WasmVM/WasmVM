@@ -83,7 +83,7 @@ Options
         Path of JSON configuration file.
 
 Configuration file
-^^^^^^^^^^^^^^^^^^
+------------------
 
 The configuration file is in JSON format. Only used with create mode for flexibility.
 
@@ -164,10 +164,10 @@ Entries:
 .. _`archive format`:
 
 Archive format
-^^^^^^^^^^^^^^
+--------------
 
 Convention
-++++++++++
+^^^^^^^^^^
 
 * ``uint64``: 64 bits (8 bytes) unsigned integer in little-endian.
 
@@ -182,7 +182,7 @@ Convention
 * ``section(N)``: ``array(N)`` prefixed with an ``uint64`` byte length (i.e. ``uint64 array(N)``).
 
 Structure
-+++++++++
+^^^^^^^^^
 
 .. math::
    \begin{array}{l}
