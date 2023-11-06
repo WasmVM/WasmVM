@@ -24,7 +24,6 @@ using namespace WasmVM;
 
 /* TODO: Support linker config:
  * exports (module:name:desc:index)
- * start function: explicit (module:func_index), all
  * explicit imports (module:name)
  */
 
@@ -33,8 +32,8 @@ int main(int argc, char const *argv[]){
     CommandParser args(argc, argv, {
         CommandParser::Optional("--version", "Show version", "-v"),
         CommandParser::Optional("--config", "Specify config JSON file", 1, "-c"),
-        CommandParser::Optional("--start", "Specify start function", 1, "-s"),
-        CommandParser::Optional("--exports", "Specify exports function", 1, "-e"),
+        CommandParser::Optional("--start", "Specify start function.\t\nFormat: all | <module>:<func_index>[,<module>:<func_index>]...", 1, "-s"),
+        CommandParser::Optional("--exports", "Specify explicit exports", 1, "-e"),
         CommandParser::Optional("--imports", "Specify explicit imports", 1, "-i"),
         CommandParser::Fixed("output", "File name of output module"),
         CommandParser::Fixed("modules", "Path of modules", (unsigned int)index_npos)
