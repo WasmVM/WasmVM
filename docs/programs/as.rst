@@ -3,6 +3,9 @@ wasmvm-as
 
 ``wasmvm-as`` - WasmVM WebAssembly assembler
 
+.. contents::
+    :local:
+
 Synopsis
 --------
 

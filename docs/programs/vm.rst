@@ -3,6 +3,9 @@ wasmvm
 
 ``wasmvm`` - A WebAssembly process virtual machine
 
+.. contents::
+    :local:
+
 Synopsis
 --------
 

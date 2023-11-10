@@ -3,6 +3,9 @@ wasmvm-ld
 
 ``wasmvm-ld`` - WasmVM WebAssembly linker
 
+.. contents::
+    :local:
+
 Synopsis
 --------
 

@@ -3,6 +3,9 @@ readwasm
 
 ``readwasm`` - WasmVM WebAssembly binary file reader
 
+.. contents::
+    :local:
+
 Synopsis
 --------
 

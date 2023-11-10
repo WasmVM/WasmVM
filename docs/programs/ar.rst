@@ -3,6 +3,9 @@ wasmvm-ar
 
 ``wasmvm-ar`` - WasmVM archiver
 
+.. contents::
+    :local:
+
 Synopsis
 --------
 
