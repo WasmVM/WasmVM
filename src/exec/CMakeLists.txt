@@ -26,6 +26,7 @@ target_link_libraries(readwasm
 add_executable(wasmvm-ar
     ar.cpp
     CommandParser.cpp
+    Archive.cpp
 )
 target_link_libraries(wasmvm-ar
     WasmVM
