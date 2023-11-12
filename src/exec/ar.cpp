@@ -160,6 +160,9 @@ int main(int argc, char const *argv[]){
                 /** Extract **/
             }else if(mode == "list"){
                 /** List **/
+                for(std::filesystem::path path : archive.list(prefix)){
+                    std::cout << path << std::endl;
+                }
             }else{
                 throw Exception::Exception("unknown mode");
             }

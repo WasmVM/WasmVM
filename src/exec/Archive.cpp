@@ -93,5 +93,24 @@ std::filesystem::path Archive::extract(std::string module, std::filesystem::path
 }
 
 std::vector<std::filesystem::path> Archive::list(std::filesystem::path prefix){
+    std::vector<std::filesystem::path> result;
+    // Open file
+    std::ifstream input(path, std::ios::binary | std::ios::in);
+    // Skip magic, version, paths length
+    input.seekg(sizeof(uint32_t) * 2 + sizeof(uint64_t), std::ios::seekdir::cur); 
+    // Read path
+    uint32_t path_count;
+    input.read((char*)&path_count, sizeof(uint32_t));
+    for(uint32_t index = 0; index < path_count; ++index){
+        uint32_t name_length;
+        input.read((char*)&name_length, sizeof(uint32_t));
+        std::string name(name_length, '\0');
+        input.read(name.data(), name_length);
+        result.push_back((prefix / name).lexically_normal());
+        input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); 
+    }
 
+    // Close file
+    input.close();
+    return result;
 }
