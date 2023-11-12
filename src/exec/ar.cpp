@@ -142,6 +142,19 @@ int main(int argc, char const *argv[]){
             if(mode == "create"){
                 /** Create **/
                 CreateConfig config(std::get<std::string>(args["config"].value()), prefix);
+                std::vector<std::string> module_args = std::get<std::vector<std::string>>(args["module_files"].value());
+                for(std::string module_arg : module_args){
+                    auto parsed = parse_create_path(module_arg);
+                    if(!std::filesystem::exists(parsed.first)){
+                        Exception::Warning(std::string("file ") + parsed.first.string() + " not found, skipped");
+                        continue;
+                    }
+                    std::filesystem::path file_path = std::filesystem::canonical(parsed.first);
+                    if(config.paths.contains(file_path)){
+                        Exception::Warning(std::string("multiple definitions found for file ") + parsed.first.string());
+                    }
+                    config.paths[file_path] = parsed.second.value_or(std::filesystem::relative(file_path));
+                }
                 archive.create(config.paths, config.prefix);
             }else if(mode == "extract"){
                 /** Extract **/

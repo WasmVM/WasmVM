@@ -59,6 +59,8 @@ module_files...
 
             ``mod1.wasm:foo/mod2``
 
+        If ``--config`` option specified, the module files will be appended with the configuration paths.
+
     Extract mode:
         One or more Wasm binary files to extract from archive, normally with ``.wasm`` file extension.
 
@@ -182,7 +184,7 @@ Convention
 
 * ``string``: ``array(byte)``.
 
-* ``section(N)``: ``array(N)`` prefixed with an ``uint64`` byte length (i.e. ``uint64 array(N)``).
+* ``len(N)``: An ``uint64`` denotes the byte length of ``N``.
 
 Structure
 ^^^^^^^^^
@@ -191,8 +193,9 @@ Structure
    \begin{array}{l}
    {magic} &::=& \mathtt{0x56}~\mathtt{0x4D}~\mathtt{0x41}~\mathtt{0x52} \\
    {version}  &::=& \mathtt{0x00}~\mathtt{0x01}~\mathtt{0x02}~\mathtt{0x00} \\
-   {paths} &::=& {section}({path})\\
-   {contents} &::=& {section}({module})\\
+   {paths} &::=& {len}({paths}) ~ {array}({path})\\
+   {contents} &::=& {len}({module}) ~ {module} ~ {contents} \\
+              &::=& {len}({module}) ~ {module} \\
    \end{array}
 
 Magic
@@ -219,7 +222,7 @@ Path
    \end{array}
 
 * name: module name, normally as a file name with ``.wasm`` file extension.
-* address: address of module content, origin from the beginning of archive file.
+* address: address of module content, originated from the beginning of archive file.
 
 Module
 ++++++

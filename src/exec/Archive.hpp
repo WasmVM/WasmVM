@@ -10,8 +10,8 @@ namespace WasmVM {
 
 struct Archive {
 
-    constexpr static std::byte magic[4] {(std::byte)'V', (std::byte)'M', (std::byte)'A', (std::byte)'R'};
-    constexpr static std::byte version[4] {(std::byte)0x00, (std::byte)0x01, (std::byte)0x02, (std::byte)0x00};
+    constexpr static char magic[4] {'V', 'M', 'A', 'R'};
+    constexpr static char version[4] {0x00, 0x01, 0x02, 0x00};
 
     Archive(std::filesystem::path path);
 
