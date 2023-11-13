@@ -129,6 +129,14 @@ int main(int argc, char const *argv[]){
     }
 
     try {
+        // Check required args
+        if(!args["mode"]){
+            throw Exception::Exception("mode is required");
+        }
+        if(!args["archive_file"]){
+            throw Exception::Exception("no archive file");
+        }
+
         // prefix
         std::filesystem::path prefix;
         if(args["prefix"]){
@@ -136,15 +144,15 @@ int main(int argc, char const *argv[]){
         }
         // archive file
         Archive archive(std::get<std::string>(args["archive_file"].value()));
-        // mode
-        if(args["mode"]){
-            std::string mode = std::get<std::string>(args["mode"].value());
-            if(mode == "create"){
-                /** Create **/
-                CreateConfig config(std::get<std::string>(args["config"].value()), prefix);
-                std::vector<std::string> module_args = std::get<std::vector<std::string>>(args["module_files"].value());
-                for(std::string module_arg : module_args){
-                    auto parsed = parse_create_path(module_arg);
+        // execute
+        std::string mode = std::get<std::string>(args["mode"].value());
+        if(mode == "create" || mode == "c"){
+            /** Create **/
+            CreateConfig config(std::get<std::string>(args["config"].value()), prefix);
+            if(args["module_files"]){
+                std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
+                for(std::string module_file : module_files){
+                    auto parsed = parse_create_path(module_file);
                     if(!std::filesystem::exists(parsed.first)){
                         Exception::Warning(std::string("file ") + parsed.first.string() + " not found, skipped");
                         continue;
@@ -155,25 +163,29 @@ int main(int argc, char const *argv[]){
                     }
                     config.paths[file_path] = parsed.second.value_or(std::filesystem::relative(file_path));
                 }
-                archive.create(config.paths, config.prefix);
-            }else if(mode == "extract"){
-                /** Extract **/
-                std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
-                for(std::string module_file : module_files){
-                    if(!archive.extract(std::filesystem::path(module_file).lexically_normal(), prefix).has_value()){
-                        Exception::Warning(std::string("module ") + module_file + "not found, skipped");
-                    }
+            }
+            if(config.paths.empty()){
+                throw Exception::Exception("no module files");
+            }
+            archive.create(config.paths, config.prefix);
+        }else if(mode == "extract" || mode == "x"){
+            /** Extract **/
+            if(!args["module_files"]){
+                throw Exception::Exception("no module files");
+            }
+            std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
+            for(std::string module_file : module_files){
+                if(!archive.extract(std::filesystem::path(module_file).lexically_normal(), prefix).has_value()){
+                    Exception::Warning(std::string("module ") + module_file + "not found, skipped");
                 }
-            }else if(mode == "list"){
-                /** List **/
-                for(std::filesystem::path path : archive.list(prefix)){
-                    std::cout << path << std::endl;
-                }
-            }else{
-                throw Exception::Exception("unknown mode");
+            }
+        }else if(mode == "list" || mode == "l"){
+            /** List **/
+            for(std::filesystem::path path : archive.list(prefix)){
+                std::cout << path << std::endl;
             }
         }else{
-            throw Exception::Exception("mode is required");
+            throw Exception::Exception("unknown mode");
         }
     }catch(Exception::Exception &e){
         std::cerr << args.program.filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
