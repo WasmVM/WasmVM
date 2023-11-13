@@ -320,7 +320,7 @@ int main(int argc, char const *argv[]){
         output_file.close();
         
     }catch(Exception::Exception &e){
-        std::cerr << std::filesystem::path(argv[0]).filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
+        std::cerr << args.program.filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
         return -1;
     }
 

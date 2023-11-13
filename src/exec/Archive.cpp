@@ -5,6 +5,7 @@
 #include "Archive.hpp"
 
 #include <fstream>
+#include <algorithm>
 #include <exception.hpp>
 
 #include <iostream>
@@ -88,8 +89,53 @@ void Archive::create(std::map<std::filesystem::path, std::filesystem::path> modu
     output.close();
 }
 
-std::filesystem::path Archive::extract(std::string module, std::filesystem::path prefix){
-
+std::optional<std::filesystem::path> Archive::extract(std::filesystem::path module, std::filesystem::path prefix){
+    std::optional<std::filesystem::path> output_path = (prefix / module).lexically_normal();
+    // Open file
+    std::ifstream input(path, std::ios::binary | std::ios::in);
+    // Skip magic, version, paths length
+    input.seekg(sizeof(uint32_t) * 2 + sizeof(uint64_t), std::ios::seekdir::cur);
+    // Read path
+    uint32_t path_count;
+    uint64_t address = 0;
+    input.read((char*)&path_count, sizeof(uint32_t));
+    for(uint32_t index = 0; index < path_count; ++index){
+        uint32_t name_length;
+        input.read((char*)&name_length, sizeof(uint32_t));
+        std::string name(name_length, '\0');
+        input.read(name.data(), name_length);
+        if(name == module){
+            input.read((char*)&address, sizeof(uint64_t));
+            break;
+        }else{
+            input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); 
+        }
+    }
+    // Read content
+    if(address != 0){
+        // Read module size
+        input.seekg(address, std::ios::seekdir::beg);
+        uint64_t module_size = 0;
+        input.read((char*)&module_size, sizeof(uint64_t));
+        // Create parent path
+        std::filesystem::create_directories(output_path.value().parent_path());
+        // Extract content
+        std::ofstream output(output_path.value(), std::ios::binary | std::ios::out);
+        char buf[1024];
+        while(module_size > 0){
+            input.read(buf, std::min(module_size, (uint64_t)1024));
+            std::streamsize extracted = input.gcount();
+            output.write(buf, extracted);
+            module_size -= extracted;
+        }
+        // Close output
+        output.close();
+    }else{
+        output_path.reset();
+    }
+    // Close input
+    input.close();
+    return output_path;
 }
 
 std::vector<std::filesystem::path> Archive::list(std::filesystem::path prefix){

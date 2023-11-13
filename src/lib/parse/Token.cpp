@@ -221,7 +221,7 @@ static std::optional<Token::Number> number(Token::Location loc, std::string str)
     return std::nullopt;
 }
 
-}
+} // namespace TokenCreate
 
 static int next_char(std::istream& stream, Token::Location& loc){
     int ch = stream.get();

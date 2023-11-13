@@ -158,6 +158,12 @@ int main(int argc, char const *argv[]){
                 archive.create(config.paths, config.prefix);
             }else if(mode == "extract"){
                 /** Extract **/
+                std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
+                for(std::string module_file : module_files){
+                    if(!archive.extract(std::filesystem::path(module_file).lexically_normal(), prefix).has_value()){
+                        Exception::Warning(std::string("module ") + module_file + "not found, skipped");
+                    }
+                }
             }else if(mode == "list"){
                 /** List **/
                 for(std::filesystem::path path : archive.list(prefix)){
@@ -170,7 +176,7 @@ int main(int argc, char const *argv[]){
             throw Exception::Exception("mode is required");
         }
     }catch(Exception::Exception &e){
-        std::cerr << std::filesystem::path(argv[0]).filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
+        std::cerr << args.program.filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
         return -1;
     }
 

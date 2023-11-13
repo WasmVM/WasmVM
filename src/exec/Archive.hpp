@@ -5,6 +5,7 @@
 #include <cstddef>
 #include <vector>
 #include <map>
+#include <optional>
 
 namespace WasmVM {
 
@@ -16,7 +17,7 @@ struct Archive {
     Archive(std::filesystem::path path);
 
     void create(std::map<std::filesystem::path, std::filesystem::path> modules, std::filesystem::path prefix = "");
-    std::filesystem::path extract(std::string module, std::filesystem::path prefix = "");
+    std::optional<std::filesystem::path> extract(std::filesystem::path module, std::filesystem::path prefix = "");
     std::vector<std::filesystem::path> list(std::filesystem::path prefix = "");
 
 private:
