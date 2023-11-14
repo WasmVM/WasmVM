@@ -6,6 +6,7 @@
 #include <vector>
 #include <map>
 #include <optional>
+#include <istream>
 
 namespace WasmVM {
 
@@ -19,6 +20,8 @@ struct Archive {
     void create(std::map<std::filesystem::path, std::filesystem::path> modules, std::filesystem::path prefix = "");
     std::optional<std::filesystem::path> extract(std::filesystem::path module, std::filesystem::path prefix = "");
     std::vector<std::filesystem::path> list(std::filesystem::path prefix = "");
+
+    static bool check_magic_version(std::istream& stream);
 
 private:
     std::filesystem::path path;

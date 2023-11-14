@@ -26,6 +26,19 @@ struct PathEntry {
     uint32_t name_size;
 };
 
+bool Archive::check_magic_version(std::istream& stream){
+    std::string str(4, '\0');
+    stream.read(str.data(), 4);
+    if(str != Archive::magic){
+        return false;
+    }
+    stream.read(str.data(), 4);
+    if(str[0] != Archive::version[0] || str[1] != Archive::version[1]){
+        return false;
+    }
+    return true;
+}
+
 void Archive::create(std::map<std::filesystem::path, std::filesystem::path> modules, std::filesystem::path prefix){
     // Open file
     std::ofstream output(path, std::ios::binary | std::ios::out);
@@ -93,8 +106,10 @@ std::optional<std::filesystem::path> Archive::extract(std::filesystem::path modu
     std::optional<std::filesystem::path> output_path = (prefix / module).lexically_normal();
     // Open file
     std::ifstream input(path, std::ios::binary | std::ios::in);
-    // Skip magic, version, paths length
-    input.seekg(sizeof(uint32_t) * 2 + sizeof(uint64_t), std::ios::seekdir::cur);
+    if(!check_magic_version(input)){
+        throw Exception::Exception("incorrect magic or version");
+    }
+    input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); // Skip paths length
     // Read path
     uint32_t path_count;
     uint64_t address = 0;
@@ -142,8 +157,10 @@ std::vector<std::filesystem::path> Archive::list(std::filesystem::path prefix){
     std::vector<std::filesystem::path> result;
     // Open file
     std::ifstream input(path, std::ios::binary | std::ios::in);
-    // Skip magic, version, paths length
-    input.seekg(sizeof(uint32_t) * 2 + sizeof(uint64_t), std::ios::seekdir::cur); 
+    if(!check_magic_version(input)){
+        throw Exception::Exception("incorrect magic or version");
+    }
+    input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); // Skip paths length
     // Read path
     uint32_t path_count;
     input.read((char*)&path_count, sizeof(uint32_t));

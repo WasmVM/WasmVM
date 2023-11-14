@@ -10,7 +10,6 @@
 #include <utility>
 #include <optional>
 #include <functional>
-#include <set>
 #include <WasmVM.hpp>
 
 namespace WasmVM {
@@ -33,7 +32,7 @@ struct Linker {
 
     Linker(Config config);
 
-    void consume(std::filesystem::path module_path);
+    void consume(std::filesystem::path module_path, std::istream& input);
     WasmModule get();
 
 private:

@@ -288,7 +288,9 @@ Entries:
         .. code-block:: json
                 
             {
-                "mod1": "func1",
-                "mod2.wasm": "table2"
+                "imports": {
+                    "mod1": "func1",
+                    "mod2.wasm": "table2"
+                }
             }
 

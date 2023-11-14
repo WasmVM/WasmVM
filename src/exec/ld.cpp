@@ -10,6 +10,8 @@
 #include <regex>
 #include <algorithm>
 #include <functional>
+#include <utility>
+#include <set>
 
 #include <WasmVM.hpp>
 #include <json.hpp>
@@ -19,13 +21,49 @@
 #include "CommandParser.hpp"
 #include "color.hpp"
 #include "Linker.hpp"
+#include "Archive.hpp"
 
 using namespace WasmVM;
 
-/* TODO: Support linker config:
- * exports (module:name:desc:index)
- * explicit imports (module:name)
- */
+static void consume_archive(std::filesystem::path archive_path, Linker& linker){
+    // Open archive
+    std::ifstream archive(archive_path, std::ios::binary | std::ios::in);
+    if(!Archive::check_magic_version(archive)){
+        throw Exception::Exception("invalid archive version");
+    }
+    // Read paths
+    std::vector<std::pair<std::filesystem::path, uint64_t>> paths;
+    archive.seekg(sizeof(uint64_t), std::ios::seekdir::cur);
+    uint32_t path_count;
+    archive.read((char*)&path_count, sizeof(uint32_t));
+    for(uint32_t index = 0; index < path_count; ++index){
+        uint32_t name_length;
+        archive.read((char*)&name_length, sizeof(uint32_t));
+        std::string name(name_length, '\0');
+        archive.read(name.data(), name_length);
+        uint64_t address;
+        archive.read((char*)&address, sizeof(uint64_t));
+        paths.emplace_back(name, address);
+    }
+    // Close archive
+    archive.close();
+
+    // Read contents
+    for(auto path_pair : paths){
+        // Open module
+        std::ifstream module_binary(archive_path, std::ios::binary | std::ios::in);
+        module_binary.seekg(path_pair.second, std::ios::seekdir::beg);
+        uint64_t module_length;
+        module_binary.read((char*)&module_length, sizeof(uint64_t));
+        auto module_start = module_binary.tellg();
+        linker.consume(path_pair.first, module_binary);
+        if((module_binary.tellg() - module_start) != module_length){
+            Exception::Warning(path_pair.first.string() + " module length may not match expected length");
+        }
+        // Close module
+        module_binary.close();
+    }
+}
 
 int main(int argc, char const *argv[]){
     // Parse argv
@@ -73,26 +111,15 @@ int main(int argc, char const *argv[]){
 
         // Get paths
         std::vector<std::filesystem::path> module_paths;
-        {
-            std::set<std::filesystem::path> path_set;
-            std::vector<std::string> paths;
-            if(config_obj.contains("modules")){
-                for(auto& elem : config_obj["modules"].get<Json::Value::Array>()){
-                    paths.emplace_back(elem.get<std::string>());
-                }
+        if(config_obj.contains("modules")){
+            for(auto& elem : config_obj["modules"].get<Json::Value::Array>()){
+                module_paths.emplace_back(std::filesystem::path(elem.get<std::string>()).lexically_normal());
             }
-            if(args["modules"]){
-                std::vector<std::string> mods = std::get<std::vector<std::string>>(args["modules"].value());
-                for(std::string mod : mods){
-                    paths.emplace_back(mod);
-                }
-            }
-            for(std::string path_str : paths){
-                std::filesystem::path canon = std::filesystem::canonical(path_str);
-                if(!path_set.contains(canon)){
-                    path_set.insert(canon);
-                    module_paths.emplace_back(canon);
-                }
+        }
+        if(args["modules"]){
+            std::vector<std::string> mods = std::get<std::vector<std::string>>(args["modules"].value());
+            for(std::string mod : mods){
+                module_paths.emplace_back(std::filesystem::path(mod).lexically_normal());
             }
         }
         if(module_paths.empty()){
@@ -160,7 +187,7 @@ int main(int argc, char const *argv[]){
                                 if(start_obj.contains("index")){
                                     index.emplace((index_t)start_obj["index"].get<Json::Value::Number>());
                                 }
-                                start_config.emplace_back(std::filesystem::canonical(start_obj["path"].get<std::string>()), index);
+                                start_config.emplace_back(start_obj["path"].get<std::string>(), index);
                             }
                         });
                     }
@@ -209,24 +236,7 @@ int main(int argc, char const *argv[]){
             const std::regex export_regex("^([^,:]*):([^,:]*):([^,:]*):([^,]*)(,|$)");
             std::smatch export_match;
             while(std::regex_search(export_str, export_match, export_regex)){
-                std::string export_module = export_match[1].str();
-                std::filesystem::path export_path;
-                // Extend path
-                if(export_module.starts_with("/")){
-                    export_path = export_module;
-                }else{
-                    export_path = std::filesystem::current_path() / export_module;
-                }
-                // Check existance
-                if(!std::filesystem::exists(export_path)){
-                    export_path.replace_extension(".wasm");
-                }
-                if(std::filesystem::exists(export_path)){
-                    export_path = std::filesystem::canonical(export_path);
-                }else{
-                    throw Exception::Exception(std::string("export module '" ) + export_module + "' not found");
-                }
-                WasmExport& export_ = config.explicit_exports[export_path.string()].emplace_back();
+                WasmExport& export_ = config.explicit_exports[export_match[1].str()].emplace_back();
                 export_.name = export_match[2].str();
                 std::string desc_type = export_match[3].str();
                 if(desc_type == "func"){
@@ -269,23 +279,7 @@ int main(int argc, char const *argv[]){
                             },
                             [&](Json::Value::Object& entry_obj){
                                 std::string export_module = entry_obj["path"].get<std::string>();
-                                std::filesystem::path export_path;
-                                // Extend path
-                                if(export_module.starts_with("/")){
-                                    export_path = export_module;
-                                }else{
-                                    export_path = std::filesystem::current_path() / export_module;
-                                }
-                                // Check existance
-                                if(!std::filesystem::exists(export_path)){
-                                    export_path.replace_extension(".wasm");
-                                }
-                                if(std::filesystem::exists(export_path)){
-                                    export_path = std::filesystem::canonical(export_path);
-                                }else{
-                                    throw Exception::Exception(std::string("export module '" ) + export_module + "' not found");
-                                }
-                                WasmExport& export_ = config.explicit_exports[export_path.string()].emplace_back();
+                                WasmExport& export_ = config.explicit_exports[export_module].emplace_back();
                                 export_.name = entry_obj["name"].get<std::string>();
                                 std::string desc_type = entry_obj["type"].get<std::string>();
                                 if(desc_type == "func"){
@@ -309,9 +303,31 @@ int main(int argc, char const *argv[]){
 
         // Link
         Linker linker(config);
+        std::set<std::filesystem::path> path_set;
         for(std::filesystem::path module_path : module_paths){
-            // TODO: support static lib
-            linker.consume(module_path);
+            if(!std::filesystem::exists(module_path)){
+                throw Exception::Exception(module_path.string() + " not exist");
+            }
+            module_path = std::filesystem::canonical(module_path);
+            if(!path_set.contains(module_path)){
+                // Check magic
+                std::ifstream fin(module_path, std::ios::binary | std::ios::in);
+                std::string magic(4, '\0');
+                fin.read(magic.data(), 4);
+                fin.close();
+                if(magic == Archive::magic){
+                    // static lib
+                    consume_archive(module_path, linker);
+                }else if(*((uint32_t*)magic.data()) == 0x6d736100u){
+                    // wasm module
+                    std::ifstream module_file(module_path, std::ios::binary | std::ios::in);
+                    linker.consume(module_path, module_file);
+                    module_file.close();
+                }else{
+                    throw Exception::Exception(std::string("unknown binary file '") + module_path.filename().string() + "'");
+                }
+                path_set.emplace(module_path);
+            }
         }
 
         // Encode

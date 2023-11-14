@@ -13,11 +13,9 @@ using namespace WasmVM;
 
 Linker::Linker(Config config): config(config){}
 
-void Linker::consume(std::filesystem::path module_path){
+void Linker::consume(std::filesystem::path module_path, std::istream& stream){
     // Decode
-    std::ifstream module_file(module_path);
-    WasmModule module = module_decode(module_file);
-    module_file.close();
+    WasmModule module = module_decode(stream);
 
     // Create module entry
     index_t module_index = modules.size();
@@ -38,28 +36,10 @@ void Linker::consume(std::filesystem::path module_path){
 
     // Imports
     for(WasmImport& import : module.imports){
-        bool pending = false;
-        if(!(config.explicit_imports.contains(import.module) && config.explicit_imports[import.module].contains(import.name)) 
-            && (import.module.starts_with("./") || import.module.starts_with("../") || import.module.starts_with("/"))
+        // Update explicit import
+        if(!(import_map.contains(import.module) && import_map[import.module].contains(import.name))
+            && (config.explicit_imports.contains(import.module) && config.explicit_imports[import.module].contains(import.name))
         ){
-            std::filesystem::path import_path;
-            // Extend path
-            if(import.module.starts_with("/")){
-                import_path = import.module;
-            }else{
-                import_path = module_entry.path.parent_path() / import.module;
-            }
-            // Check existance
-            if(!std::filesystem::exists(import_path)){
-                import_path.replace_extension(".wasm");
-            }
-            if(std::filesystem::exists(import_path)){
-                import.module = std::filesystem::canonical(import_path);
-            }else{
-                throw Exception::Exception(std::string("import module '" ) + import.module + "' not found");
-            }
-            pending = true;
-        }else if(!(import_map.contains(import.module) && import_map[import.module].contains(import.name))){
             std::visit(overloaded {
                 [&](index_t& idx){
                     idx = type_map[module.types[idx]];
@@ -77,50 +57,43 @@ void Linker::consume(std::filesystem::path module_path){
             }, import.desc);
             output.imports.emplace_back(import);
         }
-
-        std::visit(overloaded {
-            [&](index_t& idx){
-                idx = type_map[module.types[idx]];
-                if(pending){
+        if(import_map.contains(import.module) && import_map[import.module].contains(import.name)){
+            IndexEntry entry {
+                .index = import_map[import.module][import.name],
+                .kind = IndexEntry::Import
+            };
+            std::visit(overloaded {
+                [&](index_t& idx){
+                    idx = type_map[module.types[idx]];
+                    module_entry.funcs.emplace_back(entry);
+                },
+                [&](TableType){
+                    module_entry.tables.emplace_back(entry);
+                },
+                [&](MemType){
+                    module_entry.mems.emplace_back(entry);
+                },
+                [&](GlobalType){
+                    module_entry.globals.emplace_back(entry);
+                },
+            }, import.desc);
+        }else{
+            std::visit(overloaded {
+                [&](index_t& idx){
+                    idx = type_map[module.types[idx]];
                     module_entry.funcs.emplace_back(import);
-                }else{
-                    module_entry.funcs.emplace_back(IndexEntry {
-                        .index = import_map[import.module][import.name],
-                        .kind = IndexEntry::Import
-                    });
-                }
-            },
-            [&](TableType){
-                if(pending){
+                },
+                [&](TableType){
                     module_entry.tables.emplace_back(import);
-                }else{
-                    module_entry.tables.emplace_back(IndexEntry {
-                        .index = import_map[import.module][import.name],
-                        .kind = IndexEntry::Import
-                    });
-                }
-            },
-            [&](MemType){
-                if(pending){
+                },
+                [&](MemType){
                     module_entry.mems.emplace_back(import);
-                }else{
-                    module_entry.mems.emplace_back(IndexEntry {
-                        .index = import_map[import.module][import.name],
-                        .kind = IndexEntry::Import
-                    });
-                }
-            },
-            [&](GlobalType){
-                if(pending){
+                },
+                [&](GlobalType){
                     module_entry.globals.emplace_back(import);
-                }else{
-                    module_entry.globals.emplace_back(IndexEntry {
-                        .index = import_map[import.module][import.name],
-                        .kind = IndexEntry::Import
-                    });
-                }
-            },
-        }, import.desc);
+                },
+            }, import.desc);
+        }
     }
 
     // Funcs
@@ -292,24 +265,30 @@ WasmModule Linker::get(){
     compose_start_funcs();
 
     /** Exports **/
-    for(ModuleEntry& module_entry : modules){
-        if(config.explicit_exports.contains(module_entry.path.string())){
-            for(WasmExport export_ : config.explicit_exports[module_entry.path.string()]){
-                switch(export_.desc){
-                    case WasmExport::DescType::func :
-                        update_index(export_.index, func)
-                    break;
-                    case WasmExport::DescType::table :
-                        update_index(export_.index, table)
-                    break;
-                    case WasmExport::DescType::mem :
-                        update_index(export_.index, mem)
-                    break;
-                    case WasmExport::DescType::global :
-                        update_index(export_.index, global)
-                    break;
+    for(auto export_pair : config.explicit_exports){
+        std::filesystem::path export_path = export_pair.first;
+        if(std::filesystem::exists(export_path)){
+            export_path = std::filesystem::canonical(export_path);
+        }
+        for(ModuleEntry& module_entry : modules){
+            if(export_pair.first == module_entry.path.string() || export_path == module_entry.path){
+                for(WasmExport export_ : export_pair.second){
+                    switch(export_.desc){
+                        case WasmExport::DescType::func :
+                            update_index(export_.index, func)
+                        break;
+                        case WasmExport::DescType::table :
+                            update_index(export_.index, table)
+                        break;
+                        case WasmExport::DescType::mem :
+                            update_index(export_.index, mem)
+                        break;
+                        case WasmExport::DescType::global :
+                            update_index(export_.index, global)
+                        break;
+                    }
+                    output.exports.emplace_back(export_);
                 }
-                output.exports.emplace_back(export_);
             }
         }
     }
@@ -320,11 +299,46 @@ void Linker::resolve_imports(std::unordered_map<std::string, std::unordered_map<
     for(Descriptor& desc : descs){
         if(std::holds_alternative<WasmImport>(desc)){
             WasmImport import = std::get<WasmImport>(desc);
-            // Replace with extern entry if found
-            if(export_map.contains(import.module) && export_map[import.module].contains(import.name)){
+            if(import_map.contains(import.module) && import_map[import.module].contains(import.name)){
+                // Existing imports
+                desc.emplace<IndexEntry>(IndexEntry {
+                    .index = import_map[import.module][import.name],
+                    .kind = IndexEntry::Import
+                });
+            }else if(export_map.contains(import.module) && export_map[import.module].contains(import.name)){
+                // Existing exports (direct)
                 desc.emplace<ExternEntry>(export_map[import.module][import.name]);
             }else{
-                throw Exception::Exception(std::string("undefined reference to '") + import.name + "'");
+                std::filesystem::path module_path = import.module;
+                if(std::filesystem::exists(module_path)){
+                    module_path = std::filesystem::canonical(module_path);
+                }
+                if(export_map.contains(module_path) && export_map[module_path].contains(import.name)){
+                    // Existing exports (canonical path)
+                    desc.emplace<ExternEntry>(export_map[module_path][import.name]);
+                }else{
+                    // Create implicit import
+                    index_t index = std::visit(overloaded {
+                        [&](index_t& idx){
+                            return import_counter.func++;
+                        },
+                        [&](TableType){
+                            return import_counter.table++;
+                        },
+                        [&](MemType){
+                            return import_counter.mem++;
+                        },
+                        [&](GlobalType){
+                            return import_counter.global++;
+                        },
+                    }, import.desc);
+                    desc.emplace<IndexEntry>(IndexEntry {
+                        .index = index,
+                        .kind = IndexEntry::Import
+                    });
+                    import_map[import.module][import.name] = index;
+                    output.imports.emplace_back(import);
+                }
             }
         }
     }
@@ -519,8 +533,12 @@ void Linker::compose_start_funcs(){
         },
         [&](std::vector<Config::StartEntry>& entries){
             for(Config::StartEntry& entry : entries){
+                std::filesystem::path start_path = entry.first;
+                if(std::filesystem::exists(start_path)){
+                    start_path = std::filesystem::canonical(start_path);
+                }
                 for(ModuleEntry& module_entry : modules){
-                    if(module_entry.path == entry.first){
+                    if(entry.first == module_entry.path || start_path == module_entry.path){
                         if(!entry.second && !module_entry.start){
                             throw Exception::Exception("start section not exists in explicit start entry");
                         }
