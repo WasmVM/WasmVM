@@ -86,16 +86,16 @@ void Archive::create(std::map<std::filesystem::path, std::filesystem::path> modu
     // Update paths
     output.seekp(paths_start);
     write_data(output, paths_size); // len(paths)
-    output.seekp(sizeof(uint32_t), std::ios::seekdir::cur); // skip path count
+    output.seekp(sizeof(uint32_t), std::ios::cur); // skip path count
     for(PathEntry& path_entry : path_entries){
-        output.seekp(path_entry.name_size + sizeof(uint32_t), std::ios::seekdir::cur);
+        output.seekp(path_entry.name_size + sizeof(uint32_t), std::ios::cur);
         write_data(output, (uint64_t)path_entry.address);
     }
 
     // Update module length
     for(PathEntry& path_entry : path_entries){
         write_data(output, path_entry.module_size);
-        output.seekp(path_entry.module_size, std::ios::seekdir::cur);
+        output.seekp(path_entry.module_size, std::ios::cur);
     }
 
     // Close file
@@ -109,7 +109,7 @@ std::optional<std::filesystem::path> Archive::extract(std::filesystem::path modu
     if(!check_magic_version(input)){
         throw Exception::Exception("incorrect magic or version");
     }
-    input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); // Skip paths length
+    input.seekg(sizeof(uint64_t), std::ios::cur); // Skip paths length
     // Read path
     uint32_t path_count;
     uint64_t address = 0;
@@ -123,13 +123,13 @@ std::optional<std::filesystem::path> Archive::extract(std::filesystem::path modu
             input.read((char*)&address, sizeof(uint64_t));
             break;
         }else{
-            input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); 
+            input.seekg(sizeof(uint64_t), std::ios::cur); 
         }
     }
     // Read content
     if(address != 0){
         // Read module size
-        input.seekg(address, std::ios::seekdir::beg);
+        input.seekg(address, std::ios::beg);
         uint64_t module_size = 0;
         input.read((char*)&module_size, sizeof(uint64_t));
         // Create parent path
@@ -160,7 +160,7 @@ std::vector<std::filesystem::path> Archive::list(std::filesystem::path prefix){
     if(!check_magic_version(input)){
         throw Exception::Exception("incorrect magic or version");
     }
-    input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); // Skip paths length
+    input.seekg(sizeof(uint64_t), std::ios::cur); // Skip paths length
     // Read path
     uint32_t path_count;
     input.read((char*)&path_count, sizeof(uint32_t));
@@ -170,7 +170,7 @@ std::vector<std::filesystem::path> Archive::list(std::filesystem::path prefix){
         std::string name(name_length, '\0');
         input.read(name.data(), name_length);
         result.push_back((prefix / name).lexically_normal());
-        input.seekg(sizeof(uint64_t), std::ios::seekdir::cur); 
+        input.seekg(sizeof(uint64_t), std::ios::cur); 
     }
 
     // Close file

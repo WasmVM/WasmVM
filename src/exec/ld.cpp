@@ -33,7 +33,7 @@ static void consume_archive(std::filesystem::path archive_path, Linker& linker){
     }
     // Read paths
     std::vector<std::pair<std::filesystem::path, uint64_t>> paths;
-    archive.seekg(sizeof(uint64_t), std::ios::seekdir::cur);
+    archive.seekg(sizeof(uint64_t), std::ios::cur);
     uint32_t path_count;
     archive.read((char*)&path_count, sizeof(uint32_t));
     for(uint32_t index = 0; index < path_count; ++index){
@@ -52,7 +52,7 @@ static void consume_archive(std::filesystem::path archive_path, Linker& linker){
     for(auto path_pair : paths){
         // Open module
         std::ifstream module_binary(archive_path, std::ios::binary | std::ios::in);
-        module_binary.seekg(path_pair.second, std::ios::seekdir::beg);
+        module_binary.seekg(path_pair.second, std::ios::beg);
         uint64_t module_length;
         module_binary.read((char*)&module_length, sizeof(uint64_t));
         auto module_start = module_binary.tellg();

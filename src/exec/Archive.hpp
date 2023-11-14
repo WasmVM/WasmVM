@@ -12,7 +12,7 @@ namespace WasmVM {
 
 struct Archive {
 
-    constexpr static char magic[4] {'V', 'M', 'A', 'R'};
+    constexpr static char magic[5] {'V', 'M', 'A', 'R', '\0'};
     constexpr static char version[4] {0x00, 0x01, 0x02, 0x00};
 
     Archive(std::filesystem::path path);
