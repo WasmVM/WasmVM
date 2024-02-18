@@ -10,5 +10,6 @@ WasmVM documentation
    structure
    instance
    instructions
+   notes
 
 * :ref:`search`
