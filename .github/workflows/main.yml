@@ -13,17 +13,26 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [ubuntu-latest]
+        os: [ubuntu-latest, macos-latest, macos-14]
         build_type: [Release]
         c_compiler: [gcc, clang]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
+            parallel: 6
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-
+            parallel: 6
+          - os: macos-latest
+            c_compiler: clang
+            cpp_compiler: clang++
+            parallel: 6
+          - os: macos-14
+            c_compiler: clang
+            cpp_compiler: clang++
+            parallel: 4
     steps:
     - uses: actions/checkout@v4
 
@@ -41,8 +50,7 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      # Build your program with the given configuration. Note that --config is needed because the default Windows generator is a multi-config generator (Visual Studio generator).
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} -j ${{matrix.parallel}}
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
