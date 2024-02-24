@@ -33,6 +33,12 @@ jobs:
             c_compiler: clang
             cpp_compiler: clang++
             parallel: 4
+        exclude:
+          - os: macos-latest
+            c_compiler: gcc
+          - os: macos-14
+            c_compiler: gcc
+
     steps:
     - uses: actions/checkout@v4
 
