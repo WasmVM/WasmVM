@@ -1,5 +1,10 @@
 cmake_minimum_required(VERSION 3.16)
 project(WasmVM)
+
+set(CMAKE_PROJECT_VERSION_MAJOR 1)
+set(CMAKE_PROJECT_VERSION_MINOR 2)
+set(CMAKE_PROJECT_VERSION_PATCH 0)
+
 set(PROJECT_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(CMAKE_C_STANDARD 11)
 set(CMAKE_C_STANDARD_REQUIRED 11)
@@ -36,4 +41,4 @@ if(BUILD_TESTS)
   add_subdirectory(test)
 endif(BUILD_TESTS)
 
-include(pack_deb)
+include(pack)
