@@ -23,6 +23,10 @@ jobs:
         run: cmake --build ${{ github.workspace }}/build --config Release -j 6
       - name: Pack
         run: cd build && cpack -G DEB
+      - name: Store package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ github.workspace }}/packages/*.deb
 
   macos:
     runs-on: macos-14
@@ -41,4 +45,8 @@ jobs:
     - name: install
       run: make -C ${{ github.workspace }}/build install
     - name: Pack
-      run: pkgbuild -root ${{ github.workspace }}/install --identifier org.WasmVM.WasmVM --install-location /usr/local ${{ github.workspace }}/WasmVM.pkg
+      run: pkgbuild --install-location /usr/local --identifier org.WasmVM.WasmVM -root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM.pkg
+    - name: Store package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        path: ${{ github.workspace }}/WasmVM.pkg
