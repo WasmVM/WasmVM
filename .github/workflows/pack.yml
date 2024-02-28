@@ -1,0 +1,39 @@
+name: package build
+
+on:
+  push:
+    branches: [ "release" ]
+  pull_request:
+    branches: [ "release" ]
+
+jobs:
+  ubuntu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake
+        run: >
+          cmake -DCMAKE_CXX_COMPILER="clang++"
+          -DCMAKE_C_COMPILER="clang"
+          -DCMAKE_BUILD_TYPE=Release
+          -DCMAKE_INSTALL_PREFIX=/usr/local
+          -S ${{ github.workspace }}
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+      - name: Pack
+        run: cd build && cpack -G DEB
+
+  macos:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure CMake
+      run: >
+        cmake -DCMAKE_CXX_COMPILER="clang++"
+        -DCMAKE_C_COMPILER="clang"
+        -DCMAKE_BUILD_TYPE=Release
+        -S ${{ github.workspace }}
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config Release --install ${{ github.workspace }}/install -j 6
+    - name: Pack
+      run: pkgbuild -root ${{ github.workspace }}/install --identifier org.WasmVM.WasmVM --install-location /usr/local ${{ github.workspace }}/WasmVM.pkg
