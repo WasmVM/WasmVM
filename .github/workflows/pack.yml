@@ -19,7 +19,7 @@ jobs:
           -DCMAKE_INSTALL_PREFIX=/usr/local
           -S ${{ github.workspace }}
       - name: Build
-        run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+        run: mkdir build && cmake --build ${{ github.workspace }}/build --config Release -j 6
       - name: Pack
         run: cd build && cpack -G DEB
 
@@ -34,6 +34,6 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
         -S ${{ github.workspace }}
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config Release --install ${{ github.workspace }}/install -j 6
+      run: mkdir build && cmake --build ${{ github.workspace }}/build --config Release --install ${{ github.workspace }}/install -j 6
     - name: Pack
       run: pkgbuild -root ${{ github.workspace }}/install --identifier org.WasmVM.WasmVM --install-location /usr/local ${{ github.workspace }}/WasmVM.pkg
