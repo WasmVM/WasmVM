@@ -34,8 +34,11 @@ jobs:
         -DCMAKE_C_COMPILER="clang"
         -DCMAKE_BUILD_TYPE=Release
         -S ${{ github.workspace }}
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
         -B ${{ github.workspace }}/build
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config Release --install ${{ github.workspace }}/install -j 6
+      run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+    - name: install
+      run: make -C ${{ github.workspace }}/build install
     - name: Pack
       run: pkgbuild -root ${{ github.workspace }}/install --identifier org.WasmVM.WasmVM --install-location /usr/local ${{ github.workspace }}/WasmVM.pkg
