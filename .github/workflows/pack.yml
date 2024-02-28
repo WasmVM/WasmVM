@@ -16,13 +16,66 @@ jobs:
           cmake -DCMAKE_CXX_COMPILER="clang++"
           -DCMAKE_C_COMPILER="clang"
           -DCMAKE_BUILD_TYPE=Release
+          -DDEV_BUILD=OFF
           -DCMAKE_INSTALL_PREFIX=/usr/local
           -S ${{ github.workspace }}
+          -B ${{ github.workspace }}/build
       - name: Build
-        run: mkdir build && cmake --build ${{ github.workspace }}/build --config Release -j 6
+        run: cmake --build ${{ github.workspace }}/build --config Release -j 6
       - name: Pack
         run: cd build && cpack -G DEB
+      - name: Store package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu
+          path: ${{ github.workspace }}/packages/*.deb
+  ubuntu-dev:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Configure CMake
+        run: >
+          cmake -DCMAKE_CXX_COMPILER="clang++"
+          -DCMAKE_C_COMPILER="clang"
+          -DCMAKE_BUILD_TYPE=RelWithDebInfo
+          -DDEV_BUILD=ON
+          -DCMAKE_INSTALL_PREFIX=/usr/local
+          -S ${{ github.workspace }}
+          -B ${{ github.workspace }}/build
+      - name: Build
+        run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+      - name: Pack
+        run: cd build && cpack -G DEB
+      - name: Store package as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ubuntu-dev
+          path: ${{ github.workspace }}/packages/*.deb
 
+  macos-dev:
+    runs-on: macos-14
+    steps:
+    - uses: actions/checkout@v4
+    - name: Configure CMake
+      run: >
+        cmake -DCMAKE_CXX_COMPILER="clang++"
+        -DCMAKE_C_COMPILER="clang"
+        -DCMAKE_BUILD_TYPE=RelWithDebInfo
+        -S ${{ github.workspace }}
+        -DDEV_BUILD=ON
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        -B ${{ github.workspace }}/build
+    - name: Build
+      run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+    - name: install
+      run: make -C ${{ github.workspace }}/build install
+    - name: Pack
+      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM-dev.pkg
+    - name: Store package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos-dev
+        path: ${{ github.workspace }}/WasmVM-dev.pkg
   macos:
     runs-on: macos-14
     steps:
@@ -32,8 +85,18 @@ jobs:
         cmake -DCMAKE_CXX_COMPILER="clang++"
         -DCMAKE_C_COMPILER="clang"
         -DCMAKE_BUILD_TYPE=Release
+        -DDEV_BUILD=OFF
         -S ${{ github.workspace }}
+        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        -B ${{ github.workspace }}/build
     - name: Build
-      run: mkdir build && cmake --build ${{ github.workspace }}/build --config Release --install ${{ github.workspace }}/install -j 6
+      run: cmake --build ${{ github.workspace }}/build --config Release -j 6
+    - name: install
+      run: make -C ${{ github.workspace }}/build install
     - name: Pack
-      run: pkgbuild -root ${{ github.workspace }}/install --identifier org.WasmVM.WasmVM --install-location /usr/local ${{ github.workspace }}/WasmVM.pkg
+      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM.pkg
+    - name: Store package as artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: macos
+        path: ${{ github.workspace }}/WasmVM.pkg
