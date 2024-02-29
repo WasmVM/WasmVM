@@ -70,7 +70,7 @@ jobs:
     - name: install
       run: make -C ${{ github.workspace }}/build install
     - name: Pack
-      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM.pkg
+      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM-dev.pkg
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
