@@ -27,6 +27,7 @@ jobs:
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ubuntu
           path: ${{ github.workspace }}/packages/*.deb
   ubuntu-dev:
     runs-on: ubuntu-latest
@@ -48,6 +49,7 @@ jobs:
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
+          name: ubuntu-dev
           path: ${{ github.workspace }}/packages/*.deb
 
   macos-dev:
@@ -72,6 +74,7 @@ jobs:
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
+        name: macos-dev
         path: ${{ github.workspace }}/WasmVM-dev.pkg
   macos:
     runs-on: macos-14
@@ -95,4 +98,5 @@ jobs:
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
+        name: macos
         path: ${{ github.workspace }}/WasmVM.pkg
