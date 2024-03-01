@@ -109,11 +109,12 @@ jobs:
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: true
-      - uses: WasmVM/release-action@master
-        with:
-          token: ${{secrets.GITHUB_TOKEN}}
-          assets: |-
-            wasmvm_1.2.1_amd64.deb
-            wasmvm-dev_1.2.1_amd64.deb
-            WasmVM.pkg
-            WasmVM-dev.pkg
+      - run: ls
+      # - uses: WasmVM/release-action@master
+      #   with:
+      #     token: ${{secrets.GITHUB_TOKEN}}
+      #     assets: |-
+      #       wasmvm_1.2.1_amd64.deb
+      #       wasmvm-dev_1.2.1_amd64.deb
+      #       WasmVM.pkg
+      #       WasmVM-dev.pkg
