@@ -12,7 +12,7 @@
 #include <instances/Store.hpp>
 #include <instances/ModuleInst.hpp>
 
-#define VERSION "v1.2"
+#define VERSION "v1.2.1"
 
 namespace WasmVM {
 
