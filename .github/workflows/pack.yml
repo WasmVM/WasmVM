@@ -3,8 +3,6 @@ name: package build
 on:
   push:
     branches: [ "release" ]
-  pull_request:
-    branches: [ "release" ]
 
 jobs:
   ubuntu:
@@ -104,17 +102,19 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: [ubuntu, ubuntu-dev, macos, macos-dev]
+    permissions:
+      contents: write 
     steps:
       - uses: actions/checkout@v4
       - uses: actions/download-artifact@v4
         with:
           merge-multiple: true
-      - run: ls
-      # - uses: WasmVM/release-action@master
-      #   with:
-      #     token: ${{secrets.GITHUB_TOKEN}}
-      #     assets: |-
-      #       wasmvm_1.2.1_amd64.deb
-      #       wasmvm-dev_1.2.1_amd64.deb
-      #       WasmVM.pkg
-      #       WasmVM-dev.pkg
+      - uses: WasmVM/release-action@master
+        with:
+          token: ${{secrets.GITHUB_TOKEN}}
+          draft: false
+          assets: |-
+            wasmvm_1.2.1_amd64.deb
+            wasmvm-dev_1.2.1_amd64.deb
+            WasmVM.pkg
+            WasmVM-dev.pkg
