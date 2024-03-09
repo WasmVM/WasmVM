@@ -16,6 +16,9 @@
 
 namespace WasmVM {
 
+constexpr u32_t magic = 0x6d736100;
+constexpr u32_t version = 0x01;
+
 WasmModule module_parse(std::istream& stream);
 std::ostream& module_dump(const WasmModule& module, std::ostream& stream);
 std::ostream& module_encode(const WasmModule& module, std::ostream& stream);
