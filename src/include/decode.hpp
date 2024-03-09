@@ -9,9 +9,6 @@
 namespace WasmVM {
 namespace Decode {
 
-constexpr u32_t magic = 0x6d736100;
-constexpr u32_t version = 0x01;
-
 struct Stream {
     Stream(std::istream& istream, WasmModule& module) : istream(istream), module(module){}
 

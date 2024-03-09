@@ -15,11 +15,11 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     {
         u32_t data;
         istream.read((char*) &data, sizeof(u32_t));
-        if(data != Decode::magic){
+        if(data != magic){
             throw Exception::incorrect_magic();
         }
         istream.read((char*) &data, sizeof(u32_t));
-        if(data != Decode::version){
+        if(data != version){
             throw Exception::incorrect_magic();
         }
     }
