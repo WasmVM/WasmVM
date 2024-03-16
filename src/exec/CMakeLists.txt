@@ -33,6 +33,20 @@ target_link_libraries(wasmvm-ar
     WasmVM
 )
 
+add_executable(wasmdump
+    objdump/objdump.cpp
+    CommandParser.cpp
+)
+target_link_libraries(wasmdump
+    WasmVM
+)
+
+if(UNIX)
+    set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
+elseif(WIN32)
+    set(DEFAULT_MODULE_PATH $ENV{PATH} CACHE PATH "Default module lookup path")
+endif(UNIX)
+
 add_executable(wasmvm
     wasmvm.cpp
     CommandParser.cpp
@@ -49,7 +63,7 @@ endif(BUILD_HOST_MODULES)
 
 target_compile_definitions(wasmvm PUBLIC DEFAULT_MODULE_PATH="${DEFAULT_MODULE_PATH}")
 
-install(TARGETS wasmvm-as readwasm wasmvm wasmvm-ar wasmvm-ld
+install(TARGETS wasmvm-as readwasm wasmvm wasmvm-ar wasmvm-ld wasmdump
     RUNTIME DESTINATION bin
     COMPONENT programs
 )

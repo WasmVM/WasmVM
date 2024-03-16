@@ -12,6 +12,10 @@ struct Stream {
 
     template <typename T>
     friend Stream& operator>>(Stream&, T&);
+    template <typename T>
+    friend Stream& operator<<(Stream&, T&);
+
+    friend std::ostream operator<<(std::ostream&, Stream&);
     
 private:
     std::istream& istream;
@@ -19,6 +23,11 @@ private:
 
 template <typename T>
 Stream& operator>>(Stream&, T&);
+
+template <typename T>
+Stream& operator<<(Stream&, T&);
+
+std::ostream operator<<(std::ostream&, Stream&);
 
 struct Byte{
     int address;
