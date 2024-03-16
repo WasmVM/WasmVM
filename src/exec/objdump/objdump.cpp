@@ -14,8 +14,8 @@
 #include "../color.hpp"
 #include "objdump.hpp"
 
-
 using namespace WasmVM;
+using namespace Objdump;
 
 int main(int argc, char const *argv[]){  
     // Parse argv
@@ -51,13 +51,9 @@ int main(int argc, char const *argv[]){
     	// method
     	std::ifstream st(input_path, std::ios::binary);
     	Stream stream(st);
-    	cout << stream;
+    	std::cout << stream;
 
     	st.close();
-
-
-
-
 
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
