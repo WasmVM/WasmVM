@@ -49,21 +49,21 @@ int main(int argc, char const *argv[]){
 
 
     try {
-    	// mathod
+    	// method
+    	std::ifstream st(input_path, std::ios::binary);
+    	Stream stream(st);
+    	cout << stream;
+
+    	st.close();
 
 
 
-    }catch(Exception::Decode &e){
-        std::ios::fmtflags flags = std::cerr.flags();
-        std::cerr << input_path.string() << ":" << std::hex << std::showbase << e.location << " " COLOR_Error ": " << e.what() << std::endl;
-        std::cerr.setf(flags);
-        return -1;
+
+
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
         return -1;
     }
-
-
 
 
 
