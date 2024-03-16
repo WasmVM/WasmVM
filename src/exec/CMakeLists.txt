@@ -35,6 +35,7 @@ target_link_libraries(wasmvm-ar
 
 add_executable(wasmdump
     objdump/objdump.cpp
+    objdump/Stream.cpp
     CommandParser.cpp
 )
 target_link_libraries(wasmdump
