@@ -1,11 +1,6 @@
-// Copyright 2023 Luis Hsu. All rights reserved.
+// Copyright 2024 Jack Lin. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
-
-//***************************************************
-// Author	: Jack Lin
-// Date 	: 3/14/2014
-//***************************************************
 
 #include <fstream>
 #include <filesystem>
