@@ -7,15 +7,19 @@
 namespace WasmVM {
 namespace Objdump {
 
+struct Byte {
+    std::istream::pos_type address;
+    byte_t byte;
+};
+
 struct Stream {
     Stream(std::istream& istream) : istream(istream){}
 
     template <typename T>
     friend Stream& operator>>(Stream&, T&);
-    template <typename T>
-    friend Stream& operator<<(Stream&, T&);
 
-    friend std::ostream operator<<(std::ostream&, Stream&);
+    friend std::ostream& operator<<(std::ostream&, Stream&);
+    friend std::ostream& operator<<(std::ostream&, Byte&);
     
 private:
     std::istream& istream;
@@ -24,15 +28,10 @@ private:
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
-template <typename T>
-Stream& operator<<(Stream&, T&);
+std::ostream& operator<<(std::ostream&, Stream&);
+std::ostream& operator<<(std::ostream&, Byte&);
 
-std::ostream operator<<(std::ostream&, Stream&);
 
-struct Byte{
-    int address;
-    byte_t byte;
-};
 
 } // namespace Objdump
 } // namespace WasmVM

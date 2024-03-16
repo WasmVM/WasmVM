@@ -1,4 +1,4 @@
-// Copyright 2024 Jack Lin. All rights reserved.
+// Copyright 2024 Luis Hsu, Jack Lin. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
 
@@ -52,7 +52,6 @@ int main(int argc, char const *argv[]){
     	std::ifstream st(input_path, std::ios::binary);
     	Stream stream(st);
     	std::cout << stream;
-
     	st.close();
 
     }catch(Exception::Exception &e){
