@@ -12,7 +12,6 @@
 
 #include "../CommandParser.hpp"
 #include "../color.hpp"
-#include "../lib/dump/dump.hpp"
 #include "objdump.hpp"
 
 

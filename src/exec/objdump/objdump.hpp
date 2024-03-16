@@ -20,6 +20,11 @@ private:
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
+struct Byte{
+    int address;
+    byte_t byte;
+};
+
 } // namespace Objdump
 } // namespace WasmVM
 
