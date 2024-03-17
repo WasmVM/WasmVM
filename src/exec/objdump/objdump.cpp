@@ -51,6 +51,7 @@ int main(int argc, char const *argv[]){
     	// method
     	std::ifstream st(input_path, std::ios::binary);
     	Stream stream(st);
+        std::cout << "Address: byte" << std::endl;
     	std::cout << stream;
     	st.close();
 
