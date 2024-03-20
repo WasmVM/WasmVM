@@ -29,6 +29,6 @@ list(JOIN HOST_calls "\n" HOST_calls)
 configure_file("host.cpp.in" ${CMAKE_CURRENT_BINARY_DIR}/host.cpp)
 
 install(TARGETS WasmVM_host
-  ARCHIVE DESTINATION lib
+  COMPONENT modules
   LIBRARY DESTINATION lib
 )

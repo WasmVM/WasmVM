@@ -139,10 +139,12 @@ add_library(WasmVM_static STATIC
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 install(TARGETS WasmVM_static 
+    COMPONENT library
     ARCHIVE DESTINATION lib
 )
 endif(DEV_BUILD)
 
 install(TARGETS WasmVM
+    COMPONENT dll
     LIBRARY DESTINATION lib
 )

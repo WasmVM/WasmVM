@@ -36,7 +36,7 @@ target_link_libraries(wasmvm-ar
 if(UNIX)
     set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
 elseif(WIN32)
-    set(DEFAULT_MODULE_PATH "C:\\Windows\\system32" CACHE PATH "Default module lookup path")
+    set(DEFAULT_MODULE_PATH "C:\\Program Files\\${PROJECT_NAME}-${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}\\lib" CACHE PATH "Default module lookup path")
 endif(UNIX)
 
 add_executable(wasmvm
@@ -57,4 +57,5 @@ target_compile_definitions(wasmvm PUBLIC DEFAULT_MODULE_PATH="${DEFAULT_MODULE_P
 
 install(TARGETS wasmvm-as readwasm wasmvm wasmvm-ar
     RUNTIME DESTINATION bin
+    COMPONENT programs
 )
