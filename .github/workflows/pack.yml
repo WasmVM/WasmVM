@@ -158,7 +158,7 @@ jobs:
       - uses: WasmVM/release-action@master
         with:
           token: ${{secrets.GITHUB_TOKEN}}
-          draft: false
+          draft: true
           assets: |-
             wasmvm_1.2.1_amd64.deb
             wasmvm-dev_1.2.1_amd64.deb

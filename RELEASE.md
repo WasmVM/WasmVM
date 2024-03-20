@@ -1,8 +1,8 @@
-`v1.2.1`
-# v1.2.1 Ubuntu & MacOS install packages
+`v1.2.2`
+# v1.2.2 Windows install packages
 
-打包 Ubuntu & MacOS，可以透過 apt-get 或 .pkg 檔安裝 WasmVM
-Provide packages for Ubuntu & MacOS
+打包 Windows 安裝檔
+Provide package with Windows installer
 
 ## Install guides
 
@@ -20,3 +20,8 @@ sudo apt-get install <deb-file-path>
 
 下載後點開 .pkg 檔，照著安裝程式的步驟安裝
 Download and double click the .pkg file, then follow the steps in installer
+
+### Windows
+
+下載後點開 .exe 檔，照著安裝程式的步驟安裝
+Download and double click the .exe file, then follow the steps in installer
