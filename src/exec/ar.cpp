@@ -148,7 +148,7 @@ int main(int argc, char const *argv[]){
         std::string mode = std::get<std::string>(args["mode"].value());
         if(mode == "create" || mode == "c"){
             /** Create **/
-            CreateConfig config(std::get<std::string>(args["config"].value()), prefix);
+            CreateConfig config(std::filesystem::path(std::get<std::string>(args["config"].value())), prefix.string());
             if(args["module_files"]){
                 std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
                 for(std::string module_file : module_files){

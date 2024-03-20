@@ -198,7 +198,7 @@ WasmModule Linker::get(){
     for(index_t module_idx = 0; module_idx < modules.size(); ++module_idx){
         ModuleEntry& moduleEntry = modules[module_idx];
         for(auto export_ : moduleEntry.exports){
-            export_map[moduleEntry.path][export_.name] = ExternEntry {module_idx, export_.index};
+            export_map[moduleEntry.path.string()][export_.name] = ExternEntry {module_idx, export_.index};
         }
     }
     // Resolve imports
@@ -313,9 +313,9 @@ void Linker::resolve_imports(std::unordered_map<std::string, std::unordered_map<
                 if(std::filesystem::exists(module_path)){
                     module_path = std::filesystem::canonical(module_path);
                 }
-                if(export_map.contains(module_path) && export_map[module_path].contains(import.name)){
+                if(export_map.contains(module_path.string()) && export_map[module_path.string()].contains(import.name)){
                     // Existing exports (canonical path)
-                    desc.emplace<ExternEntry>(export_map[module_path][import.name]);
+                    desc.emplace<ExternEntry>(export_map[module_path.string()][import.name]);
                 }else{
                     // Create implicit import
                     index_t index = std::visit(overloaded {

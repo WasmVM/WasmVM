@@ -58,7 +58,7 @@ byte_t Decode::Stream::peek(){
 }
 
 size_t Decode::Stream::location(){
-    ssize_t loc = istream.tellg();
+    auto loc = istream.tellg();
     if(loc == -1){
         istream.seekg(0, std::ios_base::end);
         loc = istream.tellg();
