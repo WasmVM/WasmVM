@@ -168,7 +168,7 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
   MemInst& mem = stack.store.mems[addr];
   u64_t val = get_base(label);
   u64_t len = (mem.data.size() / page_size) + val;
-  if((len > (1UL << 48UL)) || (mem.type.max && (len > mem.type.max.value()))) {
+  if((len > (1ULL << 48ULL)) || (mem.type.max && (len > mem.type.max.value()))) {
     label.values.emplace<i32_t>(-1);
     return;
   }

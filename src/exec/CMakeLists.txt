@@ -36,7 +36,7 @@ target_link_libraries(wasmvm-ar
 if(UNIX)
     set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
 elseif(WIN32)
-    set(DEFAULT_MODULE_PATH $ENV{PATH} CACHE PATH "Default module lookup path")
+    set(DEFAULT_MODULE_PATH "C:\\Windows\\system32" CACHE PATH "Default module lookup path")
 endif(UNIX)
 
 add_executable(wasmvm

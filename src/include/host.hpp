@@ -6,8 +6,18 @@
 #include <map>
 #include <filesystem>
 
+#if defined(WIN32)
+  #if defined(HOST_API_DEF)
+    #define LIBRARY_API __declspec(dllexport)
+  #else
+    #define LIBRARY_API __declspec(dllimport)
+  #endif
+#else
+  #define LIBRARY_API
+#endif
+
 using namespace WasmVM;
 
-void host_modules_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleinsts, Store& store);
+LIBRARY_API void host_modules_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleinsts, Store& store);
 
 #endif
