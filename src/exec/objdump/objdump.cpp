@@ -20,7 +20,10 @@ using namespace Objdump;
 int main(int argc, char const *argv[]){  
     // Parse argv
     CommandParser args(argc, argv, {
-        CommandParser::Optional("--dump", "dump raw data", "-d"),
+        CommandParser::Optional("--dump_raw", "dump raw data", "-d"),
+        CommandParser::Optional("--dump_magic", "dump magic and version raw date", "-dm"),
+        CommandParser::Optional("--version", "Show version", "-v"),
+        // CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("input_file", "Input file in WebAssembly binary format"),
     },
         "wasmdump : WasmVM dump wasm"
@@ -31,7 +34,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM assembler version " VERSION << std::endl;
+        std::cerr << "Wasm dump version " VERSION << std::endl;
         return 0;
     }
     // input file
@@ -48,12 +51,34 @@ int main(int argc, char const *argv[]){
 
 
     try {
-    	// method
-    	std::ifstream st(input_path, std::ios::binary);
-    	Stream stream(st);
-        std::cout << "Address: byte" << std::endl;
-    	std::cout << stream;
-    	st.close();
+        if(!args["dump_raw"] && !args["dump_magic"]){
+            std::cout << "Dear, you forget input argument." << std::endl;
+        }
+        // Validate
+        // if(!args["force"]){
+        //     auto validate_result = module_validate(decoded_module);
+        //     if(validate_result){
+        //         throw validate_result.value();
+        //     }
+        // }
+
+
+        std::ifstream st(input_path, std::ios::binary);
+        Stream stream(st);
+    	
+        if(args["dump_raw"]){
+            std::cout << "Address: byte" << std::endl;
+            std::cout << stream;
+        }
+        if(args["dump_magic"]){
+            std::cout << "WASM_BINARY_MAGIC, WASM_BINARY_VERSION" << std::endl;
+            std::cout << "Address: byte" << std::endl;
+            // TODO print MAGIC and VERSION raw
+            std::cout << stream;
+        }
+
+        st.close();
+    	
 
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
