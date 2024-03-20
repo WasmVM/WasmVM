@@ -121,32 +121,10 @@ jobs:
       with:
         name: windows
         path: ${{ github.workspace }}/packages/*.exe
-  
-  windows:
-    runs-on: windows-latest
-    steps:
-    - uses: actions/checkout@v4
-    - name: Configure CMake
-      run: >
-        cmake 
-        -DCMAKE_BUILD_TYPE=Release
-        -S ${{ github.workspace }}
-        -DDEV_BUILD=OFF
-        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
-        -B ${{ github.workspace }}/build
-    - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config Release -j 6
-    - name: Pack
-      run: cd ${{ github.workspace }}/build && cpack -C Release
-    - name: Store package as artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: windows
-        path: ${{ github.workspace }}/packages/*.exe
 
   release:
     runs-on: ubuntu-latest
-    needs: [ubuntu, ubuntu-dev, macos, macos-dev, windows, windows-dev]
+    needs: [ubuntu, ubuntu-dev, macos, macos-dev, windows-dev]
     permissions:
       contents: write 
     steps:
