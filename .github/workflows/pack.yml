@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: cmake --build ${{ github.workspace }}/build --config Release -j 6
       - name: Pack
-        run: cd build && cpack -G DEB
+        run: cd build && cpack -G DEB -C Release
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -44,7 +44,7 @@ jobs:
       - name: Build
         run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo -j 6
       - name: Pack
-        run: cd build && cpack -G DEB 
+        run: cd build && cpack -G DEB -C RelWithDebInfo
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -75,7 +75,6 @@ jobs:
       with:
         name: macos
         path: ${{ github.workspace }}/WasmVM-dev.pkg
-  
   macos:
     runs-on: macos-14
     steps:
@@ -116,7 +115,7 @@ jobs:
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo -j 6
     - name: Pack
-      run: cd ${{ github.workspace }}/build && cpack -G NSIS
+      run: cd ${{ github.workspace }}/build && cpack -C RelWithDebInfo
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -138,7 +137,7 @@ jobs:
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release -j 6
     - name: Pack
-      run: cd ${{ github.workspace }}/build && cpack -G NSIS
+      run: cd ${{ github.workspace }}/build && cpack -C Release
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
@@ -160,9 +159,6 @@ jobs:
           token: ${{secrets.GITHUB_TOKEN}}
           draft: true
           assets: |-
-            wasmvm_1.2.1_amd64.deb
-            wasmvm-dev_1.2.1_amd64.deb
-            WasmVM.pkg
-            WasmVM-dev.pkg
-            WasmVM-1.2.1-win64.exe
-            WasmVM-dev-1.2.1-win64.exe
+            *.deb
+            *.pkg
+            *.exe
