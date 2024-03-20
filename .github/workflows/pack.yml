@@ -110,6 +110,7 @@ jobs:
         -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -S ${{ github.workspace }}
         -DDEV_BUILD=ON
+        -DCONSOLE_COLOR=OFF
         -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
         -B ${{ github.workspace }}/build
     - name: Build
