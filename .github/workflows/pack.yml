@@ -22,7 +22,7 @@ jobs:
       - name: Build
         run: cmake --build ${{ github.workspace }}/build --config Release -j 6
       - name: Pack
-        run: cd build && cpack -G DEB -C Release
+        run: cd ${{ github.workspace }}/build && cpack -G DEB -C Release
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -44,7 +44,7 @@ jobs:
       - name: Build
         run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo -j 6
       - name: Pack
-        run: cd build && cpack -G DEB -C RelWithDebInfo
+        run: cd ${{ github.workspace }}/build && cpack -G DEB -C RelWithDebInfo
       - name: Store package as artifact
         uses: actions/upload-artifact@v4
         with:
@@ -62,19 +62,19 @@ jobs:
         -DCMAKE_BUILD_TYPE=RelWithDebInfo
         -S ${{ github.workspace }}
         -DDEV_BUILD=ON
-        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        -DCMAKE_INSTALL_PREFIX=/usr/local
         -B ${{ github.workspace }}/build
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo -j 6
     - name: install
       run: make -C ${{ github.workspace }}/build install
     - name: Pack
-      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM-dev.pkg
+      run: cd ${{ github.workspace }}/build && cpack -G productbuild -C RelWithDebInfo
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
         name: macos-dev
-        path: ${{ github.workspace }}/WasmVM-dev.pkg
+        path: ${{ github.workspace }}/packages/*.pkg
   macos:
     runs-on: macos-14
     steps:
@@ -86,19 +86,19 @@ jobs:
         -DCMAKE_BUILD_TYPE=Release
         -S ${{ github.workspace }}
         -DDEV_BUILD=OFF
-        -DCMAKE_INSTALL_PREFIX=${{ github.workspace }}/install
+        -DCMAKE_INSTALL_PREFIX=/usr/local
         -B ${{ github.workspace }}/build
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release -j 6
     - name: install
       run: make -C ${{ github.workspace }}/build install
     - name: Pack
-      run: pkgbuild --install-location "/usr/local" --identifier org.WasmVM.WasmVM --root ${{ github.workspace }}/install ${{ github.workspace }}/WasmVM.pkg
+      run: cd ${{ github.workspace }}/build && cpack -G productbuild -C RelWithDebInfo
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: macos
-        path: ${{ github.workspace }}/WasmVM.pkg
+        name: macos-dev
+        path: ${{ github.workspace }}/packages/*.pkg
 
   windows-dev:
     runs-on: windows-latest
