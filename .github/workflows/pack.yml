@@ -93,7 +93,7 @@ jobs:
     - name: Store package as artifact
       uses: actions/upload-artifact@v4
       with:
-        name: macos-dev
+        name: macos
         path: ${{ github.workspace }}/packages/*.pkg
 
   windows-dev:
