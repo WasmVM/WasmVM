@@ -17,7 +17,14 @@ endif(MSVC)
 
 include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
+
+if(UNIX)
+  set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
+elseif(WIN32)
+  set(DEFAULT_MODULE_PATH "C:\\Program Files\\${PROJECT_NAME}-${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}\\lib" CACHE PATH "Default module lookup path")
+endif(UNIX)
+
+set(CMAKE_INSTALL_RPATH ${DEFAULT_MODULE_PATH})
 set(DEV_BUILD ON CACHE BOOL "Build & install static library and headers")
 
 set(CONSOLE_COLOR ON CACHE BOOL "Turn on color in console result")

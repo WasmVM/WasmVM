@@ -33,12 +33,6 @@ target_link_libraries(wasmvm-ar
     WasmVM
 )
 
-if(UNIX)
-    set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
-elseif(WIN32)
-    set(DEFAULT_MODULE_PATH "C:\\Program Files\\${PROJECT_NAME}\\lib" CACHE PATH "Default module lookup path")
-endif(UNIX)
-
 add_executable(wasmvm
     wasmvm.cpp
     CommandParser.cpp
