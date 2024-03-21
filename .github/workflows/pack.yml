@@ -66,8 +66,6 @@ jobs:
         -B ${{ github.workspace }}/build
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config RelWithDebInfo -j 6
-    - name: install
-      run: make -C ${{ github.workspace }}/build install
     - name: Pack
       run: cd ${{ github.workspace }}/build && cpack -G productbuild -C RelWithDebInfo
     - name: Store package as artifact
@@ -90,8 +88,6 @@ jobs:
         -B ${{ github.workspace }}/build
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config Release -j 6
-    - name: install
-      run: make -C ${{ github.workspace }}/build install
     - name: Pack
       run: cd ${{ github.workspace }}/build && cpack -G productbuild -C RelWithDebInfo
     - name: Store package as artifact
