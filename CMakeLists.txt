@@ -21,7 +21,7 @@ set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 if(UNIX)
   set(DEFAULT_MODULE_PATH "/usr/local/lib" CACHE PATH "Default module lookup path")
 elseif(WIN32)
-  set(DEFAULT_MODULE_PATH "C:\\Program Files\\${PROJECT_NAME}-${CMAKE_PROJECT_VERSION_MAJOR}.${CMAKE_PROJECT_VERSION_MINOR}.${CMAKE_PROJECT_VERSION_PATCH}\\lib" CACHE PATH "Default module lookup path")
+  set(DEFAULT_MODULE_PATH "C:\\Program Files\\${PROJECT_NAME}\\lib" CACHE PATH "Default module lookup path")
 endif(UNIX)
 
 set(CMAKE_INSTALL_RPATH ${DEFAULT_MODULE_PATH})
