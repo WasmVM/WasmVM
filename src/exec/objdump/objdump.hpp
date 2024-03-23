@@ -9,13 +9,13 @@ namespace Objdump {
 
 struct Byte {
     std::istream::pos_type address;
-    byte_t byte;
+    std::vector<byte_t> byte;
 };
 
 struct Stream {
     Stream(std::istream& istream) : istream(istream){}
 
-    template <typename T>
+    template <typename T> // T can be any type
     friend Stream& operator>>(Stream&, T&);
 
     friend std::ostream& operator<<(std::ostream&, Stream&);
@@ -30,6 +30,8 @@ Stream& operator>>(Stream&, T&);
 
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Byte&);
+
+void printBytes(int count);
 
 
 
