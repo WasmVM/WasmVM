@@ -75,15 +75,15 @@ int main(int argc, char const *argv[]){
 
         if(args["dump_1"]){
             std::cout << "Address: byte" << std::endl;
-            printBytes(1);
+            printBytes(1, stream);
         }
         if(args["dump_2"]){
             std::cout << "Address: byte" << std::endl;
-            printBytes(2);
+            printBytes(2, stream);
         }
         if(args["dump_3"]){
             std::cout << "Address: byte" << std::endl;
-            printBytes(3);
+            printBytes(3, stream);
         }
 
         // if(args["dump_magic"]){
