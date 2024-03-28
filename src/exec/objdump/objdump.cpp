@@ -49,9 +49,6 @@ int main(int argc, char const *argv[]){
 
 
     try {
-        if(!args["dump_raw"] && !args["dump_magic"]){
-            std::cout << "Dear, you forget input argument." << std::endl;
-        }
 
         std::ifstream st(input_path, std::ios::binary);
         Stream stream(st);
@@ -60,6 +57,11 @@ int main(int argc, char const *argv[]){
             std::cout << "Address: byte" << std::endl;
             std::cout << stream;
         }
+
+        Bytes magic(4);
+        stream >> magic;
+        stream.print_address(magic);
+        std::cout << magic << " ; WASM_BINARY_MAGIC" << std::endl;
 
         // if(args["dump_magic"]){
         //     std::cout << "WASM_BINARY_MAGIC, WASM_BINARY_VERSION" << std::endl;
