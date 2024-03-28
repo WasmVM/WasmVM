@@ -21,7 +21,9 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--dump_raw", "dump raw data", "-d"),
-        CommandParser::Optional("--version", "Show version", "-v"),
+        CommandParser::Optional("--dump_version", "Show version", "-dv"),
+
+
         CommandParser::Fixed("input_file", "Input file in WebAssembly binary format"),
     },
         "wasmdump : WasmVM dump wasm"
@@ -56,19 +58,20 @@ int main(int argc, char const *argv[]){
         if(args["dump_raw"]){
             std::cout << "Address: byte" << std::endl;
             std::cout << stream;
+            st.close();
+            return 0;
         }
+
 
         Bytes magic(4);
         stream >> magic;
         stream.print_address(magic);
         std::cout << magic << " ; WASM_BINARY_MAGIC" << std::endl;
 
-        // if(args["dump_magic"]){
-        //     std::cout << "WASM_BINARY_MAGIC, WASM_BINARY_VERSION" << std::endl;
-        //     std::cout << "Address: byte" << std::endl;
-        //     // TODO print MAGIC and VERSION raw
-        //     std::cout << stream;
-        // }
+        Bytes version(4);
+        stream >> version;
+        stream.print_address(version);
+        std::cout << version << " ; WASM_BINARY_VERSION" << std::endl;
 
         st.close();
 
