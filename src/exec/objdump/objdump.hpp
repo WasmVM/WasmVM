@@ -31,8 +31,6 @@ Stream& operator>>(Stream&, T&);
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
 
-void printBytes(int count, Stream& stream);
-
 } // namespace Objdump
 } // namespace WasmVM
 
