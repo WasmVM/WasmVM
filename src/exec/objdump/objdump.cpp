@@ -21,11 +21,7 @@ int main(int argc, char const *argv[]){
     // Parse argv
     CommandParser args(argc, argv, {
         CommandParser::Optional("--dump_raw", "dump raw data", "-d"),
-        CommandParser::Optional("--dump_1", "dump raw date for one bytes", "-d1"),
-        CommandParser::Optional("--dump_2", "dump raw date for two bytes", "-d2"),
-        CommandParser::Optional("--dump_3", "dump raw date for three bytes", "-d3"),
         CommandParser::Optional("--version", "Show version", "-v"),
-        // CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("input_file", "Input file in WebAssembly binary format"),
     },
         "wasmdump : WasmVM dump wasm"
@@ -56,14 +52,6 @@ int main(int argc, char const *argv[]){
         if(!args["dump_raw"] && !args["dump_magic"]){
             std::cout << "Dear, you forget input argument." << std::endl;
         }
-        // Validate
-        // if(!args["force"]){
-        //     auto validate_result = module_validate(decoded_module);
-        //     if(validate_result){
-        //         throw validate_result.value();
-        //     }
-        // }
-
 
         std::ifstream st(input_path, std::ios::binary);
         Stream stream(st);
@@ -71,19 +59,6 @@ int main(int argc, char const *argv[]){
         if(args["dump_raw"]){
             std::cout << "Address: byte" << std::endl;
             std::cout << stream;
-        }
-
-        if(args["dump_1"]){
-            std::cout << "Address: byte" << std::endl;
-            printBytes(1, stream);
-        }
-        if(args["dump_2"]){
-            std::cout << "Address: byte" << std::endl;
-            printBytes(2, stream);
-        }
-        if(args["dump_3"]){
-            std::cout << "Address: byte" << std::endl;
-            printBytes(3, stream);
         }
 
         // if(args["dump_magic"]){
@@ -94,16 +69,11 @@ int main(int argc, char const *argv[]){
         // }
 
         st.close();
-    	
-
+        
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
         return -1;
     }
-
-
-
-
 
     return 0;
 }
