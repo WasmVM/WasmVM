@@ -8,6 +8,13 @@
 
 using namespace WasmVM;
 
+Objdump::Stream::Stream(std::istream& istream) : istream(istream){
+    istream.seekg(0, std::ios::end);
+    size_t total_bytes = istream.tellg();
+    istream.seekg(0, std::ios::beg);
+    address_width = std::log2(total_bytes) / 4 + 1;
+}
+
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::Bytes& bytes){
     // discect data based on count
@@ -31,18 +38,18 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     return os;
 }
 
+void Objdump::Stream::print_address(Bytes& bytes){
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << "0x" << std::hex << std::setfill('0') << std::setw(address_width) << bytes.address << ": ";
+    std::cout.setf(flags);
+}
+
 std::ostream& Objdump::operator<<(std::ostream& os, Stream& stream){
-    stream.istream.seekg(0, std::ios::end);
-    size_t total_bytes = stream.istream.tellg();
-    stream.istream.seekg(0, std::ios::beg);
-    
-    size_t address_width = std::log2(total_bytes) / 4 + 1;
     while(!stream.istream.eof()){
         Bytes bytes(1);
         stream >> bytes;
-        std::ios::fmtflags flags = std::cout.flags();
-        std::cout << "0x" << std::hex << std::setfill('0') << std::setw(address_width) << bytes.address << ": " << bytes << std::endl;
-        std::cout.setf(flags);
+        stream.print_address(bytes);
+        std::cout << bytes << std::endl;
     }
     return os;
 }
