@@ -69,7 +69,7 @@ int main(int argc, char const *argv[]){
         // }
 
         st.close();
-        
+
     }catch(Exception::Exception &e){
         std::cerr << input_path.string() << ": " COLOR_Error ": " << e.what() << std::endl;
         return -1;
