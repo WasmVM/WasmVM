@@ -30,9 +30,9 @@ Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::By
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     std::ios::fmtflags flags = std::cout.flags();
-    std::cout << std::hex << std::setfill('0') << std::setw(2);
+    std::cout << std::hex;
     for(size_t i = 0; i < bytes.size(); i++){
-        std::cout << (int)bytes[i] << " ";
+        std::cout << std::setfill('0') << std::setw(2) << (int)bytes[i] << " ";
     }
     std::cout.setf(flags);
     return os;
