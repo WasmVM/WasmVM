@@ -25,6 +25,7 @@ struct Stream {
     friend std::ostream& operator<<(std::ostream&, Section&);
 
     void print_address(Bytes&);
+    void print_address(size_t&);
     
 private:
     std::istream& istream;
@@ -35,6 +36,7 @@ struct Section {
     Section(Stream& stream) : stream(stream) {}
     Bytes id = Bytes(1);
     u32_t size;
+    size_t size_address;
     Stream& stream;
 };
 

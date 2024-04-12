@@ -44,6 +44,7 @@ Objdump::Stream& Objdump::operator>><u32_t>(Stream& stream, u32_t& value){
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::Section& section){
     stream >> section.id;
+    section.size_address = stream.istream.tellg();
     stream >> section.size;
     return stream;
 }
@@ -59,16 +60,12 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
 }
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
-    //TODO:
+
     section.stream.print_address(section.id);
     std::cout << section.id << " ; Section ID" << std::endl;
 
-    //section.stream.print_address(section.size);
+    section.stream.print_address(section.size_address);
     std::cout << section.size << " ; Section size" << std::endl;
-
-
-
-
 
     return os;
 }
@@ -76,6 +73,12 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
 void Objdump::Stream::print_address(Bytes& bytes){
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << "0x" << std::hex << std::setfill('0') << std::setw(address_width) << bytes.address << ": ";
+    std::cout.setf(flags);
+}
+
+void Objdump::Stream::print_address(size_t& address){
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << "0x" << std::hex << std::setfill('0') << std::setw(address_width) << address << ": ";
     std::cout.setf(flags);
 }
 
