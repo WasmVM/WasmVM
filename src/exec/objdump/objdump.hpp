@@ -12,6 +12,8 @@ struct Bytes : public std::vector<byte_t> {
     std::istream::pos_type address;
 };
 
+struct Section;
+
 struct Stream {
     Stream(std::istream& istream);
 
@@ -20,6 +22,7 @@ struct Stream {
 
     friend std::ostream& operator<<(std::ostream&, Stream&);
     friend std::ostream& operator<<(std::ostream&, Bytes&);
+    friend std::ostream& operator<<(std::ostream&, Section&);
 
     void print_address(Bytes&);
     
@@ -28,11 +31,19 @@ private:
     size_t address_width;
 };
 
+struct Section {
+    Section(Stream& stream) : stream(stream) {}
+    Bytes id = Bytes(1);
+    u32_t size;
+    Stream& stream;
+};
+
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
+std::ostream& operator<<(std::ostream&, Section&);
 
 } // namespace Objdump
 } // namespace WasmVM

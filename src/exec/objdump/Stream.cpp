@@ -27,6 +27,26 @@ Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::By
     return stream;
 }
 
+template<>
+Objdump::Stream& Objdump::operator>><u32_t>(Stream& stream, u32_t& value){
+    value = 0;
+    for(int i = 0; i < 5; i++){
+        char bchar = stream.istream.get();
+        value |= (bchar & 0x7F) << (i * 7);
+        if( (bchar & 0x80) == 0){
+            break;
+        }
+    }
+
+    return stream;
+}
+
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::Section& section){
+    stream >> section.id;
+    stream >> section.size;
+    return stream;
+}
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     std::ios::fmtflags flags = std::cout.flags();
@@ -35,6 +55,21 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
         std::cout << std::setfill('0') << std::setw(2) << (int)bytes[i] << " ";
     }
     std::cout.setf(flags);
+    return os;
+}
+
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
+    //TODO:
+    section.stream.print_address(section.id);
+    std::cout << section.id << " ; Section ID" << std::endl;
+
+    //section.stream.print_address(section.size);
+    std::cout << section.size << " ; Section size" << std::endl;
+
+
+
+
+
     return os;
 }
 

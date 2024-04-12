@@ -73,6 +73,12 @@ int main(int argc, char const *argv[]){
         stream.print_address(version);
         std::cout << version << " ; WASM_BINARY_VERSION" << std::endl;
 
+        Section type(stream);
+        stream >> type;
+        std::cout << type << std::endl;
+
+
+
         st.close();
 
     }catch(Exception::Exception &e){
