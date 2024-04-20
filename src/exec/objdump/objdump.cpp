@@ -74,7 +74,7 @@ int main(int argc, char const *argv[]){
         std::cout << version << " ; WASM_BINARY_VERSION" << std::endl;
 
         Section type(stream);
-        stream >> type;
+        stream >> type; // get processed section
         std::cout << type << std::endl;
 
 

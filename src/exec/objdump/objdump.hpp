@@ -34,10 +34,10 @@ private:
 
 struct Section {
     Section(Stream& stream) : stream(stream) {}
-    Bytes id = Bytes(1);
-    u32_t size;
-    size_t size_address;
-    Stream& stream;
+    Stream&     stream;
+    Bytes id    = Bytes(1);
+    Bytes size  = Bytes(5);
+    size_t      size_address;
 };
 
 template <typename T>
