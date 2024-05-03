@@ -48,6 +48,11 @@ struct Section {
     size_t      size_address;
 };
 
+struct TypeSection : public Section {
+    TypeSection(Stream& stream) : Section(stream) {}
+    std::vector<FuncType> functype;
+};
+
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
@@ -57,6 +62,7 @@ Stream& operator>>(Stream&, std::vector<T>&);
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
 std::ostream& operator<<(std::ostream&, Section&);
+std::ostream& operator<<(std::ostream&, TypeSection&);
 
 template <typename T>
 std::ostream& operator<<(std::ostream&, std::vector<T>&);

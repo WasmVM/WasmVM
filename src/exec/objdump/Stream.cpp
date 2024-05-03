@@ -63,13 +63,17 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     return os;
 }
 
+std::ostream& Objdump::operator<<(std::ostream& os, TypeSection& section){
+    //TODO:
+}
+
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
 
     section.stream.print_address(section.id);
     std::cout << section.id << " ; Section ID" << std::endl;
 
-    u32_t SizeInDec;
-    for (int i  = 0; i < section.size.size(); i++){
+    u32_t SizeInDec = 0;
+    for (int i = 0; i < section.size.size(); i++){
         SizeInDec |= ((int)section.size[i] & 0x7F) << (i*7);
     }
     section.stream.print_address(section.size_address);
