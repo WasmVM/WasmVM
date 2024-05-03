@@ -26,6 +26,7 @@ struct Stream {
 
     void print_address(Bytes&);
     void print_address(size_t&);
+    void get_u32(Stream&, Section&);
     
 private:
     std::istream& istream;

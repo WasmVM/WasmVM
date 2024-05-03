@@ -75,7 +75,13 @@ int main(int argc, char const *argv[]){
 
         Section type(stream);
         stream >> type; // get processed section
-        std::cout << type << std::endl;
+        std::cout << type;
+
+        Bytes numsType(1);
+        stream >> numsType;
+        stream.print_address(numsType);
+        std::cout << numsType << " ; NUMBER OF TYPES" << std::endl;
+
 
 
 
