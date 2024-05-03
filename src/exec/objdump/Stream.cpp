@@ -16,21 +16,17 @@ Objdump::Stream::Stream(std::istream& istream) : istream(istream){
     address_width = std::log2(total_bytes) / 4 + 1;
 }
 
-void Objdump::Stream::get_u32(Objdump::Stream& stream, Objdump::Section& section){
+Objdump::Bytes Objdump::Stream::get_u32(Objdump::Stream& stream){
+    Bytes size;
     // Read size's data
     for(int i = 0; i < 5; i++){
         char bchar = stream.istream.get();
-        if( (bchar & 0x80) == 0){
-            section.size[i] = (byte_t)bchar;
-            for (int j = i+1; j < 5; j++){
-                section.size.pop_back();
-            }
+        size.push_back((byte_t)bchar);
+        if((bchar & 0x80) == 0){
             break;
         }
-        section.size[i] = (byte_t)bchar;
     }
-
-    return;
+    return size;
 }
 
 // ----- INPUT -----
@@ -51,8 +47,7 @@ template<>
 Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::Section& section){
     stream >> section.id;
     section.size_address = stream.istream.tellg();
-    stream.get_u32(stream, section);
-
+    section.size = stream.get_u32(stream);
     return stream;
 }
 // ------------------

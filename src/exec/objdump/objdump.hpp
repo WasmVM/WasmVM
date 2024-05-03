@@ -8,6 +8,7 @@ namespace WasmVM {
 namespace Objdump {
 
 struct Bytes : public std::vector<byte_t> {
+    Bytes() : std::vector<byte_t>() {}
     Bytes(size_t size) : std::vector<byte_t>(size) {}
     std::istream::pos_type address;
 };
@@ -32,7 +33,7 @@ struct Stream {
 
     void print_address(Bytes&);
     void print_address(size_t&);
-    void get_u32(Stream&, Section&);
+    Bytes get_u32(Stream&);
     
 private:
     std::istream& istream;
@@ -43,7 +44,7 @@ struct Section {
     Section(Stream& stream) : stream(stream) {}
     Stream&     stream;
     Bytes id    = Bytes(1);
-    Bytes size  = Bytes(5);
+    Bytes size;
     size_t      size_address;
 };
 

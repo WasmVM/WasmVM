@@ -82,9 +82,6 @@ int main(int argc, char const *argv[]){
         stream.print_address(numsType);
         std::cout << numsType << " ; NUMBER OF TYPES" << std::endl;
 
-
-
-
         st.close();
 
     }catch(Exception::Exception &e){
