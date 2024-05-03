@@ -20,9 +20,15 @@ struct Stream {
     template <typename T> // T can be any type
     friend Stream& operator>>(Stream&, T&);
 
+    template <typename T>
+    friend Stream& operator>>(Stream&, std::vector<T>&);
+
     friend std::ostream& operator<<(std::ostream&, Stream&);
     friend std::ostream& operator<<(std::ostream&, Bytes&);
     friend std::ostream& operator<<(std::ostream&, Section&);
+
+    template <typename T>
+    friend std::ostream& operator<<(std::ostream&, std::vector<T>&);
 
     void print_address(Bytes&);
     void print_address(size_t&);
@@ -44,9 +50,15 @@ struct Section {
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
+template <typename T>
+Stream& operator>>(Stream&, std::vector<T>&);
+
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
 std::ostream& operator<<(std::ostream&, Section&);
+
+template <typename T>
+std::ostream& operator<<(std::ostream&, std::vector<T>&);
 
 } // namespace Objdump
 } // namespace WasmVM
