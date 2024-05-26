@@ -73,14 +73,22 @@ int main(int argc, char const *argv[]){
         stream.print_address(version);
         std::cout << version << " ; WASM_BINARY_VERSION" << std::endl;
 
-        Section type(stream);
-        stream >> type; // get processed section
-        std::cout << type;
+        Section typesec(stream);
+        stream >> typesec; // get processed section
+        std::cout << typesec;
 
-        Bytes numsType(1);
-        stream >> numsType;
-        stream.print_address(numsType);
-        std::cout << numsType << " ; NUMBER OF TYPES" << std::endl;
+        // Bytes numsType(1);
+        // stream >> numsType;
+        // stream.print_address(numsType);
+        // std::cout << numsType << " ; NUMBER OF TYPES" << std::endl;
+
+
+        TypeSection funcs(stream);
+        // nums type into
+        stream >> funcs;
+        // std::cout << funcs;
+
+
 
         st.close();
 

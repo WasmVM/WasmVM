@@ -13,21 +13,29 @@ struct Bytes : public std::vector<byte_t> {
     std::istream::pos_type address;
 };
 
-struct Section;
+// enum ValueType {
+//     i32, i64, f32, f64, funcref, externref
+// };
+
+struct FuncType{
+    std::vector<int> rt1;
+    std::vector<int> rt2;
+};
+
+
+
+struct Section; // pre declare in stream
 
 struct Stream {
     Stream(std::istream& istream);
 
     template <typename T> // T can be any type
     friend Stream& operator>>(Stream&, T&);
-
     template <typename T>
     friend Stream& operator>>(Stream&, std::vector<T>&);
-
     friend std::ostream& operator<<(std::ostream&, Stream&);
     friend std::ostream& operator<<(std::ostream&, Bytes&);
     friend std::ostream& operator<<(std::ostream&, Section&);
-
     template <typename T>
     friend std::ostream& operator<<(std::ostream&, std::vector<T>&);
 
@@ -42,10 +50,10 @@ private:
 
 struct Section {
     Section(Stream& stream) : stream(stream) {}
-    Stream&     stream;
-    Bytes id    = Bytes(1);
-    Bytes size;
-    size_t      size_address;
+    Stream& stream;
+    Bytes   id = Bytes(1);
+    Bytes   size;
+    size_t  size_address;
 };
 
 struct TypeSection : public Section {
