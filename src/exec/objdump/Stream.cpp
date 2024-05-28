@@ -3,7 +3,6 @@
 // license that can be found in the LICENSE file.
 
 #include "objdump.hpp"
-
 #include <iomanip>
 
 using namespace WasmVM;
@@ -51,115 +50,44 @@ Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::
     return stream;
 }
 
-// valuetype => std::vector<ValueType>
+// // valuetype => std::vector<ValueType>
+// template<>
+// Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt1>(Stream& stream, Objdump::TypeSection.functype.rt1& rt1){
+//     // TODO: get {7f, 7f}, {7f, 7f}
+//     rt1.push_back(0x7f);
+//     rt1.push_back(0x7f);
+//     return stream;
+// }
+
+// // valuetype => std::vector<ValueType>
+// template<>
+// Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt2>(Stream& stream, Objdump::TypeSection.functype.rt2& rt2){
+//     // TODO: get {7f, 7f}, {7f, 7f}
+//     rt2.push_back(0x6f);
+//     rt2.push_back(0x6f);
+//     return stream;
+// }
+
+
+
 template<>
-Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt1>(Stream& stream, Objdump::TypeSection.functype.rt1& rt1){
-    // TODO: get {7f, 7f}, {7f, 7f}
+Objdump::Stream& Objdump::operator>><FuncType>(Stream& stream, FuncType& functype){
+    Objdump::Bytes funcMagic(1);
+    stream >> funcMagic;
 
-    rt1.push_back(0x7f);
-    rt1.push_back(0x7f);
-
-    return stream;
-
-}
-
-// valuetype => std::vector<ValueType>
-template<>
-Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt2>(Stream& stream, Objdump::TypeSection.functype.rt2& rt2){
-    // TODO: get {7f, 7f}, {7f, 7f}
-
-    rt2.push_back(0x6f);
-    rt2.push_back(0x6f);
-
-    return stream;
-
-
-}
-
-
-
-// functype => std::vector<FuncType>
-template<>
-Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype>(Stream& stream, Objdump::TypeSection.functype& functype){
-    // TODO: get {7f, 7f}, {7f, 7f} get how many for rs1 and rs2
-    // construct how many functions
-
-    Bytes funcParam(2);
-    stream >> funcParam;
-
-    int curr = functype.size();
-    curr+=1;
-    functype.resize(curr);
-    curr-=1;
-
-    if(funcParam[0] == 0x60){
-        for(int i = 0; i < funcParam[1]; i++){
-            //param
-            stream >> functype[curr].rt1;
-        }
-
-        Bytes Res(1);
-        stream >> Res;
-        for(int i = 0; i < Res[0]; i++){
-            // res
-            stream >> functype[curr].rt2;
-        }
+    if((int)funcMagic[0] == 0x60){
+        stream >> functype.params;
+        stream >> functype.results;
     }
-
+    
     return stream;
 }
+
+
 
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdump::TypeSection& typesection){
-    // get num type
-    Bytes nums(1);
-    stream >> nums;
-    stream.print_address(nums);
-    std::cout << nums << " ; num types" << std::endl;
-
-
-    for(int i = 0; i < nums; i++){
-        stream >> typesection.functype;
-    }
-
-
-    for(int i = 0; i < typesection.functype.size(); i++){
-        std::cerr << "{";
-        for(int j = 0, k = 0; j < typesection.functype.rt1.size(), k < typesection.functype.rt2.size(); j++, k++){
-            std::cerr << "{" << typesection.functype[0].rt1[j] << ", "
-        }
-
-        std::cerr << "}" << std << endl;
-    }
-
-
-
-
-    // for(int i = 0; i < nums; i++){
-    //     Bytes func(1);
-    //     stream >> func;
-    //     stream.print_address(func);
-    //     std::cout << func << " ; func" <<std::endl;
-
-    //     // check nums of params
-    //     Bytes num_params(1);
-    //     stream >> num_params;
-    //     stream.print_address(num_params);
-    //     std::cout << num_params << " ; num_params" <<std::endl;
-
-    //     std::vector<ValueType> params[num_params];
-    //     stream >> params;
-
-    //     // check nums of result
-    //     Bytes num_results(1);
-    //     stream >> num_results;
-    //     stream.print_address(num_results);
-    //     std::cout << num_results << " ; num_results" <<std::endl;
-
-    //     std::vector<ValueType> result[num_results];
-    // }
-
-    return stream;
+    return stream >> typesection.functype;
 }
 
 // ------------------
@@ -175,9 +103,9 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     return os;
 }
 
-std::ostream& Objdump::operator<<(std::ostream& os, TypeSection& section){
-    //TODO:
-}
+// std::ostream& Objdump::operator<<(std::ostream& os, TypeSection& section){
+//     //TODO:
+// }
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
 

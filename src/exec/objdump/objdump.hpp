@@ -17,11 +17,6 @@ struct Bytes : public std::vector<byte_t> {
 //     i32, i64, f32, f64, funcref, externref
 // };
 
-struct FuncType{
-    std::vector<int> rt1;
-    std::vector<int> rt2;
-};
-
 
 
 struct Section; // pre declare in stream
@@ -65,15 +60,27 @@ template <typename T>
 Stream& operator>>(Stream&, T&);
 
 template <typename T>
-Stream& operator>>(Stream&, std::vector<T>&);
+Stream& operator>>(Stream& stream, std::vector<T>& vec) {
+    Bytes tempsize;
+    tempsize = stream.get_u32(stream);
+    u32_t nums = 0;
+    for (int i = 0; i < tempsize.size(); i++){
+        nums |= ((int)tempsize[i] & 0x7F) << (i*7);
+    }
+    vec.resize(nums);
+    for (int i = 0; i < nums; ++i) {
+        stream >> vec[i];
+    }
+    return stream;
+}
 
 std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
 std::ostream& operator<<(std::ostream&, Section&);
 std::ostream& operator<<(std::ostream&, TypeSection&);
 
-template <typename T>
-std::ostream& operator<<(std::ostream&, std::vector<T>&);
+// template <typename T>
+// std::ostream& operator<<(std::ostream&, std::vector<T>&);
 
 } // namespace Objdump
 } // namespace WasmVM
