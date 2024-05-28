@@ -13,11 +13,6 @@ struct Bytes : public std::vector<byte_t> {
     std::istream::pos_type address;
 };
 
-// enum ValueType {
-//     i32, i64, f32, f64, funcref, externref
-// };
-
-
 
 struct Section; // pre declare in stream
 

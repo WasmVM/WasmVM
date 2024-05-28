@@ -50,25 +50,6 @@ Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::
     return stream;
 }
 
-// // valuetype => std::vector<ValueType>
-// template<>
-// Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt1>(Stream& stream, Objdump::TypeSection.functype.rt1& rt1){
-//     // TODO: get {7f, 7f}, {7f, 7f}
-//     rt1.push_back(0x7f);
-//     rt1.push_back(0x7f);
-//     return stream;
-// }
-
-// // valuetype => std::vector<ValueType>
-// template<>
-// Objdump::Stream& Objdump::operator>><Objdump::TypeSection.functype.rt2>(Stream& stream, Objdump::TypeSection.functype.rt2& rt2){
-//     // TODO: get {7f, 7f}, {7f, 7f}
-//     rt2.push_back(0x6f);
-//     rt2.push_back(0x6f);
-//     return stream;
-// }
-
-
 
 template<>
 Objdump::Stream& Objdump::operator>><FuncType>(Stream& stream, FuncType& functype){
@@ -83,7 +64,34 @@ Objdump::Stream& Objdump::operator>><FuncType>(Stream& stream, FuncType& functyp
     return stream;
 }
 
+template<>
+Objdump::Stream& Objdump::operator>><ValueType>(Stream& stream, ValueType& valuetype){
+    Objdump::Bytes value(1);
+    stream >> value;
 
+    switch((int)value[0]){
+    case 0x7f: 
+        valuetype = i32;
+        break;
+    case 0x7e: 
+        valuetype = i64;
+        break;
+    case 0x7d: 
+        valuetype = f32;
+        break;
+    case 0x7c: 
+        valuetype = f64;
+        break;
+    case 0x70: 
+        valuetype = funcref;
+        break;
+    case 0x6f: 
+        valuetype = externref;
+        break;
+    }
+ 
+    return stream;
+}
 
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdump::TypeSection& typesection){
