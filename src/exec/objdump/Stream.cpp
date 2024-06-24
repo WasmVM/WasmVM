@@ -47,6 +47,8 @@ Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::
     stream >> section.id;
     section.size_address = stream.istream.tellg();
     section.size = stream.get_u32(stream);
+
+    std::cerr << ";; section process" << std::endl;
     return stream;
 }
 
@@ -95,7 +97,10 @@ Objdump::Stream& Objdump::operator>><ValueType>(Stream& stream, ValueType& value
 
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdump::TypeSection& typesection){
-    return stream >> typesection.functype;
+    stream >> (Objdump::Section&)typesection; // call section
+    stream >> typesection.functype;
+    
+    return stream;
 }
 
 // ------------------
@@ -111,9 +116,77 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     return os;
 }
 
-// std::ostream& Objdump::operator<<(std::ostream& os, TypeSection& section){
-//     //TODO:
+
+// std::ostream& Objdump::operator<<(std::ostream& os, std::vector<FuncType>& functype){
+
+//     std::cout << functype.params << "  ; n params    " << std::endl;
+
+//     std::cout << "Params: ";
+//     for (const auto& param : functype.params) {
+//         std::cout << param << " ";
+//     }
+//     std::cout << std::endl;
+//     return os;
+
 // }
+
+// Function to convert ValueType to a human-readable string
+const char* valueTypeToString(ValueType vt) {
+    switch (vt) {
+        case ValueType::i32: return "i32";
+        case ValueType::i64: return "i64";
+        case ValueType::f32: return "f32";
+        case ValueType::f64: return "f64";
+        case ValueType::funcref: return "funcref";
+        case ValueType::externref: return "externref";
+        default: return "unknown";
+    }
+}
+
+
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TypeSection& typesection){
+    Section tmp =  (Objdump::Section&)typesection;
+    std::cout << tmp;
+    std::map<int, int> vb = {
+        {0, 0x7f},
+        {1, 0x7e},
+        {2, 0x7d},
+        {3, 0x7c},
+        {4, 0x70},
+        {5, 0x6f}
+    };
+
+    tmp.stream.print_address(++tmp.size_address);
+    std::cout << std::setfill('0') << std::setw(2) <<typesection.functype.size() << "  ; N of func" << std::endl;
+
+    for(int F = 0; F < typesection.functype.size(); F++){
+        tmp.stream.print_address(++tmp.size_address);
+        std::cout << "60" << "  ; head" << std::endl;
+
+        FuncType tmp2 = typesection.functype[F];
+
+        tmp.stream.print_address(++tmp.size_address);
+        std::cout << std::setfill('0') << std::setw(2) << tmp2.params.size() << "  ; num params" << std::endl;
+
+        for(int V = 0; V < tmp2.params.size(); V++){
+            ValueType val = tmp2.params[V];
+            tmp.stream.print_address(++tmp.size_address);
+            std::cout << std::hex << vb[val] << "  ; " << valueTypeToString(val) << std::endl;
+        }
+
+        tmp.stream.print_address(++tmp.size_address);
+        std::cout << std::setfill('0') << std::setw(2) << tmp2.results.size() << "  ; num results" << std::endl;
+
+        for(int V = 0; V < tmp2.results.size(); V++){
+            ValueType val = tmp2.results[V];
+            tmp.stream.print_address(++tmp.size_address);
+            std::cout << std::hex << vb[val] << "  ; " << valueTypeToString(val) << std::endl;
+        }
+
+    }
+
+    return os;
+}
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
 
