@@ -60,7 +60,6 @@ struct FuncType {
     std::vector<ValueType> params;
     std::vector<ValueType> results;
 };
-
 bool operator==(const FuncType&, const FuncType&);
 
 struct Limits {
