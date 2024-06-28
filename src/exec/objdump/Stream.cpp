@@ -4,6 +4,7 @@
 
 #include "objdump.hpp"
 #include <iomanip>
+#include <cmath>
 
 using namespace WasmVM;
 
