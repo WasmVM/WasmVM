@@ -51,6 +51,13 @@ struct TypeSection : public Section {
     std::vector<FuncType> functype;
 };
 
+struct ImportSection : public Section {
+    ImportSection(Stream& stream) : Section(stream) {}
+   // std::vector<FuncType> functype;
+};
+
+
+
 template <typename T>
 Stream& operator>>(Stream&, T&);
 

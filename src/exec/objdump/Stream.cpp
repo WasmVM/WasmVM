@@ -49,7 +49,7 @@ Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::
     section.size_address = stream.istream.tellg();
     section.size = stream.get_u32(stream);
 
-    std::cerr << ";; section process" << std::endl;
+    
     return stream;
 }
 
@@ -82,6 +82,17 @@ Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdu
     
     return stream;
 }
+
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::ImportSection>(Stream& stream, Objdump::ImportSection& importsection){
+    stream >> (Objdump::Section&)importsection; // call section
+
+    std::cerr << importsection.id << std::endl;
+
+    return stream;
+}
+// import in put
+
 
 // ------------------
 

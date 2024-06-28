@@ -81,6 +81,11 @@ int main(int argc, char const *argv[]){
         stream >> funcs;
         std::cout << funcs;
 
+        std::cout << ";; section process" << std::endl;
+        ImportSection import(stream);
+        stream >> import;
+     //   std::cout << import;
+
 
         st.close();
 
