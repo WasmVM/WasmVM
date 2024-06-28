@@ -73,10 +73,7 @@ std::ostream& operator<<(std::ostream&, Stream&);
 std::ostream& operator<<(std::ostream&, Bytes&);
 std::ostream& operator<<(std::ostream&, Section&);
 std::ostream& operator<<(std::ostream&, TypeSection&);
-//std::ostream& operator<<(std::ostream&, std::vector<FuncType>&);
-
-// template <typename T>
-// std::ostream& operator<<(std::ostream&, std::vector<T>&);
+std::ostream& operator<<(std::ostream&, ValueType&);
 
 } // namespace Objdump
 } // namespace WasmVM

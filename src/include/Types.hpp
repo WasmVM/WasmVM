@@ -38,16 +38,9 @@ constexpr u64_t page_size = 65536;
 
 using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>;
 
-enum ValueType {
-    i32, i64, f32, f64, funcref, externref
+enum ValueType : u8_t {
+    i32 = 0x7f, i64 = 0x7e, f32 = 0x7d, f64 = 0x7c, funcref = 0x70, externref = 0x6f
 };
-
-static_assert(Value(std::in_place_type<i32_t>).index() == ValueType::i32);
-static_assert(Value(std::in_place_type<i64_t>).index() == ValueType::i64);
-static_assert(Value(std::in_place_type<f32_t>).index() == ValueType::f32);
-static_assert(Value(std::in_place_type<f64_t>).index() == ValueType::f64);
-static_assert(Value(std::in_place_type<funcref_t>).index() == ValueType::funcref);
-static_assert(Value(std::in_place_type<externref_t>).index() == ValueType::externref);
 
 enum class RefType {
     funcref = ValueType::funcref,
