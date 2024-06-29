@@ -53,7 +53,7 @@ struct TypeSection : public Section {
 
 struct ImportSection : public Section {
     ImportSection(Stream& stream) : Section(stream) {}
-   // std::vector<FuncType> functype;
+    std::vector<WasmImport> imports;
 };
 
 
@@ -81,6 +81,7 @@ std::ostream& operator<<(std::ostream&, Bytes&);
 std::ostream& operator<<(std::ostream&, Section&);
 std::ostream& operator<<(std::ostream&, TypeSection&);
 std::ostream& operator<<(std::ostream&, ValueType&);
+std::ostream& operator<<(std::ostream&, ImportSection&);
 
 } // namespace Objdump
 } // namespace WasmVM
