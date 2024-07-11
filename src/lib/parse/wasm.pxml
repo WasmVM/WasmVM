@@ -1,0 +1,35 @@
+<!DOCTYPE pxml>
+<pxml namespace="WasmVM">
+    {% Token %}
+    <tokens namespace="Tokens" headerFile="Token.hpp" sourceFile="Token.cpp">
+        {% header file %}
+        <header indent=0 position="top">
+            #include \<string>
+            #include \<Types.hpp>
+        </header>
+        {% tokens %}
+        <token name="ParenL" />
+        <token name="ParenR" />
+        <token name="Id">
+            <type>std::string</type>
+        </token>
+        <token name="String">
+            <type>std::string</type>
+        </token>
+        <token name="Integer">
+            <type>std::string</type>
+        </token>
+        <token name="Float">
+            <type>std::string</type>
+        </token>
+        <token name="Offset">
+            <type>offset_t</type>
+        </token>
+        <token name="Align">
+            <type>align_t</type>
+        </token>
+        <token name="Keyword">
+            <type>std::string</type>
+        </token>
+    </tokens>
+</pxml>

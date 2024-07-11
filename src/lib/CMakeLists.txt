@@ -1,38 +1,7 @@
+add_subdirectory(parse)
 add_library(WasmVM_textfmt OBJECT
     # parse
-    parse/parse.cpp
-    parse/Token.cpp
-    parse/nodes/Module.cpp
-    parse/nodes/Type.cpp
-    parse/nodes/FuncType.cpp
-    parse/nodes/ValueType.cpp
-    parse/nodes/Import.cpp
-    parse/nodes/TableType.cpp
-    parse/nodes/MemType.cpp
-    parse/nodes/GlobalType.cpp
-    parse/nodes/Func.cpp
-    parse/nodes/Table.cpp
-    parse/nodes/Memory.cpp
-    parse/nodes/Elem.cpp
-    parse/nodes/Data.cpp
-    parse/nodes/TypeUse.cpp
-    parse/nodes/Global.cpp
-    parse/nodes/Export.cpp
-    parse/nodes/Start.cpp
-    parse/nodes/instruction.cpp
-    parse/nodes/instruction/numeric.cpp
-    parse/nodes/instruction/i32.cpp
-    parse/nodes/instruction/i64.cpp
-    parse/nodes/instruction/f32.cpp
-    parse/nodes/instruction/f64.cpp
-    parse/nodes/instruction/const.cpp
-    parse/nodes/instruction/control.cpp
-    parse/nodes/instruction/reference.cpp
-    parse/nodes/instruction/parametric.cpp
-    parse/nodes/instruction/variable.cpp
-    parse/nodes/instruction/table.cpp
-    parse/nodes/instruction/memory.cpp
-    parse/nodes/post_process.cpp
+
     # dump
     dump/dump.cpp
     dump/type.cpp
