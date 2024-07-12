@@ -6,6 +6,7 @@
         <header indent=0 position="top">
             #include \<string>
             #include \<Types.hpp>
+            #include \<exception.hpp>
         </header>
         {% tokens %}
         <token name="ParenL" />
@@ -28,8 +29,42 @@
         <token name="Align">
             <type>align_t</type>
         </token>
-        <token name="Keyword">
+        <token name="Module">
             <type>std::string</type>
         </token>
     </tokens>
+    {% Lexer %}
+    <lexer class="Lexer" newLine="\n" headerFile="Lexer.hpp" sourceFile="Lexer.cpp">
+        {% Block comment %}
+        <rule id="Block comment" pattern="\(;" push="block-comment" />
+        <group name="block-comment">
+            <use id="Block comment" />
+            <rule pattern=";\)" pop />
+            <rule pattern="\(" />
+            <rule pattern=";" />
+            <rule pattern="." />
+            <rule pattern="$">
+                throw Exception::Parse("block comment not close", {_pos.line, _pos.column});
+            </rule>
+        </group>
+        {% Line comment %}
+        <rule id="Line comment" pattern=";;" push="line-comment" />
+        <group name="line-comment">
+            <rule pattern="(\n|$)" pop />
+            <rule pattern="." />
+        </group>
+        {% white space %}
+        <rule pattern="( |\t|\n|\r)" />
+        {% parenthesis %}
+        <rule pattern="\(">
+            return Token(ParenL(), _pos);
+        </rule>
+        <rule pattern="\)">
+            return Token(ParenR(), _pos);
+        </rule>
+        {% keywords %}
+        <rule pattern="module">
+            return Token(Module(), _pos);
+        </rule>
+    </lexer>
 </pxml>

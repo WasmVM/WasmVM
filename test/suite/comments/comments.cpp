@@ -3,7 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include <harness.hpp>
-#include <parse/parse.hpp>
+#include <parse/Lexer.hpp>
 
 #include <fstream>
 #include <sstream>
@@ -15,20 +15,27 @@ using namespace Testing;
 Suite comments {
     Test("Line comments", {
         std::ifstream stream("line.wat");
-        Expect(tokenize(stream).size() == 3);
+        Lexer lexer("line.wat", stream);
+        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
         stream.close();
     })
 
     Category("Block comments", {
         Test("Regular", {
             std::ifstream stream("block.wat");
-            Expect(tokenize(stream).size() == 3);
+            Lexer lexer("block.wat", stream);
+            Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
+            Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
+            Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
             stream.close();
         })
         Test("Not close", {
             std::ifstream stream("not_close.wat");
-            Throw(WasmVM::Exception::block_comment_not_close, 
-                Expect(tokenize(stream).size() == 3);
+            Lexer lexer("not_close.wat", stream);
+            Throw(WasmVM::Exception::Parse, 
+                lexer.get();
             )
             stream.close();
         })
@@ -36,12 +43,19 @@ Suite comments {
 
     Test("Nested comments", {
         std::ifstream stream("nested.wat");
-        Expect(tokenize(stream).size() == 6);
+        Lexer lexer("nested.wat", stream);
+        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
+        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
         stream.close();
     })
 
     Test("Whitespace", {
         std::stringstream stream("  \n \t");
-        Expect(tokenize(stream).size() == 0);
+        Lexer lexer("ws.wat", stream);
+        Expect(std::holds_alternative<std::monostate>(lexer.get()));
     })
 };

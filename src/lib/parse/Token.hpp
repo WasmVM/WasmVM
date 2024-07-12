@@ -4,6 +4,7 @@
 
 #include <string>
 #include <Types.hpp>
+#include <exception.hpp>
         
 #include <iostream>
 #include <filesystem>
@@ -63,9 +64,9 @@ struct Align {
     align_t value;
 };
 
-struct Keyword {
-    Keyword() = default;
-    Keyword(std::string value) : value(value){}
+struct Module {
+    Module() = default;
+    Module(std::string value) : value(value){}
     std::string value;
 };
 
@@ -81,7 +82,7 @@ struct Token : public std::variant<
   Tokens::Float,
   Tokens::Offset,
   Tokens::Align,
-  Tokens::Keyword
+  Tokens::Module
 > {
 template<typename T> Token(T token, Position pos): std::variant<
   std::monostate,
@@ -93,7 +94,7 @@ template<typename T> Token(T token, Position pos): std::variant<
   Tokens::Float,
   Tokens::Offset,
   Tokens::Align,
-  Tokens::Keyword
+  Tokens::Module
 >(token), pos(pos){}
     Position pos;
 };

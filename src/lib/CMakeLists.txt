@@ -1,7 +1,8 @@
 add_subdirectory(parse)
 add_library(WasmVM_textfmt OBJECT
     # parse
-
+    parse/parse.cpp
+    parse/Lexer.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
