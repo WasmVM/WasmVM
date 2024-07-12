@@ -62,6 +62,24 @@
         <rule pattern="\)">
             return Token(ParenR(), _pos);
         </rule>
+        {% id %}
+        <rule pattern="\$[0-9a-zA-Z!#%&'*+\-./:<=>@_`\|~\$\^\\?]+">
+            return Token(Module(), _pos);
+        </rule>
+        {% string %}
+        <rule pattern="\"" push="string" />
+        <group name="string">
+            <rule pattern="([\x01-\x1f\x7f])">
+                throw Exception::Parse("invalid character in string", {_pos.line, _pos.column});
+            </rule>
+            <rule pattern="$">
+                throw Exception::Parse("string not close", {_pos.line, _pos.column});
+            </rule>
+            <rule pattern="(.|\\[tnr\"'\\]|\\u\{[0-9a-eA-E_]+\}|\\[0-9a-eA-E][0-9a-eA-E])" more />
+            <rule pattern="\"" pop>
+                return Token(String(_text.substr(0, _text.size() - 1)), _pos);
+            </rule>
+        </group>
         {% keywords %}
         <rule pattern="module">
             return Token(Module(), _pos);

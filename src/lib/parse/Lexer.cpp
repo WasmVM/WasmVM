@@ -7,7 +7,7 @@ namespace WasmVM {
 using namespace Tokens;
 
 Lexer::Lexer(std::filesystem::path path, std::istream& stream) :
-  stream(stream), state(11)
+  stream(stream), state(24)
 {
     current = fetch();
     pos.path = path;
@@ -56,23 +56,39 @@ std::vector<Lexer::State> Lexer::states = {
     {}, // S8
     {}, // S9
     {}, // S10
-    {{{-1},12}, {{9},13}, {{10},14}, {{13},15}, {{32},16}, {{40},17}, {{41},18}, {{59},19}, {{109},20}, }, // S11
+    {{{-1},12}, {{0},13}, {{1,31},14}, {{34},15}, {{92},16}, {{127},14}, }, // S11
     {}, // S12
     {}, // S13
     {}, // S14
     {}, // S15
-    {}, // S16
-    {{{59},21}, }, // S17
-    {}, // S18
-    {{{59},22}, }, // S19
-    {{{111},23}, }, // S20
-    {}, // S21
-    {}, // S22
-    {{{100},24}, }, // S23
-    {{{117},25}, }, // S24
-    {{{108},26}, }, // S25
-    {{{101},27}, }, // S26
+    {{{34},17}, {{39},17}, {{48,57},18}, {{65,69},18}, {{92},17}, {{97,101},18}, {{110},17}, {{114},17}, {{116},17}, {{117},19}, }, // S16
+    {}, // S17
+    {{{48,57},20}, {{65,69},20}, {{97,101},20}, }, // S18
+    {{{123},21}, }, // S19
+    {}, // S20
+    {{{48,57},22}, {{65,69},22}, {{95},22}, {{97,101},22}, }, // S21
+    {{{48,57},22}, {{65,69},22}, {{95},22}, {{97,101},22}, {{125},23}, }, // S22
+    {}, // S23
+    {{{-1},25}, {{9},26}, {{10},27}, {{13},28}, {{32},29}, {{34},30}, {{36},31}, {{40},32}, {{41},33}, {{59},34}, {{109},35}, }, // S24
+    {}, // S25
+    {}, // S26
     {}, // S27
+    {}, // S28
+    {}, // S29
+    {}, // S30
+    {{{33},36}, {{35,39},36}, {{42,43},36}, {{45,58},36}, {{60,90},36}, {{92},36}, {{94,122},36}, {{124},36}, {{126},36}, }, // S31
+    {{{59},37}, }, // S32
+    {}, // S33
+    {{{59},38}, }, // S34
+    {{{111},39}, }, // S35
+    {{{33},36}, {{35,39},36}, {{42,43},36}, {{45,58},36}, {{60,90},36}, {{92},36}, {{94,122},36}, {{124},36}, {{126},36}, }, // S36
+    {}, // S37
+    {}, // S38
+    {{{100},40}, }, // S39
+    {{{117},41}, }, // S40
+    {{{108},42}, }, // S41
+    {{{101},43}, }, // S42
+    {}, // S43
 };
 
 Token Lexer::get(){
@@ -95,8 +111,8 @@ Token Lexer::get(){
             }
             switch(state){
                 // Action 0
-                case 21:
-                    stack.emplace_back(11, text);
+                case 37:
+                    stack.emplace_back(24, text);
                     state = 0;
                     text = current;
                 break;
@@ -135,8 +151,8 @@ Token Lexer::get(){
                     throw Exception::Parse("block comment not close", {_pos.line, _pos.column});
                 }break;
                 // Action 7
-                case 22:
-                    stack.emplace_back(11, text);
+                case 38:
+                    stack.emplace_back(24, text);
                     state = 7;
                     text = current;
                 break;
@@ -153,37 +169,79 @@ Token Lexer::get(){
                     text = current;
                 break;
                 // Action 10
-                case 13:
-                case 14:
-                case 15:
-                case 16:
-                    state = 11;
+                case 26:
+                case 27:
+                case 28:
+                case 29:
+                    state = 24;
                     text = current;
                 break;
                 // Action 11
-                case 17:
-                    state = 11;
+                case 32:
+                    state = 24;
                     text = current;
                 {
                     return Token(ParenL(), _pos);
                 }break;
                 // Action 12
-                case 18:
-                    state = 11;
+                case 33:
+                    state = 24;
                     text = current;
                 {
                     return Token(ParenR(), _pos);
                 }break;
                 // Action 13
-                case 27:
-                    state = 11;
+                case 36:
+                    state = 24;
                     text = current;
                 {
                     return Token(Module(), _pos);
                 }break;
                 // Action 14
+                case 30:
+                    stack.emplace_back(24, text);
+                    state = 11;
+                    text = current;
+                break;
+                // Action 15
+                case 14:
+                    state = 11;
+                    text = current;
+                {
+                    throw Exception::Parse("invalid character in string", {_pos.line, _pos.column});
+                }break;
+                // Action 16
                 case 12:
                     state = 11;
+                    text = current;
+                {
+                    throw Exception::Parse("string not close", {_pos.line, _pos.column});
+                }break;
+                // Action 17
+                case 13:
+                case 17:
+                case 20:
+                case 23:
+                    state = 11;
+                break;
+                // Action 18
+                case 15:
+                    state = stack.back().first;
+                    text = current;
+                    stack.pop_back();
+                {
+                    return Token(String(_text.substr(0, _text.size() - 1)), _pos);
+                }break;
+                // Action 19
+                case 43:
+                    state = 24;
+                    text = current;
+                {
+                    return Token(Module(), _pos);
+                }break;
+                // Action 20
+                case 25:
+                    state = 24;
                     text = current;
                 {
                     return Token(std::monostate(), _pos);

@@ -20,7 +20,7 @@ endmacro(add_test_suite)
 
 # Add tests under here
 add_test_suite(comments)
-# add_test_suite(token)
+add_test_suite(token)
 # add_test_suite(module)
 # add_test_suite(type)
 # add_test_suite(import)
