@@ -75,11 +75,53 @@
             <rule pattern="$">
                 throw Exception::Parse("string not close", {_pos.line, _pos.column});
             </rule>
-            <rule pattern="(.|\\[tnr\"'\\]|\\u\{[0-9a-eA-E_]+\}|\\[0-9a-eA-E][0-9a-eA-E])" more />
+            <rule pattern="." more />
             <rule pattern="\"" pop>
                 return Token(String(_text.substr(0, _text.size() - 1)), _pos);
             </rule>
         </group>
+        {% Integer %}
+        <rule pattern="[\+\-]?\d[\d_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Integer(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?0x[\da-fA-F][\da-fA-F_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Integer(_text), _pos);
+        </rule>
+        {% Floating %}
+        <rule pattern="[\+\-]?(nan|nan:0x[\da-fA-F][\da-fA-F_]*|inf)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?\d[\d_]*([Ee][\+\-]?\d[\d_]*|\.(\d[\d_]*)?([Ee][\+\-]?\d[\d_]*)?)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?0x[\da-fA-F][\da-fA-F_]*([Pp][\+\-]?\d[\d_]*|\.([\da-fA-F][\da-fA-F_]*)?([Pp][\+\-]?\d[\d_]*)?)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
         {% keywords %}
         <rule pattern="module">
             return Token(Module(), _pos);

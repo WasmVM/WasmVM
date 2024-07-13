@@ -7,7 +7,7 @@ namespace WasmVM {
 using namespace Tokens;
 
 Lexer::Lexer(std::filesystem::path path, std::istream& stream) :
-  stream(stream), state(24)
+  stream(stream), state(16)
 {
     current = fetch();
     pos.path = path;
@@ -56,39 +56,71 @@ std::vector<Lexer::State> Lexer::states = {
     {}, // S8
     {}, // S9
     {}, // S10
-    {{{-1},12}, {{0},13}, {{1,31},14}, {{34},15}, {{92},16}, {{127},14}, }, // S11
+    {{{-1},12}, {{0},13}, {{1,31},14}, {{34},15}, {{127},14}, }, // S11
     {}, // S12
     {}, // S13
     {}, // S14
     {}, // S15
-    {{{34},17}, {{39},17}, {{48,57},18}, {{65,69},18}, {{92},17}, {{97,101},18}, {{110},17}, {{114},17}, {{116},17}, {{117},19}, }, // S16
+    {{{-1},17}, {{9},18}, {{10},19}, {{13},20}, {{32},21}, {{34},22}, {{36},23}, {{40},24}, {{41},25}, {{43},26}, {{45},26}, {{48},27}, {{49,57},28}, {{59},29}, {{105},30}, {{109},31}, {{110},32}, }, // S16
     {}, // S17
-    {{{48,57},20}, {{65,69},20}, {{97,101},20}, }, // S18
-    {{{123},21}, }, // S19
+    {}, // S18
+    {}, // S19
     {}, // S20
-    {{{48,57},22}, {{65,69},22}, {{95},22}, {{97,101},22}, }, // S21
-    {{{48,57},22}, {{65,69},22}, {{95},22}, {{97,101},22}, {{125},23}, }, // S22
-    {}, // S23
-    {{{-1},25}, {{9},26}, {{10},27}, {{13},28}, {{32},29}, {{34},30}, {{36},31}, {{40},32}, {{41},33}, {{59},34}, {{109},35}, }, // S24
+    {}, // S21
+    {}, // S22
+    {{{33},33}, {{35,39},33}, {{42,43},33}, {{45,58},33}, {{60,90},33}, {{92},33}, {{94,122},33}, {{124},33}, {{126},33}, }, // S23
+    {{{59},34}, }, // S24
     {}, // S25
-    {}, // S26
-    {}, // S27
-    {}, // S28
-    {}, // S29
-    {}, // S30
-    {{{33},36}, {{35,39},36}, {{42,43},36}, {{45,58},36}, {{60,90},36}, {{92},36}, {{94,122},36}, {{124},36}, {{126},36}, }, // S31
-    {{{59},37}, }, // S32
-    {}, // S33
-    {{{59},38}, }, // S34
-    {{{111},39}, }, // S35
-    {{{33},36}, {{35,39},36}, {{42,43},36}, {{45,58},36}, {{60,90},36}, {{92},36}, {{94,122},36}, {{124},36}, {{126},36}, }, // S36
-    {}, // S37
-    {}, // S38
-    {{{100},40}, }, // S39
-    {{{117},41}, }, // S40
-    {{{108},42}, }, // S41
-    {{{101},43}, }, // S42
-    {}, // S43
+    {{{48},27}, {{49,57},28}, {{105},30}, {{110},32}, }, // S26
+    {{{46},35}, {{48,57},36}, {{69},37}, {{95},36}, {{101},37}, {{120},38}, }, // S27
+    {{{46},35}, {{48,57},36}, {{69},37}, {{95},36}, {{101},37}, }, // S28
+    {{{59},39}, }, // S29
+    {{{110},40}, }, // S30
+    {{{111},41}, }, // S31
+    {{{97},42}, }, // S32
+    {{{33},33}, {{35,39},33}, {{42,43},33}, {{45,58},33}, {{60,90},33}, {{92},33}, {{94,122},33}, {{124},33}, {{126},33}, }, // S33
+    {}, // S34
+    {{{48,57},43}, {{69},44}, {{95},45}, {{101},44}, }, // S35
+    {{{46},35}, {{48,57},36}, {{69},37}, {{95},36}, {{101},37}, }, // S36
+    {{{43},46}, {{45},46}, {{48,57},47}, }, // S37
+    {{{48,57},48}, {{65,70},48}, {{97,102},48}, }, // S38
+    {}, // S39
+    {{{102},49}, }, // S40
+    {{{100},50}, }, // S41
+    {{{110},51}, }, // S42
+    {{{48,57},45}, {{69},44}, {{95},45}, {{101},44}, }, // S43
+    {{{43},52}, {{45},52}, {{48,57},53}, }, // S44
+    {{{48,57},45}, {{69},44}, {{95},45}, {{101},44}, }, // S45
+    {{{48,57},47}, }, // S46
+    {{{48,57},54}, {{95},54}, }, // S47
+    {{{46},55}, {{48,57},56}, {{65,70},56}, {{80},57}, {{95},56}, {{97,102},56}, {{112},57}, }, // S48
+    {}, // S49
+    {{{117},58}, }, // S50
+    {{{58},59}, }, // S51
+    {{{48,57},53}, }, // S52
+    {{{48,57},60}, {{95},60}, }, // S53
+    {{{48,57},54}, {{95},54}, }, // S54
+    {{{48,57},61}, {{65,70},61}, {{80},62}, {{95},63}, {{97,102},61}, {{112},62}, }, // S55
+    {{{46},55}, {{48,57},56}, {{65,70},56}, {{80},57}, {{95},56}, {{97,102},56}, {{112},57}, }, // S56
+    {{{43},64}, {{45},64}, {{48,57},65}, }, // S57
+    {{{108},66}, }, // S58
+    {{{48},67}, }, // S59
+    {{{48,57},60}, {{95},60}, }, // S60
+    {{{48,57},63}, {{65,70},63}, {{80},62}, {{95},63}, {{97,102},63}, {{112},62}, }, // S61
+    {{{43},68}, {{45},68}, {{48,57},69}, }, // S62
+    {{{48,57},63}, {{65,70},63}, {{80},62}, {{95},63}, {{97,102},63}, {{112},62}, }, // S63
+    {{{48,57},65}, }, // S64
+    {{{48,57},70}, {{95},70}, }, // S65
+    {{{101},71}, }, // S66
+    {{{120},72}, }, // S67
+    {{{48,57},69}, }, // S68
+    {{{48,57},73}, {{95},73}, }, // S69
+    {{{48,57},70}, {{95},70}, }, // S70
+    {}, // S71
+    {{{48,57},74}, {{65,70},74}, {{97,102},74}, }, // S72
+    {{{48,57},73}, {{95},73}, }, // S73
+    {{{48,57},75}, {{65,70},75}, {{95},75}, {{97,102},75}, }, // S74
+    {{{48,57},75}, {{65,70},75}, {{95},75}, {{97,102},75}, }, // S75
 };
 
 Token Lexer::get(){
@@ -111,8 +143,8 @@ Token Lexer::get(){
             }
             switch(state){
                 // Action 0
-                case 37:
-                    stack.emplace_back(24, text);
+                case 34:
+                    stack.emplace_back(16, text);
                     state = 0;
                     text = current;
                 break;
@@ -151,8 +183,8 @@ Token Lexer::get(){
                     throw Exception::Parse("block comment not close", {_pos.line, _pos.column});
                 }break;
                 // Action 7
-                case 38:
-                    stack.emplace_back(24, text);
+                case 39:
+                    stack.emplace_back(16, text);
                     state = 7;
                     text = current;
                 break;
@@ -169,37 +201,37 @@ Token Lexer::get(){
                     text = current;
                 break;
                 // Action 10
-                case 26:
-                case 27:
-                case 28:
-                case 29:
-                    state = 24;
+                case 18:
+                case 19:
+                case 20:
+                case 21:
+                    state = 16;
                     text = current;
                 break;
                 // Action 11
-                case 32:
-                    state = 24;
+                case 24:
+                    state = 16;
                     text = current;
                 {
                     return Token(ParenL(), _pos);
                 }break;
                 // Action 12
-                case 33:
-                    state = 24;
+                case 25:
+                    state = 16;
                     text = current;
                 {
                     return Token(ParenR(), _pos);
                 }break;
                 // Action 13
-                case 36:
-                    state = 24;
+                case 33:
+                    state = 16;
                     text = current;
                 {
                     return Token(Module(), _pos);
                 }break;
                 // Action 14
-                case 30:
-                    stack.emplace_back(24, text);
+                case 22:
+                    stack.emplace_back(16, text);
                     state = 11;
                     text = current;
                 break;
@@ -219,9 +251,6 @@ Token Lexer::get(){
                 }break;
                 // Action 17
                 case 13:
-                case 17:
-                case 20:
-                case 23:
                     state = 11;
                 break;
                 // Action 18
@@ -233,15 +262,93 @@ Token Lexer::get(){
                     return Token(String(_text.substr(0, _text.size() - 1)), _pos);
                 }break;
                 // Action 19
+                case 27:
+                case 28:
+                case 36:
+                    state = 16;
+                    text = current;
+                {
+                    // Check underscore
+                    if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                        throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+                    }
+                    _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+                    return Token(Integer(_text), _pos);
+                }break;
+                // Action 20
+                case 48:
+                case 56:
+                    state = 16;
+                    text = current;
+                {
+                    // Check underscore
+                    if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                        throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+                    }
+                    _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+                    return Token(Integer(_text), _pos);
+                }break;
+                // Action 21
+                case 49:
+                case 51:
+                case 74:
+                case 75:
+                    state = 16;
+                    text = current;
+                {
+                    // Check underscore
+                    if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                        throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+                    }
+                    _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+                    return Token(Float(_text), _pos);
+                }break;
+                // Action 22
+                case 35:
                 case 43:
-                    state = 24;
+                case 45:
+                case 47:
+                case 53:
+                case 54:
+                case 60:
+                    state = 16;
+                    text = current;
+                {
+                    // Check underscore
+                    if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                        throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+                    }
+                    _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+                    return Token(Float(_text), _pos);
+                }break;
+                // Action 23
+                case 55:
+                case 61:
+                case 63:
+                case 65:
+                case 69:
+                case 70:
+                case 73:
+                    state = 16;
+                    text = current;
+                {
+                    // Check underscore
+                    if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                        throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+                    }
+                    _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+                    return Token(Float(_text), _pos);
+                }break;
+                // Action 24
+                case 71:
+                    state = 16;
                     text = current;
                 {
                     return Token(Module(), _pos);
                 }break;
-                // Action 20
-                case 25:
-                    state = 24;
+                // Action 25
+                case 17:
+                    state = 16;
                     text = current;
                 {
                     return Token(std::monostate(), _pos);
