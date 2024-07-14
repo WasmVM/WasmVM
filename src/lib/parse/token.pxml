@@ -1,0 +1,257 @@
+<!DOCTYPE pxml>
+<pxml>
+    <tokens namespace="Tokens" headerFile="Token.hpp" sourceFile="Token.cpp">
+        {% header file %}
+        <header indent=0 position="top">
+            #include \<string>
+            #include \<Types.hpp>
+            #include \<exception.hpp>
+        </header>
+        {% tokens %}
+        <token name="ParenL" />
+        <token name="ParenR" />
+        <token name="Id">
+            <type>std::string</type>
+        </token>
+        <token name="String">
+            <type>std::string</type>
+        </token>
+        <token name="Integer">
+            <type>std::string</type>
+        </token>
+        <token name="Float">
+            <type>std::string</type>
+        </token>
+        <token name="MemOffset">
+            <type>offset_t</type>
+        </token>
+        <token name="MemAlign">
+            <type>align_t</type>
+        </token>
+        <token name="Module" />
+        <token name="Type" />
+        <token name="Import" />
+        <token name="Export" />
+        <token name="Param" />
+        <token name="Result" />
+        <token name="Funcref" />
+        <token name="Extern" />
+        <token name="Externref" />
+        <token name="Func" />
+        <token name="Table" />
+        <token name="Memory" />
+        <token name="Global" />
+        <token name="Mut" />
+        <token name="Local" />
+        <token name="Elem" />
+        <token name="Item" />
+        <token name="Declare" />
+        <token name="Offset" />
+        <token name="Data" />
+        <token name="Start" />
+        <token name="Then" />
+        <token name="Unreachable" />
+        <token name="Block" />
+        <token name="Nop" />
+        <token name="End" />
+        <token name="Loop" />
+        <token name="If" />
+        <token name="Else" />
+        <token name="Br" />
+        <token name="Br_if" />
+        <token name="Br_table" />
+        <token name="Return" />
+        <token name="Call" />
+        <token name="Call_indirect" />
+        <token name="Ref_null" />
+        <token name="Ref_is_null" />
+        <token name="Ref_func" />
+        <token name="Drop" />
+        <token name="Select" />
+        <token name="Local_get" />
+        <token name="Local_set" />
+        <token name="Local_tee" />
+        <token name="Global_get" />
+        <token name="Global_set" />
+        <token name="Table_get" />
+        <token name="Table_set" />
+        <token name="Table_size" />
+        <token name="Table_grow" />
+        <token name="Table_fill" />
+        <token name="Table_copy" />
+        <token name="Table_init" />
+        <token name="Elem_drop" />
+        <token name="Memory_size" />
+        <token name="Memory_grow" />
+        <token name="Memory_fill" />
+        <token name="Memory_init" />
+        <token name="Memory_copy" />
+        <token name="Data_drop" />
+        <token name="I32_load" />
+        <token name="I64_load" />
+        <token name="F32_load" />
+        <token name="F64_load" />
+        <token name="I32_load8_s" />
+        <token name="I32_load8_u" />
+        <token name="I32_load16_s" />
+        <token name="I32_load16_u" />
+        <token name="I64_load8_s" />
+        <token name="I64_load8_u" />
+        <token name="I64_load16_s" />
+        <token name="I64_load16_u" />
+        <token name="I64_load32_s" />
+        <token name="I64_load32_u" />
+        <token name="I32_store" />
+        <token name="I64_store" />
+        <token name="F32_store" />
+        <token name="F64_store" />
+        <token name="I32_store8" />
+        <token name="I32_store16" />
+        <token name="I64_store8" />
+        <token name="I64_store16" />
+        <token name="I64_store32" />
+        <token name="I32_const" />
+        <token name="I64_const" />
+        <token name="F32_const" />
+        <token name="F64_const" />
+        <token name="I32_eqz" />
+        <token name="I32_eq" />
+        <token name="I32_ne" />
+        <token name="I32_lt_s" />
+        <token name="I32_lt_u" />
+        <token name="I32_gt_s" />
+        <token name="I32_gt_u" />
+        <token name="I32_le_s" />
+        <token name="I32_le_u" />
+        <token name="I32_ge_s" />
+        <token name="I32_ge_u" />
+        <token name="I64_eqz" />
+        <token name="I64_eq" />
+        <token name="I64_ne" />
+        <token name="I64_lt_s" />
+        <token name="I64_lt_u" />
+        <token name="I64_gt_s" />
+        <token name="I64_gt_u" />
+        <token name="I64_le_s" />
+        <token name="I64_le_u" />
+        <token name="I64_ge_s" />
+        <token name="I64_ge_u" />
+        <token name="F32_eq" />
+        <token name="F32_ne" />
+        <token name="F32_lt" />
+        <token name="F32_gt" />
+        <token name="F32_le" />
+        <token name="F32_ge" />
+        <token name="F64_eq" />
+        <token name="F64_ne" />
+        <token name="F64_lt" />
+        <token name="F64_gt" />
+        <token name="F64_le" />
+        <token name="F64_ge" />
+        <token name="I32_clz" />
+        <token name="I32_ctz" />
+        <token name="I32_popcnt" />
+        <token name="I32_add" />
+        <token name="I32_sub" />
+        <token name="I32_mul" />
+        <token name="I32_div_s" />
+        <token name="I32_div_u" />
+        <token name="I32_rem_s" />
+        <token name="I32_rem_u" />
+        <token name="I32_and" />
+        <token name="I32_or" />
+        <token name="I32_xor" />
+        <token name="I32_shl" />
+        <token name="I32_shr_s" />
+        <token name="I32_shr_u" />
+        <token name="I32_rotl" />
+        <token name="I32_rotr" />
+        <token name="I64_clz" />
+        <token name="I64_ctz" />
+        <token name="I64_popcnt" />
+        <token name="I64_add" />
+        <token name="I64_sub" />
+        <token name="I64_mul" />
+        <token name="I64_div_s" />
+        <token name="I64_div_u" />
+        <token name="I64_rem_s" />
+        <token name="I64_rem_u" />
+        <token name="I64_and" />
+        <token name="I64_or" />
+        <token name="I64_xor" />
+        <token name="I64_shl" />
+        <token name="I64_shr_s" />
+        <token name="I64_shr_u" />
+        <token name="I64_rotl" />
+        <token name="I64_rotr" />
+        <token name="F32_abs" />
+        <token name="F32_neg" />
+        <token name="F32_ceil" />
+        <token name="F32_floor" />
+        <token name="F32_trunc" />
+        <token name="F32_nearest" />
+        <token name="F32_sqrt" />
+        <token name="F32_add" />
+        <token name="F32_sub" />
+        <token name="F32_mul" />
+        <token name="F32_div" />
+        <token name="F32_min" />
+        <token name="F32_max" />
+        <token name="F32_copysign" />
+        <token name="F64_abs" />
+        <token name="F64_neg" />
+        <token name="F64_ceil" />
+        <token name="F64_floor" />
+        <token name="F64_trunc" />
+        <token name="F64_nearest" />
+        <token name="F64_sqrt" />
+        <token name="F64_add" />
+        <token name="F64_sub" />
+        <token name="F64_mul" />
+        <token name="F64_div" />
+        <token name="F64_min" />
+        <token name="F64_max" />
+        <token name="F64_copysign" />
+        <token name="I32_wrap_i64" />
+        <token name="I32_trunc_s_f32" />
+        <token name="I32_trunc_u_f32" />
+        <token name="I32_trunc_s_f64" />
+        <token name="I32_trunc_u_f64" />
+        <token name="I64_extend_s_i32" />
+        <token name="I64_extend_u_i32" />
+        <token name="I64_trunc_s_f32" />
+        <token name="I64_trunc_u_f32" />
+        <token name="I64_trunc_s_f64" />
+        <token name="I64_trunc_u_f64" />
+        <token name="F32_convert_s_i32" />
+        <token name="F32_convert_u_i32" />
+        <token name="F32_convert_s_i64" />
+        <token name="F32_convert_u_i64" />
+        <token name="F32_demote_f64" />
+        <token name="F64_convert_s_i32" />
+        <token name="F64_convert_u_i32" />
+        <token name="F64_convert_s_i64" />
+        <token name="F64_convert_u_i64" />
+        <token name="F64_promote_f32" />
+        <token name="I32_reinterpret_f32" />
+        <token name="I64_reinterpret_f64" />
+        <token name="F32_reinterpret_i32" />
+        <token name="F64_reinterpret_i64" />
+        <token name="I32_extend8_s" />
+        <token name="I32_extend16_s" />
+        <token name="I64_extend8_s" />
+        <token name="I64_extend16_s" />
+        <token name="I64_extend32_s" />
+        <token name="I32_trunc_sat_f32_s" />
+        <token name="I32_trunc_sat_f32_u" />
+        <token name="I32_trunc_sat_f64_s" />
+        <token name="I32_trunc_sat_f64_u" />
+        <token name="I64_trunc_sat_f32_s" />
+        <token name="I64_trunc_sat_f64_u" />
+        <token name="I64_trunc_sat_f64_s" />
+        <token name="I64_trunc_sat_f32_u" />
+        <token name="NumType">
+            <type>std::string</type>
+        </token>
+    </tokens>
+</pxml>

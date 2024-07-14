@@ -1,0 +1,796 @@
+<!DOCTYPE pxml>
+<pxml namespace="WasmVM">
+    <lexer class="Lexer" newLine="\n" headerFile="Lexer.hpp" sourceFile="Lexer.cpp">
+        {% Block comment %}
+        <rule id="Block comment" pattern="\(;" push="block-comment" />
+        <group name="block-comment">
+            <use id="Block comment" />
+            <rule pattern=";\)" pop />
+            <rule pattern="\(" />
+            <rule pattern=";" />
+            <rule pattern="." />
+            <rule pattern="$">
+                throw Exception::Parse("block comment not close", {_pos.line, _pos.column});
+            </rule>
+        </group>
+        {% Line comment %}
+        <rule id="Line comment" pattern=";;" push="line-comment" />
+        <group name="line-comment">
+            <rule pattern="(\n|$)" pop />
+            <rule pattern="." />
+        </group>
+        {% white space %}
+        <rule pattern="( |\t|\n|\r)" />
+        {% parenthesis %}
+        <rule pattern="\(">
+            return Token(ParenL(), _pos);
+        </rule>
+        <rule pattern="\)">
+            return Token(ParenR(), _pos);
+        </rule>
+        {% id %}
+        <rule pattern="\$[0-9a-zA-Z!#%&'*+\-./:<=>@_`\|~\$\^\\?]+">
+            return Token(Module(), _pos);
+        </rule>
+        {% string %}
+        <rule pattern="\"" push="string" />
+        <group name="string">
+            <rule pattern="([\x01-\x1f\x7f])">
+                throw Exception::Parse("invalid character in string", {_pos.line, _pos.column});
+            </rule>
+            <rule pattern="$">
+                throw Exception::Parse("string not close", {_pos.line, _pos.column});
+            </rule>
+            <rule pattern="." more />
+            <rule pattern="\"" pop>
+                return Token(String(_text.substr(0, _text.size() - 1)), _pos);
+            </rule>
+        </group>
+        {% Integer %}
+        <rule pattern="[\+\-]?\d[\d_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Integer(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?0x[\da-fA-F][\da-fA-F_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("integer can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Integer(_text), _pos);
+        </rule>
+        {% Floating %}
+        <rule pattern="[\+\-]?(nan|nan:0x[\da-fA-F][\da-fA-F_]*|inf)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?\d[\d_]*([Ee][\+\-]?\d[\d_]*|\.(\d[\d_]*)?([Ee][\+\-]?\d[\d_]*)?)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
+        <rule pattern="[\+\-]?0x[\da-fA-F][\da-fA-F_]*([Pp][\+\-]?\d[\d_]*|\.([\da-fA-F][\da-fA-F_]*)?([Pp][\+\-]?\d[\d_]*)?)">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("floating number can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(Float(_text), _pos);
+        </rule>
+        {% offset %}
+        <rule pattern="offset=\d[\d_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("offset can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(MemOffset(std::stoll(_text.substr(7))), _pos);
+        </rule>
+        <rule pattern="offset=0x[\da-fA-F][\da-fA-F_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("offset can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(MemOffset(std::stoll(_text.substr(7), nullptr, 16)), _pos);
+        </rule>
+        {% align %}
+        <rule pattern="align=\d[\d_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("align can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(MemAlign(std::stoll(_text.substr(6))), _pos);
+        </rule>
+        <rule pattern="align=0x[\da-fA-F][\da-fA-F_]*">
+            // Check underscore
+            if(_text.ends_with('_') || (_text.find("__") != std::string::npos)){
+                throw Exception::Parse("align can't have consecutive '_' or ends with '_'", {_pos.line, _pos.column});
+            }
+            _text.erase(std::remove(_text.begin(), _text.end(), '_'), _text.end());
+            return Token(MemAlign(std::stoll(_text.substr(6), nullptr, 16)), _pos);
+        </rule>
+        {% keywords %}
+        <rule pattern="module">
+            return Token(Module(), _pos);
+        </rule>    
+        <rule pattern="type">
+            return Token(Type(), _pos);
+        </rule>    
+        <rule pattern="import">
+            return Token(Import(), _pos);
+        </rule>    
+        <rule pattern="export">
+            return Token(Export(), _pos);
+        </rule>    
+        <rule pattern="param">
+            return Token(Param(), _pos);
+        </rule>    
+        <rule pattern="result">
+            return Token(Result(), _pos);
+        </rule>    
+        <rule pattern="funcref">
+            return Token(Funcref(), _pos);
+        </rule>    
+        <rule pattern="extern">
+            return Token(Extern(), _pos);
+        </rule>    
+        <rule pattern="externref">
+            return Token(Externref(), _pos);
+        </rule>    
+        <rule pattern="[if](32|64)">
+            return Token(NumType(_text), _pos);
+        </rule>     
+        <rule pattern="func">
+            return Token(Func(), _pos);
+        </rule>    
+        <rule pattern="table">
+            return Token(Table(), _pos);
+        </rule>    
+        <rule pattern="memory">
+            return Token(Memory(), _pos);
+        </rule>    
+        <rule pattern="global">
+            return Token(Global(), _pos);
+        </rule>    
+        <rule pattern="mut">
+            return Token(Mut(), _pos);
+        </rule>    
+        <rule pattern="local">
+            return Token(Local(), _pos);
+        </rule>    
+        <rule pattern="elem">
+            return Token(Elem(), _pos);
+        </rule>    
+        <rule pattern="item">
+            return Token(Item(), _pos);
+        </rule>    
+        <rule pattern="declare">
+            return Token(Declare(), _pos);
+        </rule>    
+        <rule pattern="offset">
+            return Token(Offset(), _pos);
+        </rule>    
+        <rule pattern="data">
+            return Token(Data(), _pos);
+        </rule>    
+        <rule pattern="start">
+            return Token(Start(), _pos);
+        </rule>
+        <rule pattern="then">
+            return Token(Then(), _pos);
+        </rule>
+        <rule pattern="unreachable">
+            return Token(Unreachable(), _pos);
+        </rule>
+        <rule pattern="block">
+            return Token(Block(), _pos);
+        </rule>
+        <rule pattern="nop">
+            return Token(Nop(), _pos);
+        </rule>
+        <rule pattern="end">
+            return Token(End(), _pos);
+        </rule>
+        <rule pattern="loop">
+            return Token(Loop(), _pos);
+        </rule>
+        <rule pattern="if">
+            return Token(If(), _pos);
+        </rule>
+        <rule pattern="else">
+            return Token(Else(), _pos);
+        </rule>
+        <rule pattern="br">
+            return Token(Br(), _pos);
+        </rule>
+        <rule pattern="br_if">
+            return Token(Br_if(), _pos);
+        </rule>
+        <rule pattern="br_table">
+            return Token(Br_table(), _pos);
+        </rule>
+        <rule pattern="return">
+            return Token(Return(), _pos);
+        </rule>
+        <rule pattern="call">
+            return Token(Call(), _pos);
+        </rule>
+        <rule pattern="call_indirect">
+            return Token(Call_indirect(), _pos);
+        </rule>
+        <rule pattern="ref_null">
+            return Token(Ref_null(), _pos);
+        </rule>
+        <rule pattern="ref_is_null">
+            return Token(Ref_is_null(), _pos);
+        </rule>
+        <rule pattern="ref_func">
+            return Token(Ref_func(), _pos);
+        </rule>
+        <rule pattern="drop">
+            return Token(Drop(), _pos);
+        </rule>
+        <rule pattern="select">
+            return Token(Select(), _pos);
+        </rule>
+        <rule pattern="local_get">
+            return Token(Local_get(), _pos);
+        </rule>
+        <rule pattern="local_set">
+            return Token(Local_set(), _pos);
+        </rule>
+        <rule pattern="local_tee">
+            return Token(Local_tee(), _pos);
+        </rule>
+        <rule pattern="global_get">
+            return Token(Global_get(), _pos);
+        </rule>
+        <rule pattern="global_set">
+            return Token(Global_set(), _pos);
+        </rule>
+        <rule pattern="table_get">
+            return Token(Table_get(), _pos);
+        </rule>
+        <rule pattern="table_set">
+            return Token(Table_set(), _pos);
+        </rule>
+        <rule pattern="table_size">
+            return Token(Table_size(), _pos);
+        </rule>
+        <rule pattern="table_grow">
+            return Token(Table_grow(), _pos);
+        </rule>
+        <rule pattern="table_fill">
+            return Token(Table_fill(), _pos);
+        </rule>
+        <rule pattern="table_copy">
+            return Token(Table_copy(), _pos);
+        </rule>
+        <rule pattern="table_init">
+            return Token(Table_init(), _pos);
+        </rule>
+        <rule pattern="elem_drop">
+            return Token(Elem_drop(), _pos);
+        </rule>
+        <rule pattern="memory_size">
+            return Token(Memory_size(), _pos);
+        </rule>
+        <rule pattern="memory_grow">
+            return Token(Memory_grow(), _pos);
+        </rule>
+        <rule pattern="memory_fill">
+            return Token(Memory_fill(), _pos);
+        </rule>
+        <rule pattern="memory_init">
+            return Token(Memory_init(), _pos);
+        </rule>
+        <rule pattern="memory_copy">
+            return Token(Memory_copy(), _pos);
+        </rule>
+        <rule pattern="data_drop">
+            return Token(Data_drop(), _pos);
+        </rule>
+        <rule pattern="i32\.load">
+            return Token(I32_load(), _pos);
+        </rule>
+        <rule pattern="i64\.load">
+            return Token(I64_load(), _pos);
+        </rule>
+        <rule pattern="f32\.load">
+            return Token(F32_load(), _pos);
+        </rule>
+        <rule pattern="f64\.load">
+            return Token(F64_load(), _pos);
+        </rule>
+        <rule pattern="i32\.load8_s">
+            return Token(I32_load8_s(), _pos);
+        </rule>
+        <rule pattern="i32\.load8_u">
+            return Token(I32_load8_u(), _pos);
+        </rule>
+        <rule pattern="i32\.load16_s">
+            return Token(I32_load16_s(), _pos);
+        </rule>
+        <rule pattern="i32\.load16_u">
+            return Token(I32_load16_u(), _pos);
+        </rule>
+        <rule pattern="i64\.load8_s">
+            return Token(I64_load8_s(), _pos);
+        </rule>
+        <rule pattern="i64\.load8_u">
+            return Token(I64_load8_u(), _pos);
+        </rule>
+        <rule pattern="i64\.load16_s">
+            return Token(I64_load16_s(), _pos);
+        </rule>
+        <rule pattern="i64\.load16_u">
+            return Token(I64_load16_u(), _pos);
+        </rule>
+        <rule pattern="i64\.load32_s">
+            return Token(I64_load32_s(), _pos);
+        </rule>
+        <rule pattern="i64\.load32_u">
+            return Token(I64_load32_u(), _pos);
+        </rule>
+        <rule pattern="i32\.store">
+            return Token(I32_store(), _pos);
+        </rule>
+        <rule pattern="i64\.store">
+            return Token(I64_store(), _pos);
+        </rule>
+        <rule pattern="f32\.store">
+            return Token(F32_store(), _pos);
+        </rule>
+        <rule pattern="f64\.store">
+            return Token(F64_store(), _pos);
+        </rule>
+        <rule pattern="i32\.store8">
+            return Token(I32_store8(), _pos);
+        </rule>
+        <rule pattern="i32\.store16">
+            return Token(I32_store16(), _pos);
+        </rule>
+        <rule pattern="i64\.store8">
+            return Token(I64_store8(), _pos);
+        </rule>
+        <rule pattern="i64\.store16">
+            return Token(I64_store16(), _pos);
+        </rule>
+        <rule pattern="i64\.store32">
+            return Token(I64_store32(), _pos);
+        </rule>
+        <rule pattern="i32\.const">
+            return Token(I32_const(), _pos);
+        </rule>
+        <rule pattern="i64\.const">
+            return Token(I64_const(), _pos);
+        </rule>
+        <rule pattern="f32\.const">
+            return Token(F32_const(), _pos);
+        </rule>
+        <rule pattern="f64\.const">
+            return Token(F64_const(), _pos);
+        </rule>
+        <rule pattern="i32\.eqz">
+            return Token(I32_eqz(), _pos);
+        </rule>
+        <rule pattern="i32\.eq">
+            return Token(I32_eq(), _pos);
+        </rule>
+        <rule pattern="i32\.ne">
+            return Token(I32_ne(), _pos);
+        </rule>
+        <rule pattern="i32\.lt_s">
+            return Token(I32_lt_s(), _pos);
+        </rule>
+        <rule pattern="i32\.lt_u">
+            return Token(I32_lt_u(), _pos);
+        </rule>
+        <rule pattern="i32\.gt_s">
+            return Token(I32_gt_s(), _pos);
+        </rule>
+        <rule pattern="i32\.gt_u">
+            return Token(I32_gt_u(), _pos);
+        </rule>
+        <rule pattern="i32\.le_s">
+            return Token(I32_le_s(), _pos);
+        </rule>
+        <rule pattern="i32\.le_u">
+            return Token(I32_le_u(), _pos);
+        </rule>
+        <rule pattern="i32\.ge_s">
+            return Token(I32_ge_s(), _pos);
+        </rule>
+        <rule pattern="i32\.ge_u">
+            return Token(I32_ge_u(), _pos);
+        </rule>
+        <rule pattern="i64\.eqz">
+            return Token(I64_eqz(), _pos);
+        </rule>
+        <rule pattern="i64\.eq">
+            return Token(I64_eq(), _pos);
+        </rule>
+        <rule pattern="i64\.ne">
+            return Token(I64_ne(), _pos);
+        </rule>
+        <rule pattern="i64\.lt_s">
+            return Token(I64_lt_s(), _pos);
+        </rule>
+        <rule pattern="i64\.lt_u">
+            return Token(I64_lt_u(), _pos);
+        </rule>
+        <rule pattern="i64\.gt_s">
+            return Token(I64_gt_s(), _pos);
+        </rule>
+        <rule pattern="i64\.gt_u">
+            return Token(I64_gt_u(), _pos);
+        </rule>
+        <rule pattern="i64\.le_s">
+            return Token(I64_le_s(), _pos);
+        </rule>
+        <rule pattern="i64\.le_u">
+            return Token(I64_le_u(), _pos);
+        </rule>
+        <rule pattern="i64\.ge_s">
+            return Token(I64_ge_s(), _pos);
+        </rule>
+        <rule pattern="i64\.ge_u">
+            return Token(I64_ge_u(), _pos);
+        </rule>
+        <rule pattern="f32\.eq">
+            return Token(F32_eq(), _pos);
+        </rule>
+        <rule pattern="f32\.ne">
+            return Token(F32_ne(), _pos);
+        </rule>
+        <rule pattern="f32\.lt">
+            return Token(F32_lt(), _pos);
+        </rule>
+        <rule pattern="f32\.gt">
+            return Token(F32_gt(), _pos);
+        </rule>
+        <rule pattern="f32\.le">
+            return Token(F32_le(), _pos);
+        </rule>
+        <rule pattern="f32\.ge">
+            return Token(F32_ge(), _pos);
+        </rule>
+        <rule pattern="f64\.eq">
+            return Token(F64_eq(), _pos);
+        </rule>
+        <rule pattern="f64\.ne">
+            return Token(F64_ne(), _pos);
+        </rule>
+        <rule pattern="f64\.lt">
+            return Token(F64_lt(), _pos);
+        </rule>
+        <rule pattern="f64\.gt">
+            return Token(F64_gt(), _pos);
+        </rule>
+        <rule pattern="f64\.le">
+            return Token(F64_le(), _pos);
+        </rule>
+        <rule pattern="f64\.ge">
+            return Token(F64_ge(), _pos);
+        </rule>
+        <rule pattern="i32\.clz">
+            return Token(I32_clz(), _pos);
+        </rule>
+        <rule pattern="i32\.ctz">
+            return Token(I32_ctz(), _pos);
+        </rule>
+        <rule pattern="i32\.popcnt">
+            return Token(I32_popcnt(), _pos);
+        </rule>
+        <rule pattern="i32\.add">
+            return Token(I32_add(), _pos);
+        </rule>
+        <rule pattern="i32\.sub">
+            return Token(I32_sub(), _pos);
+        </rule>
+        <rule pattern="i32\.mul">
+            return Token(I32_mul(), _pos);
+        </rule>
+        <rule pattern="i32\.div_s">
+            return Token(I32_div_s(), _pos);
+        </rule>
+        <rule pattern="i32\.div_u">
+            return Token(I32_div_u(), _pos);
+        </rule>
+        <rule pattern="i32\.rem_s">
+            return Token(I32_rem_s(), _pos);
+        </rule>
+        <rule pattern="i32\.rem_u">
+            return Token(I32_rem_u(), _pos);
+        </rule>
+        <rule pattern="i32\.and">
+            return Token(I32_and(), _pos);
+        </rule>
+        <rule pattern="i32\.or">
+            return Token(I32_or(), _pos);
+        </rule>
+        <rule pattern="i32\.xor">
+            return Token(I32_xor(), _pos);
+        </rule>
+        <rule pattern="i32\.shl">
+            return Token(I32_shl(), _pos);
+        </rule>
+        <rule pattern="i32\.shr_s">
+            return Token(I32_shr_s(), _pos);
+        </rule>
+        <rule pattern="i32\.shr_u">
+            return Token(I32_shr_u(), _pos);
+        </rule>
+        <rule pattern="i32\.rotl">
+            return Token(I32_rotl(), _pos);
+        </rule>
+        <rule pattern="i32\.rotr">
+            return Token(I32_rotr(), _pos);
+        </rule>
+        <rule pattern="i64\.clz">
+            return Token(I64_clz(), _pos);
+        </rule>
+        <rule pattern="i64\.ctz">
+            return Token(I64_ctz(), _pos);
+        </rule>
+        <rule pattern="i64\.popcnt">
+            return Token(I64_popcnt(), _pos);
+        </rule>
+        <rule pattern="i64\.add">
+            return Token(I64_add(), _pos);
+        </rule>
+        <rule pattern="i64\.sub">
+            return Token(I64_sub(), _pos);
+        </rule>
+        <rule pattern="i64\.mul">
+            return Token(I64_mul(), _pos);
+        </rule>
+        <rule pattern="i64\.div_s">
+            return Token(I64_div_s(), _pos);
+        </rule>
+        <rule pattern="i64\.div_u">
+            return Token(I64_div_u(), _pos);
+        </rule>
+        <rule pattern="i64\.rem_s">
+            return Token(I64_rem_s(), _pos);
+        </rule>
+        <rule pattern="i64\.rem_u">
+            return Token(I64_rem_u(), _pos);
+        </rule>
+        <rule pattern="i64\.and">
+            return Token(I64_and(), _pos);
+        </rule>
+        <rule pattern="i64\.or">
+            return Token(I64_or(), _pos);
+        </rule>
+        <rule pattern="i64\.xor">
+            return Token(I64_xor(), _pos);
+        </rule>
+        <rule pattern="i64\.shl">
+            return Token(I64_shl(), _pos);
+        </rule>
+        <rule pattern="i64\.shr_s">
+            return Token(I64_shr_s(), _pos);
+        </rule>
+        <rule pattern="i64\.shr_u">
+            return Token(I64_shr_u(), _pos);
+        </rule>
+        <rule pattern="i64\.rotl">
+            return Token(I64_rotl(), _pos);
+        </rule>
+        <rule pattern="i64\.rotr">
+            return Token(I64_rotr(), _pos);
+        </rule>
+        <rule pattern="f32\.abs">
+            return Token(F32_abs(), _pos);
+        </rule>
+        <rule pattern="f32\.neg">
+            return Token(F32_neg(), _pos);
+        </rule>
+        <rule pattern="f32\.ceil">
+            return Token(F32_ceil(), _pos);
+        </rule>
+        <rule pattern="f32\.floor">
+            return Token(F32_floor(), _pos);
+        </rule>
+        <rule pattern="f32\.trunc">
+            return Token(F32_trunc(), _pos);
+        </rule>
+        <rule pattern="f32\.nearest">
+            return Token(F32_nearest(), _pos);
+        </rule>
+        <rule pattern="f32\.sqrt">
+            return Token(F32_sqrt(), _pos);
+        </rule>
+        <rule pattern="f32\.add">
+            return Token(F32_add(), _pos);
+        </rule>
+        <rule pattern="f32\.sub">
+            return Token(F32_sub(), _pos);
+        </rule>
+        <rule pattern="f32\.mul">
+            return Token(F32_mul(), _pos);
+        </rule>
+        <rule pattern="f32\.div">
+            return Token(F32_div(), _pos);
+        </rule>
+        <rule pattern="f32\.min">
+            return Token(F32_min(), _pos);
+        </rule>
+        <rule pattern="f32\.max">
+            return Token(F32_max(), _pos);
+        </rule>
+        <rule pattern="f32\.copysign">
+            return Token(F32_copysign(), _pos);
+        </rule>
+        <rule pattern="f64\.abs">
+            return Token(F64_abs(), _pos);
+        </rule>
+        <rule pattern="f64\.neg">
+            return Token(F64_neg(), _pos);
+        </rule>
+        <rule pattern="f64\.ceil">
+            return Token(F64_ceil(), _pos);
+        </rule>
+        <rule pattern="f64\.floor">
+            return Token(F64_floor(), _pos);
+        </rule>
+        <rule pattern="f64\.trunc">
+            return Token(F64_trunc(), _pos);
+        </rule>
+        <rule pattern="f64\.nearest">
+            return Token(F64_nearest(), _pos);
+        </rule>
+        <rule pattern="f64\.sqrt">
+            return Token(F64_sqrt(), _pos);
+        </rule>
+        <rule pattern="f64\.add">
+            return Token(F64_add(), _pos);
+        </rule>
+        <rule pattern="f64\.sub">
+            return Token(F64_sub(), _pos);
+        </rule>
+        <rule pattern="f64\.mul">
+            return Token(F64_mul(), _pos);
+        </rule>
+        <rule pattern="f64\.div">
+            return Token(F64_div(), _pos);
+        </rule>
+        <rule pattern="f64\.min">
+            return Token(F64_min(), _pos);
+        </rule>
+        <rule pattern="f64\.max">
+            return Token(F64_max(), _pos);
+        </rule>
+        <rule pattern="f64\.copysign">
+            return Token(F64_copysign(), _pos);
+        </rule>
+        <rule pattern="i32\.wrap_i64">
+            return Token(I32_wrap_i64(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_s_f32">
+            return Token(I32_trunc_s_f32(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_u_f32">
+            return Token(I32_trunc_u_f32(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_s_f64">
+            return Token(I32_trunc_s_f64(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_u_f64">
+            return Token(I32_trunc_u_f64(), _pos);
+        </rule>
+        <rule pattern="i64\.extend_s_i32">
+            return Token(I64_extend_s_i32(), _pos);
+        </rule>
+        <rule pattern="i64\.extend_u_i32">
+            return Token(I64_extend_u_i32(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_s_f32">
+            return Token(I64_trunc_s_f32(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_u_f32">
+            return Token(I64_trunc_u_f32(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_s_f64">
+            return Token(I64_trunc_s_f64(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_u_f64">
+            return Token(I64_trunc_u_f64(), _pos);
+        </rule>
+        <rule pattern="f32\.convert_s_i32">
+            return Token(F32_convert_s_i32(), _pos);
+        </rule>
+        <rule pattern="f32\.convert_u_i32">
+            return Token(F32_convert_u_i32(), _pos);
+        </rule>
+        <rule pattern="f32\.convert_s_i64">
+            return Token(F32_convert_s_i64(), _pos);
+        </rule>
+        <rule pattern="f32\.convert_u_i64">
+            return Token(F32_convert_u_i64(), _pos);
+        </rule>
+        <rule pattern="f32\.demote_f64">
+            return Token(F32_demote_f64(), _pos);
+        </rule>
+        <rule pattern="f64\.convert_s_i32">
+            return Token(F64_convert_s_i32(), _pos);
+        </rule>
+        <rule pattern="f64\.convert_u_i32">
+            return Token(F64_convert_u_i32(), _pos);
+        </rule>
+        <rule pattern="f64\.convert_s_i64">
+            return Token(F64_convert_s_i64(), _pos);
+        </rule>
+        <rule pattern="f64\.convert_u_i64">
+            return Token(F64_convert_u_i64(), _pos);
+        </rule>
+        <rule pattern="f64\.promote_f32">
+            return Token(F64_promote_f32(), _pos);
+        </rule>
+        <rule pattern="i32\.reinterpret_f32">
+            return Token(I32_reinterpret_f32(), _pos);
+        </rule>
+        <rule pattern="i64\.reinterpret_f64">
+            return Token(I64_reinterpret_f64(), _pos);
+        </rule>
+        <rule pattern="f32\.reinterpret_i32">
+            return Token(F32_reinterpret_i32(), _pos);
+        </rule>
+        <rule pattern="f64\.reinterpret_i64">
+            return Token(F64_reinterpret_i64(), _pos);
+        </rule>
+        <rule pattern="i32\.extend8_s">
+            return Token(I32_extend8_s(), _pos);
+        </rule>
+        <rule pattern="i32\.extend16_s">
+            return Token(I32_extend16_s(), _pos);
+        </rule>
+        <rule pattern="i64\.extend8_s">
+            return Token(I64_extend8_s(), _pos);
+        </rule>
+        <rule pattern="i64\.extend16_s">
+            return Token(I64_extend16_s(), _pos);
+        </rule>
+        <rule pattern="i64\.extend32_s">
+            return Token(I64_extend32_s(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_sat_f32_s">
+            return Token(I32_trunc_sat_f32_s(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_sat_f32_u">
+            return Token(I32_trunc_sat_f32_u(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_sat_f64_s">
+            return Token(I32_trunc_sat_f64_s(), _pos);
+        </rule>
+        <rule pattern="i32\.trunc_sat_f64_u">
+            return Token(I32_trunc_sat_f64_u(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_sat_f32_s">
+            return Token(I64_trunc_sat_f32_s(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_sat_f64_u">
+            return Token(I64_trunc_sat_f64_u(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_sat_f64_s">
+            return Token(I64_trunc_sat_f64_s(), _pos);
+        </rule>
+        <rule pattern="i64\.trunc_sat_f32_u">
+            return Token(I64_trunc_sat_f32_u(), _pos);
+        </rule>
+    </lexer>
+</pxml>
