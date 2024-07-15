@@ -231,13 +231,13 @@
         <rule pattern="call_indirect">
             return Token(Call_indirect(), _pos);
         </rule>
-        <rule pattern="ref_null">
+        <rule pattern="ref\.null">
             return Token(Ref_null(), _pos);
         </rule>
-        <rule pattern="ref_is_null">
+        <rule pattern="ref\.is_null">
             return Token(Ref_is_null(), _pos);
         </rule>
-        <rule pattern="ref_func">
+        <rule pattern="ref\.func">
             return Token(Ref_func(), _pos);
         </rule>
         <rule pattern="drop">
@@ -246,61 +246,61 @@
         <rule pattern="select">
             return Token(Select(), _pos);
         </rule>
-        <rule pattern="local_get">
+        <rule pattern="local\.get">
             return Token(Local_get(), _pos);
         </rule>
-        <rule pattern="local_set">
+        <rule pattern="local\.set">
             return Token(Local_set(), _pos);
         </rule>
-        <rule pattern="local_tee">
+        <rule pattern="local\.tee">
             return Token(Local_tee(), _pos);
         </rule>
-        <rule pattern="global_get">
+        <rule pattern="global\.get">
             return Token(Global_get(), _pos);
         </rule>
-        <rule pattern="global_set">
+        <rule pattern="global\.set">
             return Token(Global_set(), _pos);
         </rule>
-        <rule pattern="table_get">
+        <rule pattern="table\.get">
             return Token(Table_get(), _pos);
         </rule>
-        <rule pattern="table_set">
+        <rule pattern="table\.set">
             return Token(Table_set(), _pos);
         </rule>
-        <rule pattern="table_size">
+        <rule pattern="table\.size">
             return Token(Table_size(), _pos);
         </rule>
-        <rule pattern="table_grow">
+        <rule pattern="table\.grow">
             return Token(Table_grow(), _pos);
         </rule>
-        <rule pattern="table_fill">
+        <rule pattern="table\.fill">
             return Token(Table_fill(), _pos);
         </rule>
-        <rule pattern="table_copy">
+        <rule pattern="table\.copy">
             return Token(Table_copy(), _pos);
         </rule>
-        <rule pattern="table_init">
+        <rule pattern="table\.init">
             return Token(Table_init(), _pos);
         </rule>
-        <rule pattern="elem_drop">
+        <rule pattern="elem\.drop">
             return Token(Elem_drop(), _pos);
         </rule>
-        <rule pattern="memory_size">
+        <rule pattern="memory\.size">
             return Token(Memory_size(), _pos);
         </rule>
-        <rule pattern="memory_grow">
+        <rule pattern="memory\.grow">
             return Token(Memory_grow(), _pos);
         </rule>
-        <rule pattern="memory_fill">
+        <rule pattern="memory\.fill">
             return Token(Memory_fill(), _pos);
         </rule>
-        <rule pattern="memory_init">
+        <rule pattern="memory\.init">
             return Token(Memory_init(), _pos);
         </rule>
-        <rule pattern="memory_copy">
+        <rule pattern="memory\.copy">
             return Token(Memory_copy(), _pos);
         </rule>
-        <rule pattern="data_drop">
+        <rule pattern="data\.drop">
             return Token(Data_drop(), _pos);
         </rule>
         <rule pattern="i32\.load">
