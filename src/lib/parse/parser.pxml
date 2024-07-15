@@ -1,0 +1,22 @@
+<!DOCTYPE pxml>
+<pxml>
+    <parser class="Parser" headerFile="Parser.hpp" sourceFile="Parser.cpp" start="module" return="WasmModule">
+        {% header file %}
+        <header indent=0 position="top">
+            #include \<structures/WasmModule.hpp>
+            #include \<exception.hpp>
+        </header>
+        {% targets %}
+        <target name="module" type="WasmModule">
+            <grammar pattern="ParenL Module ParenR">
+                return WasmModule();
+            </grammar>
+            <grammar pattern="ParenL ParenR">
+                return WasmModule();
+            </grammar>
+            <grammar pattern="EOF">
+                return WasmModule();
+            </grammar>
+        </target>
+    </parser>
+</pxml>

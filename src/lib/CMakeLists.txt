@@ -3,6 +3,8 @@ add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
     parse/Lexer.cpp
+    parse/Parser.cpp
+    parse/Token.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
