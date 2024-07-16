@@ -24,29 +24,39 @@ std::pair<Parser::term_t, Parser::token_t> Parser::fetch(){
     return {res.index() + 1, res};
 }
 
-static WasmModule action_1(Parser& _this, std::vector<Position> _pos, WasmModule _op0, std::pair<std::string, FuncType> _op1){
-    if(!_op1.first.empty()){
-        _this.type_indices[_op1.first] = _op0.types.size();
-    }
-    _op0.types.emplace_back(_op1.second);
+static WasmModule action_1(Parser& _this, std::vector<Position> _pos, WasmModule _op0){
     return _op0;
 }
 static WasmModule action_2(Parser& _this, std::vector<Position> _pos){
     return WasmModule();
 }
 static WasmModule action_3(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, Tokens::Id _op2, WasmModule _op3, Tokens::ParenR _op4){
+    for(auto& functype : _this.types){
+        _op3.types.emplace_back(functype.first);
+    }
+    _this.reset();
     return _op3;
 }
 static WasmModule action_4(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, WasmModule _op2, Tokens::ParenR _op3){
+    for(auto& functype : _this.types){
+        _op2.types.emplace_back(functype.first);
+    }
+    _this.reset();
     return _op2;
 }
 static WasmModule action_5(Parser& _this, std::vector<Position> _pos, WasmModule _op0){
+    for(auto& functype : _this.types){
+        _op0.types.emplace_back(functype.first);
+    }
+    _this.reset();
     return _op0;
 }
 static WasmModule action_6(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::ParenR _op1){
+    _this.reset();
     return WasmModule();
 }
 static WasmModule action_7(Parser& _this, std::vector<Position> _pos){
+    _this.reset();
     return WasmModule();
 }
 static ValueType action_8(Parser& _this, std::vector<Position> _pos, Tokens::NumType _op0){
@@ -73,22 +83,20 @@ static std::vector<ValueType> action_11(Parser& _this, std::vector<Position> _po
 static std::vector<ValueType> action_12(Parser& _this, std::vector<Position> _pos){
     return std::vector<ValueType>();
 }
-static std::vector<std::pair<std::string, ValueType>> action_13(Parser& _this, std::vector<Position> _pos, std::vector<std::pair<std::string, ValueType>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, Tokens::Id _op3, ValueType _op4, Tokens::ParenR _op5){
-    if(_this.local_indices.contains(_op3.value)){
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_13(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, Tokens::Id _op3, ValueType _op4, Tokens::ParenR _op5){
+    if(_op0.second.contains(_op3.value)){
         throw Exception::Parse("Local ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
     }
-    _this.local_indices.emplace(_op3.value, 0);
-    _op0.emplace_back(_op3.value, _op4);
+    _op0.second.emplace(_op3.value, _op0.first.size());
+    _op0.first.emplace_back(_op4);
     return _op0;
 }
-static std::vector<std::pair<std::string, ValueType>> action_14(Parser& _this, std::vector<Position> _pos, std::vector<std::pair<std::string, ValueType>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
-    std::transform(_op3.begin(), _op3.end(), std::back_inserter(_op0), [](ValueType& v) -> std::pair<std::string, ValueType>{
-        return {"", v};
-    });
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_14(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
+    _op0.first.insert(_op0.first.end(), _op3.begin(), _op3.end());
     return _op0;
 }
-static std::vector<std::pair<std::string, ValueType>> action_15(Parser& _this, std::vector<Position> _pos){
-    return std::vector<std::pair<std::string, ValueType>>();
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_15(Parser& _this, std::vector<Position> _pos){
+    return std::pair<std::vector<ValueType>, std::map<std::string, index_t>>();
 }
 static std::vector<ValueType> action_16(Parser& _this, std::vector<Position> _pos, std::vector<ValueType> _op0, Tokens::ParenL _op1, Tokens::Result _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
     _op0.insert(_op0.end(), _op3.begin(), _op3.end());
@@ -97,25 +105,18 @@ static std::vector<ValueType> action_16(Parser& _this, std::vector<Position> _po
 static std::vector<ValueType> action_17(Parser& _this, std::vector<Position> _pos){
     return std::vector<ValueType>();
 }
-static FuncType action_18(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::vector<std::pair<std::string, ValueType>> _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
-    FuncType functype {.results = _op3};
-    for(index_t idx = 0; idx < _op2.size(); ++idx){
-        auto& param_pair = _op2[idx];
-        if(!param_pair.first.empty()){
-            _this.local_indices[param_pair.first] = idx;
-        }
-        functype.params.emplace_back(param_pair.second);
-    }
-    return functype;
+static std::pair<FuncType, std::map<std::string, index_t>> action_18(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
+    return {FuncType {.params = _op2.first, .results = _op3}, _op2.second};
 }
-static std::pair<std::string, FuncType> action_19(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, Tokens::Id _op2, FuncType _op3, Tokens::ParenR _op4){
+static void action_19(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, Tokens::Id _op2, std::pair<FuncType, std::map<std::string, index_t>> _op3, Tokens::ParenR _op4){
     if(_this.type_indices.contains(_op2.value)){
         throw Exception::Parse("Type ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
     }
-    return {_op2.value, _op3};
+    _this.type_indices[_op2.value] = _this.types.size();
+    _this.types.emplace_back(_op3);
 }
-static std::pair<std::string, FuncType> action_20(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, FuncType _op2, Tokens::ParenR _op3){
-    return {"", _op2};
+static void action_20(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, std::pair<FuncType, std::map<std::string, index_t>> _op2, Tokens::ParenR _op3){
+    _this.types.emplace_back(_op2);
 }
 
 std::vector<Parser::State> Parser::table = {
@@ -267,12 +268,11 @@ void Parser::Stack::reduce(size_t action, std::vector<bool> param_toggle){
 
 using item_t = std::variant<std::monostate,
     Parser::token_t,
-    FuncType,
     ValueType,
     WasmModule,
-    std::pair<std::string, FuncType>,
-    std::vector<ValueType>,
-    std::vector<std::pair<std::string, ValueType>>
+    std::pair<FuncType, std::map<std::string, index_t>>,
+    std::pair<std::vector<ValueType>, std::map<std::string, index_t>>,
+    std::vector<ValueType>
 >;
 
 WasmModule Parser::expand_tree(Entry& tree){
@@ -309,8 +309,7 @@ WasmModule Parser::expand_tree(Entry& tree){
         switch(node.action){
             case 1: 
                 param_stack.emplace_front(pos, action_1(*this, positions,
-                    node.param_toggle[0] ? std::get<WasmModule>(params[0]) : WasmModule(),
-                    node.param_toggle[1] ? std::get<std::pair<std::string, FuncType>>(params[1]) : std::pair<std::string, FuncType>()
+                    node.param_toggle[0] ? std::get<WasmModule>(params[0]) : WasmModule()
                 ));
             break;
             case 2: 
@@ -376,7 +375,7 @@ WasmModule Parser::expand_tree(Entry& tree){
             break;
             case 13: 
                 param_stack.emplace_front(pos, action_13(*this, positions,
-                    node.param_toggle[0] ? std::get<std::vector<std::pair<std::string, ValueType>>>(params[0]) : std::vector<std::pair<std::string, ValueType>>(),
+                    node.param_toggle[0] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[0]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[1] ? std::get<Tokens::ParenL>(std::get<Token>(params[1])) : Tokens::ParenL(),
                     node.param_toggle[2] ? std::get<Tokens::Param>(std::get<Token>(params[2])) : Tokens::Param(),
                     node.param_toggle[3] ? std::get<Tokens::Id>(std::get<Token>(params[3])) : Tokens::Id(),
@@ -386,7 +385,7 @@ WasmModule Parser::expand_tree(Entry& tree){
             break;
             case 14: 
                 param_stack.emplace_front(pos, action_14(*this, positions,
-                    node.param_toggle[0] ? std::get<std::vector<std::pair<std::string, ValueType>>>(params[0]) : std::vector<std::pair<std::string, ValueType>>(),
+                    node.param_toggle[0] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[0]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[1] ? std::get<Tokens::ParenL>(std::get<Token>(params[1])) : Tokens::ParenL(),
                     node.param_toggle[2] ? std::get<Tokens::Param>(std::get<Token>(params[2])) : Tokens::Param(),
                     node.param_toggle[3] ? std::get<std::vector<ValueType>>(params[3]) : std::vector<ValueType>(),
@@ -414,27 +413,29 @@ WasmModule Parser::expand_tree(Entry& tree){
                 param_stack.emplace_front(pos, action_18(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Func>(std::get<Token>(params[1])) : Tokens::Func(),
-                    node.param_toggle[2] ? std::get<std::vector<std::pair<std::string, ValueType>>>(params[2]) : std::vector<std::pair<std::string, ValueType>>(),
+                    node.param_toggle[2] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[2]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[3] ? std::get<std::vector<ValueType>>(params[3]) : std::vector<ValueType>(),
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
             case 19: 
-                param_stack.emplace_front(pos, action_19(*this, positions,
+                param_stack.emplace_front(pos, std::monostate());
+                action_19(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Type>(std::get<Token>(params[1])) : Tokens::Type(),
                     node.param_toggle[2] ? std::get<Tokens::Id>(std::get<Token>(params[2])) : Tokens::Id(),
-                    node.param_toggle[3] ? std::get<FuncType>(params[3]) : FuncType(),
+                    node.param_toggle[3] ? std::get<std::pair<FuncType, std::map<std::string, index_t>>>(params[3]) : std::pair<FuncType, std::map<std::string, index_t>>(),
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
-                ));
+                );
             break;
             case 20: 
-                param_stack.emplace_front(pos, action_20(*this, positions,
+                param_stack.emplace_front(pos, std::monostate());
+                action_20(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Type>(std::get<Token>(params[1])) : Tokens::Type(),
-                    node.param_toggle[2] ? std::get<FuncType>(params[2]) : FuncType(),
+                    node.param_toggle[2] ? std::get<std::pair<FuncType, std::map<std::string, index_t>>>(params[2]) : std::pair<FuncType, std::map<std::string, index_t>>(),
                     node.param_toggle[3] ? std::get<Tokens::ParenR>(std::get<Token>(params[3])) : Tokens::ParenR()
-                ));
+                );
             break;
             default:
             break;
@@ -724,3 +725,38 @@ WasmVM::ParseError::ParseError(Position pos, Parser::term_t term) : pos(pos) {
 } // namespace WasmVM
 
 
+namespace WasmVM {
+index_t Parser::IndexMap::insert(IndexType type){
+    index_t index = handlers.size();
+    handlers.emplace_back(indices.emplace(type, serial++).first);
+    return index;
+}
+index_t Parser::IndexMap::insert(std::string id, IndexType type){
+    if(!id_map.contains(id)){
+        id_map[id] = insert(type);
+    }
+    return id_map[id];
+}
+bool Parser::IndexMap::contains(std::string id){
+    return id_map.contains(id);
+}
+index_t Parser::IndexMap::operator[](index_t index){
+    index_t result = 0;
+    for(const std::pair<IndexType, index_t>& index_pair : indices){
+        if(index_pair.second == index){
+            return result;
+        }
+        result += 1;
+    }
+    return -1;
+}
+void Parser::reset(){
+    types.clear();
+    type_indices.clear();
+    func_indices = IndexMap();
+    table_indices = IndexMap();
+    mem_indices = IndexMap();
+    global_indices = IndexMap();
+}
+} // namespace WasmVM
+        

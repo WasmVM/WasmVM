@@ -30,7 +30,11 @@ Suite type {
         Expect(param_f32_f64.params[0] == ValueType::f32);
         Expect(param_f32_f64.params[1] == ValueType::f64);
         Throw(Exception::Parse, {
-            std::stringstream stream("(type (func (param $pdup i32 i64)))");
+            std::stringstream stream("(type (func (param $pdup i32) (param $pdup i64)))");
+            module_parse(stream);
+        });
+        Throw(Exception::Parse, {
+            std::stringstream stream("(type (func (param $pmul i32 i64)))");
             module_parse(stream);
         });
         Throw(Exception::Parse, {

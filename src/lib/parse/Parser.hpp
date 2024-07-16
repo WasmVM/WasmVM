@@ -27,12 +27,34 @@ struct Parser {
     Parser(Lexer& lexer);
     WasmModule parse();
 
-    struct IndexMap : public std::map<std::string, index_t> {
+    struct IndexMap {
         enum IndexType {Import, Normal};
-        std::vector<IndexType> indices;
+        using Index = std::pair<IndexType, index_t>;
+        struct Compare {
+            bool operator()(const Index& lhs, const Index& rhs) const {
+                if(lhs.first != rhs.first){
+                    return lhs.first == IndexType::Import;
+                }
+                return lhs.second < rhs.second;
+            }
+        };
+        index_t insert(IndexType type);
+        index_t insert(std::string id, IndexType type);
+        bool contains(std::string id);
+        index_t operator[](index_t index);
+        private:
+        index_t serial = 0;
+        std::set<Index, Compare> indices;
+        std::vector<std::set<Index, Compare>::iterator> handlers;
+        std::map<std::string, index_t> id_map;
     };
-    std::map<std::string, index_t> local_indices;
+    std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
+    IndexMap func_indices;
+    IndexMap table_indices;
+    IndexMap mem_indices;
+    IndexMap global_indices;
+    void reset();
     constexpr static size_t End = (size_t)-1;
     using term_t = uint8_t;
     using token_t = Token;

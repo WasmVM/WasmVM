@@ -13,20 +13,74 @@
         </header>
         {% members %}
         <member>
-            struct IndexMap : public std::map\<std::string, index_t> {
+            struct IndexMap {
                 enum IndexType {Import, Normal};
-                std::vector\<IndexType> indices;
+                using Index = std::pair\<IndexType, index_t>;
+                struct Compare {
+                    bool operator()(const Index& lhs, const Index& rhs) const {
+                        if(lhs.first != rhs.first){
+                            return lhs.first == IndexType::Import;
+                        }
+                        return lhs.second \< rhs.second;
+                    }
+                };
+                index_t insert(IndexType type);
+                index_t insert(std::string id, IndexType type);
+                bool contains(std::string id);
+                index_t operator[](index_t index);
+                private:
+                index_t serial = 0;
+                std::set\<Index, Compare> indices;
+                std::vector\<std::set\<Index, Compare>::iterator> handlers;
+                std::map\<std::string, index_t> id_map;
             };
-            std::map\<std::string, index_t> local_indices;
+            std::vector\<std::pair\<FuncType, std::map\<std::string, index_t>>> types;
             std::map\<std::string, index_t> type_indices;
+            IndexMap func_indices;
+            IndexMap table_indices;
+            IndexMap mem_indices;
+            IndexMap global_indices;
+            void reset();
         </member>
+        <source indent=0 position="bottom">
+            namespace WasmVM {
+            index_t Parser::IndexMap::insert(IndexType type){
+                index_t index = handlers.size();
+                handlers.emplace_back(indices.emplace(type, serial++).first);
+                return index;
+            }
+            index_t Parser::IndexMap::insert(std::string id, IndexType type){
+                if(!id_map.contains(id)){
+                    id_map[id] = insert(type);
+                }
+                return id_map[id];
+            }
+            bool Parser::IndexMap::contains(std::string id){
+                return id_map.contains(id);
+            }
+            index_t Parser::IndexMap::operator[](index_t index){
+                index_t result = 0;
+                for(const std::pair\<IndexType, index_t>& index_pair : indices){
+                    if(index_pair.second == index){
+                        return result;
+                    }
+                    result += 1;
+                }
+                return -1;
+            }
+            void Parser::reset(){
+                types.clear();
+                type_indices.clear();
+                func_indices = IndexMap();
+                table_indices = IndexMap();
+                mem_indices = IndexMap();
+                global_indices = IndexMap();
+            }
+            } // namespace WasmVM
+        </source>
         {% targets %}
         <target name="modulefield" type="WasmModule">
             <grammar pattern="modulefield type">
-                if(!_op1.first.empty()){
-                    _this.type_indices[_op1.first] = _op0.types.size();
-                }
-                _op0.types.emplace_back(_op1.second);
                 return _op0;
             </grammar>
             <grammar>
@@ -35,18 +89,32 @@
         </target>
         <target name="module" type="WasmModule">
             <grammar pattern="ParenL Module Id modulefield ParenR">
+                for(auto& functype : _this.types){
+                    _op3.types.emplace_back(functype.first);
+                }
+                _this.reset();
                 return _op3;
             </grammar>
             <grammar pattern="ParenL Module modulefield ParenR">
+                for(auto& functype : _this.types){
+                    _op2.types.emplace_back(functype.first);
+                }
+                _this.reset();
                 return _op2;
             </grammar>
             <grammar pattern="modulefield">
+                for(auto& functype : _this.types){
+                    _op0.types.emplace_back(functype.first);
+                }
+                _this.reset();
                 return _op0;
             </grammar>
             <grammar pattern="ParenL ParenR">
+                _this.reset();
                 return WasmModule();
             </grammar>
             <grammar pattern="EOF">
+                _this.reset();
                 return WasmModule();
             </grammar>
         </target>
@@ -78,23 +146,21 @@
                 return std::vector\<ValueType>();
             </grammar>
         </target>
-        <target name="params" type="std::vector<std::pair<std::string, ValueType>>">
+        <target name="params" type="std::pair<std::vector<ValueType>, std::map<std::string, index_t>>">
             <grammar pattern="params ParenL Param Id valtype ParenR">
-                if(_this.local_indices.contains(_op3.value)){
+                if(_op0.second.contains(_op3.value)){
                     throw Exception::Parse("Local ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
                 }
-                _this.local_indices.emplace(_op3.value, 0);
-                _op0.emplace_back(_op3.value, _op4);
+                _op0.second.emplace(_op3.value, _op0.first.size());
+                _op0.first.emplace_back(_op4);
                 return _op0;
             </grammar>
             <grammar pattern="params ParenL Param valtypes ParenR">
-                std::transform(_op3.begin(), _op3.end(), std::back_inserter(_op0), [](ValueType& v) -> std::pair\<std::string, ValueType>{
-                    return {"", v};
-                });
+                _op0.first.insert(_op0.first.end(), _op3.begin(), _op3.end());
                 return _op0;
             </grammar>
             <grammar>
-                return std::vector\<std::pair\<std::string, ValueType>>();
+                return std::pair\<std::vector\<ValueType>, std::map\<std::string, index_t>>();
             </grammar>
         </target>
         <target name="results" type="std::vector<ValueType>">
@@ -106,28 +172,21 @@
                 return std::vector\<ValueType>();
             </grammar>
         </target>
-        <target name="functype" type="FuncType">
+        <target name="functype" type="std::pair<FuncType, std::map<std::string, index_t>>">
             <grammar pattern="ParenL Func params results ParenR">
-                FuncType functype {.results = _op3};
-                for(index_t idx = 0; idx \< _op2.size(); ++idx){
-                    auto& param_pair = _op2[idx];
-                    if(!param_pair.first.empty()){
-                        _this.local_indices[param_pair.first] = idx;
-                    }
-                    functype.params.emplace_back(param_pair.second);
-                }
-                return functype;
+                return {FuncType {.params = _op2.first, .results = _op3}, _op2.second};
             </grammar>
         </target>
-        <target name="type" type="std::pair<std::string, FuncType>">
+        <target name="type">
             <grammar pattern="ParenL Type Id functype ParenR">
                 if(_this.type_indices.contains(_op2.value)){
                     throw Exception::Parse("Type ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
                 }
-                return {_op2.value, _op3};
+                _this.type_indices[_op2.value] = _this.types.size();
+                _this.types.emplace_back(_op3);
             </grammar>
             <grammar pattern="ParenL Type functype ParenR">
-                return {"", _op2};
+                _this.types.emplace_back(_op2);
             </grammar>
         </target>
     </parser>
