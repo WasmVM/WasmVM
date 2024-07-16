@@ -5,17 +5,129 @@
         <header indent=0 position="top">
             #include \<structures/WasmModule.hpp>
             #include \<exception.hpp>
+            #include \<map>
+            #include \<set>
+            #include \<vector>
+            #include \<utility>
+            #include \<algorithm>
         </header>
+        {% members %}
+        <member>
+            struct IndexMap : public std::map\<std::string, index_t> {
+                enum IndexType {Import, Normal};
+                std::vector\<IndexType> indices;
+            };
+            std::map\<std::string, index_t> local_indices;
+            std::map\<std::string, index_t> type_indices;
+        </member>
         {% targets %}
-        <target name="module" type="WasmModule">
-            <grammar pattern="ParenL Module ParenR">
+        <target name="modulefield" type="WasmModule">
+            <grammar pattern="modulefield type">
+                if(!_op1.first.empty()){
+                    _this.type_indices[_op1.first] = _op0.types.size();
+                }
+                _op0.types.emplace_back(_op1.second);
+                return _op0;
+            </grammar>
+            <grammar>
                 return WasmModule();
+            </grammar>
+        </target>
+        <target name="module" type="WasmModule">
+            <grammar pattern="ParenL Module Id modulefield ParenR">
+                return _op3;
+            </grammar>
+            <grammar pattern="ParenL Module modulefield ParenR">
+                return _op2;
+            </grammar>
+            <grammar pattern="modulefield">
+                return _op0;
             </grammar>
             <grammar pattern="ParenL ParenR">
                 return WasmModule();
             </grammar>
             <grammar pattern="EOF">
                 return WasmModule();
+            </grammar>
+        </target>
+        <target name="valtype" type="ValueType">
+            <grammar pattern="NumType">
+                if(_op0.value == "i32"){
+                    return ValueType::i32;
+                }else if(_op0.value == "i64"){
+                    return ValueType::i64;
+                }else if(_op0.value == "f32"){
+                    return ValueType::f32;
+                }else{
+                    return ValueType::f64;
+                }
+            </grammar>
+            <grammar pattern="Funcref">
+                return ValueType::funcref;
+            </grammar>
+            <grammar pattern="Externref">
+                return ValueType::externref;
+            </grammar>
+        </target>
+        <target name="valtypes" type="std::vector<ValueType>">
+            <grammar pattern="valtypes valtype">
+                _op0.emplace_back(_op1);
+                return _op0;
+            </grammar>
+            <grammar>
+                return std::vector\<ValueType>();
+            </grammar>
+        </target>
+        <target name="params" type="std::vector<std::pair<std::string, ValueType>>">
+            <grammar pattern="params ParenL Param Id valtype ParenR">
+                if(_this.local_indices.contains(_op3.value)){
+                    throw Exception::Parse("Local ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
+                }
+                _this.local_indices.emplace(_op3.value, 0);
+                _op0.emplace_back(_op3.value, _op4);
+                return _op0;
+            </grammar>
+            <grammar pattern="params ParenL Param valtypes ParenR">
+                std::transform(_op3.begin(), _op3.end(), std::back_inserter(_op0), [](ValueType& v) -> std::pair\<std::string, ValueType>{
+                    return {"", v};
+                });
+                return _op0;
+            </grammar>
+            <grammar>
+                return std::vector\<std::pair\<std::string, ValueType>>();
+            </grammar>
+        </target>
+        <target name="results" type="std::vector<ValueType>">
+            <grammar pattern="results ParenL Result valtypes ParenR">
+                _op0.insert(_op0.end(), _op3.begin(), _op3.end());
+                return _op0;
+            </grammar>
+            <grammar>
+                return std::vector\<ValueType>();
+            </grammar>
+        </target>
+        <target name="functype" type="FuncType">
+            <grammar pattern="ParenL Func params results ParenR">
+                FuncType functype {.results = _op3};
+                for(index_t idx = 0; idx \< _op2.size(); ++idx){
+                    auto& param_pair = _op2[idx];
+                    if(!param_pair.first.empty()){
+                        _this.local_indices[param_pair.first] = idx;
+                    }
+                    functype.params.emplace_back(param_pair.second);
+                }
+                return functype;
+            </grammar>
+        </target>
+        <target name="type" type="std::pair<std::string, FuncType>">
+            <grammar pattern="ParenL Type Id functype ParenR">
+                if(_this.type_indices.contains(_op2.value)){
+                    throw Exception::Parse("Type ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                return {_op2.value, _op3};
+            </grammar>
+            <grammar pattern="ParenL Type functype ParenR">
+                return {"", _op2};
             </grammar>
         </target>
     </parser>

@@ -26,6 +26,9 @@ Suite module {
     Test("module keyword only", {
         empty_check("(module)");
     })
+    Test("module with id", {
+        empty_check("(module $mod)");
+    })
     Test("EOF", {
         empty_check("");
     })

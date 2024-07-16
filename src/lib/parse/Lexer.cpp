@@ -1063,7 +1063,7 @@ Token Lexer::get(){
                     state = 16;
                     text = current;
                 {
-                    return Token(Module(), _pos);
+                    return Token(Id(_text.substr(1)), _pos);
                 }break;
                 // Action 14
                 case 22:

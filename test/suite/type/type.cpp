@@ -4,7 +4,6 @@
 
 #include <harness.hpp>
 #include <WasmVM.hpp>
-#include <parse/exception.hpp>
 
 #include <sstream>
 
@@ -30,11 +29,11 @@ Suite type {
         Expect(param_f32_f64.params.size() == 2);
         Expect(param_f32_f64.params[0] == ValueType::f32);
         Expect(param_f32_f64.params[1] == ValueType::f64);
-        Throw(Exception::invalid_functype, {
+        Throw(Exception::Parse, {
             std::stringstream stream("(type (func (param $pdup i32 i64)))");
             module_parse(stream);
         });
-        Throw(Exception::invalid_functype, {
+        Throw(Exception::Parse, {
             std::stringstream stream("(type (func (param $pnone)))");
             module_parse(stream);
         });

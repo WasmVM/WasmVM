@@ -11,5 +11,9 @@ using namespace WasmVM;
 WasmModule WasmVM::module_parse(std::istream& stream){
     Lexer lexer("", stream);
     Parser parser(lexer);
-    return parser.parse();
+    try{
+        return parser.parse();
+    }catch(ParseError& e){
+        throw Exception::Parse(e.what(), {e.pos.line, e.pos.column});
+    }
 }

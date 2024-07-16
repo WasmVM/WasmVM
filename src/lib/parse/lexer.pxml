@@ -30,7 +30,7 @@
         </rule>
         {% id %}
         <rule pattern="\$[0-9a-zA-Z!#%&'*+\-./:<=>@_`\|~\$\^\\?]+">
-            return Token(Module(), _pos);
+            return Token(Id(_text.substr(1)), _pos);
         </rule>
         {% string %}
         <rule pattern="\"" push="string" />

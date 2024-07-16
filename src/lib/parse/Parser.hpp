@@ -4,6 +4,11 @@
 
 #include <structures/WasmModule.hpp>
 #include <exception.hpp>
+#include <map>
+#include <set>
+#include <vector>
+#include <utility>
+#include <algorithm>
         
 #include <map>
 #include <set>
@@ -21,6 +26,13 @@ namespace WasmVM {
 struct Parser {
     Parser(Lexer& lexer);
     WasmModule parse();
+
+    struct IndexMap : public std::map<std::string, index_t> {
+        enum IndexType {Import, Normal};
+        std::vector<IndexType> indices;
+    };
+    std::map<std::string, index_t> local_indices;
+    std::map<std::string, index_t> type_indices;
     constexpr static size_t End = (size_t)-1;
     using term_t = uint8_t;
     using token_t = Token;
@@ -55,7 +67,8 @@ protected:
 };
 
 struct ParseError : public std::exception {
-    ParseError(Parser::term_t term);
+    ParseError(Position pos, Parser::term_t term);
+    Position pos;
     std::string msg;
     const char* what(){
         return msg.c_str();

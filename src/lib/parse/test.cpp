@@ -11,9 +11,12 @@ int main(int argc, char const *argv[]){
     try{
         WasmVM::Lexer lexer(argv[1], fin);
         WasmVM::Parser parser(lexer);
-        WasmVM::module_dump(parser.parse(), std::cout);
+        WasmVM::WasmModule module = parser.parse();
+        WasmVM::module_dump(module, std::cout);
     }catch(WasmVM::Exception::Parse& e){
         std::cerr << argv[1] << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;
+    }catch(WasmVM::ParseError& e){
+        std::cerr << e.what() << std::endl;
     }catch(WasmVM::UnknownToken& e){
         std::cerr << e.what() << std::endl;
     }
