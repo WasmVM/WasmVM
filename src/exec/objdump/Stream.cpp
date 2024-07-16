@@ -26,6 +26,7 @@ Objdump::Bytes Objdump::Stream::get_u32(Objdump::Stream& stream){
             break;
         }
     }
+
     return size;
 }
 
@@ -39,6 +40,7 @@ Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::By
         stream.istream >> bchar; // need to check why istream can output to bchar
         bytes[i] = (byte_t)bchar;
     }
+
     return stream;
 }
 
@@ -58,6 +60,7 @@ Objdump::Stream& Objdump::operator>><ValueType>(Stream& stream, ValueType& value
     Objdump::Bytes value(1);
     stream >> value;
     valuetype = (ValueType)value[0];
+
     return stream;
 }
 
@@ -66,8 +69,6 @@ template<>
 Objdump::Stream& Objdump::operator>><FuncType>(Stream& stream, FuncType& functype){
     Objdump::Bytes funcMagic(1);
     stream >> funcMagic;
-
-    std::cerr << (int)funcMagic[1] << std::endl;
 
     if((int)funcMagic[0] == 0x60){
         stream >> functype.params;
@@ -86,15 +87,50 @@ Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdu
     return stream;
 }
 
+// import
 template<>
 Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& import){
-    Objdump::Bytes unknown(1);
-    stream >> unknown;
+    // Objdump::Bytes unknown(2);
+    // stream >> unknown;
+    // import.module = "unknown";
+
+    // TODO:
+    // module
+    Objdump::Bytes mod(1);
+    stream >> mod;
+    for(int i = 0; i < (int)mod[0]; i++){
+        // byte to string
+        Objdump::Bytes value(1);
+        stream >> value;
+
+        int val_int = (int)value[0];
+        import.module += char(val_int);
+    }
+
+
+    // name
+    Objdump::Bytes nm(1);
+    stream >> nm;
+    for(int i = 0; i < (int)nm[0]; i++){
+        // byte to string
+        Objdump::Bytes value(1);
+        stream >> value;
+
+        int val_int = (int)value[0];
+        import.name += char(val_int);
+    }
+
+
+
+    // desc
+    Objdump::Bytes desc(2);
+    stream >> desc;
+
 
     return stream;
-
 }
 
+// importsection
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::ImportSection>(Stream& stream, Objdump::ImportSection& importsection){
     stream >> (Objdump::Section&)importsection; // call section
@@ -114,6 +150,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
         std::cout << std::setfill('0') << std::setw(2) << (int)bytes[i] << " ";
     }
     std::cout.setf(flags);
+
     return os;
 }
 
@@ -141,6 +178,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, ValueType& value){
             os << "unknown";
         break;
     }
+
     return os;
 }
 
@@ -161,33 +199,26 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Section& section){
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TypeSection& section){
     size_t address = section.size_address;
-
     std::cout << (Objdump::Section&)section;
-
     section.stream.print_address(++address);
-
 
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
-    std::cout << std::setfill('0') << std::setw(2) << section.functype.size() << "  ; Number of func" << std::endl;
+    std::cout << std::setfill('0') << std::setw(2) << section.functype.size() << "  ; Number of types" << std::endl;
 
     for(FuncType functype : section.functype){
         section.stream.print_address(++address);
-        std::cout << "60" << "  ; head" << std::endl;
-
+        std::cout << "60" << "  ; Function" << std::endl;
         // Params
         section.stream.print_address(++address);
         std::cout << std::setfill('0') << std::setw(2) << functype.params.size() << "  ; num params" << std::endl;
-
         for(ValueType param : functype.params){
             section.stream.print_address(++address);
             std::cout << (int)param << "  ; " << param << std::endl;
         }
-        
         // Results
         section.stream.print_address(++address);
         std::cout << std::setfill('0') << std::setw(2) << functype.results.size() << "  ; num results" << std::endl;
-
         for(ValueType result : functype.results){
             section.stream.print_address(++address);
             std::cout << (int)result << "  ; " << result << std::endl;
@@ -201,11 +232,22 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TypeSection& sectio
 
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& importsection){
     size_t address = importsection.size_address;
-
     std::cout << (Objdump::Section&)importsection;
-
     importsection.stream.print_address(++address);
+
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << importsection.imports.size() << "  ; Number of imports" << std::endl;
+
+    // TODO: print out import
+    
+    for(WasmImport import : importsection.imports){
+        std::cout << import.module <<std::endl;
+
+        std::cout << import.name <<std::endl;
+    }
+
+    std::cout.setf(flags);
 
     return os;
 }
