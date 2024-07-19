@@ -90,7 +90,8 @@ Objdump::Stream& Objdump::operator>><Objdump::TypeSection>(Stream& stream, Objdu
 // byte->string
 template<>
 Objdump::Stream& Objdump::operator>><byte_t>(Stream& stream, byte_t& byte){
-    unsigned int temp;
+    char temp;
+
     stream.istream >> temp;
     byte = (std::byte)temp;
 
@@ -108,40 +109,44 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
     // module
     std::vector<byte_t> mod;
     stream >> mod;
+
+    std::cout << mod.size() << std::endl;
     import.module.assign((char*)mod.data(), mod.size());
 
     // name
     std::vector<byte_t> nm;
     stream >> nm;
+
+
     import.name.assign((char*)nm.data(), nm.size());
 
-    // desc
-    // Objdump::Bytes kind(1);
-    // stream >> kind;
+    //desc
+    Objdump::Bytes kind(1);
+    stream >> kind;
 
-    // switch((int)kind[0]){
-    // case 0x0:
-    //     // TODO:
-
-
-    //     break;
-    // case 0x1:
-    //     // TODO:
+    switch((int)kind[0]){
+    case 0x0:
+        // TODO:
 
 
-    //     break;
-    // case 0x2:
-    //     // TODO:
+        break;
+    case 0x1:
+        // TODO:
 
 
-    //     break;
-    // case 0x3:
-    //     // TODO:
+        break;
+    case 0x2:
+        // TODO:
 
 
-    //     break;
+        break;
+    case 0x3:
+        // TODO:
 
-    // }
+
+        break;
+
+    }
 
 
     return stream;
