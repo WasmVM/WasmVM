@@ -17,6 +17,14 @@
 using namespace WasmVM;
 using namespace Objdump;
 
+u32_t to_u32(Bytes& bytes){
+    u32_t value = 0;
+    for(size_t i = 0; (i < bytes.size()) && (i < 5); ++i){
+        value |= ((u32_t) bytes[i] & 0x7F) << (i*7);
+    }
+    return value;
+}
+
 int main(int argc, char const *argv[]){  
     // Parse argv
     CommandParser args(argc, argv, {

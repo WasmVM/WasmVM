@@ -83,6 +83,8 @@ std::ostream& operator<<(std::ostream&, TypeSection&);
 std::ostream& operator<<(std::ostream&, ValueType&);
 std::ostream& operator<<(std::ostream&, ImportSection&);
 
+u32_t to_u32(Bytes&);
+
 } // namespace Objdump
 } // namespace WasmVM
 
