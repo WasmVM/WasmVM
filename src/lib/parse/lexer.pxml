@@ -192,17 +192,14 @@
         <rule pattern="then">
             return Token(Then(), _pos);
         </rule>
-        <rule pattern="(unreachable|nop|return)">
-            if(_text == "unreachable"){
-                return Token(ControlInstr(ControlInstr::Unreachable), _pos);
-            }else if(_text == "nop"){
-                return Token(ControlInstr(ControlInstr::Nop), _pos);
-            }else{
-                return Token(ControlInstr(ControlInstr::Return), _pos);
-            }
+        <rule pattern="unreachable">
+            return Token(ControlInstr(ControlInstr::Unreachable), _pos);
         </rule>
         <rule pattern="block">
             return Token(Block(), _pos);
+        </rule>
+        <rule pattern="nop">
+            return Token(ControlInstr(ControlInstr::Nop), _pos);
         </rule>
         <rule pattern="end">
             return Token(End(), _pos);
@@ -225,6 +222,9 @@
         <rule pattern="br_table">
             return Token(Br_table(), _pos);
         </rule>
+        <rule pattern="return">
+            return Token(ControlInstr(ControlInstr::Return), _pos);
+        </rule>
         <rule pattern="call">
             return Token(Call(), _pos);
         </rule>
@@ -246,37 +246,35 @@
         <rule pattern="select">
             return Token(Select(), _pos);
         </rule>
-        <rule pattern="((local|global)\.(set|get)|local\.tee)">
-            if(_text.starts_with("local")){
-                std::string op = _text.substr(6);
-                if(op == "get"){
-                    return Token(VariableInstr(VariableInstr::LocalGet), _pos);
-                }else if(op == "set"){
-                    return Token(VariableInstr(VariableInstr::LocalSet), _pos);
-                }else{
-                    return Token(VariableInstr(VariableInstr::LocalTee), _pos);
-                }
-            }else{
-                std::string op = _text.substr(7);
-                if(op == "get"){
-                    return Token(VariableInstr(VariableInstr::GlobalGet), _pos);
-                }else{
-                    return Token(VariableInstr(VariableInstr::GlobalSet), _pos);
-                }
-            }
+        <rule pattern="local\.get">
+            return Token(VariableInstr(VariableInstr::LocalGet), _pos);
         </rule>
-        <rule pattern="table\.(get|set|size|grow|fill)">
-            if(_text == "table.get"){
-                return Token(TableInstr(TableInstr::TableGet), _pos);
-            }else if(_text == "table.set"){
-                return Token(TableInstr(TableInstr::TableSet), _pos);
-            }else if(_text == "table.size"){
-                return Token(TableInstr(TableInstr::TableSize), _pos);
-            }else if(_text == "table.grow"){
-                return Token(TableInstr(TableInstr::TableGrow), _pos);
-            }else{
-                return Token(TableInstr(TableInstr::TableFill), _pos);
-            }
+        <rule pattern="local\.set">
+            return Token(VariableInstr(VariableInstr::LocalSet), _pos);
+        </rule>
+        <rule pattern="local\.tee">
+            return Token(VariableInstr(VariableInstr::LocalTee), _pos);
+        </rule>
+        <rule pattern="global\.get">
+            return Token(VariableInstr(VariableInstr::GlobalGet), _pos);
+        </rule>
+        <rule pattern="global\.set">
+            return Token(VariableInstr(VariableInstr::GlobalSet), _pos);
+        </rule>
+        <rule pattern="table\.get">
+            return Token(TableInstr(TableInstr::TableGet), _pos);
+        </rule>
+        <rule pattern="table\.set">
+            return Token(TableInstr(TableInstr::TableSet), _pos);
+        </rule>
+        <rule pattern="table\.size">
+            return Token(TableInstr(TableInstr::TableSize), _pos);
+        </rule>
+        <rule pattern="table\.grow">
+            return Token(TableInstr(TableInstr::TableGrow), _pos);
+        </rule>
+        <rule pattern="table\.fill">
+            return Token(TableInstr(TableInstr::TableFill), _pos);
         </rule>
         <rule pattern="table\.copy">
             return Token(Table_copy(), _pos);
@@ -305,431 +303,494 @@
         <rule pattern="data\.drop">
             return Token(Data_drop(), _pos);
         </rule>
-        <rule pattern="i((32|64)\.(load((8|16)_[su])?|store(8|16)?)|64\.(load32_[su]|store32))">
-            if(_text.starts_with("i32")){
-                std::string op = _text.substr(4);
-                if(op.starts_with("load")){
-                    op = op.substr(4);
-                    if(op.starts_with("8")){
-                        op = op.substr(2);
-                        if(op == "s"){
-                            return Token(MemoryInstr(MemoryInstr::I32Load8_s), _pos);
-                        }else{
-                            return Token(MemoryInstr(MemoryInstr::I32Load8_u), _pos);
-                        }
-                    }else if(op.starts_with("16")){
-                        op = op.substr(3);
-                        if(op == "s"){
-                            return Token(MemoryInstr(MemoryInstr::I32Load16_s), _pos);
-                        }else{
-                            return Token(MemoryInstr(MemoryInstr::I32Load16_u), _pos);
-                        }
-                    }else{
-                        return Token(MemoryInstr(MemoryInstr::I32Load), _pos);
-                    }
-                }else{
-                    op = op.substr(5);
-                    if(op.starts_with("8")){
-                        return Token(MemoryInstr(MemoryInstr::I32Store8), _pos);
-                    }else if(op.starts_with("16")){
-                        return Token(MemoryInstr(MemoryInstr::I32Store16), _pos);
-                    }else{
-                        return Token(MemoryInstr(MemoryInstr::I32Store), _pos);
-                    }
-                }
-            }else{
-                std::string op = _text.substr(4);
-                if(op.starts_with("load")){
-                    op = op.substr(4);
-                    if(op.starts_with("8")){
-                        op = op.substr(2);
-                        if(op == "s"){
-                            return Token(MemoryInstr(MemoryInstr::I64Load8_s), _pos);
-                        }else{
-                            return Token(MemoryInstr(MemoryInstr::I64Load8_u), _pos);
-                        }
-                    }else if(op.starts_with("16")){
-                        op = op.substr(3);
-                        if(op == "s"){
-                            return Token(MemoryInstr(MemoryInstr::I64Load16_s), _pos);
-                        }else{
-                            return Token(MemoryInstr(MemoryInstr::I64Load16_u), _pos);
-                        }
-                    }else if(op.starts_with("32")){
-                        op = op.substr(3);
-                        if(op == "s"){
-                            return Token(MemoryInstr(MemoryInstr::I64Load32_s), _pos);
-                        }else{
-                            return Token(MemoryInstr(MemoryInstr::I64Load32_u), _pos);
-                        }
-                    }else{
-                        return Token(MemoryInstr(MemoryInstr::I64Load), _pos);
-                    }
-                }else{
-                    op = op.substr(5);
-                    if(op.starts_with("8")){
-                        return Token(MemoryInstr(MemoryInstr::I64Store8), _pos);
-                    }else if(op.starts_with("16")){
-                        return Token(MemoryInstr(MemoryInstr::I64Store16), _pos);
-                    }else if(op.starts_with("32")){
-                        return Token(MemoryInstr(MemoryInstr::I64Store32), _pos);
-                    }else{
-                        return Token(MemoryInstr(MemoryInstr::I64Store), _pos);
-                    }
-                }
-            }
+        <rule pattern="i32\.load">
+            return Token(MemoryInstr(MemoryInstr::I32Load), _pos);
         </rule>
-        <rule pattern="f(32|64)\.(load|store)">
-            if(_text == "f32.load"){
-                return Token(MemoryInstr(MemoryInstr::F32Load), _pos);
-            }else if(_text == "f32.store"){
-                return Token(MemoryInstr(MemoryInstr::F32Store), _pos);
-            }else if(_text == "f64.load"){
-                return Token(MemoryInstr(MemoryInstr::F64Load), _pos);
-            }else{
-                return Token(MemoryInstr(MemoryInstr::F64Store), _pos);
-            }
+        <rule pattern="i64\.load">
+            return Token(MemoryInstr(MemoryInstr::I64Load), _pos);
+        </rule>
+        <rule pattern="f32\.load">
+            return Token(MemoryInstr(MemoryInstr::F32Load), _pos);
+        </rule>
+        <rule pattern="f64\.load">
+            return Token(MemoryInstr(MemoryInstr::F64Load), _pos);
+        </rule>
+        <rule pattern="i32\.load8_s">
+            return Token(MemoryInstr(MemoryInstr::I32Load8_s), _pos);
+        </rule>
+        <rule pattern="i32\.load8_u">
+            return Token(MemoryInstr(MemoryInstr::I32Load8_u), _pos);
+        </rule>
+        <rule pattern="i32\.load16_s">
+            return Token(MemoryInstr(MemoryInstr::I32Load16_s), _pos);
+        </rule>
+        <rule pattern="i32\.load16_u">
+            return Token(MemoryInstr(MemoryInstr::I32Load16_u), _pos);
+        </rule>
+        <rule pattern="i64\.load8_s">
+            return Token(MemoryInstr(MemoryInstr::I64Load8_s), _pos);
+        </rule>
+        <rule pattern="i64\.load8_u">
+            return Token(MemoryInstr(MemoryInstr::I64Load8_u), _pos);
+        </rule>
+        <rule pattern="i64\.load16_s">
+            return Token(MemoryInstr(MemoryInstr::I64Load16_s), _pos);
+        </rule>
+        <rule pattern="i64\.load16_u">
+            return Token(MemoryInstr(MemoryInstr::I64Load16_u), _pos);
+        </rule>
+        <rule pattern="i64\.load32_s">
+            return Token(MemoryInstr(MemoryInstr::I64Load32_s), _pos);
+        </rule>
+        <rule pattern="i64\.load32_u">
+            return Token(MemoryInstr(MemoryInstr::I64Load32_u), _pos);
+        </rule>
+        <rule pattern="i32\.store">
+            return Token(MemoryInstr(MemoryInstr::I32Store), _pos);
+        </rule>
+        <rule pattern="i64\.store">
+            return Token(MemoryInstr(MemoryInstr::I64Store), _pos);
+        </rule>
+        <rule pattern="f32\.store">
+            return Token(MemoryInstr(MemoryInstr::F32Store), _pos);
+        </rule>
+        <rule pattern="f64\.store">
+            return Token(MemoryInstr(MemoryInstr::F64Store), _pos);
+        </rule>
+        <rule pattern="i32\.store8">
+            return Token(MemoryInstr(MemoryInstr::I32Store8), _pos);
+        </rule>
+        <rule pattern="i32\.store16">
+            return Token(MemoryInstr(MemoryInstr::I32Store16), _pos);
+        </rule>
+        <rule pattern="i64\.store8">
+            return Token(MemoryInstr(MemoryInstr::I64Store8), _pos);
+        </rule>
+        <rule pattern="i64\.store16">
+            return Token(MemoryInstr(MemoryInstr::I64Store16), _pos);
+        </rule>
+        <rule pattern="i64\.store32">
+            return Token(MemoryInstr(MemoryInstr::I64Store32), _pos);
+        </rule>
+        <rule pattern="i32\.const">
             return Token(I32_const(), _pos);
         </rule>
-        <rule pattern="[if](32|64)\.const">
-            if(_text.starts_with("i32")){
-                return Token(I32_const(), _pos);
-            }else if(_text.starts_with("i64")){
-                return Token(I64_const(), _pos);
-            }else if(_text.starts_with("f32")){
-                return Token(F32_const(), _pos);
-            }else{
-                return Token(F64_const(), _pos);
-            }
+        <rule pattern="i64\.const">
+            return Token(I64_const(), _pos);
         </rule>
-        <rule pattern="i(32|64)\.(eqz?|ne|[lg][et]_[su]|c[lt]z|popcnt|add|sub|mul|and|or|xor|shl|rotl|rotr|(div|rem|shr)_[su]">
-            if(_text.starts_with("i32")){
-                std::string op = _text.substr(4);
-                if(op == "eq"){
-                    return Token(NumericInstr(NumericInstr::I32Eq), _pos);
-                }else if(op == "eqz"){
-                    return Token(NumericInstr(NumericInstr::I32Eqz), _pos);
-                }else if(op == "ne"){
-                    return Token(NumericInstr(NumericInstr::I32Ne), _pos);
-                }else if(op == "le_s"){
-                    return Token(NumericInstr(NumericInstr::I32Le_s), _pos);
-                }else if(op == "lt_s"){
-                    return Token(NumericInstr(NumericInstr::I32Lt_s), _pos);
-                }else if(op == "ge_s"){
-                    return Token(NumericInstr(NumericInstr::I32Ge_s), _pos);
-                }else if(op == "gt_s"){
-                    return Token(NumericInstr(NumericInstr::I32Gt_s), _pos);
-                }else if(op == "le_u"){
-                    return Token(NumericInstr(NumericInstr::I32Le_u), _pos);
-                }else if(op == "lt_u"){
-                    return Token(NumericInstr(NumericInstr::I32Lt_u), _pos);
-                }else if(op == "ge_u"){
-                    return Token(NumericInstr(NumericInstr::I32Ge_u), _pos);
-                }else if(op == "gt_u"){
-                    return Token(NumericInstr(NumericInstr::I32Gt_u), _pos);
-                }else if(op == "clz"){
-                    return Token(NumericInstr(NumericInstr::I32Clz), _pos);
-                }else if(op == "ctz"){
-                    return Token(NumericInstr(NumericInstr::I32Ctz), _pos);
-                }else if(op == "popcnt"){
-                    return Token(NumericInstr(NumericInstr::I32Popcnt), _pos);
-                }else if(op == "add"){
-                    return Token(NumericInstr(NumericInstr::I32Add), _pos);
-                }else if(op == "sub"){
-                    return Token(NumericInstr(NumericInstr::I32Sub), _pos);
-                }else if(op == "mul"){
-                    return Token(NumericInstr(NumericInstr::I32Mul), _pos);
-                }else if(op == "and"){
-                    return Token(NumericInstr(NumericInstr::I32And), _pos);
-                }else if(op == "or"){
-                    return Token(NumericInstr(NumericInstr::I32Or), _pos);
-                }else if(op == "xor"){
-                    return Token(NumericInstr(NumericInstr::I32Xor), _pos);
-                }else if(op == "shl"){
-                    return Token(NumericInstr(NumericInstr::I32Shl), _pos);
-                }else if(op == "rotl"){
-                    return Token(NumericInstr(NumericInstr::I32Rotl), _pos);
-                }else if(op == "rotr"){
-                    return Token(NumericInstr(NumericInstr::I32Rotr), _pos);
-                }else if(op == "div_s"){
-                    return Token(NumericInstr(NumericInstr::I32Div_s), _pos);
-                }else if(op == "div_u"){
-                    return Token(NumericInstr(NumericInstr::I32Div_u), _pos);
-                }else if(op == "rem_s"){
-                    return Token(NumericInstr(NumericInstr::I32Rem_s), _pos);
-                }else if(op == "rem_u"){
-                    return Token(NumericInstr(NumericInstr::I32Rem_u), _pos);
-                }else if(op == "shr_s"){
-                    return Token(NumericInstr(NumericInstr::I32Shr_s), _pos);
-                }else{
-                    return Token(NumericInstr(NumericInstr::I32Shr_u), _pos);
-                }
-            }else{
-                std::string op = _text.substr(4);
-                if(op == "eq"){
-                    return Token(NumericInstr(NumericInstr::I64Eq), _pos);
-                }else if(op == "eqz"){
-                    return Token(NumericInstr(NumericInstr::I64Eqz), _pos);
-                }else if(op == "ne"){
-                    return Token(NumericInstr(NumericInstr::I64Ne), _pos);
-                }else if(op == "le_s"){
-                    return Token(NumericInstr(NumericInstr::I64Le_s), _pos);
-                }else if(op == "lt_s"){
-                    return Token(NumericInstr(NumericInstr::I64Lt_s), _pos);
-                }else if(op == "ge_s"){
-                    return Token(NumericInstr(NumericInstr::I64Ge_s), _pos);
-                }else if(op == "gt_s"){
-                    return Token(NumericInstr(NumericInstr::I64Gt_s), _pos);
-                }else if(op == "le_u"){
-                    return Token(NumericInstr(NumericInstr::I64Le_u), _pos);
-                }else if(op == "lt_u"){
-                    return Token(NumericInstr(NumericInstr::I64Lt_u), _pos);
-                }else if(op == "ge_u"){
-                    return Token(NumericInstr(NumericInstr::I64Ge_u), _pos);
-                }else if(op == "gt_u"){
-                    return Token(NumericInstr(NumericInstr::I64Gt_u), _pos);
-                }else if(op == "clz"){
-                    return Token(NumericInstr(NumericInstr::I64Clz), _pos);
-                }else if(op == "ctz"){
-                    return Token(NumericInstr(NumericInstr::I64Ctz), _pos);
-                }else if(op == "popcnt"){
-                    return Token(NumericInstr(NumericInstr::I64Popcnt), _pos);
-                }else if(op == "add"){
-                    return Token(NumericInstr(NumericInstr::I64Add), _pos);
-                }else if(op == "sub"){
-                    return Token(NumericInstr(NumericInstr::I64Sub), _pos);
-                }else if(op == "mul"){
-                    return Token(NumericInstr(NumericInstr::I64Mul), _pos);
-                }else if(op == "and"){
-                    return Token(NumericInstr(NumericInstr::I64And), _pos);
-                }else if(op == "or"){
-                    return Token(NumericInstr(NumericInstr::I64Or), _pos);
-                }else if(op == "xor"){
-                    return Token(NumericInstr(NumericInstr::I64Xor), _pos);
-                }else if(op == "shl"){
-                    return Token(NumericInstr(NumericInstr::I64Shl), _pos);
-                }else if(op == "rotl"){
-                    return Token(NumericInstr(NumericInstr::I64Rotl), _pos);
-                }else if(op == "rotr"){
-                    return Token(NumericInstr(NumericInstr::I64Rotr), _pos);
-                }else if(op == "div_s"){
-                    return Token(NumericInstr(NumericInstr::I64Div_s), _pos);
-                }else if(op == "div_u"){
-                    return Token(NumericInstr(NumericInstr::I64Div_u), _pos);
-                }else if(op == "rem_s"){
-                    return Token(NumericInstr(NumericInstr::I64Rem_s), _pos);
-                }else if(op == "rem_u"){
-                    return Token(NumericInstr(NumericInstr::I64Rem_u), _pos);
-                }else if(op == "shr_s"){
-                    return Token(NumericInstr(NumericInstr::I64Shr_s), _pos);
-                }else{
-                    return Token(NumericInstr(NumericInstr::I64Shr_u), _pos);
-                }
-            }
+        <rule pattern="f32\.const">
+            return Token(F32_const(), _pos);
         </rule>
-        <rule pattern="f(32|64)\.(eq|ne|[lg][et]|abs|neg|ceil|floor|trunc|nearest|sqrt|add|sub|mul|div|min|max|copysign)">
-            if(_text.starts_with("f32")){
-                std::string op = _text.substr(4);
-                if(op == "eq"){
-                    return Token(NumericInstr(NumericInstr::F32Eq), _pos);
-                }else if(op == "ne"){
-                    return Token(NumericInstr(NumericInstr::F32Ne), _pos);
-                }else if(op == "le"){
-                    return Token(NumericInstr(NumericInstr::F32Le), _pos);
-                }else if(op == "lt"){
-                    return Token(NumericInstr(NumericInstr::F32Lt), _pos);
-                }else if(op == "ge"){
-                    return Token(NumericInstr(NumericInstr::F32Ge), _pos);
-                }else if(op == "gt"){
-                    return Token(NumericInstr(NumericInstr::F32Gt), _pos);
-                }else if(op == "abs"){
-                    return Token(NumericInstr(NumericInstr::F32Abs), _pos);
-                }else if(op == "neg"){
-                    return Token(NumericInstr(NumericInstr::F32Neg), _pos);
-                }else if(op == "ceil"){
-                    return Token(NumericInstr(NumericInstr::F32Ceil), _pos);
-                }else if(op == "floor"){
-                    return Token(NumericInstr(NumericInstr::F32Floor), _pos);
-                }else if(op == "trunc"){
-                    return Token(NumericInstr(NumericInstr::F32Trunc), _pos);
-                }else if(op == "nearest"){
-                    return Token(NumericInstr(NumericInstr::F32Nearest), _pos);
-                }else if(op == "sqrt"){
-                    return Token(NumericInstr(NumericInstr::F32Sqrt), _pos);
-                }else if(op == "add"){
-                    return Token(NumericInstr(NumericInstr::F32Add), _pos);
-                }else if(op == "sub"){
-                    return Token(NumericInstr(NumericInstr::F32Sub), _pos);
-                }else if(op == "mul"){
-                    return Token(NumericInstr(NumericInstr::F32Mul), _pos);
-                }else if(op == "div"){
-                    return Token(NumericInstr(NumericInstr::F32Div), _pos);
-                }else if(op == "min"){
-                    return Token(NumericInstr(NumericInstr::F32Min), _pos);
-                }else if(op == "max"){
-                    return Token(NumericInstr(NumericInstr::F32Max), _pos);
-                }else{
-                    return Token(NumericInstr(NumericInstr::F32Copysign), _pos);
-                }
-            }else{
-                std::string op = _text.substr(4);
-                if(op == "eq"){
-                    return Token(NumericInstr(NumericInstr::F64Eq), _pos);
-                }else if(op == "ne"){
-                    return Token(NumericInstr(NumericInstr::F64Ne), _pos);
-                }else if(op == "le"){
-                    return Token(NumericInstr(NumericInstr::F64Le), _pos);
-                }else if(op == "lt"){
-                    return Token(NumericInstr(NumericInstr::F64Lt), _pos);
-                }else if(op == "ge"){
-                    return Token(NumericInstr(NumericInstr::F64Ge), _pos);
-                }else if(op == "gt"){
-                    return Token(NumericInstr(NumericInstr::F64Gt), _pos);
-                }else if(op == "abs"){
-                    return Token(NumericInstr(NumericInstr::F64Abs), _pos);
-                }else if(op == "neg"){
-                    return Token(NumericInstr(NumericInstr::F64Neg), _pos);
-                }else if(op == "ceil"){
-                    return Token(NumericInstr(NumericInstr::F64Ceil), _pos);
-                }else if(op == "floor"){
-                    return Token(NumericInstr(NumericInstr::F64Floor), _pos);
-                }else if(op == "trunc"){
-                    return Token(NumericInstr(NumericInstr::F64Trunc), _pos);
-                }else if(op == "nearest"){
-                    return Token(NumericInstr(NumericInstr::F64Nearest), _pos);
-                }else if(op == "sqrt"){
-                    return Token(NumericInstr(NumericInstr::F64Sqrt), _pos);
-                }else if(op == "add"){
-                    return Token(NumericInstr(NumericInstr::F64Add), _pos);
-                }else if(op == "sub"){
-                    return Token(NumericInstr(NumericInstr::F64Sub), _pos);
-                }else if(op == "mul"){
-                    return Token(NumericInstr(NumericInstr::F64Mul), _pos);
-                }else if(op == "div"){
-                    return Token(NumericInstr(NumericInstr::F64Div), _pos);
-                }else if(op == "min"){
-                    return Token(NumericInstr(NumericInstr::F64Min), _pos);
-                }else if(op == "max"){
-                    return Token(NumericInstr(NumericInstr::F64Max), _pos);
-                }else{
-                    return Token(NumericInstr(NumericInstr::F64Copysign), _pos);
-                }
-            }
+        <rule pattern="f64\.const">
+            return Token(F64_const(), _pos);
         </rule>
-{% 
+        <rule pattern="i32\.eqz">
+            return Token(NumericInstr(NumericInstr::I32Eqz), _pos);
+        </rule>
+        <rule pattern="i32\.eq">
+            return Token(NumericInstr(NumericInstr::I32Eq), _pos);
+        </rule>
+        <rule pattern="i32\.ne">
+            return Token(NumericInstr(NumericInstr::I32Ne), _pos);
+        </rule>
+        <rule pattern="i32\.lt_s">
+            return Token(NumericInstr(NumericInstr::I32Lt_s), _pos);
+        </rule>
+        <rule pattern="i32\.lt_u">
+            return Token(NumericInstr(NumericInstr::I32Lt_u), _pos);
+        </rule>
+        <rule pattern="i32\.gt_s">
+            return Token(NumericInstr(NumericInstr::I32Gt_s), _pos);
+        </rule>
+        <rule pattern="i32\.gt_u">
+            return Token(NumericInstr(NumericInstr::I32Gt_u), _pos);
+        </rule>
+        <rule pattern="i32\.le_s">
+            return Token(NumericInstr(NumericInstr::I32Le_s), _pos);
+        </rule>
+        <rule pattern="i32\.le_u">
+            return Token(NumericInstr(NumericInstr::I32Le_u), _pos);
+        </rule>
+        <rule pattern="i32\.ge_s">
+            return Token(NumericInstr(NumericInstr::I32Ge_s), _pos);
+        </rule>
+        <rule pattern="i32\.ge_u">
+            return Token(NumericInstr(NumericInstr::I32Ge_u), _pos);
+        </rule>
+        <rule pattern="i64\.eqz">
+            return Token(NumericInstr(NumericInstr::I64Eqz), _pos);
+        </rule>
+        <rule pattern="i64\.eq">
+            return Token(NumericInstr(NumericInstr::I64Eq), _pos);
+        </rule>
+        <rule pattern="i64\.ne">
+            return Token(NumericInstr(NumericInstr::I64Ne), _pos);
+        </rule>
+        <rule pattern="i64\.lt_s">
+            return Token(NumericInstr(NumericInstr::I64Lt_s), _pos);
+        </rule>
+        <rule pattern="i64\.lt_u">
+            return Token(NumericInstr(NumericInstr::I64Lt_u), _pos);
+        </rule>
+        <rule pattern="i64\.gt_s">
+            return Token(NumericInstr(NumericInstr::I64Gt_s), _pos);
+        </rule>
+        <rule pattern="i64\.gt_u">
+            return Token(NumericInstr(NumericInstr::I64Gt_u), _pos);
+        </rule>
+        <rule pattern="i64\.le_s">
+            return Token(NumericInstr(NumericInstr::I64Le_s), _pos);
+        </rule>
+        <rule pattern="i64\.le_u">
+            return Token(NumericInstr(NumericInstr::I64Le_u), _pos);
+        </rule>
+        <rule pattern="i64\.ge_s">
+            return Token(NumericInstr(NumericInstr::I64Ge_s), _pos);
+        </rule>
+        <rule pattern="i64\.ge_u">
+            return Token(NumericInstr(NumericInstr::I64Ge_u), _pos);
+        </rule>
+        <rule pattern="f32\.eq">
+            return Token(NumericInstr(NumericInstr::F32Eq), _pos);
+        </rule>
+        <rule pattern="f32\.ne">
+            return Token(NumericInstr(NumericInstr::F32Ne), _pos);
+        </rule>
+        <rule pattern="f32\.lt">
+            return Token(NumericInstr(NumericInstr::F32Lt), _pos);
+        </rule>
+        <rule pattern="f32\.gt">
+            return Token(NumericInstr(NumericInstr::F32Gt), _pos);
+        </rule>
+        <rule pattern="f32\.le">
+            return Token(NumericInstr(NumericInstr::F32Le), _pos);
+        </rule>
+        <rule pattern="f32\.ge">
+            return Token(NumericInstr(NumericInstr::F32Ge), _pos);
+        </rule>
+        <rule pattern="f64\.eq">
+            return Token(NumericInstr(NumericInstr::F64Eq), _pos);
+        </rule>
+        <rule pattern="f64\.ne">
+            return Token(NumericInstr(NumericInstr::F64Ne), _pos);
+        </rule>
+        <rule pattern="f64\.lt">
+            return Token(NumericInstr(NumericInstr::F64Lt), _pos);
+        </rule>
+        <rule pattern="f64\.gt">
+            return Token(NumericInstr(NumericInstr::F64Gt), _pos);
+        </rule>
+        <rule pattern="f64\.le">
+            return Token(NumericInstr(NumericInstr::F64Le), _pos);
+        </rule>
+        <rule pattern="f64\.ge">
+            return Token(NumericInstr(NumericInstr::F64Ge), _pos);
+        </rule>
+        <rule pattern="i32\.clz">
+            return Token(NumericInstr(NumericInstr::I32Clz), _pos);
+        </rule>
+        <rule pattern="i32\.ctz">
+            return Token(NumericInstr(NumericInstr::I32Ctz), _pos);
+        </rule>
+        <rule pattern="i32\.popcnt">
+            return Token(NumericInstr(NumericInstr::I32Popcnt), _pos);
+        </rule>
+        <rule pattern="i32\.add">
+            return Token(NumericInstr(NumericInstr::I32Add), _pos);
+        </rule>
+        <rule pattern="i32\.sub">
+            return Token(NumericInstr(NumericInstr::I32Sub), _pos);
+        </rule>
+        <rule pattern="i32\.mul">
+            return Token(NumericInstr(NumericInstr::I32Mul), _pos);
+        </rule>
+        <rule pattern="i32\.div_s">
+            return Token(NumericInstr(NumericInstr::I32Div_s), _pos);
+        </rule>
+        <rule pattern="i32\.div_u">
+            return Token(NumericInstr(NumericInstr::I32Div_u), _pos);
+        </rule>
+        <rule pattern="i32\.rem_s">
+            return Token(NumericInstr(NumericInstr::I32Rem_s), _pos);
+        </rule>
+        <rule pattern="i32\.rem_u">
+            return Token(NumericInstr(NumericInstr::I32Rem_u), _pos);
+        </rule>
+        <rule pattern="i32\.and">
+            return Token(NumericInstr(NumericInstr::I32And), _pos);
+        </rule>
+        <rule pattern="i32\.or">
+            return Token(NumericInstr(NumericInstr::I32Or), _pos);
+        </rule>
+        <rule pattern="i32\.xor">
+            return Token(NumericInstr(NumericInstr::I32Xor), _pos);
+        </rule>
+        <rule pattern="i32\.shl">
+            return Token(NumericInstr(NumericInstr::I32Shl), _pos);
+        </rule>
+        <rule pattern="i32\.shr_s">
+            return Token(NumericInstr(NumericInstr::I32Shr_s), _pos);
+        </rule>
+        <rule pattern="i32\.shr_u">
+            return Token(NumericInstr(NumericInstr::I32Shr_u), _pos);
+        </rule>
+        <rule pattern="i32\.rotl">
+            return Token(NumericInstr(NumericInstr::I32Rotl), _pos);
+        </rule>
+        <rule pattern="i32\.rotr">
+            return Token(NumericInstr(NumericInstr::I32Rotr), _pos);
+        </rule>
+        <rule pattern="i64\.clz">
+            return Token(NumericInstr(NumericInstr::I64Clz), _pos);
+        </rule>
+        <rule pattern="i64\.ctz">
+            return Token(NumericInstr(NumericInstr::I64Ctz), _pos);
+        </rule>
+        <rule pattern="i64\.popcnt">
+            return Token(NumericInstr(NumericInstr::I64Popcnt), _pos);
+        </rule>
+        <rule pattern="i64\.add">
+            return Token(NumericInstr(NumericInstr::I64Add), _pos);
+        </rule>
+        <rule pattern="i64\.sub">
+            return Token(NumericInstr(NumericInstr::I64Sub), _pos);
+        </rule>
+        <rule pattern="i64\.mul">
+            return Token(NumericInstr(NumericInstr::I64Mul), _pos);
+        </rule>
+        <rule pattern="i64\.div_s">
+            return Token(NumericInstr(NumericInstr::I64Div_s), _pos);
+        </rule>
+        <rule pattern="i64\.div_u">
+            return Token(NumericInstr(NumericInstr::I64Div_u), _pos);
+        </rule>
+        <rule pattern="i64\.rem_s">
+            return Token(NumericInstr(NumericInstr::I64Rem_s), _pos);
+        </rule>
+        <rule pattern="i64\.rem_u">
+            return Token(NumericInstr(NumericInstr::I64Rem_u), _pos);
+        </rule>
+        <rule pattern="i64\.and">
+            return Token(NumericInstr(NumericInstr::I64And), _pos);
+        </rule>
+        <rule pattern="i64\.or">
+            return Token(NumericInstr(NumericInstr::I64Or), _pos);
+        </rule>
+        <rule pattern="i64\.xor">
+            return Token(NumericInstr(NumericInstr::I64Xor), _pos);
+        </rule>
+        <rule pattern="i64\.shl">
+            return Token(NumericInstr(NumericInstr::I64Shl), _pos);
+        </rule>
+        <rule pattern="i64\.shr_s">
+            return Token(NumericInstr(NumericInstr::I64Shr_s), _pos);
+        </rule>
+        <rule pattern="i64\.shr_u">
+            return Token(NumericInstr(NumericInstr::I64Shr_u), _pos);
+        </rule>
+        <rule pattern="i64\.rotl">
+            return Token(NumericInstr(NumericInstr::I64Rotl), _pos);
+        </rule>
+        <rule pattern="i64\.rotr">
+            return Token(NumericInstr(NumericInstr::I64Rotr), _pos);
+        </rule>
+        <rule pattern="f32\.abs">
+            return Token(NumericInstr(NumericInstr::F32Abs), _pos);
+        </rule>
+        <rule pattern="f32\.neg">
+            return Token(NumericInstr(NumericInstr::F32Neg), _pos);
+        </rule>
+        <rule pattern="f32\.ceil">
+            return Token(NumericInstr(NumericInstr::F32Ceil), _pos);
+        </rule>
+        <rule pattern="f32\.floor">
+            return Token(NumericInstr(NumericInstr::F32Floor), _pos);
+        </rule>
+        <rule pattern="f32\.trunc">
+            return Token(NumericInstr(NumericInstr::F32Trunc), _pos);
+        </rule>
+        <rule pattern="f32\.nearest">
+            return Token(NumericInstr(NumericInstr::F32Nearest), _pos);
+        </rule>
+        <rule pattern="f32\.sqrt">
+            return Token(NumericInstr(NumericInstr::F32Sqrt), _pos);
+        </rule>
+        <rule pattern="f32\.add">
+            return Token(NumericInstr(NumericInstr::F32Add), _pos);
+        </rule>
+        <rule pattern="f32\.sub">
+            return Token(NumericInstr(NumericInstr::F32Sub), _pos);
+        </rule>
+        <rule pattern="f32\.mul">
+            return Token(NumericInstr(NumericInstr::F32Mul), _pos);
+        </rule>
+        <rule pattern="f32\.div">
+            return Token(NumericInstr(NumericInstr::F32Div), _pos);
+        </rule>
+        <rule pattern="f32\.min">
+            return Token(NumericInstr(NumericInstr::F32Min), _pos);
+        </rule>
+        <rule pattern="f32\.max">
+            return Token(NumericInstr(NumericInstr::F32Max), _pos);
+        </rule>
+        <rule pattern="f32\.copysign">
+            return Token(NumericInstr(NumericInstr::F32Copysign), _pos);
+        </rule>
+        <rule pattern="f64\.abs">
+            return Token(NumericInstr(NumericInstr::F64Abs), _pos);
+        </rule>
+        <rule pattern="f64\.neg">
+            return Token(NumericInstr(NumericInstr::F64Neg), _pos);
+        </rule>
+        <rule pattern="f64\.ceil">
+            return Token(NumericInstr(NumericInstr::F64Ceil), _pos);
+        </rule>
+        <rule pattern="f64\.floor">
+            return Token(NumericInstr(NumericInstr::F64Floor), _pos);
+        </rule>
+        <rule pattern="f64\.trunc">
+            return Token(NumericInstr(NumericInstr::F64Trunc), _pos);
+        </rule>
+        <rule pattern="f64\.nearest">
+            return Token(NumericInstr(NumericInstr::F64Nearest), _pos);
+        </rule>
+        <rule pattern="f64\.sqrt">
+            return Token(NumericInstr(NumericInstr::F64Sqrt), _pos);
+        </rule>
+        <rule pattern="f64\.add">
+            return Token(NumericInstr(NumericInstr::F64Add), _pos);
+        </rule>
+        <rule pattern="f64\.sub">
+            return Token(NumericInstr(NumericInstr::F64Sub), _pos);
+        </rule>
+        <rule pattern="f64\.mul">
+            return Token(NumericInstr(NumericInstr::F64Mul), _pos);
+        </rule>
+        <rule pattern="f64\.div">
+            return Token(NumericInstr(NumericInstr::F64Div), _pos);
+        </rule>
+        <rule pattern="f64\.min">
+            return Token(NumericInstr(NumericInstr::F64Min), _pos);
+        </rule>
+        <rule pattern="f64\.max">
+            return Token(NumericInstr(NumericInstr::F64Max), _pos);
+        </rule>
+        <rule pattern="f64\.copysign">
+            return Token(NumericInstr(NumericInstr::F64Copysign), _pos);
+        </rule>
         <rule pattern="i32\.wrap_i64">
-            return Token(I32_wrap_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Wrap_i64), _pos);
         </rule>
         <rule pattern="i32\.trunc_s_f32">
-            return Token(I32_trunc_s_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_s_f32), _pos);
         </rule>
         <rule pattern="i32\.trunc_u_f32">
-            return Token(I32_trunc_u_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_u_f32), _pos);
         </rule>
         <rule pattern="i32\.trunc_s_f64">
-            return Token(I32_trunc_s_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_s_f64), _pos);
         </rule>
         <rule pattern="i32\.trunc_u_f64">
-            return Token(I32_trunc_u_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_u_f64), _pos);
         </rule>
         <rule pattern="i64\.extend_s_i32">
-            return Token(I64_extend_s_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Extend_s_i32), _pos);
         </rule>
         <rule pattern="i64\.extend_u_i32">
-            return Token(I64_extend_u_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Extend_u_i32), _pos);
         </rule>
         <rule pattern="i64\.trunc_s_f32">
-            return Token(I64_trunc_s_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_s_f32), _pos);
         </rule>
         <rule pattern="i64\.trunc_u_f32">
-            return Token(I64_trunc_u_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_u_f32), _pos);
         </rule>
         <rule pattern="i64\.trunc_s_f64">
-            return Token(I64_trunc_s_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_s_f64), _pos);
         </rule>
         <rule pattern="i64\.trunc_u_f64">
-            return Token(I64_trunc_u_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_u_f64), _pos);
         </rule>
         <rule pattern="f32\.convert_s_i32">
-            return Token(F32_convert_s_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Convert_s_i32), _pos);
         </rule>
         <rule pattern="f32\.convert_u_i32">
-            return Token(F32_convert_u_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Convert_u_i32), _pos);
         </rule>
         <rule pattern="f32\.convert_s_i64">
-            return Token(F32_convert_s_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Convert_s_i64), _pos);
         </rule>
         <rule pattern="f32\.convert_u_i64">
-            return Token(F32_convert_u_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Convert_u_i64), _pos);
         </rule>
         <rule pattern="f32\.demote_f64">
-            return Token(F32_demote_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Demote_f64), _pos);
         </rule>
         <rule pattern="f64\.convert_s_i32">
-            return Token(F64_convert_s_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Convert_s_i32), _pos);
         </rule>
         <rule pattern="f64\.convert_u_i32">
-            return Token(F64_convert_u_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Convert_u_i32), _pos);
         </rule>
         <rule pattern="f64\.convert_s_i64">
-            return Token(F64_convert_s_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Convert_s_i64), _pos);
         </rule>
         <rule pattern="f64\.convert_u_i64">
-            return Token(F64_convert_u_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Convert_u_i64), _pos);
         </rule>
         <rule pattern="f64\.promote_f32">
-            return Token(F64_promote_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Promote_f32), _pos);
         </rule>
         <rule pattern="i32\.reinterpret_f32">
-            return Token(I32_reinterpret_f32(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Reinterpret_f32), _pos);
         </rule>
         <rule pattern="i64\.reinterpret_f64">
-            return Token(I64_reinterpret_f64(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Reinterpret_f64), _pos);
         </rule>
         <rule pattern="f32\.reinterpret_i32">
-            return Token(F32_reinterpret_i32(), _pos);
+            return Token(NumericInstr(NumericInstr::F32Reinterpret_i32), _pos);
         </rule>
         <rule pattern="f64\.reinterpret_i64">
-            return Token(F64_reinterpret_i64(), _pos);
+            return Token(NumericInstr(NumericInstr::F64Reinterpret_i64), _pos);
         </rule>
         <rule pattern="i32\.extend8_s">
-            return Token(I32_extend8_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Extend8_s), _pos);
         </rule>
         <rule pattern="i32\.extend16_s">
-            return Token(I32_extend16_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Extend16_s), _pos);
         </rule>
         <rule pattern="i64\.extend8_s">
-            return Token(I64_extend8_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Extend8_s), _pos);
         </rule>
         <rule pattern="i64\.extend16_s">
-            return Token(I64_extend16_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Extend16_s), _pos);
         </rule>
         <rule pattern="i64\.extend32_s">
-            return Token(I64_extend32_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Extend32_s), _pos);
         </rule>
         <rule pattern="i32\.trunc_sat_f32_s">
-            return Token(I32_trunc_sat_f32_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_sat_f32_s), _pos);
         </rule>
         <rule pattern="i32\.trunc_sat_f32_u">
-            return Token(I32_trunc_sat_f32_u(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_sat_f32_u), _pos);
         </rule>
         <rule pattern="i32\.trunc_sat_f64_s">
-            return Token(I32_trunc_sat_f64_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_sat_f64_s), _pos);
         </rule>
         <rule pattern="i32\.trunc_sat_f64_u">
-            return Token(I32_trunc_sat_f64_u(), _pos);
+            return Token(NumericInstr(NumericInstr::I32Trunc_sat_f64_u), _pos);
         </rule>
         <rule pattern="i64\.trunc_sat_f32_s">
-            return Token(I64_trunc_sat_f32_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_sat_f32_s), _pos);
         </rule>
         <rule pattern="i64\.trunc_sat_f64_u">
-            return Token(I64_trunc_sat_f64_u(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_sat_f64_u), _pos);
         </rule>
         <rule pattern="i64\.trunc_sat_f64_s">
-            return Token(I64_trunc_sat_f64_s(), _pos);
+            return Token(NumericInstr(NumericInstr::I64Trunc_sat_f64_s), _pos);
         </rule>
         <rule pattern="i64\.trunc_sat_f32_u">
-            return Token(I64_trunc_sat_f32_u(), _pos);
-        </rule> %}
+            return Token(NumericInstr(NumericInstr::I64Trunc_sat_f32_u), _pos);
+        </rule>
     </lexer>
 </pxml>
