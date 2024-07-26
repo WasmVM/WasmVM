@@ -152,16 +152,16 @@ struct Then {
     Then() = default;
 };
 
-struct Unreachable {
-    Unreachable() = default;
+struct ControlInstr {
+    enum Kind {Unreachable, Nop, Return};
+
+    ControlInstr() = default;
+    ControlInstr(ControlInstr::Kind value) : value(value){}
+    ControlInstr::Kind value;
 };
 
 struct Block {
     Block() = default;
-};
-
-struct Nop {
-    Nop() = default;
 };
 
 struct End {
@@ -192,10 +192,6 @@ struct Br_table {
     Br_table() = default;
 };
 
-struct Return {
-    Return() = default;
-};
-
 struct Call {
     Call() = default;
 };
@@ -224,44 +220,20 @@ struct Select {
     Select() = default;
 };
 
-struct Local_get {
-    Local_get() = default;
+struct VariableInstr {
+    enum Kind {LocalGet, LocalSet, LocalTee, GlobalGet, GlobalSet};
+
+    VariableInstr() = default;
+    VariableInstr(VariableInstr::Kind value) : value(value){}
+    VariableInstr::Kind value;
 };
 
-struct Local_set {
-    Local_set() = default;
-};
+struct TableInstr {
+    enum Kind {TableGet, TableSet, TableSize, TableGrow, TableFill};
 
-struct Local_tee {
-    Local_tee() = default;
-};
-
-struct Global_get {
-    Global_get() = default;
-};
-
-struct Global_set {
-    Global_set() = default;
-};
-
-struct Table_get {
-    Table_get() = default;
-};
-
-struct Table_set {
-    Table_set() = default;
-};
-
-struct Table_size {
-    Table_size() = default;
-};
-
-struct Table_grow {
-    Table_grow() = default;
-};
-
-struct Table_fill {
-    Table_fill() = default;
+    TableInstr() = default;
+    TableInstr(TableInstr::Kind value) : value(value){}
+    TableInstr::Kind value;
 };
 
 struct Table_copy {
@@ -300,96 +272,12 @@ struct Data_drop {
     Data_drop() = default;
 };
 
-struct I32_load {
-    I32_load() = default;
-};
+struct MemoryInstr {
+    enum Kind {I32Load, I64Load, F32Load, F64Load, I32Load8_s, I32Load8_u, I32Load16_s, I32Load16_u, I64Load8_s, I64Load8_u, I64Load16_s, I64Load16_u, I64Load32_s, I64Load32_u, I32Store, I64Store, F32Store, F64Store, I32Store8, I32Store16, I64Store8, I64Store16, I64Store32};
 
-struct I64_load {
-    I64_load() = default;
-};
-
-struct F32_load {
-    F32_load() = default;
-};
-
-struct F64_load {
-    F64_load() = default;
-};
-
-struct I32_load8_s {
-    I32_load8_s() = default;
-};
-
-struct I32_load8_u {
-    I32_load8_u() = default;
-};
-
-struct I32_load16_s {
-    I32_load16_s() = default;
-};
-
-struct I32_load16_u {
-    I32_load16_u() = default;
-};
-
-struct I64_load8_s {
-    I64_load8_s() = default;
-};
-
-struct I64_load8_u {
-    I64_load8_u() = default;
-};
-
-struct I64_load16_s {
-    I64_load16_s() = default;
-};
-
-struct I64_load16_u {
-    I64_load16_u() = default;
-};
-
-struct I64_load32_s {
-    I64_load32_s() = default;
-};
-
-struct I64_load32_u {
-    I64_load32_u() = default;
-};
-
-struct I32_store {
-    I32_store() = default;
-};
-
-struct I64_store {
-    I64_store() = default;
-};
-
-struct F32_store {
-    F32_store() = default;
-};
-
-struct F64_store {
-    F64_store() = default;
-};
-
-struct I32_store8 {
-    I32_store8() = default;
-};
-
-struct I32_store16 {
-    I32_store16() = default;
-};
-
-struct I64_store8 {
-    I64_store8() = default;
-};
-
-struct I64_store16 {
-    I64_store16() = default;
-};
-
-struct I64_store32 {
-    I64_store32() = default;
+    MemoryInstr() = default;
+    MemoryInstr(MemoryInstr::Kind value) : value(value){}
+    MemoryInstr::Kind value;
 };
 
 struct I32_const {
@@ -408,548 +296,12 @@ struct F64_const {
     F64_const() = default;
 };
 
-struct I32_eqz {
-    I32_eqz() = default;
-};
-
-struct I32_eq {
-    I32_eq() = default;
-};
-
-struct I32_ne {
-    I32_ne() = default;
-};
-
-struct I32_lt_s {
-    I32_lt_s() = default;
-};
-
-struct I32_lt_u {
-    I32_lt_u() = default;
-};
-
-struct I32_gt_s {
-    I32_gt_s() = default;
-};
-
-struct I32_gt_u {
-    I32_gt_u() = default;
-};
-
-struct I32_le_s {
-    I32_le_s() = default;
-};
-
-struct I32_le_u {
-    I32_le_u() = default;
-};
-
-struct I32_ge_s {
-    I32_ge_s() = default;
-};
-
-struct I32_ge_u {
-    I32_ge_u() = default;
-};
-
-struct I64_eqz {
-    I64_eqz() = default;
-};
-
-struct I64_eq {
-    I64_eq() = default;
-};
-
-struct I64_ne {
-    I64_ne() = default;
-};
-
-struct I64_lt_s {
-    I64_lt_s() = default;
-};
-
-struct I64_lt_u {
-    I64_lt_u() = default;
-};
-
-struct I64_gt_s {
-    I64_gt_s() = default;
-};
-
-struct I64_gt_u {
-    I64_gt_u() = default;
-};
-
-struct I64_le_s {
-    I64_le_s() = default;
-};
-
-struct I64_le_u {
-    I64_le_u() = default;
-};
-
-struct I64_ge_s {
-    I64_ge_s() = default;
-};
-
-struct I64_ge_u {
-    I64_ge_u() = default;
-};
-
-struct F32_eq {
-    F32_eq() = default;
-};
-
-struct F32_ne {
-    F32_ne() = default;
-};
-
-struct F32_lt {
-    F32_lt() = default;
-};
-
-struct F32_gt {
-    F32_gt() = default;
-};
-
-struct F32_le {
-    F32_le() = default;
-};
-
-struct F32_ge {
-    F32_ge() = default;
-};
-
-struct F64_eq {
-    F64_eq() = default;
-};
-
-struct F64_ne {
-    F64_ne() = default;
-};
-
-struct F64_lt {
-    F64_lt() = default;
-};
-
-struct F64_gt {
-    F64_gt() = default;
-};
-
-struct F64_le {
-    F64_le() = default;
-};
-
-struct F64_ge {
-    F64_ge() = default;
-};
-
-struct I32_clz {
-    I32_clz() = default;
-};
-
-struct I32_ctz {
-    I32_ctz() = default;
-};
-
-struct I32_popcnt {
-    I32_popcnt() = default;
-};
-
-struct I32_add {
-    I32_add() = default;
-};
-
-struct I32_sub {
-    I32_sub() = default;
-};
-
-struct I32_mul {
-    I32_mul() = default;
-};
-
-struct I32_div_s {
-    I32_div_s() = default;
-};
-
-struct I32_div_u {
-    I32_div_u() = default;
-};
-
-struct I32_rem_s {
-    I32_rem_s() = default;
-};
-
-struct I32_rem_u {
-    I32_rem_u() = default;
-};
-
-struct I32_and {
-    I32_and() = default;
-};
-
-struct I32_or {
-    I32_or() = default;
-};
-
-struct I32_xor {
-    I32_xor() = default;
-};
-
-struct I32_shl {
-    I32_shl() = default;
-};
-
-struct I32_shr_s {
-    I32_shr_s() = default;
-};
-
-struct I32_shr_u {
-    I32_shr_u() = default;
-};
-
-struct I32_rotl {
-    I32_rotl() = default;
-};
-
-struct I32_rotr {
-    I32_rotr() = default;
-};
-
-struct I64_clz {
-    I64_clz() = default;
-};
-
-struct I64_ctz {
-    I64_ctz() = default;
-};
-
-struct I64_popcnt {
-    I64_popcnt() = default;
-};
-
-struct I64_add {
-    I64_add() = default;
-};
-
-struct I64_sub {
-    I64_sub() = default;
-};
-
-struct I64_mul {
-    I64_mul() = default;
-};
-
-struct I64_div_s {
-    I64_div_s() = default;
-};
-
-struct I64_div_u {
-    I64_div_u() = default;
-};
-
-struct I64_rem_s {
-    I64_rem_s() = default;
-};
-
-struct I64_rem_u {
-    I64_rem_u() = default;
-};
-
-struct I64_and {
-    I64_and() = default;
-};
-
-struct I64_or {
-    I64_or() = default;
-};
-
-struct I64_xor {
-    I64_xor() = default;
-};
-
-struct I64_shl {
-    I64_shl() = default;
-};
-
-struct I64_shr_s {
-    I64_shr_s() = default;
-};
-
-struct I64_shr_u {
-    I64_shr_u() = default;
-};
-
-struct I64_rotl {
-    I64_rotl() = default;
-};
-
-struct I64_rotr {
-    I64_rotr() = default;
-};
-
-struct F32_abs {
-    F32_abs() = default;
-};
-
-struct F32_neg {
-    F32_neg() = default;
-};
-
-struct F32_ceil {
-    F32_ceil() = default;
-};
-
-struct F32_floor {
-    F32_floor() = default;
-};
-
-struct F32_trunc {
-    F32_trunc() = default;
-};
-
-struct F32_nearest {
-    F32_nearest() = default;
-};
-
-struct F32_sqrt {
-    F32_sqrt() = default;
-};
-
-struct F32_add {
-    F32_add() = default;
-};
-
-struct F32_sub {
-    F32_sub() = default;
-};
-
-struct F32_mul {
-    F32_mul() = default;
-};
-
-struct F32_div {
-    F32_div() = default;
-};
-
-struct F32_min {
-    F32_min() = default;
-};
-
-struct F32_max {
-    F32_max() = default;
-};
-
-struct F32_copysign {
-    F32_copysign() = default;
-};
-
-struct F64_abs {
-    F64_abs() = default;
-};
-
-struct F64_neg {
-    F64_neg() = default;
-};
-
-struct F64_ceil {
-    F64_ceil() = default;
-};
-
-struct F64_floor {
-    F64_floor() = default;
-};
-
-struct F64_trunc {
-    F64_trunc() = default;
-};
-
-struct F64_nearest {
-    F64_nearest() = default;
-};
-
-struct F64_sqrt {
-    F64_sqrt() = default;
-};
-
-struct F64_add {
-    F64_add() = default;
-};
-
-struct F64_sub {
-    F64_sub() = default;
-};
-
-struct F64_mul {
-    F64_mul() = default;
-};
-
-struct F64_div {
-    F64_div() = default;
-};
-
-struct F64_min {
-    F64_min() = default;
-};
-
-struct F64_max {
-    F64_max() = default;
-};
-
-struct F64_copysign {
-    F64_copysign() = default;
-};
-
-struct I32_wrap_i64 {
-    I32_wrap_i64() = default;
-};
-
-struct I32_trunc_s_f32 {
-    I32_trunc_s_f32() = default;
-};
-
-struct I32_trunc_u_f32 {
-    I32_trunc_u_f32() = default;
-};
-
-struct I32_trunc_s_f64 {
-    I32_trunc_s_f64() = default;
-};
-
-struct I32_trunc_u_f64 {
-    I32_trunc_u_f64() = default;
-};
-
-struct I64_extend_s_i32 {
-    I64_extend_s_i32() = default;
-};
-
-struct I64_extend_u_i32 {
-    I64_extend_u_i32() = default;
-};
-
-struct I64_trunc_s_f32 {
-    I64_trunc_s_f32() = default;
-};
-
-struct I64_trunc_u_f32 {
-    I64_trunc_u_f32() = default;
-};
-
-struct I64_trunc_s_f64 {
-    I64_trunc_s_f64() = default;
-};
-
-struct I64_trunc_u_f64 {
-    I64_trunc_u_f64() = default;
-};
-
-struct F32_convert_s_i32 {
-    F32_convert_s_i32() = default;
-};
-
-struct F32_convert_u_i32 {
-    F32_convert_u_i32() = default;
-};
-
-struct F32_convert_s_i64 {
-    F32_convert_s_i64() = default;
-};
-
-struct F32_convert_u_i64 {
-    F32_convert_u_i64() = default;
-};
-
-struct F32_demote_f64 {
-    F32_demote_f64() = default;
-};
-
-struct F64_convert_s_i32 {
-    F64_convert_s_i32() = default;
-};
-
-struct F64_convert_u_i32 {
-    F64_convert_u_i32() = default;
-};
-
-struct F64_convert_s_i64 {
-    F64_convert_s_i64() = default;
-};
-
-struct F64_convert_u_i64 {
-    F64_convert_u_i64() = default;
-};
-
-struct F64_promote_f32 {
-    F64_promote_f32() = default;
-};
-
-struct I32_reinterpret_f32 {
-    I32_reinterpret_f32() = default;
-};
-
-struct I64_reinterpret_f64 {
-    I64_reinterpret_f64() = default;
-};
-
-struct F32_reinterpret_i32 {
-    F32_reinterpret_i32() = default;
-};
-
-struct F64_reinterpret_i64 {
-    F64_reinterpret_i64() = default;
-};
-
-struct I32_extend8_s {
-    I32_extend8_s() = default;
-};
-
-struct I32_extend16_s {
-    I32_extend16_s() = default;
-};
-
-struct I64_extend8_s {
-    I64_extend8_s() = default;
-};
-
-struct I64_extend16_s {
-    I64_extend16_s() = default;
-};
-
-struct I64_extend32_s {
-    I64_extend32_s() = default;
-};
-
-struct I32_trunc_sat_f32_s {
-    I32_trunc_sat_f32_s() = default;
-};
-
-struct I32_trunc_sat_f32_u {
-    I32_trunc_sat_f32_u() = default;
-};
-
-struct I32_trunc_sat_f64_s {
-    I32_trunc_sat_f64_s() = default;
-};
-
-struct I32_trunc_sat_f64_u {
-    I32_trunc_sat_f64_u() = default;
-};
-
-struct I64_trunc_sat_f32_s {
-    I64_trunc_sat_f32_s() = default;
-};
-
-struct I64_trunc_sat_f64_u {
-    I64_trunc_sat_f64_u() = default;
-};
-
-struct I64_trunc_sat_f64_s {
-    I64_trunc_sat_f64_s() = default;
-};
-
-struct I64_trunc_sat_f32_u {
-    I64_trunc_sat_f32_u() = default;
+struct NumericInstr {
+    enum Kind {I32Eqz,I32Eq,I32Ne,I32Lt_s,I32Lt_u,I32Gt_s,I32Gt_u,I32Le_s,I32Le_u,I32Ge_s,I32Ge_u,I64Eqz,I64Eq,I64Ne,I64Lt_s,I64Lt_u,I64Gt_s,I64Gt_u,I64Le_s,I64Le_u,I64Ge_s,I64Ge_u,F32Eq,F32Ne,F32Lt,F32Gt,F32Le,F32Ge,F64Eq,F64Ne,F64Lt,F64Gt,F64Le,F64Ge,I32Clz,I32Ctz,I32Popcnt,I32Add,I32Sub,I32Mul,I32Div_s,I32Div_u,I32Rem_s,I32Rem_u,I32And,I32Or,I32Xor,I32Shl,I32Shr_s,I32Shr_u,I32Rotl,I32Rotr,I64Clz,I64Ctz,I64Popcnt,I64Add,I64Sub,I64Mul,I64Div_s,I64Div_u,I64Rem_s,I64Rem_u,I64And,I64Or,I64Xor,I64Shl,I64Shr_s,I64Shr_u,I64Rotl,I64Rotr,F32Abs,F32Neg,F32Ceil,F32Floor,F32Trunc,F32Nearest,F32Sqrt,F32Add,F32Sub,F32Mul,F32Div,F32Min,F32Max,F32Copysign,F64Abs,F64Neg,F64Ceil,F64Floor,F64Trunc,F64Nearest,F64Sqrt,F64Add,F64Sub,F64Mul,F64Div,F64Min,F64Max,F64Copysign,I32Wrap_i64,I32Trunc_s_f32,I32Trunc_u_f32,I32Trunc_s_f64,I32Trunc_u_f64,I64Extend_s_i32,I64Extend_u_i32,I64Trunc_s_f32,I64Trunc_u_f32,I64Trunc_s_f64,I64Trunc_u_f64,F32Convert_s_i32,F32Convert_u_i32,F32Convert_s_i64,F32Convert_u_i64,F32Demote_f64,F64Convert_s_i32,F64Convert_u_i32,F64Convert_s_i64,F64Convert_u_i64,F64Promote_f32,I32Reinterpret_f32,I64Reinterpret_f64,F32Reinterpret_i32,F64Reinterpret_i64,I32Extend8_s,I32Extend16_s,I64Extend8_s,I64Extend16_s,I64Extend32_s,I32Trunc_sat_f32_s,I32Trunc_sat_f32_u,I32Trunc_sat_f64_s,I32Trunc_sat_f64_u,I64Trunc_sat_f32_s,I64Trunc_sat_f64_u,I64Trunc_sat_f64_s,I64Trunc_sat_f32_u};
+
+    NumericInstr() = default;
+    NumericInstr(NumericInstr::Kind value) : value(value){}
+    NumericInstr::Kind value;
 };
 
 struct NumType {
@@ -992,9 +344,8 @@ struct Token : public std::variant<
   Tokens::Data,
   Tokens::Start,
   Tokens::Then,
-  Tokens::Unreachable,
+  Tokens::ControlInstr,
   Tokens::Block,
-  Tokens::Nop,
   Tokens::End,
   Tokens::Loop,
   Tokens::If,
@@ -1002,7 +353,6 @@ struct Token : public std::variant<
   Tokens::Br,
   Tokens::Br_if,
   Tokens::Br_table,
-  Tokens::Return,
   Tokens::Call,
   Tokens::Call_indirect,
   Tokens::Ref_null,
@@ -1010,16 +360,8 @@ struct Token : public std::variant<
   Tokens::Ref_func,
   Tokens::Drop,
   Tokens::Select,
-  Tokens::Local_get,
-  Tokens::Local_set,
-  Tokens::Local_tee,
-  Tokens::Global_get,
-  Tokens::Global_set,
-  Tokens::Table_get,
-  Tokens::Table_set,
-  Tokens::Table_size,
-  Tokens::Table_grow,
-  Tokens::Table_fill,
+  Tokens::VariableInstr,
+  Tokens::TableInstr,
   Tokens::Table_copy,
   Tokens::Table_init,
   Tokens::Elem_drop,
@@ -1029,169 +371,12 @@ struct Token : public std::variant<
   Tokens::Memory_init,
   Tokens::Memory_copy,
   Tokens::Data_drop,
-  Tokens::I32_load,
-  Tokens::I64_load,
-  Tokens::F32_load,
-  Tokens::F64_load,
-  Tokens::I32_load8_s,
-  Tokens::I32_load8_u,
-  Tokens::I32_load16_s,
-  Tokens::I32_load16_u,
-  Tokens::I64_load8_s,
-  Tokens::I64_load8_u,
-  Tokens::I64_load16_s,
-  Tokens::I64_load16_u,
-  Tokens::I64_load32_s,
-  Tokens::I64_load32_u,
-  Tokens::I32_store,
-  Tokens::I64_store,
-  Tokens::F32_store,
-  Tokens::F64_store,
-  Tokens::I32_store8,
-  Tokens::I32_store16,
-  Tokens::I64_store8,
-  Tokens::I64_store16,
-  Tokens::I64_store32,
+  Tokens::MemoryInstr,
   Tokens::I32_const,
   Tokens::I64_const,
   Tokens::F32_const,
   Tokens::F64_const,
-  Tokens::I32_eqz,
-  Tokens::I32_eq,
-  Tokens::I32_ne,
-  Tokens::I32_lt_s,
-  Tokens::I32_lt_u,
-  Tokens::I32_gt_s,
-  Tokens::I32_gt_u,
-  Tokens::I32_le_s,
-  Tokens::I32_le_u,
-  Tokens::I32_ge_s,
-  Tokens::I32_ge_u,
-  Tokens::I64_eqz,
-  Tokens::I64_eq,
-  Tokens::I64_ne,
-  Tokens::I64_lt_s,
-  Tokens::I64_lt_u,
-  Tokens::I64_gt_s,
-  Tokens::I64_gt_u,
-  Tokens::I64_le_s,
-  Tokens::I64_le_u,
-  Tokens::I64_ge_s,
-  Tokens::I64_ge_u,
-  Tokens::F32_eq,
-  Tokens::F32_ne,
-  Tokens::F32_lt,
-  Tokens::F32_gt,
-  Tokens::F32_le,
-  Tokens::F32_ge,
-  Tokens::F64_eq,
-  Tokens::F64_ne,
-  Tokens::F64_lt,
-  Tokens::F64_gt,
-  Tokens::F64_le,
-  Tokens::F64_ge,
-  Tokens::I32_clz,
-  Tokens::I32_ctz,
-  Tokens::I32_popcnt,
-  Tokens::I32_add,
-  Tokens::I32_sub,
-  Tokens::I32_mul,
-  Tokens::I32_div_s,
-  Tokens::I32_div_u,
-  Tokens::I32_rem_s,
-  Tokens::I32_rem_u,
-  Tokens::I32_and,
-  Tokens::I32_or,
-  Tokens::I32_xor,
-  Tokens::I32_shl,
-  Tokens::I32_shr_s,
-  Tokens::I32_shr_u,
-  Tokens::I32_rotl,
-  Tokens::I32_rotr,
-  Tokens::I64_clz,
-  Tokens::I64_ctz,
-  Tokens::I64_popcnt,
-  Tokens::I64_add,
-  Tokens::I64_sub,
-  Tokens::I64_mul,
-  Tokens::I64_div_s,
-  Tokens::I64_div_u,
-  Tokens::I64_rem_s,
-  Tokens::I64_rem_u,
-  Tokens::I64_and,
-  Tokens::I64_or,
-  Tokens::I64_xor,
-  Tokens::I64_shl,
-  Tokens::I64_shr_s,
-  Tokens::I64_shr_u,
-  Tokens::I64_rotl,
-  Tokens::I64_rotr,
-  Tokens::F32_abs,
-  Tokens::F32_neg,
-  Tokens::F32_ceil,
-  Tokens::F32_floor,
-  Tokens::F32_trunc,
-  Tokens::F32_nearest,
-  Tokens::F32_sqrt,
-  Tokens::F32_add,
-  Tokens::F32_sub,
-  Tokens::F32_mul,
-  Tokens::F32_div,
-  Tokens::F32_min,
-  Tokens::F32_max,
-  Tokens::F32_copysign,
-  Tokens::F64_abs,
-  Tokens::F64_neg,
-  Tokens::F64_ceil,
-  Tokens::F64_floor,
-  Tokens::F64_trunc,
-  Tokens::F64_nearest,
-  Tokens::F64_sqrt,
-  Tokens::F64_add,
-  Tokens::F64_sub,
-  Tokens::F64_mul,
-  Tokens::F64_div,
-  Tokens::F64_min,
-  Tokens::F64_max,
-  Tokens::F64_copysign,
-  Tokens::I32_wrap_i64,
-  Tokens::I32_trunc_s_f32,
-  Tokens::I32_trunc_u_f32,
-  Tokens::I32_trunc_s_f64,
-  Tokens::I32_trunc_u_f64,
-  Tokens::I64_extend_s_i32,
-  Tokens::I64_extend_u_i32,
-  Tokens::I64_trunc_s_f32,
-  Tokens::I64_trunc_u_f32,
-  Tokens::I64_trunc_s_f64,
-  Tokens::I64_trunc_u_f64,
-  Tokens::F32_convert_s_i32,
-  Tokens::F32_convert_u_i32,
-  Tokens::F32_convert_s_i64,
-  Tokens::F32_convert_u_i64,
-  Tokens::F32_demote_f64,
-  Tokens::F64_convert_s_i32,
-  Tokens::F64_convert_u_i32,
-  Tokens::F64_convert_s_i64,
-  Tokens::F64_convert_u_i64,
-  Tokens::F64_promote_f32,
-  Tokens::I32_reinterpret_f32,
-  Tokens::I64_reinterpret_f64,
-  Tokens::F32_reinterpret_i32,
-  Tokens::F64_reinterpret_i64,
-  Tokens::I32_extend8_s,
-  Tokens::I32_extend16_s,
-  Tokens::I64_extend8_s,
-  Tokens::I64_extend16_s,
-  Tokens::I64_extend32_s,
-  Tokens::I32_trunc_sat_f32_s,
-  Tokens::I32_trunc_sat_f32_u,
-  Tokens::I32_trunc_sat_f64_s,
-  Tokens::I32_trunc_sat_f64_u,
-  Tokens::I64_trunc_sat_f32_s,
-  Tokens::I64_trunc_sat_f64_u,
-  Tokens::I64_trunc_sat_f64_s,
-  Tokens::I64_trunc_sat_f32_u,
+  Tokens::NumericInstr,
   Tokens::NumType
 > {
 template<typename T> Token(T token, Position pos): std::variant<
@@ -1226,9 +411,8 @@ template<typename T> Token(T token, Position pos): std::variant<
   Tokens::Data,
   Tokens::Start,
   Tokens::Then,
-  Tokens::Unreachable,
+  Tokens::ControlInstr,
   Tokens::Block,
-  Tokens::Nop,
   Tokens::End,
   Tokens::Loop,
   Tokens::If,
@@ -1236,7 +420,6 @@ template<typename T> Token(T token, Position pos): std::variant<
   Tokens::Br,
   Tokens::Br_if,
   Tokens::Br_table,
-  Tokens::Return,
   Tokens::Call,
   Tokens::Call_indirect,
   Tokens::Ref_null,
@@ -1244,16 +427,8 @@ template<typename T> Token(T token, Position pos): std::variant<
   Tokens::Ref_func,
   Tokens::Drop,
   Tokens::Select,
-  Tokens::Local_get,
-  Tokens::Local_set,
-  Tokens::Local_tee,
-  Tokens::Global_get,
-  Tokens::Global_set,
-  Tokens::Table_get,
-  Tokens::Table_set,
-  Tokens::Table_size,
-  Tokens::Table_grow,
-  Tokens::Table_fill,
+  Tokens::VariableInstr,
+  Tokens::TableInstr,
   Tokens::Table_copy,
   Tokens::Table_init,
   Tokens::Elem_drop,
@@ -1263,169 +438,12 @@ template<typename T> Token(T token, Position pos): std::variant<
   Tokens::Memory_init,
   Tokens::Memory_copy,
   Tokens::Data_drop,
-  Tokens::I32_load,
-  Tokens::I64_load,
-  Tokens::F32_load,
-  Tokens::F64_load,
-  Tokens::I32_load8_s,
-  Tokens::I32_load8_u,
-  Tokens::I32_load16_s,
-  Tokens::I32_load16_u,
-  Tokens::I64_load8_s,
-  Tokens::I64_load8_u,
-  Tokens::I64_load16_s,
-  Tokens::I64_load16_u,
-  Tokens::I64_load32_s,
-  Tokens::I64_load32_u,
-  Tokens::I32_store,
-  Tokens::I64_store,
-  Tokens::F32_store,
-  Tokens::F64_store,
-  Tokens::I32_store8,
-  Tokens::I32_store16,
-  Tokens::I64_store8,
-  Tokens::I64_store16,
-  Tokens::I64_store32,
+  Tokens::MemoryInstr,
   Tokens::I32_const,
   Tokens::I64_const,
   Tokens::F32_const,
   Tokens::F64_const,
-  Tokens::I32_eqz,
-  Tokens::I32_eq,
-  Tokens::I32_ne,
-  Tokens::I32_lt_s,
-  Tokens::I32_lt_u,
-  Tokens::I32_gt_s,
-  Tokens::I32_gt_u,
-  Tokens::I32_le_s,
-  Tokens::I32_le_u,
-  Tokens::I32_ge_s,
-  Tokens::I32_ge_u,
-  Tokens::I64_eqz,
-  Tokens::I64_eq,
-  Tokens::I64_ne,
-  Tokens::I64_lt_s,
-  Tokens::I64_lt_u,
-  Tokens::I64_gt_s,
-  Tokens::I64_gt_u,
-  Tokens::I64_le_s,
-  Tokens::I64_le_u,
-  Tokens::I64_ge_s,
-  Tokens::I64_ge_u,
-  Tokens::F32_eq,
-  Tokens::F32_ne,
-  Tokens::F32_lt,
-  Tokens::F32_gt,
-  Tokens::F32_le,
-  Tokens::F32_ge,
-  Tokens::F64_eq,
-  Tokens::F64_ne,
-  Tokens::F64_lt,
-  Tokens::F64_gt,
-  Tokens::F64_le,
-  Tokens::F64_ge,
-  Tokens::I32_clz,
-  Tokens::I32_ctz,
-  Tokens::I32_popcnt,
-  Tokens::I32_add,
-  Tokens::I32_sub,
-  Tokens::I32_mul,
-  Tokens::I32_div_s,
-  Tokens::I32_div_u,
-  Tokens::I32_rem_s,
-  Tokens::I32_rem_u,
-  Tokens::I32_and,
-  Tokens::I32_or,
-  Tokens::I32_xor,
-  Tokens::I32_shl,
-  Tokens::I32_shr_s,
-  Tokens::I32_shr_u,
-  Tokens::I32_rotl,
-  Tokens::I32_rotr,
-  Tokens::I64_clz,
-  Tokens::I64_ctz,
-  Tokens::I64_popcnt,
-  Tokens::I64_add,
-  Tokens::I64_sub,
-  Tokens::I64_mul,
-  Tokens::I64_div_s,
-  Tokens::I64_div_u,
-  Tokens::I64_rem_s,
-  Tokens::I64_rem_u,
-  Tokens::I64_and,
-  Tokens::I64_or,
-  Tokens::I64_xor,
-  Tokens::I64_shl,
-  Tokens::I64_shr_s,
-  Tokens::I64_shr_u,
-  Tokens::I64_rotl,
-  Tokens::I64_rotr,
-  Tokens::F32_abs,
-  Tokens::F32_neg,
-  Tokens::F32_ceil,
-  Tokens::F32_floor,
-  Tokens::F32_trunc,
-  Tokens::F32_nearest,
-  Tokens::F32_sqrt,
-  Tokens::F32_add,
-  Tokens::F32_sub,
-  Tokens::F32_mul,
-  Tokens::F32_div,
-  Tokens::F32_min,
-  Tokens::F32_max,
-  Tokens::F32_copysign,
-  Tokens::F64_abs,
-  Tokens::F64_neg,
-  Tokens::F64_ceil,
-  Tokens::F64_floor,
-  Tokens::F64_trunc,
-  Tokens::F64_nearest,
-  Tokens::F64_sqrt,
-  Tokens::F64_add,
-  Tokens::F64_sub,
-  Tokens::F64_mul,
-  Tokens::F64_div,
-  Tokens::F64_min,
-  Tokens::F64_max,
-  Tokens::F64_copysign,
-  Tokens::I32_wrap_i64,
-  Tokens::I32_trunc_s_f32,
-  Tokens::I32_trunc_u_f32,
-  Tokens::I32_trunc_s_f64,
-  Tokens::I32_trunc_u_f64,
-  Tokens::I64_extend_s_i32,
-  Tokens::I64_extend_u_i32,
-  Tokens::I64_trunc_s_f32,
-  Tokens::I64_trunc_u_f32,
-  Tokens::I64_trunc_s_f64,
-  Tokens::I64_trunc_u_f64,
-  Tokens::F32_convert_s_i32,
-  Tokens::F32_convert_u_i32,
-  Tokens::F32_convert_s_i64,
-  Tokens::F32_convert_u_i64,
-  Tokens::F32_demote_f64,
-  Tokens::F64_convert_s_i32,
-  Tokens::F64_convert_u_i32,
-  Tokens::F64_convert_s_i64,
-  Tokens::F64_convert_u_i64,
-  Tokens::F64_promote_f32,
-  Tokens::I32_reinterpret_f32,
-  Tokens::I64_reinterpret_f64,
-  Tokens::F32_reinterpret_i32,
-  Tokens::F64_reinterpret_i64,
-  Tokens::I32_extend8_s,
-  Tokens::I32_extend16_s,
-  Tokens::I64_extend8_s,
-  Tokens::I64_extend16_s,
-  Tokens::I64_extend32_s,
-  Tokens::I32_trunc_sat_f32_s,
-  Tokens::I32_trunc_sat_f32_u,
-  Tokens::I32_trunc_sat_f64_s,
-  Tokens::I32_trunc_sat_f64_u,
-  Tokens::I64_trunc_sat_f32_s,
-  Tokens::I64_trunc_sat_f64_u,
-  Tokens::I64_trunc_sat_f64_s,
-  Tokens::I64_trunc_sat_f32_u,
+  Tokens::NumericInstr,
   Tokens::NumType
 >(token), pos(pos){}
     Position pos;

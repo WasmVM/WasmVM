@@ -50,9 +50,13 @@
         <token name="Data" />
         <token name="Start" />
         <token name="Then" />
-        <token name="Unreachable" />
+        <token name="ControlInstr">
+            <member>
+                enum Kind {Unreachable, Nop, Return};
+            </member>
+            <type>ControlInstr::Kind</type>
+        </token>
         <token name="Block" />
-        <token name="Nop" />
         <token name="End" />
         <token name="Loop" />
         <token name="If" />
@@ -60,7 +64,6 @@
         <token name="Br" />
         <token name="Br_if" />
         <token name="Br_table" />
-        <token name="Return" />
         <token name="Call" />
         <token name="Call_indirect" />
         <token name="Ref_null" />
@@ -68,16 +71,18 @@
         <token name="Ref_func" />
         <token name="Drop" />
         <token name="Select" />
-        <token name="Local_get" />
-        <token name="Local_set" />
-        <token name="Local_tee" />
-        <token name="Global_get" />
-        <token name="Global_set" />
-        <token name="Table_get" />
-        <token name="Table_set" />
-        <token name="Table_size" />
-        <token name="Table_grow" />
-        <token name="Table_fill" />
+        <token name="VariableInstr">
+            <member>
+                enum Kind {LocalGet, LocalSet, LocalTee, GlobalGet, GlobalSet};
+            </member>
+            <type>VariableInstr::Kind</type>
+        </token>
+        <token name="TableInstr">
+            <member>
+                enum Kind {TableGet, TableSet, TableSize, TableGrow, TableFill};
+            </member>
+            <type>TableInstr::Kind</type>
+        </token>
         <token name="Table_copy" />
         <token name="Table_init" />
         <token name="Elem_drop" />
@@ -87,169 +92,22 @@
         <token name="Memory_init" />
         <token name="Memory_copy" />
         <token name="Data_drop" />
-        <token name="I32_load" />
-        <token name="I64_load" />
-        <token name="F32_load" />
-        <token name="F64_load" />
-        <token name="I32_load8_s" />
-        <token name="I32_load8_u" />
-        <token name="I32_load16_s" />
-        <token name="I32_load16_u" />
-        <token name="I64_load8_s" />
-        <token name="I64_load8_u" />
-        <token name="I64_load16_s" />
-        <token name="I64_load16_u" />
-        <token name="I64_load32_s" />
-        <token name="I64_load32_u" />
-        <token name="I32_store" />
-        <token name="I64_store" />
-        <token name="F32_store" />
-        <token name="F64_store" />
-        <token name="I32_store8" />
-        <token name="I32_store16" />
-        <token name="I64_store8" />
-        <token name="I64_store16" />
-        <token name="I64_store32" />
+        <token name="MemoryInstr">
+            <member>
+                enum Kind {I32Load, I64Load, F32Load, F64Load, I32Load8_s, I32Load8_u, I32Load16_s, I32Load16_u, I64Load8_s, I64Load8_u, I64Load16_s, I64Load16_u, I64Load32_s, I64Load32_u, I32Store, I64Store, F32Store, F64Store, I32Store8, I32Store16, I64Store8, I64Store16, I64Store32};
+            </member>
+            <type>MemoryInstr::Kind</type>
+        </token>
         <token name="I32_const" />
         <token name="I64_const" />
         <token name="F32_const" />
         <token name="F64_const" />
-        <token name="I32_eqz" />
-        <token name="I32_eq" />
-        <token name="I32_ne" />
-        <token name="I32_lt_s" />
-        <token name="I32_lt_u" />
-        <token name="I32_gt_s" />
-        <token name="I32_gt_u" />
-        <token name="I32_le_s" />
-        <token name="I32_le_u" />
-        <token name="I32_ge_s" />
-        <token name="I32_ge_u" />
-        <token name="I64_eqz" />
-        <token name="I64_eq" />
-        <token name="I64_ne" />
-        <token name="I64_lt_s" />
-        <token name="I64_lt_u" />
-        <token name="I64_gt_s" />
-        <token name="I64_gt_u" />
-        <token name="I64_le_s" />
-        <token name="I64_le_u" />
-        <token name="I64_ge_s" />
-        <token name="I64_ge_u" />
-        <token name="F32_eq" />
-        <token name="F32_ne" />
-        <token name="F32_lt" />
-        <token name="F32_gt" />
-        <token name="F32_le" />
-        <token name="F32_ge" />
-        <token name="F64_eq" />
-        <token name="F64_ne" />
-        <token name="F64_lt" />
-        <token name="F64_gt" />
-        <token name="F64_le" />
-        <token name="F64_ge" />
-        <token name="I32_clz" />
-        <token name="I32_ctz" />
-        <token name="I32_popcnt" />
-        <token name="I32_add" />
-        <token name="I32_sub" />
-        <token name="I32_mul" />
-        <token name="I32_div_s" />
-        <token name="I32_div_u" />
-        <token name="I32_rem_s" />
-        <token name="I32_rem_u" />
-        <token name="I32_and" />
-        <token name="I32_or" />
-        <token name="I32_xor" />
-        <token name="I32_shl" />
-        <token name="I32_shr_s" />
-        <token name="I32_shr_u" />
-        <token name="I32_rotl" />
-        <token name="I32_rotr" />
-        <token name="I64_clz" />
-        <token name="I64_ctz" />
-        <token name="I64_popcnt" />
-        <token name="I64_add" />
-        <token name="I64_sub" />
-        <token name="I64_mul" />
-        <token name="I64_div_s" />
-        <token name="I64_div_u" />
-        <token name="I64_rem_s" />
-        <token name="I64_rem_u" />
-        <token name="I64_and" />
-        <token name="I64_or" />
-        <token name="I64_xor" />
-        <token name="I64_shl" />
-        <token name="I64_shr_s" />
-        <token name="I64_shr_u" />
-        <token name="I64_rotl" />
-        <token name="I64_rotr" />
-        <token name="F32_abs" />
-        <token name="F32_neg" />
-        <token name="F32_ceil" />
-        <token name="F32_floor" />
-        <token name="F32_trunc" />
-        <token name="F32_nearest" />
-        <token name="F32_sqrt" />
-        <token name="F32_add" />
-        <token name="F32_sub" />
-        <token name="F32_mul" />
-        <token name="F32_div" />
-        <token name="F32_min" />
-        <token name="F32_max" />
-        <token name="F32_copysign" />
-        <token name="F64_abs" />
-        <token name="F64_neg" />
-        <token name="F64_ceil" />
-        <token name="F64_floor" />
-        <token name="F64_trunc" />
-        <token name="F64_nearest" />
-        <token name="F64_sqrt" />
-        <token name="F64_add" />
-        <token name="F64_sub" />
-        <token name="F64_mul" />
-        <token name="F64_div" />
-        <token name="F64_min" />
-        <token name="F64_max" />
-        <token name="F64_copysign" />
-        <token name="I32_wrap_i64" />
-        <token name="I32_trunc_s_f32" />
-        <token name="I32_trunc_u_f32" />
-        <token name="I32_trunc_s_f64" />
-        <token name="I32_trunc_u_f64" />
-        <token name="I64_extend_s_i32" />
-        <token name="I64_extend_u_i32" />
-        <token name="I64_trunc_s_f32" />
-        <token name="I64_trunc_u_f32" />
-        <token name="I64_trunc_s_f64" />
-        <token name="I64_trunc_u_f64" />
-        <token name="F32_convert_s_i32" />
-        <token name="F32_convert_u_i32" />
-        <token name="F32_convert_s_i64" />
-        <token name="F32_convert_u_i64" />
-        <token name="F32_demote_f64" />
-        <token name="F64_convert_s_i32" />
-        <token name="F64_convert_u_i32" />
-        <token name="F64_convert_s_i64" />
-        <token name="F64_convert_u_i64" />
-        <token name="F64_promote_f32" />
-        <token name="I32_reinterpret_f32" />
-        <token name="I64_reinterpret_f64" />
-        <token name="F32_reinterpret_i32" />
-        <token name="F64_reinterpret_i64" />
-        <token name="I32_extend8_s" />
-        <token name="I32_extend16_s" />
-        <token name="I64_extend8_s" />
-        <token name="I64_extend16_s" />
-        <token name="I64_extend32_s" />
-        <token name="I32_trunc_sat_f32_s" />
-        <token name="I32_trunc_sat_f32_u" />
-        <token name="I32_trunc_sat_f64_s" />
-        <token name="I32_trunc_sat_f64_u" />
-        <token name="I64_trunc_sat_f32_s" />
-        <token name="I64_trunc_sat_f64_u" />
-        <token name="I64_trunc_sat_f64_s" />
-        <token name="I64_trunc_sat_f32_u" />
+        <token name="NumericInstr">
+            <member>
+                enum Kind {I32Eqz,I32Eq,I32Ne,I32Lt_s,I32Lt_u,I32Gt_s,I32Gt_u,I32Le_s,I32Le_u,I32Ge_s,I32Ge_u,I64Eqz,I64Eq,I64Ne,I64Lt_s,I64Lt_u,I64Gt_s,I64Gt_u,I64Le_s,I64Le_u,I64Ge_s,I64Ge_u,F32Eq,F32Ne,F32Lt,F32Gt,F32Le,F32Ge,F64Eq,F64Ne,F64Lt,F64Gt,F64Le,F64Ge,I32Clz,I32Ctz,I32Popcnt,I32Add,I32Sub,I32Mul,I32Div_s,I32Div_u,I32Rem_s,I32Rem_u,I32And,I32Or,I32Xor,I32Shl,I32Shr_s,I32Shr_u,I32Rotl,I32Rotr,I64Clz,I64Ctz,I64Popcnt,I64Add,I64Sub,I64Mul,I64Div_s,I64Div_u,I64Rem_s,I64Rem_u,I64And,I64Or,I64Xor,I64Shl,I64Shr_s,I64Shr_u,I64Rotl,I64Rotr,F32Abs,F32Neg,F32Ceil,F32Floor,F32Trunc,F32Nearest,F32Sqrt,F32Add,F32Sub,F32Mul,F32Div,F32Min,F32Max,F32Copysign,F64Abs,F64Neg,F64Ceil,F64Floor,F64Trunc,F64Nearest,F64Sqrt,F64Add,F64Sub,F64Mul,F64Div,F64Min,F64Max,F64Copysign,I32Wrap_i64,I32Trunc_s_f32,I32Trunc_u_f32,I32Trunc_s_f64,I32Trunc_u_f64,I64Extend_s_i32,I64Extend_u_i32,I64Trunc_s_f32,I64Trunc_u_f32,I64Trunc_s_f64,I64Trunc_u_f64,F32Convert_s_i32,F32Convert_u_i32,F32Convert_s_i64,F32Convert_u_i64,F32Demote_f64,F64Convert_s_i32,F64Convert_u_i32,F64Convert_s_i64,F64Convert_u_i64,F64Promote_f32,I32Reinterpret_f32,I64Reinterpret_f64,F32Reinterpret_i32,F64Reinterpret_i64,I32Extend8_s,I32Extend16_s,I64Extend8_s,I64Extend16_s,I64Extend32_s,I32Trunc_sat_f32_s,I32Trunc_sat_f32_u,I32Trunc_sat_f64_s,I32Trunc_sat_f64_u,I64Trunc_sat_f32_s,I64Trunc_sat_f64_u,I64Trunc_sat_f64_s,I64Trunc_sat_f32_u};
+            </member>
+            <type>NumericInstr::Kind</type>
+        </token>
         <token name="NumType">
             <type>std::string</type>
         </token>

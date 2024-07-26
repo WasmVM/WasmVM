@@ -83,6 +83,10 @@
             <grammar pattern="modulefield type">
                 return _op0;
             </grammar>
+            <grammar pattern="modulefield import">
+                _op0.imports.emplace_back(_op1);
+                return _op0;
+            </grammar>
             <grammar>
                 return WasmModule();
             </grammar>
@@ -149,7 +153,7 @@
         <target name="params" type="std::pair<std::vector<ValueType>, std::map<std::string, index_t>>">
             <grammar pattern="params ParenL Param Id valtype ParenR">
                 if(_op0.second.contains(_op3.value)){
-                    throw Exception::Parse("Local ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
+                    throw Exception::Parse("parameter ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
                 }
                 _op0.second.emplace(_op3.value, _op0.first.size());
                 _op0.first.emplace_back(_op4);
@@ -180,13 +184,63 @@
         <target name="type">
             <grammar pattern="ParenL Type Id functype ParenR">
                 if(_this.type_indices.contains(_op2.value)){
-                    throw Exception::Parse("Type ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    throw Exception::Parse("type ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
                 }
                 _this.type_indices[_op2.value] = _this.types.size();
                 _this.types.emplace_back(_op3);
             </grammar>
             <grammar pattern="ParenL Type functype ParenR">
                 _this.types.emplace_back(_op2);
+            </grammar>
+        </target>
+        <target name="typeuse" type="index_t">
+            <grammar pattern="ParenL Type Id ParenR params results">
+                if(!_this.type_indices.contains(_op2.value)){
+                    throw Exception::Parse("type ID '" + _op2.value + "' not found", {_pos[2].line, _pos[2].column});
+                }
+                if(_op4.first.empty() && _op5.empty()){
+                    return _this.type_indices[_op2.value];
+                }
+                std::pair\<FuncType, std::map\<std::string, index_t>> derived = _this.types[_this.type_indices[_op2.value]];
+                for(auto& id_pair : _op4.second){
+                    if(derived.second.contains(id_pair.first)){
+                        throw Exception::Parse("parameter ID '" + id_pair.first + "' is duplicated", {_pos[4].line, _pos[4].column});
+                    }
+                    derived.second[id_pair.first] = id_pair.second + derived.first.params.size();
+                }
+                derived.first.params.insert(derived.first.params.end(), _op4.first.begin(), _op4.first.end());
+                derived.first.results.insert(derived.first.results.end(), _op5.begin(), _op5.end());
+                index_t index = _this.types.size();
+                _this.types.emplace_back(derived);
+                return index;
+            </grammar>
+            <grammar pattern="params results">
+                index_t index = _this.types.size();
+                _this.types.emplace_back(FuncType {.params = _op0.first, .results = _op1}, _op0.second);
+                return index;
+            </grammar>
+            <grammar>
+                index_t index = _this.types.size();
+                _this.types.emplace_back(FuncType(), std::map\<std::string, index_t>());
+                return index;
+            </grammar>
+        </target>
+        <target name="import" type="WasmImport">
+            <grammar pattern="ParenL Import String String importdesc ParenR">
+                return WasmImport {.module = _op2.value, .name = _op3.value, .desc = _op4};
+            </grammar>
+        </target>
+        <target name="importdesc" type="std::variant<index_t, TableType, MemType, GlobalType>">
+            <grammar pattern="ParenL Func Id typeuse ParenR">
+                if(_this.func_indices.contains(_op2.value)){
+                    throw Exception::Parse("function ID '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                _this.func_indices.insert(_op2.value, Parser::IndexMap::Import);
+                return _op3;
+            </grammar>
+            <grammar pattern="ParenL Func typeuse ParenR">
+                _this.func_indices.insert(Parser::IndexMap::Import);
+                return _op2;
             </grammar>
         </target>
     </parser>
