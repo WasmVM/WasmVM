@@ -32,6 +32,7 @@ struct Stream {
     void print_address(Bytes&);
     void print_address(size_t&);
     Bytes get_u32(Stream&);
+    u32_t to_u32(Bytes&);
     
 private:
     std::istream& istream;
@@ -64,6 +65,7 @@ Stream& operator>>(Stream&, T&);
 template <typename T>
 Stream& operator>>(Stream& stream, std::vector<T>& vec) {
     Bytes tempsize;
+    // Read data size
     tempsize = stream.get_u32(stream);
     u32_t nums = 0;
     for (int i = 0; i < tempsize.size(); i++){
@@ -83,7 +85,6 @@ std::ostream& operator<<(std::ostream&, TypeSection&);
 std::ostream& operator<<(std::ostream&, ValueType&);
 std::ostream& operator<<(std::ostream&, ImportSection&);
 
-u32_t to_u32(Bytes&);
 
 } // namespace Objdump
 } // namespace WasmVM

@@ -18,7 +18,6 @@ Objdump::Stream::Stream(std::istream& istream) : istream(istream){
 
 Objdump::Bytes Objdump::Stream::get_u32(Objdump::Stream& stream){
     Bytes size;
-    // Read size's data
     for(int i = 0; i < 5; i++){
         char bchar = stream.istream.get();
         size.push_back((byte_t)bchar);
@@ -28,6 +27,14 @@ Objdump::Bytes Objdump::Stream::get_u32(Objdump::Stream& stream){
     }
 
     return size;
+}
+
+u32_t Objdump::Stream::to_u32(Objdump::Bytes& bytes){
+    u32_t value = 0;
+    for(size_t i = 0; (i < bytes.size()) && (i < 5); ++i){
+        value |= ((u32_t) bytes[i] & 0x7F) << (i*7);
+    }
+    return value;
 }
 
 // ----- INPUT -----
@@ -101,51 +108,45 @@ Objdump::Stream& Objdump::operator>><byte_t>(Stream& stream, byte_t& byte){
 // import
 template<>
 Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& import){
-    // Objdump::Bytes unknown(2);
-    // stream >> unknown;
-    // import.module = "unknown";
-
-   
     // module
     std::vector<byte_t> mod;
     stream >> mod;
-
-    std::cout << mod.size() << std::endl;
     import.module.assign((char*)mod.data(), mod.size());
 
     // name
     std::vector<byte_t> nm;
     stream >> nm;
-
-
     import.name.assign((char*)nm.data(), nm.size());
 
     //desc
     Objdump::Bytes kind(1);
     stream >> kind;
+    int int_kind = (int)kind[0];
 
-    switch((int)kind[0]){
-    case 0x0:
-        // TODO:
+    switch(int_kind){
+        case 0: {
+            Objdump::Bytes byteData = stream.get_u32(stream); 
+            u32_t descData = stream.to_u32(byteData);
+            import.desc = (index_t)descData;
+            
+            break;
+        }
+        case 1:
+            // TODO:
 
+            break;
+        case 2:
+            // TODO:
 
-        break;
-    case 0x1:
-        // TODO:
+            break;
+        case 3:
+            // TODO:
 
-
-        break;
-    case 0x2:
-        // TODO:
-
-
-        break;
-    case 0x3:
-        // TODO:
-
-
-        break;
-
+            break;
+        default:{
+            Objdump::Bytes dummy(1);
+            stream >> dummy;
+        }
     }
 
 
@@ -260,13 +261,40 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << importsection.imports.size() << "  ; Number of imports" << std::endl;
+    address++;
 
     // TODO: print out import
     
-    for(WasmImport import : importsection.imports){
-        std::cout << import.module <<std::endl;
+    for(WasmImport import : importsection.imports){        // mod
+        importsection.stream.print_address(address);
+        std::cout << std::setfill('0') << std::setw(2) << import.module.length() << "  ; mod length" << std::endl;
+        importsection.stream.print_address(++address);
 
-        std::cout << import.name <<std::endl;
+        std::cout << import.module << std::endl;
+        address += import.module.length();
+
+        // nm
+        importsection.stream.print_address(address);
+        std::cout << std::setfill('0') << std::setw(2) << import.name.length() << "  ; name length" << std::endl;
+        importsection.stream.print_address(++address);
+        std::cout << import.name << std::endl;
+        address += import.name.length();
+
+
+
+
+        // desc
+
+        address +=2;
+
+
+
+
+        // std::cout << import.module <<std::endl;
+
+        // std::cout << import.name <<std::endl;
+
+        // std::cout << std::get<index_t>(import.desc) << std::endl;
     }
 
     std::cout.setf(flags);
