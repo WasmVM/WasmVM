@@ -34,18 +34,28 @@ Suite import {
         WasmImport& imp0 = test_module.imports[0];
         Expect(std::holds_alternative<index_t>(imp0.desc));
         Expect(std::get<index_t>(imp0.desc) == 0);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "func0");
         WasmImport& imp1 = test_module.imports[1];
         Expect(std::holds_alternative<index_t>(imp1.desc));
         Expect(std::get<index_t>(imp1.desc) == 0);
+        Expect(imp1.module == "testmod");
+        Expect(imp1.name == "func1");
         WasmImport& imp2 = test_module.imports[2];
         Expect(std::holds_alternative<index_t>(imp2.desc));
         Expect(std::get<index_t>(imp2.desc) == 1);
+        Expect(imp2.module == "testmod");
+        Expect(imp2.name == "func2");
         WasmImport& imp3 = test_module.imports[3];
         Expect(std::holds_alternative<index_t>(imp3.desc));
         Expect(std::get<index_t>(imp3.desc) == 2);
+        Expect(imp3.module == "testmod");
+        Expect(imp3.name == "func3");
         WasmImport& imp4 = test_module.imports[4];
         Expect(std::holds_alternative<index_t>(imp4.desc));
         Expect(std::get<index_t>(imp4.desc) == 3);
+        Expect(imp4.module == "testmod");
+        Expect(imp4.name == "func4");
     })
     Test("table", {
         ParseFile(test_module, "table.wat");
@@ -55,18 +65,24 @@ Suite import {
         Expect(table0.limits.min == 2);
         Expect(table0.limits.max && table0.limits.max.value() == 3);
         Expect(table0.reftype == RefType::funcref);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "table0");
         WasmImport& imp1 = test_module.imports[1];
         Expect(std::holds_alternative<TableType>(imp1.desc));
         TableType& table1 = std::get<TableType>(imp1.desc);
         Expect(table1.limits.min == 4);
         Expect(table1.limits.max && table1.limits.max.value() == 5);
         Expect(table1.reftype == RefType::externref);
+        Expect(imp1.module == "testmod");
+        Expect(imp1.name == "table1");
         WasmImport& imp2 = test_module.imports[2];
         Expect(std::holds_alternative<TableType>(imp2.desc));
         TableType& table2 = std::get<TableType>(imp2.desc);
         Expect(table2.limits.min == 6);
         Expect(!table2.limits.max);
         Expect(table2.reftype == RefType::funcref);
+        Expect(imp2.module == "testmod");
+        Expect(imp2.name == "table2");
     })
     Test("memory", {
         ParseFile(test_module, "memory.wat");
@@ -75,11 +91,15 @@ Suite import {
         MemType& mem0 = std::get<MemType>(imp0.desc);
         Expect(mem0.min == 2);
         Expect(mem0.max && mem0.max.value() == 3);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "mem0");
         WasmImport& imp1 = test_module.imports[1];
         Expect(std::holds_alternative<MemType>(imp1.desc));
         MemType& mem1 = std::get<MemType>(imp1.desc);
         Expect(mem1.min == 6);
         Expect(!mem1.max);
+        Expect(imp1.module == "testmod");
+        Expect(imp1.name == "mem2");
     })
     Test("global", {
         ParseFile(test_module, "global.wat");
@@ -88,10 +108,14 @@ Suite import {
         GlobalType& glob0 = std::get<GlobalType>(imp0.desc);
         Expect(glob0.mut == GlobalType::Mut::constant);
         Expect(glob0.type == ValueType::i64);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "glo0");
         WasmImport& imp1 = test_module.imports[1];
         Expect(std::holds_alternative<GlobalType>(imp1.desc));
         GlobalType& glob1 = std::get<GlobalType>(imp1.desc);
         Expect(glob1.mut == GlobalType::Mut::variable);
         Expect(glob1.type == ValueType::f32);
+        Expect(imp1.module == "testmod");
+        Expect(imp1.name == "glo1");
     })
 };
