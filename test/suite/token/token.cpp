@@ -190,13 +190,13 @@ Suite token {
             Expect(std::get<Tokens::MemoryInstr>(lexing("i64.load32_u")).value == Tokens::MemoryInstr::I64Load32_u);
             Expect(std::get<Tokens::MemoryInstr>(lexing("i32.store")).value == Tokens::MemoryInstr::I32Store);
             Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store")).value == Tokens::MemoryInstr::I64Store);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("f32.store")).value == Tokens::MemoryInstr::F32Store);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("f64.store")).value == Tokens::MemoryInstr::F64Store);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("i32.store8")).value == Tokens::MemoryInstr::I32Store8);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("i32.store16")).value == Tokens::MemoryInstr::I32Store16);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store8")).value == Tokens::MemoryInstr::I64Store8);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store16")).value == Tokens::MemoryInstr::I64Store16);
-            // Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store32")).value == Tokens::MemoryInstr::I64Store32);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("f32.store")).value == Tokens::MemoryInstr::F32Store);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("f64.store")).value == Tokens::MemoryInstr::F64Store);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("i32.store8")).value == Tokens::MemoryInstr::I32Store8);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("i32.store16")).value == Tokens::MemoryInstr::I32Store16);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store8")).value == Tokens::MemoryInstr::I64Store8);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store16")).value == Tokens::MemoryInstr::I64Store16);
+            Expect(std::get<Tokens::MemoryInstr>(lexing("i64.store32")).value == Tokens::MemoryInstr::I64Store32);
         })
         Test("numeric_instruction", {
             Expect(std::holds_alternative<Tokens::I32_const>(lexing("i32.const")));

@@ -4,7 +4,7 @@
 
 #include <harness.hpp>
 #include <WasmVM.hpp>
-#include <parse/exception.hpp>
+#include <exception.hpp>
 
 using namespace WasmVM;
 using namespace Testing;
