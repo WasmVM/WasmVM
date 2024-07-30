@@ -62,6 +62,4 @@ struct Suite {
     std::ifstream NAME ## _stream(FILEPATH); \
     WasmVM::WasmModule NAME = WasmVM::module_parse(NAME ## _stream)
 
-#define DecodeFile(NAME, FILEPATH) // TODO:
-
 #endif
