@@ -7,10 +7,10 @@ macro(add_test_suite suite_name)
     WasmVM
   )
   set_target_properties(suite_${suite_name}_target
-    PROPERTIES OUTPUT_NAME ${suite_name}/${suite_name}
+    PROPERTIES OUTPUT_NAME test_${suite_name}
   )
   add_test(NAME suite_${suite_name}
-    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/${suite_name}/${suite_name}
+    COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_${suite_name}
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${suite_name}
   )
   set_property(TEST suite_${suite_name} PROPERTY 
@@ -24,3 +24,4 @@ add_test_suite(token)
 add_test_suite(module)
 add_test_suite(type)
 add_test_suite(import)
+#add_test_suite(table)
