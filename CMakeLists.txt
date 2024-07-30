@@ -45,7 +45,7 @@ if(BUILD_DOCS)
   add_subdirectory(docs)
 endif(BUILD_DOCS)
 
-set(BUILD_TESTS OFF CACHE BOOL "Build tests")
+set(BUILD_TESTS ON CACHE BOOL "Build tests")
 if(BUILD_TESTS)
   include(CTest)
   enable_testing()
