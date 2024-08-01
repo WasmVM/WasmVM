@@ -39,39 +39,47 @@ static WasmModule action_3(Parser& _this, std::vector<Position> _pos, WasmModule
     }
     return _op0;
 }
-static WasmModule action_4(Parser& _this, std::vector<Position> _pos){
+static WasmModule action_4(Parser& _this, std::vector<Position> _pos, WasmModule _op0, std::variant<Limits, WasmImport> _op1){
+    if(std::holds_alternative<WasmImport>(_op1)){
+        _op0.imports.emplace_back(std::get<WasmImport>(_op1));
+    }else{
+        _op0.mems.emplace_back(std::get<Limits>(_op1));
+    }
+    return _op0;
+}
+static WasmModule action_5(Parser& _this, std::vector<Position> _pos){
     return WasmModule();
 }
-static WasmModule action_5(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, Tokens::Id _op2, WasmModule _op3, Tokens::ParenR _op4){
+static WasmModule action_6(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, Tokens::Id _op2, WasmModule _op3, Tokens::ParenR _op4){
     for(auto& functype : _this.types){
         _op3.types.emplace_back(functype.first);
     }
     _this.reset();
     return _op3;
 }
-static WasmModule action_6(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, WasmModule _op2, Tokens::ParenR _op3){
+static WasmModule action_7(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Module _op1, WasmModule _op2, Tokens::ParenR _op3){
     for(auto& functype : _this.types){
         _op2.types.emplace_back(functype.first);
     }
     _this.reset();
     return _op2;
 }
-static WasmModule action_7(Parser& _this, std::vector<Position> _pos, WasmModule _op0){
+static WasmModule action_8(Parser& _this, std::vector<Position> _pos, WasmModule _op0){
     for(auto& functype : _this.types){
         _op0.types.emplace_back(functype.first);
     }
     _this.reset();
     return _op0;
 }
-static WasmModule action_8(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::ParenR _op1){
+static WasmModule action_9(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::ParenR _op1){
     _this.reset();
     return WasmModule();
 }
-static WasmModule action_9(Parser& _this, std::vector<Position> _pos){
+static WasmModule action_10(Parser& _this, std::vector<Position> _pos){
     _this.reset();
     return WasmModule();
 }
-static ValueType action_10(Parser& _this, std::vector<Position> _pos, Tokens::NumType _op0){
+static ValueType action_11(Parser& _this, std::vector<Position> _pos, Tokens::NumType _op0){
     if(_op0.value == "i32"){
         return ValueType::i32;
     }else if(_op0.value == "i64"){
@@ -82,26 +90,26 @@ static ValueType action_10(Parser& _this, std::vector<Position> _pos, Tokens::Nu
         return ValueType::f64;
     }
 }
-static ValueType action_11(Parser& _this, std::vector<Position> _pos, Tokens::Funcref _op0){
+static ValueType action_12(Parser& _this, std::vector<Position> _pos, Tokens::Funcref _op0){
     return ValueType::funcref;
 }
-static ValueType action_12(Parser& _this, std::vector<Position> _pos, Tokens::Externref _op0){
+static ValueType action_13(Parser& _this, std::vector<Position> _pos, Tokens::Externref _op0){
     return ValueType::externref;
 }
-static RefType action_13(Parser& _this, std::vector<Position> _pos, Tokens::Funcref _op0){
+static RefType action_14(Parser& _this, std::vector<Position> _pos, Tokens::Funcref _op0){
     return RefType::funcref;
 }
-static RefType action_14(Parser& _this, std::vector<Position> _pos, Tokens::Externref _op0){
+static RefType action_15(Parser& _this, std::vector<Position> _pos, Tokens::Externref _op0){
     return RefType::externref;
 }
-static std::vector<ValueType> action_15(Parser& _this, std::vector<Position> _pos, std::vector<ValueType> _op0, ValueType _op1){
+static std::vector<ValueType> action_16(Parser& _this, std::vector<Position> _pos, std::vector<ValueType> _op0, ValueType _op1){
     _op0.emplace_back(_op1);
     return _op0;
 }
-static std::vector<ValueType> action_16(Parser& _this, std::vector<Position> _pos){
+static std::vector<ValueType> action_17(Parser& _this, std::vector<Position> _pos){
     return std::vector<ValueType>();
 }
-static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_17(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, Tokens::Id _op3, ValueType _op4, Tokens::ParenR _op5){
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_18(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, Tokens::Id _op3, ValueType _op4, Tokens::ParenR _op5){
     if(_op0.second.contains(_op3.value)){
         throw Exception::Parse("parameter ID '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
     }
@@ -109,30 +117,30 @@ static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_
     _op0.first.emplace_back(_op4);
     return _op0;
 }
-static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_18(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_19(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, Tokens::ParenL _op1, Tokens::Param _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
     _op0.first.insert(_op0.first.end(), _op3.begin(), _op3.end());
     return _op0;
 }
-static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_19(Parser& _this, std::vector<Position> _pos){
+static std::pair<std::vector<ValueType>, std::map<std::string, index_t>> action_20(Parser& _this, std::vector<Position> _pos){
     return std::pair<std::vector<ValueType>, std::map<std::string, index_t>>();
 }
-static std::vector<ValueType> action_20(Parser& _this, std::vector<Position> _pos, std::vector<ValueType> _op0, Tokens::ParenL _op1, Tokens::Result _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
+static std::vector<ValueType> action_21(Parser& _this, std::vector<Position> _pos, std::vector<ValueType> _op0, Tokens::ParenL _op1, Tokens::Result _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
     _op0.insert(_op0.end(), _op3.begin(), _op3.end());
     return _op0;
 }
-static std::vector<ValueType> action_21(Parser& _this, std::vector<Position> _pos){
+static std::vector<ValueType> action_22(Parser& _this, std::vector<Position> _pos){
     return std::vector<ValueType>();
 }
-static std::pair<FuncType, std::map<std::string, index_t>> action_22(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
+static std::pair<FuncType, std::map<std::string, index_t>> action_23(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op2, std::vector<ValueType> _op3, Tokens::ParenR _op4){
     return {FuncType {.params = _op2.first, .results = _op3}, _op2.second};
 }
-static std::string action_23(Parser& _this, std::vector<Position> _pos, Tokens::Id _op0){
+static std::string action_24(Parser& _this, std::vector<Position> _pos, Tokens::Id _op0){
     return _op0.value;
 }
-static std::string action_24(Parser& _this, std::vector<Position> _pos){
+static std::string action_25(Parser& _this, std::vector<Position> _pos){
     return "";
 }
-static void action_25(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, std::string _op2, std::pair<FuncType, std::map<std::string, index_t>> _op3, Tokens::ParenR _op4){
+static void action_26(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, std::string _op2, std::pair<FuncType, std::map<std::string, index_t>> _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.type_indices.contains(_op2)){
             throw Exception::Parse("type ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -141,20 +149,20 @@ static void action_25(Parser& _this, std::vector<Position> _pos, Tokens::ParenL 
     }
     _this.types.emplace_back(_op3);
 }
-static u32_t action_26(Parser& _this, std::vector<Position> _pos, Tokens::Integer _op0){
+static u32_t action_27(Parser& _this, std::vector<Position> _pos, Tokens::Integer _op0){
     try{
         return std::stoul(_op0.value, 0);
     }catch(std::invalid_argument){
         throw Exception::Parse("invalid u32 integer '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
     }
 }
-static std::variant<std::string, u32_t> action_27(Parser& _this, std::vector<Position> _pos, u32_t _op0){
+static std::variant<std::string, u32_t> action_28(Parser& _this, std::vector<Position> _pos, u32_t _op0){
     return _op0;
 }
-static std::variant<std::string, u32_t> action_28(Parser& _this, std::vector<Position> _pos, Tokens::Id _op0){
+static std::variant<std::string, u32_t> action_29(Parser& _this, std::vector<Position> _pos, Tokens::Id _op0){
     return _op0.value;
 }
-static u32_t action_29(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, std::variant<std::string, u32_t> _op2, Tokens::ParenR _op3, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op4, std::vector<ValueType> _op5){
+static u32_t action_30(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Type _op1, std::variant<std::string, u32_t> _op2, Tokens::ParenR _op3, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op4, std::vector<ValueType> _op5){
     index_t typeidx = 0;
     if(std::holds_alternative<std::string>(_op2)){
         std::string id = std::get<std::string>(_op2);
@@ -181,35 +189,35 @@ static u32_t action_29(Parser& _this, std::vector<Position> _pos, Tokens::ParenL
     _this.types.emplace_back(derived);
     return index;
 }
-static u32_t action_30(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, std::vector<ValueType> _op1){
+static u32_t action_31(Parser& _this, std::vector<Position> _pos, std::pair<std::vector<ValueType>, std::map<std::string, index_t>> _op0, std::vector<ValueType> _op1){
     index_t index = _this.types.size();
     _this.types.emplace_back(FuncType {.params = _op0.first, .results = _op1}, _op0.second);
     return index;
 }
-static u32_t action_31(Parser& _this, std::vector<Position> _pos){
+static u32_t action_32(Parser& _this, std::vector<Position> _pos){
     index_t index = _this.types.size();
     _this.types.emplace_back(FuncType(), std::map<std::string, index_t>());
     return index;
 }
-static Limits action_32(Parser& _this, std::vector<Position> _pos, u32_t _op0){
+static Limits action_33(Parser& _this, std::vector<Position> _pos, u32_t _op0){
     return Limits {.min = _op0};
 }
-static Limits action_33(Parser& _this, std::vector<Position> _pos, u32_t _op0, u32_t _op1){
+static Limits action_34(Parser& _this, std::vector<Position> _pos, u32_t _op0, u32_t _op1){
     return Limits {.min = _op0, .max = _op1};
 }
-static TableType action_34(Parser& _this, std::vector<Position> _pos, Limits _op0, RefType _op1){
+static TableType action_35(Parser& _this, std::vector<Position> _pos, Limits _op0, RefType _op1){
     return TableType {.limits = _op0, .reftype = _op1};
 }
-static GlobalType action_35(Parser& _this, std::vector<Position> _pos, ValueType _op0){
+static GlobalType action_36(Parser& _this, std::vector<Position> _pos, ValueType _op0){
     return GlobalType {.mut = GlobalType::constant, .type = _op0};
 }
-static GlobalType action_36(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Mut _op1, ValueType _op2, Tokens::ParenR _op3){
+static GlobalType action_37(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Mut _op1, ValueType _op2, Tokens::ParenR _op3){
     return GlobalType {.mut = GlobalType::variable, .type = _op2};
 }
-static WasmImport action_37(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Import _op1, Tokens::String _op2, Tokens::String _op3, std::variant<index_t, TableType, MemType, GlobalType> _op4, Tokens::ParenR _op5){
+static WasmImport action_38(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Import _op1, Tokens::String _op2, Tokens::String _op3, std::variant<index_t, TableType, MemType, GlobalType> _op4, Tokens::ParenR _op5){
     return WasmImport {.module = _op2.value, .name = _op3.value, .desc = _op4};
 }
-static std::variant<index_t, TableType, MemType, GlobalType> action_38(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::string _op2, u32_t _op3, Tokens::ParenR _op4){
+static std::variant<index_t, TableType, MemType, GlobalType> action_39(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Func _op1, std::string _op2, u32_t _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.func_indices.contains(_op2)){
             throw Exception::Parse("function ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -220,7 +228,7 @@ static std::variant<index_t, TableType, MemType, GlobalType> action_38(Parser& _
     }
     return _op3;
 }
-static std::variant<index_t, TableType, MemType, GlobalType> action_39(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, TableType _op3, Tokens::ParenR _op4){
+static std::variant<index_t, TableType, MemType, GlobalType> action_40(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, TableType _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.table_indices.contains(_op2)){
             throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -231,7 +239,7 @@ static std::variant<index_t, TableType, MemType, GlobalType> action_39(Parser& _
     }
     return _op3;
 }
-static std::variant<index_t, TableType, MemType, GlobalType> action_40(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Memory _op1, std::string _op2, Limits _op3, Tokens::ParenR _op4){
+static std::variant<index_t, TableType, MemType, GlobalType> action_41(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Memory _op1, std::string _op2, Limits _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.mem_indices.contains(_op2)){
             throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -242,7 +250,7 @@ static std::variant<index_t, TableType, MemType, GlobalType> action_40(Parser& _
     }
     return _op3;
 }
-static std::variant<index_t, TableType, MemType, GlobalType> action_41(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Global _op1, std::string _op2, GlobalType _op3, Tokens::ParenR _op4){
+static std::variant<index_t, TableType, MemType, GlobalType> action_42(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Global _op1, std::string _op2, GlobalType _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.global_indices.contains(_op2)){
             throw Exception::Parse("global ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -253,7 +261,7 @@ static std::variant<index_t, TableType, MemType, GlobalType> action_41(Parser& _
     }
     return _op3;
 }
-static std::variant<TableType, WasmImport> action_42(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, TableType _op3, Tokens::ParenR _op4){
+static std::variant<TableType, WasmImport> action_43(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, TableType _op3, Tokens::ParenR _op4){
     if(!_op2.empty()){
         if(_this.table_indices.contains(_op2)){
             throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -264,7 +272,7 @@ static std::variant<TableType, WasmImport> action_42(Parser& _this, std::vector<
     }
     return _op3;
 }
-static std::variant<TableType, WasmImport> action_43(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, Tokens::ParenL _op3, Tokens::Import _op4, Tokens::String _op5, Tokens::String _op6, Tokens::ParenR _op7, TableType _op8, Tokens::ParenR _op9){
+static std::variant<TableType, WasmImport> action_44(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Table _op1, std::string _op2, Tokens::ParenL _op3, Tokens::Import _op4, Tokens::String _op5, Tokens::String _op6, Tokens::ParenR _op7, TableType _op8, Tokens::ParenR _op9){
     if(!_op2.empty()){
         if(_this.table_indices.contains(_op2)){
             throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
@@ -275,149 +283,193 @@ static std::variant<TableType, WasmImport> action_43(Parser& _this, std::vector<
     }
     return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
 }
+static std::variant<Limits, WasmImport> action_45(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Memory _op1, std::string _op2, Limits _op3, Tokens::ParenR _op4){
+    if(!_op2.empty()){
+        if(_this.mem_indices.contains(_op2)){
+            throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+        }
+        _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
+    }else{
+        _this.mem_indices.insert(Parser::IndexMap::Normal);
+    }
+    return _op3;
+}
+static std::variant<Limits, WasmImport> action_46(Parser& _this, std::vector<Position> _pos, Tokens::ParenL _op0, Tokens::Memory _op1, std::string _op2, Tokens::ParenL _op3, Tokens::Import _op4, Tokens::String _op5, Tokens::String _op6, Tokens::ParenR _op7, Limits _op8, Tokens::ParenR _op9){
+    if(!_op2.empty()){
+        if(_this.mem_indices.contains(_op2)){
+            throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+        }
+        _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
+    }else{
+        _this.mem_indices.insert(Parser::IndexMap::Import);
+    }
+    return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
+}
 
 std::vector<Parser::State> Parser::table = {
-    {{1, {{3,{}},}},{2, {{5,{}},}},{69, {{29,{}},}},{73, {{7,{}},}},{74, {{9,{}},}},{78, {{33,{}},}},{80, {{35,{}},}},},
-    {{1, {{18,{1,}},}},},
-    {{3, {{11,{}},}},{10, {{13,{}},}},{11, {{47,{}},}},{12, {{49,{}},}},{20, {{51,{}},}},},
+    {{1, {{3,{}},}},{2, {{5,{}},}},{69, {{31,{}},}},{73, {{33,{}},}},{74, {{7,{}},}},{75, {{9,{}},}},{79, {{37,{}},}},{81, {{39,{}},}},},
+    {{1, {{20,{1,}},}},},
+    {{3, {{11,{}},}},{10, {{13,{}},}},{11, {{51,{}},}},{12, {{53,{}},}},{20, {{55,{}},}},{21, {{57,{}},}},},
     {{1, {{0,{}},}},},
-    {{1, {{14,{1,}},}},{2, {{5,{}},}},{69, {{15,{}},}},{78, {{17,{}},}},{80, {{19,{}},}},},
-    {{1, {{16,{1,1,}},}},},
-    {{2, {{5,{}},}},{3, {{21,{}},}},{4, {{23,{}},}},{69, {{29,{}},}},{74, {{25,{}},}},{78, {{33,{}},}},{80, {{35,{}},}},},
+    {{1, {{16,{1,}},}},{2, {{5,{}},}},{69, {{15,{}},}},{73, {{17,{}},}},{79, {{19,{}},}},{81, {{21,{}},}},},
+    {{1, {{18,{1,1,}},}},},
+    {{2, {{5,{}},}},{3, {{23,{}},}},{4, {{25,{}},}},{69, {{31,{}},}},{73, {{33,{}},}},{75, {{27,{}},}},{79, {{37,{}},}},{81, {{39,{}},}},},
     {{1, {{4,{1,1,}},}},{2, {{4,{1,1,}},}},{3, {{4,{1,1,}},}},},
+    {{1, {{8,{1,1,}},}},{2, {{8,{1,1,}},}},{3, {{8,{1,1,}},}},},
     {{1, {{6,{1,1,}},}},{2, {{6,{1,1,}},}},{3, {{6,{1,1,}},}},},
     {{1, {{2,{1,1,}},}},{2, {{2,{1,1,}},}},{3, {{2,{1,1,}},}},},
-    {{1, {{12,{1,1,0,1,}},}},},
-    {{2, {{5,{}},}},{3, {{27,{}},}},{69, {{29,{}},}},{74, {{31,{}},}},{78, {{33,{}},}},{80, {{35,{}},}},},
-    {{2, {{5,{}},}},{3, {{37,{}},}},{69, {{15,{}},}},{78, {{17,{}},}},{80, {{19,{}},}},},
-    {{1, {{10,{1,1,1,0,1,}},}},},
+    {{1, {{14,{1,1,0,1,}},}},},
+    {{2, {{5,{}},}},{3, {{29,{}},}},{69, {{31,{}},}},{73, {{33,{}},}},{75, {{35,{}},}},{79, {{37,{}},}},{81, {{39,{}},}},},
+    {{2, {{5,{}},}},{3, {{41,{}},}},{69, {{15,{}},}},{73, {{17,{}},}},{79, {{19,{}},}},{81, {{21,{}},}},},
+    {{1, {{12,{1,1,1,0,1,}},}},},
     {{1, {{4,{0,1,}},}},{2, {{4,{0,1,}},}},{3, {{4,{0,1,}},}},},
-    {{2, {{5,{}},}},{3, {{45,{}},}},{69, {{15,{}},}},{78, {{17,{}},}},{80, {{19,{}},}},},
+    {{1, {{8,{0,1,}},}},{2, {{8,{0,1,}},}},{3, {{8,{0,1,}},}},},
+    {{2, {{5,{}},}},{3, {{49,{}},}},{69, {{15,{}},}},{73, {{17,{}},}},{79, {{19,{}},}},{81, {{21,{}},}},},
     {{1, {{6,{0,1,}},}},{2, {{6,{0,1,}},}},{3, {{6,{0,1,}},}},},
     {{1, {{2,{0,1,}},}},{2, {{2,{0,1,}},}},{3, {{2,{0,1,}},}},},
-    {{1, {{12,{1,1,1,1,}},}},},
-    {{2, {{187,{}},}},{3, {{53,{}},}},{75, {{55,{}},}},{77, {{57,{}},}},},
-    {{3, {{68,{1,1,}},}},},
-    {{3, {{66,{1,1,}},}},{16, {{66,{1,1,}},}},{18, {{66,{1,1,}},}},},
-    {{1, {{10,{1,1,1,1,1,}},}},},
-    {{2, {{95,{}},}},{4, {{145,{}},}},{66, {{59,{}},}},{68, {{61,{}},}},},
-    {{5, {{63,{}},}},},
-    {{2, {{65,{}},}},{4, {{145,{}},}},{6, {{281,{}},}},{68, {{67,{}},}},{72, {{267,{}},}},{79, {{69,{}},}},{82, {{271,{}},}},},
-    {{3, {{44,{1,1,0,0,1,}},}},},
-    {{2, {{75,{}},}},{3, {{77,{}},}},{77, {{79,{}},}},},
-    {{2, {{81,{}},}},{3, {{83,{}},}},},
-    {{3, {{93,{}},}},},
-    {{2, {{95,{}},}},{66, {{97,{}},}},},
-    {{5, {{99,{}},}},},
-    {{12, {{101,{}},}},},
-    {{2, {{103,{}},}},{6, {{281,{}},}},{72, {{267,{}},}},{79, {{105,{}},}},{82, {{271,{}},}},},
-    {{3, {{107,{}},}},},
-    {{3, {{109,{}},}},{4, {{111,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{181,{}},}},{84, {{113,{}},}},},
-    {{3, {{115,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{181,{}},}},{84, {{117,{}},}},},
-    {{14, {{119,{}},}},{15, {{73,{}},}},},
-    {{3, {{44,{1,1,1,0,1,}},}},},
-    {{2, {{81,{}},}},{3, {{121,{}},}},},
-    {{15, {{123,{}},}},},
-    {{3, {{44,{1,1,0,1,1,}},}},},
-    {{2, {{187,{}},}},{3, {{125,{}},}},{4, {{145,{}},}},{68, {{127,{}},}},{75, {{129,{}},}},{77, {{131,{}},}},{81, {{133,{}},}},},
-    {{4, {{145,{}},}},{6, {{281,{}},}},{68, {{135,{}},}},{72, {{267,{}},}},{79, {{137,{}},}},{82, {{271,{}},}},},
-    {{4, {{145,{}},}},{6, {{281,{}},}},{68, {{139,{}},}},{72, {{141,{}},}},{82, {{271,{}},}},},
-    {{2, {{143,{}},}},{4, {{145,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{67, {{147,{}},}},{68, {{149,{}},}},{83, {{151,{}},}},},
-    {{1, {{50,{1,1,0,1,1,}},}},{2, {{50,{1,1,0,1,1,}},}},{3, {{50,{1,1,0,1,1,}},}},},
-    {{19, {{39,{}},}},},
-    {{3, {{153,{}},}},},
-    {{2, {{155,{}},}},{70, {{157,{}},}},},
-    {{5, {{159,{}},}},},
-    {{12, {{161,{}},}},},
-    {{3, {{163,{}},}},},
-    {{1, {{84,{1,1,0,1,1,}},}},{2, {{84,{1,1,0,1,1,}},}},{3, {{84,{1,1,0,1,1,}},}},},
-    {{2, {{36,{0,1,1,0,1,}},}},{3, {{36,{0,1,1,0,1,}},}},},
-    {{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{165,{}},}},},
-    {{3, {{167,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{169,{}},}},},
-    {{2, {{40,{0,1,1,0,1,}},}},{3, {{40,{0,1,1,0,1,}},}},},
-    {{3, {{171,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{169,{}},}},},
-    {{3, {{173,{}},}},{4, {{175,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{181,{}},}},{84, {{177,{}},}},},
-    {{3, {{44,{1,1,1,1,1,}},}},},
-    {{3, {{179,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{181,{}},}},{84, {{183,{}},}},},
-    {{3, {{76,{1,1,0,0,1,}},}},},
-    {{2, {{187,{}},}},{3, {{189,{}},}},{75, {{129,{}},}},{77, {{131,{}},}},{81, {{191,{}},}},},
-    {{2, {{75,{}},}},{3, {{60,{1,0,}},}},{77, {{193,{}},}},},
-    {{2, {{81,{}},}},{3, {{60,{0,1,}},}},},
-    {{3, {{195,{}},}},},
-    {{6, {{281,{}},}},{72, {{267,{}},}},{79, {{197,{}},}},{82, {{271,{}},}},},
-    {{3, {{199,{}},}},},
-    {{6, {{281,{}},}},{72, {{201,{}},}},{82, {{271,{}},}},},
-    {{3, {{203,{}},}},},
-    {{23, {{205,{}},}},},
-    {{2, {{46,{1,}},}},{3, {{46,{1,}},}},{6, {{46,{1,}},}},{16, {{46,{1,}},}},{18, {{46,{1,}},}},{65, {{46,{1,}},}},},
-    {{3, {{207,{}},}},},
-    {{2, {{143,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{67, {{209,{}},}},{83, {{151,{}},}},},
-    {{3, {{70,{1,}},}},},
-    {{1, {{50,{1,1,1,1,1,}},}},{2, {{50,{1,1,1,1,1,}},}},{3, {{50,{1,1,1,1,1,}},}},},
-    {{19, {{85,{}},}},{20, {{87,{}},}},{21, {{89,{}},}},{22, {{91,{}},}},},
-    {{3, {{211,{}},}},},
-    {{5, {{213,{}},}},},
-    {{5, {{215,{}},}},},
-    {{1, {{84,{1,1,1,1,1,}},}},{2, {{84,{1,1,1,1,1,}},}},{3, {{84,{1,1,1,1,1,}},}},},
-    {{3, {{217,{}},}},},
-    {{2, {{36,{0,1,1,1,1,}},}},{3, {{36,{0,1,1,1,1,}},}},},
-    {{3, {{30,{1,1,}},}},{16, {{30,{1,1,}},}},{18, {{30,{1,1,}},}},{65, {{30,{1,1,}},}},},
-    {{2, {{40,{0,1,1,1,1,}},}},{3, {{40,{0,1,1,1,1,}},}},},
-    {{2, {{36,{1,1,1,0,1,}},}},{3, {{36,{1,1,1,0,1,}},}},},
-    {{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{219,{}},}},},
-    {{3, {{221,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{169,{}},}},},
-    {{2, {{40,{1,1,1,0,1,}},}},{3, {{40,{1,1,1,0,1,}},}},},
-    {{3, {{30,{0,1,}},}},{16, {{30,{0,1,}},}},{18, {{30,{0,1,}},}},{65, {{30,{0,1,}},}},},
-    {{3, {{223,{}},}},{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{169,{}},}},},
-    {{4, {{225,{}},}},{6, {{281,{}},}},{71, {{227,{}},}},{82, {{229,{}},}},},
-    {{11, {{185,{}},}},{14, {{71,{}},}},{15, {{73,{}},}},},
-    {{3, {{76,{1,1,1,0,1,}},}},},
-    {{3, {{231,{}},}},},
-    {{2, {{81,{}},}},{3, {{60,{1,1,}},}},},
-    {{3, {{76,{1,1,0,1,1,}},}},},
+    {{1, {{14,{1,1,1,1,}},}},},
+    {{2, {{213,{}},}},{3, {{59,{}},}},{76, {{61,{}},}},{78, {{63,{}},}},},
+    {{3, {{70,{1,1,}},}},},
+    {{3, {{68,{1,1,}},}},{16, {{68,{1,1,}},}},{18, {{68,{1,1,}},}},},
+    {{1, {{12,{1,1,1,1,1,}},}},},
+    {{2, {{107,{}},}},{4, {{165,{}},}},{66, {{65,{}},}},{68, {{67,{}},}},},
+    {{5, {{69,{}},}},},
+    {{2, {{71,{}},}},{4, {{165,{}},}},{6, {{325,{}},}},{68, {{73,{}},}},{72, {{305,{}},}},{80, {{75,{}},}},{83, {{313,{}},}},},
+    {{2, {{77,{}},}},{4, {{165,{}},}},{6, {{325,{}},}},{68, {{79,{}},}},{72, {{81,{}},}},{83, {{313,{}},}},},
+    {{3, {{46,{1,1,0,0,1,}},}},},
+    {{2, {{87,{}},}},{3, {{89,{}},}},{78, {{91,{}},}},},
+    {{2, {{93,{}},}},{3, {{95,{}},}},},
+    {{3, {{105,{}},}},},
+    {{2, {{107,{}},}},{66, {{109,{}},}},},
+    {{5, {{111,{}},}},},
+    {{12, {{113,{}},}},},
+    {{2, {{115,{}},}},{6, {{325,{}},}},{72, {{305,{}},}},{80, {{117,{}},}},{83, {{313,{}},}},},
+    {{3, {{119,{}},}},},
+    {{12, {{121,{}},}},},
+    {{2, {{123,{}},}},{6, {{325,{}},}},{72, {{125,{}},}},{83, {{313,{}},}},},
+    {{3, {{127,{}},}},},
+    {{3, {{129,{}},}},{4, {{131,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{207,{}},}},{85, {{133,{}},}},},
+    {{3, {{135,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{207,{}},}},{85, {{137,{}},}},},
+    {{14, {{139,{}},}},{15, {{85,{}},}},},
+    {{3, {{46,{1,1,1,0,1,}},}},},
+    {{2, {{93,{}},}},{3, {{141,{}},}},},
+    {{15, {{143,{}},}},},
+    {{3, {{46,{1,1,0,1,1,}},}},},
+    {{2, {{213,{}},}},{3, {{145,{}},}},{4, {{165,{}},}},{68, {{147,{}},}},{76, {{149,{}},}},{78, {{151,{}},}},{82, {{153,{}},}},},
+    {{4, {{165,{}},}},{6, {{325,{}},}},{68, {{155,{}},}},{72, {{305,{}},}},{80, {{157,{}},}},{83, {{313,{}},}},},
+    {{4, {{165,{}},}},{6, {{325,{}},}},{68, {{159,{}},}},{72, {{161,{}},}},{83, {{313,{}},}},},
+    {{2, {{163,{}},}},{4, {{165,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{67, {{167,{}},}},{68, {{169,{}},}},{84, {{171,{}},}},},
+    {{1, {{52,{1,1,0,1,1,}},}},{2, {{52,{1,1,0,1,1,}},}},{3, {{52,{1,1,0,1,1,}},}},},
+    {{19, {{43,{}},}},},
+    {{3, {{173,{}},}},},
+    {{2, {{175,{}},}},{70, {{177,{}},}},},
+    {{5, {{179,{}},}},},
+    {{12, {{181,{}},}},},
+    {{3, {{183,{}},}},},
+    {{1, {{86,{1,1,0,1,1,}},}},{2, {{86,{1,1,0,1,1,}},}},{3, {{86,{1,1,0,1,1,}},}},},
+    {{5, {{185,{}},}},},
+    {{12, {{187,{}},}},},
+    {{3, {{189,{}},}},},
+    {{1, {{90,{1,1,0,1,1,}},}},{2, {{90,{1,1,0,1,1,}},}},{3, {{90,{1,1,0,1,1,}},}},},
+    {{2, {{38,{0,1,1,0,1,}},}},{3, {{38,{0,1,1,0,1,}},}},},
+    {{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{191,{}},}},},
+    {{3, {{193,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{195,{}},}},},
+    {{2, {{42,{0,1,1,0,1,}},}},{3, {{42,{0,1,1,0,1,}},}},},
+    {{3, {{197,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{195,{}},}},},
+    {{3, {{199,{}},}},{4, {{201,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{207,{}},}},{85, {{203,{}},}},},
+    {{3, {{46,{1,1,1,1,1,}},}},},
+    {{3, {{205,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{207,{}},}},{85, {{209,{}},}},},
+    {{3, {{78,{1,1,0,0,1,}},}},},
+    {{2, {{213,{}},}},{3, {{215,{}},}},{76, {{149,{}},}},{78, {{151,{}},}},{82, {{217,{}},}},},
+    {{2, {{87,{}},}},{3, {{62,{1,0,}},}},{78, {{219,{}},}},},
+    {{2, {{93,{}},}},{3, {{62,{0,1,}},}},},
+    {{3, {{221,{}},}},},
+    {{6, {{325,{}},}},{72, {{305,{}},}},{80, {{223,{}},}},{83, {{313,{}},}},},
+    {{3, {{225,{}},}},},
+    {{6, {{325,{}},}},{72, {{227,{}},}},{83, {{313,{}},}},},
+    {{3, {{229,{}},}},},
+    {{23, {{231,{}},}},},
+    {{2, {{48,{1,}},}},{3, {{48,{1,}},}},{6, {{48,{1,}},}},{16, {{48,{1,}},}},{18, {{48,{1,}},}},{65, {{48,{1,}},}},},
     {{3, {{233,{}},}},},
-    {{3, {{78,{1,1,0,1,1,}},}},},
-    {{3, {{235,{}},}},},
-    {{3, {{80,{1,1,0,1,1,}},}},},
-    {{16, {{237,{}},}},{18, {{239,{}},}},{65, {{241,{}},}},{83, {{243,{}},}},},
-    {{3, {{82,{1,1,0,1,1,}},}},},
-    {{3, {{245,{}},}},},
-    {{1, {{74,{1,1,1,1,1,1,}},}},{2, {{74,{1,1,1,1,1,1,}},}},{3, {{74,{1,1,1,1,1,1,}},}},},
+    {{2, {{163,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{67, {{235,{}},}},{84, {{171,{}},}},},
+    {{3, {{72,{1,}},}},},
+    {{1, {{52,{1,1,1,1,1,}},}},{2, {{52,{1,1,1,1,1,}},}},{3, {{52,{1,1,1,1,1,}},}},},
+    {{19, {{97,{}},}},{20, {{99,{}},}},{21, {{101,{}},}},{22, {{103,{}},}},},
+    {{3, {{237,{}},}},},
+    {{5, {{239,{}},}},},
+    {{5, {{241,{}},}},},
+    {{1, {{86,{1,1,1,1,1,}},}},{2, {{86,{1,1,1,1,1,}},}},{3, {{86,{1,1,1,1,1,}},}},},
+    {{5, {{243,{}},}},},
+    {{5, {{245,{}},}},},
+    {{1, {{90,{1,1,1,1,1,}},}},{2, {{90,{1,1,1,1,1,}},}},{3, {{90,{1,1,1,1,1,}},}},},
     {{3, {{247,{}},}},},
-    {{5, {{249,{}},}},},
-    {{2, {{34,{0,1,1,1,1,1,}},}},{3, {{34,{0,1,1,1,1,1,}},}},},
-    {{3, {{251,{}},}},},
-    {{2, {{36,{1,1,1,1,1,}},}},{3, {{36,{1,1,1,1,1,}},}},},
-    {{2, {{40,{1,1,1,1,1,}},}},{3, {{40,{1,1,1,1,1,}},}},},
+    {{2, {{38,{0,1,1,1,1,}},}},{3, {{38,{0,1,1,1,1,}},}},},
+    {{3, {{32,{1,1,}},}},{16, {{32,{1,1,}},}},{18, {{32,{1,1,}},}},{65, {{32,{1,1,}},}},},
+    {{2, {{42,{0,1,1,1,1,}},}},{3, {{42,{0,1,1,1,1,}},}},},
+    {{2, {{38,{1,1,1,0,1,}},}},{3, {{38,{1,1,1,0,1,}},}},},
+    {{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{249,{}},}},},
+    {{3, {{251,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{195,{}},}},},
+    {{2, {{42,{1,1,1,0,1,}},}},{3, {{42,{1,1,1,0,1,}},}},},
+    {{3, {{32,{0,1,}},}},{16, {{32,{0,1,}},}},{18, {{32,{0,1,}},}},{65, {{32,{0,1,}},}},},
+    {{3, {{253,{}},}},{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{195,{}},}},},
+    {{4, {{255,{}},}},{6, {{325,{}},}},{71, {{257,{}},}},{83, {{259,{}},}},},
+    {{11, {{211,{}},}},{14, {{83,{}},}},{15, {{85,{}},}},},
+    {{3, {{78,{1,1,1,0,1,}},}},},
+    {{3, {{261,{}},}},},
+    {{2, {{93,{}},}},{3, {{62,{1,1,}},}},},
+    {{3, {{78,{1,1,0,1,1,}},}},},
+    {{3, {{263,{}},}},},
+    {{3, {{80,{1,1,0,1,1,}},}},},
+    {{3, {{265,{}},}},},
+    {{3, {{82,{1,1,0,1,1,}},}},},
+    {{16, {{267,{}},}},{18, {{269,{}},}},{65, {{271,{}},}},{84, {{273,{}},}},},
+    {{3, {{84,{1,1,0,1,1,}},}},},
+    {{3, {{275,{}},}},},
+    {{1, {{76,{1,1,1,1,1,1,}},}},{2, {{76,{1,1,1,1,1,1,}},}},{3, {{76,{1,1,1,1,1,1,}},}},},
+    {{3, {{277,{}},}},},
+    {{5, {{279,{}},}},},
+    {{3, {{281,{}},}},},
+    {{5, {{283,{}},}},},
+    {{2, {{36,{0,1,1,1,1,1,}},}},{3, {{36,{0,1,1,1,1,1,}},}},},
+    {{3, {{285,{}},}},},
+    {{2, {{38,{1,1,1,1,1,}},}},{3, {{38,{1,1,1,1,1,}},}},},
+    {{2, {{42,{1,1,1,1,1,}},}},{3, {{42,{1,1,1,1,1,}},}},},
+    {{3, {{58,{1,}},}},},
+    {{3, {{287,{}},}},},
     {{3, {{56,{1,}},}},},
-    {{3, {{253,{}},}},},
-    {{3, {{54,{1,}},}},},
-    {{3, {{76,{1,1,1,1,1,}},}},},
     {{3, {{78,{1,1,1,1,1,}},}},},
     {{3, {{80,{1,1,1,1,1,}},}},},
-    {{3, {{22,{1,}},}},{16, {{22,{1,}},}},{18, {{22,{1,}},}},{65, {{22,{1,}},}},},
-    {{3, {{24,{1,}},}},{16, {{24,{1,}},}},{18, {{24,{1,}},}},{65, {{24,{1,}},}},},
-    {{3, {{20,{1,}},}},{16, {{20,{1,}},}},{18, {{20,{1,}},}},{65, {{20,{1,}},}},},
-    {{3, {{255,{}},}},},
     {{3, {{82,{1,1,1,1,1,}},}},},
-    {{6, {{281,{}},}},{72, {{267,{}},}},{79, {{257,{}},}},{82, {{271,{}},}},},
-    {{3, {{259,{}},}},},
-    {{2, {{34,{1,1,1,1,1,1,}},}},{3, {{34,{1,1,1,1,1,1,}},}},},
-    {{2, {{187,{}},}},{3, {{58,{1,1,1,1,0,0,}},}},{75, {{261,{}},}},{77, {{263,{}},}},},
-    {{3, {{72,{1,1,1,1,}},}},},
-    {{3, {{265,{}},}},},
-    {{6, {{281,{}},}},{72, {{267,{}},}},{79, {{269,{}},}},{82, {{271,{}},}},},
-    {{2, {{75,{}},}},{3, {{58,{1,1,1,1,1,0,}},}},{77, {{273,{}},}},},
-    {{2, {{81,{}},}},{3, {{58,{1,1,1,1,0,1,}},}},},
-    {{1, {{86,{1,1,0,1,1,1,1,1,1,1,}},}},{2, {{86,{1,1,0,1,1,1,1,1,1,1,}},}},{3, {{86,{1,1,0,1,1,1,1,1,1,1,}},}},},
-    {{16, {{275,{}},}},{18, {{277,{}},}},{76, {{41,{}},}},},
-    {{3, {{279,{}},}},},
-    {{3, {{64,{1,}},}},{6, {{281,{}},}},{16, {{64,{1,}},}},{18, {{64,{1,}},}},{82, {{43,{}},}},},
-    {{2, {{81,{}},}},{3, {{58,{1,1,1,1,1,1,}},}},},
-    {{3, {{26,{1,}},}},},
+    {{3, {{24,{1,}},}},{16, {{24,{1,}},}},{18, {{24,{1,}},}},{65, {{24,{1,}},}},},
+    {{3, {{26,{1,}},}},{16, {{26,{1,}},}},{18, {{26,{1,}},}},{65, {{26,{1,}},}},},
+    {{3, {{22,{1,}},}},{16, {{22,{1,}},}},{18, {{22,{1,}},}},{65, {{22,{1,}},}},},
+    {{3, {{289,{}},}},},
+    {{3, {{84,{1,1,1,1,1,}},}},},
+    {{6, {{325,{}},}},{72, {{305,{}},}},{80, {{291,{}},}},{83, {{313,{}},}},},
+    {{3, {{293,{}},}},},
+    {{6, {{325,{}},}},{72, {{295,{}},}},{83, {{313,{}},}},},
+    {{3, {{297,{}},}},},
+    {{2, {{36,{1,1,1,1,1,1,}},}},{3, {{36,{1,1,1,1,1,1,}},}},},
+    {{2, {{213,{}},}},{3, {{60,{1,1,1,1,0,0,}},}},{76, {{299,{}},}},{78, {{301,{}},}},},
+    {{3, {{74,{1,1,1,1,}},}},},
+    {{3, {{303,{}},}},},
+    {{6, {{325,{}},}},{72, {{305,{}},}},{80, {{307,{}},}},{83, {{313,{}},}},},
+    {{3, {{309,{}},}},},
+    {{6, {{325,{}},}},{72, {{311,{}},}},{83, {{313,{}},}},},
+    {{2, {{87,{}},}},{3, {{60,{1,1,1,1,1,0,}},}},{78, {{315,{}},}},},
+    {{2, {{93,{}},}},{3, {{60,{1,1,1,1,0,1,}},}},},
+    {{1, {{88,{1,1,0,1,1,1,1,1,1,1,}},}},{2, {{88,{1,1,0,1,1,1,1,1,1,1,}},}},{3, {{88,{1,1,0,1,1,1,1,1,1,1,}},}},},
+    {{16, {{317,{}},}},{18, {{319,{}},}},{77, {{45,{}},}},},
+    {{3, {{321,{}},}},},
+    {{1, {{92,{1,1,0,1,1,1,1,1,1,1,}},}},{2, {{92,{1,1,0,1,1,1,1,1,1,1,}},}},{3, {{92,{1,1,0,1,1,1,1,1,1,1,}},}},},
+    {{3, {{323,{}},}},},
+    {{3, {{66,{1,}},}},{6, {{325,{}},}},{16, {{66,{1,}},}},{18, {{66,{1,}},}},{83, {{47,{}},}},},
+    {{2, {{93,{}},}},{3, {{60,{1,1,1,1,1,1,}},}},},
     {{3, {{28,{1,}},}},},
-    {{1, {{86,{1,1,1,1,1,1,1,1,1,1,}},}},{2, {{86,{1,1,1,1,1,1,1,1,1,1,}},}},{3, {{86,{1,1,1,1,1,1,1,1,1,1,}},}},},
-    {{3, {{52,{1,}},}},{6, {{52,{1,}},}},{16, {{52,{1,}},}},{18, {{52,{1,}},}},},
+    {{3, {{30,{1,}},}},},
+    {{1, {{88,{1,1,1,1,1,1,1,1,1,1,}},}},{2, {{88,{1,1,1,1,1,1,1,1,1,1,}},}},{3, {{88,{1,1,1,1,1,1,1,1,1,1,}},}},},
+    {{1, {{92,{1,1,1,1,1,1,1,1,1,1,}},}},{2, {{92,{1,1,1,1,1,1,1,1,1,1,}},}},{3, {{92,{1,1,1,1,1,1,1,1,1,1,}},}},},
+    {{3, {{54,{1,}},}},{6, {{54,{1,}},}},{16, {{54,{1,}},}},{18, {{54,{1,}},}},},
 };
 
 WasmModule Parser::parse(){
@@ -481,7 +533,7 @@ WasmModule Parser::parse(){
 }
 
 void Parser::Stack::reduce(size_t action, std::vector<bool> param_toggle){
-    static const std::vector<term_t> signatures {74,74,74,74,73,73,73,73,73,83,83,83,76,76,84,84,75,75,75,77,77,66,68,68,80,82,71,71,81,81,81,72,72,79,67,67,69,70,70,70,70,78,78,};
+    static const std::vector<term_t> signatures {75,75,75,75,75,74,74,74,74,74,84,84,84,77,77,85,85,76,76,76,78,78,66,68,68,81,83,71,71,82,82,82,72,72,80,67,67,69,70,70,70,70,79,79,73,73,};
     if(action == 0){
         emplace_front(Entry {.term = 0, .state = End});
         return;
@@ -515,6 +567,7 @@ using item_t = std::variant<std::monostate,
     std::pair<FuncType, std::map<std::string, index_t>>,
     std::pair<std::vector<ValueType>, std::map<std::string, index_t>>,
     std::string,
+    std::variant<Limits, WasmImport>,
     std::variant<TableType, WasmImport>,
     std::variant<index_t, TableType, MemType, GlobalType>,
     std::variant<std::string, u32_t>,
@@ -572,11 +625,17 @@ WasmModule Parser::expand_tree(Entry& tree){
                 ));
             break;
             case 4: 
-                param_stack.emplace_front(pos, action_4(*this, positions
+                param_stack.emplace_front(pos, action_4(*this, positions,
+                    node.param_toggle[0] ? std::get<WasmModule>(params[0]) : WasmModule(),
+                    node.param_toggle[1] ? std::get<std::variant<Limits, WasmImport>>(params[1]) : std::variant<Limits, WasmImport>()
                 ));
             break;
             case 5: 
-                param_stack.emplace_front(pos, action_5(*this, positions,
+                param_stack.emplace_front(pos, action_5(*this, positions
+                ));
+            break;
+            case 6: 
+                param_stack.emplace_front(pos, action_6(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Module>(std::get<Token>(params[1])) : Tokens::Module(),
                     node.param_toggle[2] ? std::get<Tokens::Id>(std::get<Token>(params[2])) : Tokens::Id(),
@@ -584,66 +643,66 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 6: 
-                param_stack.emplace_front(pos, action_6(*this, positions,
+            case 7: 
+                param_stack.emplace_front(pos, action_7(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Module>(std::get<Token>(params[1])) : Tokens::Module(),
                     node.param_toggle[2] ? std::get<WasmModule>(params[2]) : WasmModule(),
                     node.param_toggle[3] ? std::get<Tokens::ParenR>(std::get<Token>(params[3])) : Tokens::ParenR()
                 ));
             break;
-            case 7: 
-                param_stack.emplace_front(pos, action_7(*this, positions,
+            case 8: 
+                param_stack.emplace_front(pos, action_8(*this, positions,
                     node.param_toggle[0] ? std::get<WasmModule>(params[0]) : WasmModule()
                 ));
             break;
-            case 8: 
-                param_stack.emplace_front(pos, action_8(*this, positions,
+            case 9: 
+                param_stack.emplace_front(pos, action_9(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::ParenR>(std::get<Token>(params[1])) : Tokens::ParenR()
                 ));
             break;
-            case 9: 
-                param_stack.emplace_front(pos, action_9(*this, positions
-                ));
-            break;
             case 10: 
-                param_stack.emplace_front(pos, action_10(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::NumType>(std::get<Token>(params[0])) : Tokens::NumType()
+                param_stack.emplace_front(pos, action_10(*this, positions
                 ));
             break;
             case 11: 
                 param_stack.emplace_front(pos, action_11(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Funcref>(std::get<Token>(params[0])) : Tokens::Funcref()
+                    node.param_toggle[0] ? std::get<Tokens::NumType>(std::get<Token>(params[0])) : Tokens::NumType()
                 ));
             break;
             case 12: 
                 param_stack.emplace_front(pos, action_12(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Externref>(std::get<Token>(params[0])) : Tokens::Externref()
+                    node.param_toggle[0] ? std::get<Tokens::Funcref>(std::get<Token>(params[0])) : Tokens::Funcref()
                 ));
             break;
             case 13: 
                 param_stack.emplace_front(pos, action_13(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Funcref>(std::get<Token>(params[0])) : Tokens::Funcref()
+                    node.param_toggle[0] ? std::get<Tokens::Externref>(std::get<Token>(params[0])) : Tokens::Externref()
                 ));
             break;
             case 14: 
                 param_stack.emplace_front(pos, action_14(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Externref>(std::get<Token>(params[0])) : Tokens::Externref()
+                    node.param_toggle[0] ? std::get<Tokens::Funcref>(std::get<Token>(params[0])) : Tokens::Funcref()
                 ));
             break;
             case 15: 
                 param_stack.emplace_front(pos, action_15(*this, positions,
+                    node.param_toggle[0] ? std::get<Tokens::Externref>(std::get<Token>(params[0])) : Tokens::Externref()
+                ));
+            break;
+            case 16: 
+                param_stack.emplace_front(pos, action_16(*this, positions,
                     node.param_toggle[0] ? std::get<std::vector<ValueType>>(params[0]) : std::vector<ValueType>(),
                     node.param_toggle[1] ? std::get<ValueType>(params[1]) : ValueType()
                 ));
             break;
-            case 16: 
-                param_stack.emplace_front(pos, action_16(*this, positions
+            case 17: 
+                param_stack.emplace_front(pos, action_17(*this, positions
                 ));
             break;
-            case 17: 
-                param_stack.emplace_front(pos, action_17(*this, positions,
+            case 18: 
+                param_stack.emplace_front(pos, action_18(*this, positions,
                     node.param_toggle[0] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[0]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[1] ? std::get<Tokens::ParenL>(std::get<Token>(params[1])) : Tokens::ParenL(),
                     node.param_toggle[2] ? std::get<Tokens::Param>(std::get<Token>(params[2])) : Tokens::Param(),
@@ -652,8 +711,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[5] ? std::get<Tokens::ParenR>(std::get<Token>(params[5])) : Tokens::ParenR()
                 ));
             break;
-            case 18: 
-                param_stack.emplace_front(pos, action_18(*this, positions,
+            case 19: 
+                param_stack.emplace_front(pos, action_19(*this, positions,
                     node.param_toggle[0] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[0]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[1] ? std::get<Tokens::ParenL>(std::get<Token>(params[1])) : Tokens::ParenL(),
                     node.param_toggle[2] ? std::get<Tokens::Param>(std::get<Token>(params[2])) : Tokens::Param(),
@@ -661,12 +720,12 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 19: 
-                param_stack.emplace_front(pos, action_19(*this, positions
+            case 20: 
+                param_stack.emplace_front(pos, action_20(*this, positions
                 ));
             break;
-            case 20: 
-                param_stack.emplace_front(pos, action_20(*this, positions,
+            case 21: 
+                param_stack.emplace_front(pos, action_21(*this, positions,
                     node.param_toggle[0] ? std::get<std::vector<ValueType>>(params[0]) : std::vector<ValueType>(),
                     node.param_toggle[1] ? std::get<Tokens::ParenL>(std::get<Token>(params[1])) : Tokens::ParenL(),
                     node.param_toggle[2] ? std::get<Tokens::Result>(std::get<Token>(params[2])) : Tokens::Result(),
@@ -674,12 +733,12 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 21: 
-                param_stack.emplace_front(pos, action_21(*this, positions
+            case 22: 
+                param_stack.emplace_front(pos, action_22(*this, positions
                 ));
             break;
-            case 22: 
-                param_stack.emplace_front(pos, action_22(*this, positions,
+            case 23: 
+                param_stack.emplace_front(pos, action_23(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Func>(std::get<Token>(params[1])) : Tokens::Func(),
                     node.param_toggle[2] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[2]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
@@ -687,18 +746,18 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 23: 
-                param_stack.emplace_front(pos, action_23(*this, positions,
+            case 24: 
+                param_stack.emplace_front(pos, action_24(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::Id>(std::get<Token>(params[0])) : Tokens::Id()
                 ));
             break;
-            case 24: 
-                param_stack.emplace_front(pos, action_24(*this, positions
+            case 25: 
+                param_stack.emplace_front(pos, action_25(*this, positions
                 ));
             break;
-            case 25: 
+            case 26: 
                 param_stack.emplace_front(pos, std::monostate());
-                action_25(*this, positions,
+                action_26(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Type>(std::get<Token>(params[1])) : Tokens::Type(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -706,23 +765,23 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 );
             break;
-            case 26: 
-                param_stack.emplace_front(pos, action_26(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Integer>(std::get<Token>(params[0])) : Tokens::Integer()
-                ));
-            break;
             case 27: 
                 param_stack.emplace_front(pos, action_27(*this, positions,
-                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t()
+                    node.param_toggle[0] ? std::get<Tokens::Integer>(std::get<Token>(params[0])) : Tokens::Integer()
                 ));
             break;
             case 28: 
                 param_stack.emplace_front(pos, action_28(*this, positions,
-                    node.param_toggle[0] ? std::get<Tokens::Id>(std::get<Token>(params[0])) : Tokens::Id()
+                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t()
                 ));
             break;
             case 29: 
                 param_stack.emplace_front(pos, action_29(*this, positions,
+                    node.param_toggle[0] ? std::get<Tokens::Id>(std::get<Token>(params[0])) : Tokens::Id()
+                ));
+            break;
+            case 30: 
+                param_stack.emplace_front(pos, action_30(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Type>(std::get<Token>(params[1])) : Tokens::Type(),
                     node.param_toggle[2] ? std::get<std::variant<std::string, u32_t>>(params[2]) : std::variant<std::string, u32_t>(),
@@ -731,48 +790,48 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[5] ? std::get<std::vector<ValueType>>(params[5]) : std::vector<ValueType>()
                 ));
             break;
-            case 30: 
-                param_stack.emplace_front(pos, action_30(*this, positions,
+            case 31: 
+                param_stack.emplace_front(pos, action_31(*this, positions,
                     node.param_toggle[0] ? std::get<std::pair<std::vector<ValueType>, std::map<std::string, index_t>>>(params[0]) : std::pair<std::vector<ValueType>, std::map<std::string, index_t>>(),
                     node.param_toggle[1] ? std::get<std::vector<ValueType>>(params[1]) : std::vector<ValueType>()
                 ));
             break;
-            case 31: 
-                param_stack.emplace_front(pos, action_31(*this, positions
-                ));
-            break;
             case 32: 
-                param_stack.emplace_front(pos, action_32(*this, positions,
-                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t()
+                param_stack.emplace_front(pos, action_32(*this, positions
                 ));
             break;
             case 33: 
                 param_stack.emplace_front(pos, action_33(*this, positions,
-                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t(),
-                    node.param_toggle[1] ? std::get<u32_t>(params[1]) : u32_t()
+                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t()
                 ));
             break;
             case 34: 
                 param_stack.emplace_front(pos, action_34(*this, positions,
-                    node.param_toggle[0] ? std::get<Limits>(params[0]) : Limits(),
-                    node.param_toggle[1] ? std::get<RefType>(params[1]) : RefType()
+                    node.param_toggle[0] ? std::get<u32_t>(params[0]) : u32_t(),
+                    node.param_toggle[1] ? std::get<u32_t>(params[1]) : u32_t()
                 ));
             break;
             case 35: 
                 param_stack.emplace_front(pos, action_35(*this, positions,
-                    node.param_toggle[0] ? std::get<ValueType>(params[0]) : ValueType()
+                    node.param_toggle[0] ? std::get<Limits>(params[0]) : Limits(),
+                    node.param_toggle[1] ? std::get<RefType>(params[1]) : RefType()
                 ));
             break;
             case 36: 
                 param_stack.emplace_front(pos, action_36(*this, positions,
+                    node.param_toggle[0] ? std::get<ValueType>(params[0]) : ValueType()
+                ));
+            break;
+            case 37: 
+                param_stack.emplace_front(pos, action_37(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Mut>(std::get<Token>(params[1])) : Tokens::Mut(),
                     node.param_toggle[2] ? std::get<ValueType>(params[2]) : ValueType(),
                     node.param_toggle[3] ? std::get<Tokens::ParenR>(std::get<Token>(params[3])) : Tokens::ParenR()
                 ));
             break;
-            case 37: 
-                param_stack.emplace_front(pos, action_37(*this, positions,
+            case 38: 
+                param_stack.emplace_front(pos, action_38(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Import>(std::get<Token>(params[1])) : Tokens::Import(),
                     node.param_toggle[2] ? std::get<Tokens::String>(std::get<Token>(params[2])) : Tokens::String(),
@@ -781,8 +840,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[5] ? std::get<Tokens::ParenR>(std::get<Token>(params[5])) : Tokens::ParenR()
                 ));
             break;
-            case 38: 
-                param_stack.emplace_front(pos, action_38(*this, positions,
+            case 39: 
+                param_stack.emplace_front(pos, action_39(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Func>(std::get<Token>(params[1])) : Tokens::Func(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -790,8 +849,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 39: 
-                param_stack.emplace_front(pos, action_39(*this, positions,
+            case 40: 
+                param_stack.emplace_front(pos, action_40(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Table>(std::get<Token>(params[1])) : Tokens::Table(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -799,8 +858,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 40: 
-                param_stack.emplace_front(pos, action_40(*this, positions,
+            case 41: 
+                param_stack.emplace_front(pos, action_41(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Memory>(std::get<Token>(params[1])) : Tokens::Memory(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -808,8 +867,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 41: 
-                param_stack.emplace_front(pos, action_41(*this, positions,
+            case 42: 
+                param_stack.emplace_front(pos, action_42(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Global>(std::get<Token>(params[1])) : Tokens::Global(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -817,8 +876,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 42: 
-                param_stack.emplace_front(pos, action_42(*this, positions,
+            case 43: 
+                param_stack.emplace_front(pos, action_43(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Table>(std::get<Token>(params[1])) : Tokens::Table(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -826,8 +885,8 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
                 ));
             break;
-            case 43: 
-                param_stack.emplace_front(pos, action_43(*this, positions,
+            case 44: 
+                param_stack.emplace_front(pos, action_44(*this, positions,
                     node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
                     node.param_toggle[1] ? std::get<Tokens::Table>(std::get<Token>(params[1])) : Tokens::Table(),
                     node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
@@ -837,6 +896,29 @@ WasmModule Parser::expand_tree(Entry& tree){
                     node.param_toggle[6] ? std::get<Tokens::String>(std::get<Token>(params[6])) : Tokens::String(),
                     node.param_toggle[7] ? std::get<Tokens::ParenR>(std::get<Token>(params[7])) : Tokens::ParenR(),
                     node.param_toggle[8] ? std::get<TableType>(params[8]) : TableType(),
+                    node.param_toggle[9] ? std::get<Tokens::ParenR>(std::get<Token>(params[9])) : Tokens::ParenR()
+                ));
+            break;
+            case 45: 
+                param_stack.emplace_front(pos, action_45(*this, positions,
+                    node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
+                    node.param_toggle[1] ? std::get<Tokens::Memory>(std::get<Token>(params[1])) : Tokens::Memory(),
+                    node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
+                    node.param_toggle[3] ? std::get<Limits>(params[3]) : Limits(),
+                    node.param_toggle[4] ? std::get<Tokens::ParenR>(std::get<Token>(params[4])) : Tokens::ParenR()
+                ));
+            break;
+            case 46: 
+                param_stack.emplace_front(pos, action_46(*this, positions,
+                    node.param_toggle[0] ? std::get<Tokens::ParenL>(std::get<Token>(params[0])) : Tokens::ParenL(),
+                    node.param_toggle[1] ? std::get<Tokens::Memory>(std::get<Token>(params[1])) : Tokens::Memory(),
+                    node.param_toggle[2] ? std::get<std::string>(params[2]) : std::string(),
+                    node.param_toggle[3] ? std::get<Tokens::ParenL>(std::get<Token>(params[3])) : Tokens::ParenL(),
+                    node.param_toggle[4] ? std::get<Tokens::Import>(std::get<Token>(params[4])) : Tokens::Import(),
+                    node.param_toggle[5] ? std::get<Tokens::String>(std::get<Token>(params[5])) : Tokens::String(),
+                    node.param_toggle[6] ? std::get<Tokens::String>(std::get<Token>(params[6])) : Tokens::String(),
+                    node.param_toggle[7] ? std::get<Tokens::ParenR>(std::get<Token>(params[7])) : Tokens::ParenR(),
+                    node.param_toggle[8] ? std::get<Limits>(params[8]) : Limits(),
                     node.param_toggle[9] ? std::get<Tokens::ParenR>(std::get<Token>(params[9])) : Tokens::ParenR()
                 ));
             break;
@@ -954,6 +1036,7 @@ WasmVM::ParseError::ParseError(Position pos, Parser::term_t term) : pos(pos) {
         "importdesc",
         "index",
         "limits",
+        "memory",
         "module",
         "modulefield",
         "params",

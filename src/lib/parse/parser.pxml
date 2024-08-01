@@ -95,6 +95,14 @@
                 }
                 return _op0;
             </grammar>
+            <grammar pattern="modulefield memory">
+                if(std::holds_alternative\<WasmImport>(_op1)){
+                    _op0.imports.emplace_back(std::get\<WasmImport>(_op1));
+                }else{
+                    _op0.mems.emplace_back(std::get\<Limits>(_op1));
+                }
+                return _op0;
+            </grammar>
             <grammar>
                 return WasmModule();
             </grammar>
@@ -368,6 +376,32 @@
                 return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
             </grammar>
             {% TODO: inline elem %}
+            {% TODO: inline exports %}
+        </target>
+        <target name="memory" type="std::variant<Limits, WasmImport>">
+            <grammar pattern="ParenL Memory id limits ParenR">
+                if(!_op2.empty()){
+                    if(_this.mem_indices.contains(_op2)){
+                        throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
+                }else{
+                    _this.mem_indices.insert(Parser::IndexMap::Normal);
+                }
+                return _op3;
+            </grammar>
+            <grammar pattern="ParenL Memory id ParenL Import String String ParenR limits ParenR">
+                if(!_op2.empty()){
+                    if(_this.mem_indices.contains(_op2)){
+                        throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
+                }else{
+                    _this.mem_indices.insert(Parser::IndexMap::Import);
+                }
+                return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
+            </grammar>
+            {% TODO: inline data %}
             {% TODO: inline exports %}
         </target>
     </parser>
