@@ -40,8 +40,9 @@ struct Parser {
         };
         index_t insert(IndexType type);
         index_t insert(std::string id, IndexType type);
+        index_t get(std::string id);
         bool contains(std::string id);
-        index_t operator[](index_t index);
+        std::optional<Index> operator[](index_t index);
         private:
         index_t serial = 0;
         std::set<Index, Compare> indices;

@@ -26,8 +26,9 @@
                 };
                 index_t insert(IndexType type);
                 index_t insert(std::string id, IndexType type);
+                index_t get(std::string id);
                 bool contains(std::string id);
-                index_t operator[](index_t index);
+                std::optional\<Index> operator[](index_t index);
                 private:
                 index_t serial = 0;
                 std::set\<Index, Compare> indices;
@@ -55,18 +56,17 @@
                 }
                 return id_map[id];
             }
+            index_t Parser::IndexMap::get(std::string id){
+                return id_map.contains(id) ? id_map[id] : -1;
+            }
             bool Parser::IndexMap::contains(std::string id){
                 return id_map.contains(id);
             }
-            index_t Parser::IndexMap::operator[](index_t index){
-                index_t result = 0;
-                for(const std::pair\<IndexType, index_t>& index_pair : indices){
-                    if(index_pair.second == index){
-                        return result;
-                    }
-                    result += 1;
+            std::optional\<Parser::IndexMap::Index> Parser::IndexMap::operator[](index_t index){
+                if(index \< handlers.size()){
+                    return *handlers[index];
                 }
-                return -1;
+                return std::nullopt;
             }
             void Parser::reset(){
                 types.clear();
@@ -100,6 +100,14 @@
                     _op0.imports.emplace_back(std::get\<WasmImport>(_op1));
                 }else{
                     _op0.mems.emplace_back(std::get\<Limits>(_op1));
+                }
+                return _op0;
+            </grammar>
+            <grammar pattern="modulefield global">
+                if(std::holds_alternative\<WasmImport>(_op1)){
+                    _op0.imports.emplace_back(std::get\<WasmImport>(_op1));
+                }else{
+                    _op0.globals.emplace_back(std::get\<WasmGlobal>(_op1));
                 }
                 return _op0;
             </grammar>
@@ -205,6 +213,14 @@
                 return {FuncType {.params = _op2.first, .results = _op3}, _op2.second};
             </grammar>
         </target>
+        <target name="heaptype" type="RefType">
+            <grammar pattern="Func">
+                return RefType::funcref;
+            </grammar>
+            <grammar pattern="Extern">
+                return RefType::externref;
+            </grammar>
+        </target>
         <target name="id" type="std::string">
             <grammar pattern="Id">
                 return _op0.value;
@@ -233,30 +249,125 @@
                 }
             </grammar>
         </target>
-        <target name="index" type="std::variant<std::string, u32_t>">
+        <target name="i32" type="i32_t">
+            <grammar pattern="Integer">
+                try{
+                    return std::stol(_op0.value, 0);
+                }catch(std::invalid_argument){
+                    throw Exception::Parse("invalid i32 integer '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
+                }
+            </grammar>
+        </target>
+        <target name="i64" type="i64_t">
+            <grammar pattern="Integer">
+                try{
+                    return std::stoll(_op0.value, 0);
+                }catch(std::invalid_argument){
+                    throw Exception::Parse("invalid i64 integer '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
+                }
+            </grammar>
+        </target>
+        <target name="f32" type="f32_t">
+            <grammar pattern="Float">
+                try{
+                    auto nanpos = _op0.value.find("nan:0x");
+                    if(nanpos != std::string::npos){
+                        u32_t nan_imm = 0x7f800000UL + std::stoul(_op0.value.substr(nanpos + 4), nullptr, 16);
+                        if(_op0.value.starts_with("-")){
+                            nan_imm += 0x80000000UL;
+                        }
+                        return *reinterpret_cast\<f32_t*>(&nan_imm);
+                    }else{
+                        return std::stof(_op0.value);
+                    }
+                }catch(std::invalid_argument){
+                    throw Exception::Parse("invalid f32 number '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
+                }
+            </grammar>
+        </target>
+        <target name="f64" type="f64_t">
+            <grammar pattern="Float">
+                try{
+                    auto nanpos = _op0.value.find("nan:0x");
+                    if(nanpos != std::string::npos){
+                        u64_t nan_imm = 0x7ff0000000000000ULL + std::stoull(_op0.value.substr(nanpos + 4), nullptr, 16);
+                        if(_op0.value.starts_with("-")){
+                            nan_imm += 0x8000000000000000ULL;
+                        }
+                        return *reinterpret_cast\<f64_t*>(&nan_imm);
+                    }else{
+                        return std::stod(_op0.value);
+                    }
+                }catch(std::invalid_argument){
+                    throw Exception::Parse("invalid f64 number '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
+                }
+            </grammar>
+        </target>
+        <target name="typeidx" type="u32_t">
             <grammar pattern="u32">
                 return _op0;
             </grammar>
             <grammar pattern="Id">
-                return _op0.value;
+                if(!_this.type_indices.contains(_op0.value)){
+                    throw Exception::Parse("type ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return _this.type_indices[_op0.value];
+            </grammar>
+        </target>
+        <target name="funcidx" type="u32_t">
+            <grammar pattern="u32">
+                return _op0;
+            </grammar>
+            <grammar pattern="Id">
+                index_t index = _this.func_indices.get(_op0.value);
+                if(index == -1){
+                    throw Exception::Parse("function ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return index;
+            </grammar>
+        </target>
+        <target name="tableidx" type="u32_t">
+            <grammar pattern="u32">
+                return _op0;
+            </grammar>
+            <grammar pattern="Id">
+                index_t index = _this.table_indices.get(_op0.value);
+                if(index == -1){
+                    throw Exception::Parse("table ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return index;
+            </grammar>
+        </target>
+        <target name="memidx" type="u32_t">
+            <grammar pattern="u32">
+                return _op0;
+            </grammar>
+            <grammar pattern="Id">
+                index_t index = _this.mem_indices.get(_op0.value);
+                if(index == -1){
+                    throw Exception::Parse("memory ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return index;
+            </grammar>
+        </target>
+        <target name="globalidx" type="u32_t">
+            <grammar pattern="u32">
+                return _op0;
+            </grammar>
+            <grammar pattern="Id">
+                index_t index = _this.global_indices.get(_op0.value);
+                if(index == -1){
+                    throw Exception::Parse("global ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return index;
             </grammar>
         </target>
         <target name="typeuse" type="u32_t">
-            <grammar pattern="ParenL Type index ParenR params results">
-                index_t typeidx = 0;
-                if(std::holds_alternative\<std::string>(_op2)){
-                    std::string id = std::get\<std::string>(_op2);
-                    if(!_this.type_indices.contains(id)){
-                        throw Exception::Parse("type ID '" + id + "' not found", {_pos[2].line, _pos[2].column});
-                    }
-                    typeidx = _this.type_indices[id];
-                }else{
-                    typeidx = std::get\<index_t>(_op2);
-                }
+            <grammar pattern="ParenL Type typeidx ParenR params results">
                 if(_op4.first.empty() && _op5.empty()){
-                    return typeidx;
+                    return _op2;
                 }
-                std::pair\<FuncType, std::map\<std::string, index_t>> derived = _this.types[typeidx];
+                std::pair\<FuncType, std::map\<std::string, index_t>> derived = _this.types[_op2];
                 for(auto& id_pair : _op4.second){
                     if(derived.second.contains(id_pair.first)){
                         throw Exception::Parse("parameter ID '" + id_pair.first + "' is duplicated", {_pos[4].line, _pos[4].column});
@@ -299,6 +410,32 @@
             </grammar>
             <grammar pattern="ParenL Mut valtype ParenR">
                 return GlobalType {.mut = GlobalType::variable, .type = _op2};
+            </grammar>
+        </target>
+        <target name="constexpr" type="ConstInstr">
+            <grammar pattern="Ref_null heaptype">
+                return Instr::Ref_null(_op1);
+            </grammar>
+            <grammar pattern="Ref_func funcidx">
+                return Instr::Ref_func(_op1);
+            </grammar>
+            <grammar pattern="I32_const i32">
+                return Instr::I32_const(_op1);
+            </grammar>
+            <grammar pattern="I64_const i64">
+                return Instr::I64_const(_op1);
+            </grammar>
+            <grammar pattern="F32_const f32">
+                return Instr::F32_const(_op1);
+            </grammar>
+            <grammar pattern="F64_const f64">
+                return Instr::F64_const(_op1);
+            </grammar>
+            <grammar pattern="VariableInstr globalidx">
+                if(_op0.value != VariableInstr::GlobalGet){
+                    throw Exception::Parse("invalid expr in global init ", {_pos[0].line, _pos[0].column});
+                }
+                return Instr::Global_get(_op1);
             </grammar>
         </target>
         <target name="import" type="WasmImport">
@@ -402,6 +539,31 @@
                 return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
             </grammar>
             {% TODO: inline data %}
+            {% TODO: inline exports %}
+        </target>
+        <target name="global" type="std::variant<WasmGlobal, WasmImport>">
+            <grammar pattern="ParenL Global id globaltype constexpr ParenR">
+                if(!_op2.empty()){
+                    if(_this.global_indices.contains(_op2)){
+                        throw Exception::Parse("global ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    _this.global_indices.insert(_op2, Parser::IndexMap::Normal);
+                }else{
+                    _this.global_indices.insert(Parser::IndexMap::Normal);
+                }
+                return WasmGlobal {.type = _op3, .init = _op4};
+            </grammar>
+            <grammar pattern="ParenL Global id ParenL Import String String ParenR globaltype ParenR">
+                if(!_op2.empty()){
+                    if(_this.global_indices.contains(_op2)){
+                        throw Exception::Parse("global ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    _this.global_indices.insert(_op2, Parser::IndexMap::Import);
+                }else{
+                    _this.global_indices.insert(Parser::IndexMap::Import);
+                }
+                return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
+            </grammar>
             {% TODO: inline exports %}
         </target>
     </parser>
