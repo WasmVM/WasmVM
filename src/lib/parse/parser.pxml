@@ -489,54 +489,62 @@
                 return _op3;
             </grammar>
         </target>
-        <target name="table" type="std::variant<TableType, WasmImport>">
-            <grammar pattern="ParenL Table id tabletype ParenR">
-                if(!_op2.empty()){
-                    if(_this.table_indices.contains(_op2)){
-                        throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
-                    }
-                    _this.table_indices.insert(_op2, Parser::IndexMap::Normal);
-                }else{
-                    _this.table_indices.insert(Parser::IndexMap::Normal);
-                }
-                return _op3;
+        <target name="importabbr" type="std::optional<std::pair<std::string, std::string>>">
+            <grammar pattern="ParenL Import String String ParenR">
+                return std::pair\<std::string, std::string> {_op2.value, _op3.value};
             </grammar>
-            <grammar pattern="ParenL Table id ParenL Import String String ParenR tabletype ParenR">
+            <grammar>
+                return std::nullopt;
+            </grammar>
+        </target>
+        <target name="table" type="std::variant<TableType, WasmImport>">
+            <grammar pattern="ParenL Table id importabbr tabletype ParenR">
                 if(!_op2.empty()){
                     if(_this.table_indices.contains(_op2)){
                         throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    _this.table_indices.insert(_op2, Parser::IndexMap::Import);
+                    if(_op3.has_value()){
+                        _this.table_indices.insert(_op2, Parser::IndexMap::Import);
+                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
+                    }else{
+                        _this.table_indices.insert(_op2, Parser::IndexMap::Normal);
+                        return _op4;
+                    }
                 }else{
-                    _this.table_indices.insert(Parser::IndexMap::Import);
+                    if(_op3.has_value()){
+                        _this.table_indices.insert(Parser::IndexMap::Import);
+                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
+                    }else{
+                        _this.table_indices.insert(Parser::IndexMap::Normal);
+                        return _op4;
+                    }
                 }
-                return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
             </grammar>
             {% TODO: inline elem %}
             {% TODO: inline exports %}
         </target>
         <target name="memory" type="std::variant<Limits, WasmImport>">
-            <grammar pattern="ParenL Memory id limits ParenR">
+            <grammar pattern="ParenL Memory id importabbr limits ParenR">
                 if(!_op2.empty()){
                     if(_this.mem_indices.contains(_op2)){
                         throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
-                }else{
-                    _this.mem_indices.insert(Parser::IndexMap::Normal);
-                }
-                return _op3;
-            </grammar>
-            <grammar pattern="ParenL Memory id ParenL Import String String ParenR limits ParenR">
-                if(!_op2.empty()){
-                    if(_this.mem_indices.contains(_op2)){
-                        throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    if(_op3.has_value()){
+                        _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
+                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
+                    }else{
+                        _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
+                        return _op4;
                     }
-                    _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
                 }else{
-                    _this.mem_indices.insert(Parser::IndexMap::Import);
+                    if(_op3.has_value()){
+                        _this.mem_indices.insert(Parser::IndexMap::Import);
+                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
+                    }else{
+                        _this.mem_indices.insert(Parser::IndexMap::Normal);
+                        return _op4;
+                    }
                 }
-                return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
             </grammar>
             {% TODO: inline data %}
             {% TODO: inline exports %}
