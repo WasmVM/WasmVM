@@ -28,40 +28,38 @@ Suite global {
         Expect(std::holds_alternative<Instr::Ref_null>(glo2.init));
         Expect(std::get<Instr::Ref_null>(glo2.init).heaptype == RefType::funcref);
     })
-    Test("with_data", {
-        // TODO:
+    Test("with_import", {
+        ParseFile(test_module, "with_import.wat");
+        WasmImport& imp0 = test_module.imports[0];
+        Expect(std::holds_alternative<GlobalType>(imp0.desc));
+        GlobalType& glo0 = std::get<GlobalType>(imp0.desc);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "glo0");
+        Expect(glo0.type == ValueType::externref);
+        Expect(glo0.mut == GlobalType::constant);
+
+        WasmImport& imp1 = test_module.imports[1];
+        Expect(std::holds_alternative<GlobalType>(imp1.desc));
+        GlobalType& glo1 = std::get<GlobalType>(imp1.desc);
+        Expect(imp1.module == "testmod");
+        Expect(imp1.name == "glo1");
+        Expect(glo1.type == ValueType::f32);
+        Expect(glo1.mut == GlobalType::constant);
+
+        WasmImport& imp2 = test_module.imports[2];
+        Expect(std::holds_alternative<GlobalType>(imp2.desc));
+        GlobalType& glo2 = std::get<GlobalType>(imp2.desc);
+        Expect(imp2.module == "testmod");
+        Expect(imp2.name == "glo3");
+        Expect(glo2.type == ValueType::f64);
+        Expect(glo2.mut == GlobalType::variable);
+
+        WasmGlobal& glo3 = test_module.globals[0];
+        Expect(glo3.type.type == ValueType::i32);
+        Expect(glo3.type.mut == GlobalType::constant);
+        Expect(std::holds_alternative<Instr::I32_const>(glo3.init));
+        Expect(std::get<Instr::I32_const>(glo3.init).value == 3);
     })
-    // Test("with_import", {
-    //     ParseFile(test_module, "with_import.wat");
-
-    //     WasmImport& imp0 = test_module.imports[0];
-    //     Expect(std::holds_alternative<MemType>(imp0.desc));
-    //     MemType& mem0 = std::get<MemType>(imp0.desc);
-    //     Expect(imp0.module == "testmod");
-    //     Expect(imp0.name == "mem0");
-    //     Expect(mem0.min == 12);
-    //     Expect(mem0.max.has_value() == false);
-
-    //     WasmImport& imp1 = test_module.imports[1];
-    //     Expect(std::holds_alternative<MemType>(imp1.desc));
-    //     MemType& mem1 = std::get<MemType>(imp1.desc);
-    //     Expect(imp1.module == "testmod");
-    //     Expect(imp1.name == "mem1");
-    //     Expect(mem1.min == 13);
-    //     Expect(mem1.max.has_value() == false);
-
-    //     WasmImport& imp2 = test_module.imports[2];
-    //     Expect(std::holds_alternative<MemType>(imp2.desc));
-    //     MemType& mem2 = std::get<MemType>(imp2.desc);
-    //     Expect(imp2.module == "testmod");
-    //     Expect(imp2.name == "mem3");
-    //     Expect(mem2.min == 15);
-    //     Expect(mem2.max.has_value() == false);
-
-    //     MemType& mem3 = test_module.mems[0];
-    //     Expect(mem3.min == 14);
-    //     Expect(mem3.max.has_value() == false);
-    // })
     Test("with_export", {
         // TODO:
     })
