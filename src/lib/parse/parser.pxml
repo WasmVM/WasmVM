@@ -37,6 +37,7 @@
             };
             std::vector\<std::pair\<FuncType, std::map\<std::string, index_t>>> types;
             std::map\<std::string, index_t> type_indices;
+            std::set\<std::string> export_names;
             IndexMap func_indices;
             IndexMap table_indices;
             IndexMap mem_indices;
@@ -109,6 +110,10 @@
                 }else{
                     _op0.globals.emplace_back(std::get\<WasmGlobal>(_op1));
                 }
+                return _op0;
+            </grammar>
+            <grammar pattern="modulefield export">
+                _op0.exports.emplace_back(_op1);
                 return _op0;
             </grammar>
             <grammar>
@@ -246,6 +251,15 @@
                     return std::stoul(_op0.value, 0);
                 }catch(std::invalid_argument){
                     throw Exception::Parse("invalid u32 integer '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
+                }
+            </grammar>
+        </target>
+        <target name="u64" type="u64_t">
+            <grammar pattern="Integer">
+                try{
+                    return std::stoull(_op0.value, 0);
+                }catch(std::invalid_argument){
+                    throw Exception::Parse("invalid u64 integer '" + _op0.value + "'", {_pos[0].line, _pos[0].column});
                 }
             </grammar>
         </target>
@@ -392,10 +406,10 @@
             </grammar>
         </target>
         <target name="limits" type="Limits">
-            <grammar pattern="u32">
+            <grammar pattern="u64">
                 return Limits {.min = _op0};
             </grammar>
-            <grammar pattern="u32 u32">
+            <grammar pattern="u64 u64">
                 return Limits {.min = _op0, .max = _op1};
             </grammar>
         </target>
@@ -487,6 +501,32 @@
                     _this.global_indices.insert(Parser::IndexMap::Import);
                 }
                 return _op3;
+            </grammar>
+        </target>
+        <target name="export" type="WasmExport">
+            <grammar pattern="ParenL Export String ParenL Func funcidx ParenR ParenR">
+                if(_this.export_names.contains(_op2.value)){
+                    throw Exception::Parse("export name '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                return WasmExport {.name = _op2.value, .desc = WasmExport::DescType::func, .index = _op5};
+            </grammar>
+            <grammar pattern="ParenL Export String ParenL Table tableidx ParenR ParenR">
+                if(_this.export_names.contains(_op2.value)){
+                    throw Exception::Parse("export name '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                return WasmExport {.name = _op2.value, .desc = WasmExport::DescType::table, .index = _op5};
+            </grammar>
+            <grammar pattern="ParenL Export String ParenL Memory memidx ParenR ParenR">
+                if(_this.export_names.contains(_op2.value)){
+                    throw Exception::Parse("export name '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                return WasmExport {.name = _op2.value, .desc = WasmExport::DescType::mem, .index = _op5};
+            </grammar>
+            <grammar pattern="ParenL Export String ParenL Global globalidx ParenR ParenR">
+                if(_this.export_names.contains(_op2.value)){
+                    throw Exception::Parse("export name '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
+                }
+                return WasmExport {.name = _op2.value, .desc = WasmExport::DescType::global, .index = _op5};
             </grammar>
         </target>
         <target name="importabbr" type="std::optional<std::pair<std::string, std::string>>">

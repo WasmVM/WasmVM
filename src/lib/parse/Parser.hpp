@@ -51,6 +51,7 @@ struct Parser {
     };
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
+    std::set<std::string> export_names;
     IndexMap func_indices;
     IndexMap table_indices;
     IndexMap mem_indices;
