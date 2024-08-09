@@ -561,7 +561,21 @@
         </target>
         <target name="table" type="std::variant<TableType, WasmImport>">
             <grammar pattern="ParenL Table id exportabbr importabbr tabletype ParenR">
-                if(!_op2.empty()){
+                if(_op2.empty()){
+                    if(_op4.has_value()){
+                        index_t index = _this.table_indices.insert(Parser::IndexMap::Import);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
+                        }
+                        return WasmImport {.module = _op4->first, .name = _op4->second, .desc = _op5};
+                    }else{
+                        index_t index = _this.table_indices.insert(Parser::IndexMap::Normal);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
+                        }
+                        return _op5;
+                    }
+                }else{
                     if(_this.table_indices.contains(_op2)){
                         throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
@@ -578,49 +592,46 @@
                         }
                         return _op5;
                     }
-                }else{
-                    if(_op4.has_value()){
-                        index_t index = _this.table_indices.insert(Parser::IndexMap::Import);
-                        for(std::string export_name : _op3){
-                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
-                        }
-                        return WasmImport {.module = _op4->first, .name = _op4->second, .desc = _op5};
-                    }else{
-                        index_t index = _this.table_indices.insert(Parser::IndexMap::Normal);
-                        for(std::string export_name : _op3){
-                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
-                        }
-                        return _op5;
-                    }
                 }
             </grammar>
             {% TODO: inline elem %}
         </target>
         <target name="memory" type="std::variant<Limits, WasmImport>">
-            <grammar pattern="ParenL Memory id importabbr limits ParenR">
-                if(!_op2.empty()){
+            <grammar pattern="ParenL Memory id exportabbr importabbr limits ParenR">
+                if(_op2.empty()){
+                    if(_op4.has_value()){
+                        index_t index = _this.mem_indices.insert(Parser::IndexMap::Import);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::mem, .index = index};
+                        }
+                        return WasmImport {.module = _op4->first, .name = _op4->second, .desc = _op5};
+                    }else{
+                        index_t index = _this.mem_indices.insert(Parser::IndexMap::Normal);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::mem, .index = index};
+                        }
+                        return _op5;
+                    }
+                }else{
                     if(_this.mem_indices.contains(_op2)){
                         throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    if(_op3.has_value()){
-                        _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
-                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
+                    if(_op4.has_value()){
+                        index_t index = _this.mem_indices.insert(_op2, Parser::IndexMap::Import);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::mem, .index = index};
+                        }
+                        return WasmImport {.module = _op4->first, .name = _op4->second, .desc = _op5};
                     }else{
-                        _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
-                        return _op4;
-                    }
-                }else{
-                    if(_op3.has_value()){
-                        _this.mem_indices.insert(Parser::IndexMap::Import);
-                        return WasmImport {.module = _op3->first, .name = _op3->second, .desc = _op4};
-                    }else{
-                        _this.mem_indices.insert(Parser::IndexMap::Normal);
-                        return _op4;
+                        index_t index = _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
+                        for(std::string export_name : _op3){
+                            _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::mem, .index = index};
+                        }
+                        return _op5;
                     }
                 }
             </grammar>
             {% TODO: inline data %}
-            {% TODO: inline exports %}
         </target>
         <target name="global" type="std::variant<WasmGlobal, WasmImport>">
             <grammar pattern="ParenL Global id globaltype constexpr ParenR">
