@@ -634,29 +634,36 @@
             {% TODO: inline data %}
         </target>
         <target name="global" type="std::variant<WasmGlobal, WasmImport>">
-            <grammar pattern="ParenL Global id globaltype constexpr ParenR">
-                if(!_op2.empty()){
+            <grammar pattern="ParenL Global id exportabbr globaltype constexpr ParenR">
+                index_t index = 0;
+                if(_op2.empty()){
+                    index = _this.global_indices.insert(Parser::IndexMap::Normal);
+                }else{
                     if(_this.global_indices.contains(_op2)){
                         throw Exception::Parse("global ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    _this.global_indices.insert(_op2, Parser::IndexMap::Normal);
-                }else{
-                    _this.global_indices.insert(Parser::IndexMap::Normal);
+                    index = _this.global_indices.insert(_op2, Parser::IndexMap::Normal);
                 }
-                return WasmGlobal {.type = _op3, .init = _op4};
+                for(std::string export_name : _op3){
+                    _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::global, .index = index};
+                }
+                return WasmGlobal {.type = _op4, .init = _op5};
             </grammar>
-            <grammar pattern="ParenL Global id ParenL Import String String ParenR globaltype ParenR">
-                if(!_op2.empty()){
+            <grammar pattern="ParenL Global id exportabbr ParenL Import String String ParenR globaltype ParenR">
+                index_t index = 0;
+                if(_op2.empty()){
+                    index = _this.global_indices.insert(Parser::IndexMap::Import);
+                }else{
                     if(_this.global_indices.contains(_op2)){
                         throw Exception::Parse("global ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    _this.global_indices.insert(_op2, Parser::IndexMap::Import);
-                }else{
-                    _this.global_indices.insert(Parser::IndexMap::Import);
+                    index = _this.global_indices.insert(_op2, Parser::IndexMap::Import);
                 }
-                return WasmImport {.module = _op5.value, .name = _op6.value, .desc = _op8};
+                for(std::string export_name : _op3){
+                    _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::global, .index = index};
+                }
+                return WasmImport {.module = _op6.value, .name = _op7.value, .desc = _op9};
             </grammar>
-            {% TODO: inline exports %}
         </target>
     </parser>
 </pxml>

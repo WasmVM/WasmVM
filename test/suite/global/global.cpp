@@ -61,6 +61,56 @@ Suite global {
         Expect(std::get<Instr::I32_const>(glo3.init).value == 3);
     })
     Test("with_export", {
-        // TODO:
+        ParseFile(test_module, "with_export.wat");
+
+        WasmImport& imp0 = test_module.imports[0];
+        Expect(std::holds_alternative<GlobalType>(imp0.desc));
+        GlobalType& gloA = std::get<GlobalType>(imp0.desc);
+        Expect(imp0.module == "testmod");
+        Expect(imp0.name == "gloA");
+        Expect(gloA.mut == GlobalType::constant);
+        Expect(gloA.type == ValueType::i32);
+
+        WasmGlobal& glo0 = test_module.globals[0];
+        Expect(glo0.type.mut == GlobalType::constant);
+        Expect(glo0.type.type == ValueType::i64);
+        Expect(std::holds_alternative<Instr::I64_const>(glo0.init));
+        Expect(std::get<Instr::I64_const>(glo0.init).value == 5);
+
+        WasmGlobal& glo1 = test_module.globals[1];
+        Expect(glo1.type.mut == GlobalType::variable);
+        Expect(glo1.type.type == ValueType::f32);
+        Expect(std::holds_alternative<Instr::F32_const>(glo1.init));
+        Expect(std::get<Instr::F32_const>(glo1.init).value == 2.8f);
+
+        WasmGlobal& glo2 = test_module.globals[2];
+        Expect(glo2.type.mut == GlobalType::constant);
+        Expect(glo2.type.type == ValueType::funcref);
+        Expect(std::holds_alternative<Instr::Ref_null>(glo2.init));
+
+        WasmExport& export0 = test_module.exports[0];
+        Expect(export0.name == "glo0");
+        Expect(export0.desc == WasmExport::DescType::global);
+        Expect(export0.index == 0);
+
+        WasmExport& export1 = test_module.exports[1];
+        Expect(export1.name == "glo1");
+        Expect(export1.desc == WasmExport::DescType::global);
+        Expect(export1.index == 1);
+
+        WasmExport& export2 = test_module.exports[2];
+        Expect(export2.name == "glo2");
+        Expect(export2.desc == WasmExport::DescType::global);
+        Expect(export2.index == 2);
+
+        WasmExport& export3 = test_module.exports[3];
+        Expect(export3.name == "glo3");
+        Expect(export3.desc == WasmExport::DescType::global);
+        Expect(export3.index == 2);
+
+        WasmExport& export4 = test_module.exports[4];
+        Expect(export4.name == "glo4");
+        Expect(export4.desc == WasmExport::DescType::global);
+        Expect(export4.index == 3);
     })
 };
