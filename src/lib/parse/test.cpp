@@ -16,7 +16,7 @@ int main(int argc, char const *argv[]){
     }catch(WasmVM::Exception::Parse& e){
         std::cerr << argv[1] << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;
     }catch(WasmVM::ParseError& e){
-        std::cerr << e.what() << std::endl;
+        std::cerr << argv[1] << ":" << e.pos.line << ":" << e.pos.column << " error: " << e.what() << std::endl;
     }catch(WasmVM::UnknownToken& e){
         std::cerr << e.what() << std::endl;
     }

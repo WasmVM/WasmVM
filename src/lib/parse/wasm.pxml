@@ -2,5 +2,6 @@
 <pxml namespace="WasmVM">
     <include src="token.pxml" />
     <include src="lexer.pxml" />
-    <include src="parser.pxml" />
+    {% <include src="parser.pxml" /> %}
+    <include src="func.pxml" />
 </pxml>

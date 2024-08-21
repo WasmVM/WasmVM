@@ -49,14 +49,20 @@ struct Parser {
         std::vector<std::set<Index, Compare>::iterator> handlers;
         std::map<std::string, index_t> id_map;
     };
+    index_t local_count = 0;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
+    std::map<std::string, index_t> local_indices;
     std::map<std::string, WasmExport> exports;
     IndexMap func_indices;
     IndexMap table_indices;
     IndexMap mem_indices;
     IndexMap global_indices;
     void reset();
+    void clear_locals() {
+        local_indices.clear();
+        local_count = 0;
+    }
     constexpr static size_t End = (size_t)-1;
     using term_t = uint8_t;
     using token_t = Token;
