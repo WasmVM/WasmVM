@@ -578,23 +578,23 @@
                 return std::vector\<std::string>();
             </grammar>
         </target>
-        <target name="locals" type="std::vector<ValueType>">
-            <grammar pattern="locals ParenL Local Id valtype ParenR">
-                if(_this.local_indices.contains(_op3.value)){
-                    throw Exception::Parse("local name '" + _op3.value + "' is duplicated", {_pos[3].line, _pos[3].column});
+        <target name="locals" type="std::list<ValueType>">
+            <grammar pattern="ParenL Local Id valtype ParenR locals">
+                if(_this.local_indices.contains(_op2.value)){
+                    throw Exception::Parse("local name '" + _op2.value + "' is duplicated", {_pos[2].line, _pos[2].column});
                 }
-                _this.local_indices[_op3.value] = _this.local_count;
+                _this.local_indices[_op2.value] = _this.local_count;
                 _this.local_count += 1;
-                _op0.emplace_back(_op4);
-                return _op0;
+                _op5.emplace_front(_op3);
+                return _op5;
             </grammar>
-            <grammar pattern="locals ParenL Local valtypes ParenR">
-                _op0.insert(_op0.end(), _op3.begin(), _op3.end());
-                _this.local_count += _op3.size();
-                return _op0;
+            <grammar pattern="ParenL Local valtypes ParenR locals">
+                _op4.insert(_op4.begin(), _op2.begin(), _op2.end());
+                _this.local_count += _op2.size();
+                return _op4;
             </grammar>
             <grammar>
-                return std::vector\<ValueType>();
+                return std::list\<ValueType>();
             </grammar>
         </target>
         <target name="instrs" type="std::vector<WasmInstr>">
@@ -617,7 +617,7 @@
                     _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::func, .index = index};
                 }
                 _op6.emplace_back(Instr::End());
-                return WasmFunc {.typeidx = _op4, .locals = _op5, .body = _op6};
+                return WasmFunc {.typeidx = _op4, .locals = std::vector\<ValueType>(_op5.begin(), _op5.end()), .body = _op6};
             </grammar>
             <grammar pattern="ParenL Func id exportabbr ParenL Import String String ParenR typeuse ParenR">
                 index_t index = 0;
