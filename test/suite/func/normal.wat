@@ -1,5 +1,5 @@
 (module
-    (type)
+    (type (func))
     (func (type 0) )
     (func $func1 (type 0) )
     (func (type 0) (local i32))
