@@ -134,6 +134,13 @@
                 _this.clear_locals();
                 return _op0;
             </grammar>
+            <grammar pattern="modulefield ParenL Start funcidx ParenR">
+                if(_op0.start.has_value()){
+                    throw Exception::Parse("multiple start functions", {_pos[1].line, _pos[1].column});
+                }
+                _op0.start = _op3;
+                return _op0;
+            </grammar>
             <grammar>
                 return WasmModule();
             </grammar>
@@ -606,12 +613,12 @@
             <grammar pattern="ParenL Func id exportabbr typeuse locals instrs ParenR">
                 index_t index = 0;
                 if(_op2.empty()){
-                    index = _this.table_indices.insert(Parser::IndexMap::Normal);
+                    index = _this.func_indices.insert(Parser::IndexMap::Normal);
                 }else{
                     if(_this.func_indices.contains(_op2)){
                         throw Exception::Parse("function ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    index = _this.table_indices.insert(_op2, Parser::IndexMap::Normal);
+                    index = _this.func_indices.insert(_op2, Parser::IndexMap::Normal);
                 }
                 for(std::string export_name : _op3){
                     _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::func, .index = index};
@@ -622,12 +629,12 @@
             <grammar pattern="ParenL Func id exportabbr ParenL Import String String ParenR typeuse ParenR">
                 index_t index = 0;
                 if(_op2.empty()){
-                    index = _this.table_indices.insert(Parser::IndexMap::Import);
+                    index = _this.func_indices.insert(Parser::IndexMap::Import);
                 }else{
                     if(_this.func_indices.contains(_op2)){
                         throw Exception::Parse("function ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
                     }
-                    index = _this.table_indices.insert(_op2, Parser::IndexMap::Import);
+                    index = _this.func_indices.insert(_op2, Parser::IndexMap::Import);
                 }
                 for(std::string export_name : _op3){
                     _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::func, .index = index};
