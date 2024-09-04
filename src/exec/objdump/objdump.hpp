@@ -32,7 +32,9 @@ struct Stream {
     void print_address(Bytes&);
     void print_address(size_t&);
     Bytes get_u32(Stream&);
+    Bytes get_u64(Stream&);
     u32_t to_u32(Bytes&);
+    u64_t to_u64(Bytes&);
     
 private:
     std::istream& istream;
@@ -73,6 +75,7 @@ Stream& operator>>(Stream& stream, std::vector<T>& vec) {
     }
     vec.resize(nums);
     for (int i = 0; i < nums; ++i) {
+        // add raw data to data structure
         stream >> vec[i];
     }
     return stream;
