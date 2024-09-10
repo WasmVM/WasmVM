@@ -798,6 +798,14 @@
                 return 0;
             </grammar>
         </target>
+        <target name="offset" type="ConstInstr">
+            <grammar pattern="ParenL Offset constexpr ParenR">
+                return _op2;
+            </grammar>
+            <grammar pattern="ParenL constexpr ParenR">
+                return _op1;
+            </grammar>
+        </target>
         <target name="elem" type="WasmElem">
             <grammar pattern="ParenL Elem id elemlist ParenR">
                 if(!_op2.empty()){
@@ -806,6 +814,28 @@
                 _this.elem_count += 1;
                 return WasmElem {.type = _op3.first, .elemlist = _op3.second, .mode = WasmElem::ElemMode {
                     .type = WasmElem::ElemMode::Mode::passive
+                }};
+            </grammar>
+            <grammar pattern="ParenL Elem id tableuse offset elemlist ParenR">
+                if(!_op2.empty()){
+                    _this.elem_indices[_op2] = _this.elem_count;
+                }
+                _this.elem_count += 1;
+                return WasmElem {.type = _op5.first, .elemlist = _op5.second, .mode = WasmElem::ElemMode {
+                    .type = WasmElem::ElemMode::Mode::active,
+                    .tableidx = _op3,
+                    .offset = _op4
+                }};
+            </grammar>
+            <grammar pattern="ParenL Elem id offset funcindices ParenR">
+                if(!_op2.empty()){
+                    _this.elem_indices[_op2] = _this.elem_count;
+                }
+                _this.elem_count += 1;
+                return WasmElem {.type = RefType::funcref, .elemlist = _op4, .mode = WasmElem::ElemMode {
+                    .type = WasmElem::ElemMode::Mode::active,
+                    .tableidx = 0,
+                    .offset = _op3
                 }};
             </grammar>
         </target>
