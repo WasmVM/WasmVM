@@ -50,9 +50,12 @@ struct Parser {
         std::map<std::string, index_t> id_map;
     };
     index_t local_count = 0;
+    index_t elem_count = 0;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
     std::map<std::string, index_t> local_indices;
+    std::map<std::string, index_t> elem_indices;
+    std::map<std::string, index_t> data_indices;
     std::map<std::string, WasmExport> exports;
     IndexMap func_indices;
     IndexMap table_indices;

@@ -36,9 +36,12 @@
                 std::map\<std::string, index_t> id_map;
             };
             index_t local_count = 0;
+            index_t elem_count = 0;
             std::vector\<std::pair\<FuncType, std::map\<std::string, index_t>>> types;
             std::map\<std::string, index_t> type_indices;
             std::map\<std::string, index_t> local_indices;
+            std::map\<std::string, index_t> elem_indices;
+            std::map\<std::string, index_t> data_indices;
             std::map\<std::string, WasmExport> exports;
             IndexMap func_indices;
             IndexMap table_indices;
@@ -79,6 +82,11 @@
                 types.clear();
                 exports.clear();
                 type_indices.clear();
+                local_indices.clear();
+                elem_indices.clear();
+                data_indices.clear();
+                local_count = 0;
+                elem_count = 0;
                 func_indices = IndexMap();
                 table_indices = IndexMap();
                 mem_indices = IndexMap();
@@ -139,6 +147,10 @@
                     throw Exception::Parse("multiple start functions", {_pos[1].line, _pos[1].column});
                 }
                 _op0.start = _op3;
+                return _op0;
+            </grammar>
+            <grammar pattern="modulefield elem">
+                _op0.elems.emplace_back(_op1);
                 return _op0;
             </grammar>
             <grammar>
@@ -746,6 +758,55 @@
                     _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::global, .index = index};
                 }
                 return WasmImport {.module = _op6.value, .name = _op7.value, .desc = _op9};
+            </grammar>
+        </target>
+        <target name="elemexprs" type="std::vector<ConstInstr>">
+            <grammar pattern="elemexprs ParenL constexpr ParenR">
+                _op0.emplace_back(_op2);
+                return _op0;
+            </grammar>
+            <grammar pattern="elemexprs ParenL Item constexpr ParenR">
+                _op0.emplace_back(_op3);
+                return _op0;
+            </grammar>
+            <grammar>
+                return std::vector\<ConstInstr>();
+            </grammar>
+        </target>
+        <target name="funcindices" type="std::vector<ConstInstr>">
+            <grammar pattern="funcindices funcidx">
+                _op0.emplace_back(Instr::Ref_func(_op1));
+                return _op0;
+            </grammar>
+            <grammar>
+                return std::vector\<ConstInstr>();
+            </grammar>
+        </target>
+        <target name="elemlist" type="std::pair<RefType, std::vector<ConstInstr>>">
+            <grammar pattern="reftype elemexprs">
+                return {_op0, _op1};
+            </grammar>
+            <grammar pattern="Func funcindices">
+                return {RefType::funcref, _op1};
+            </grammar>
+        </target>
+        <target name="tableuse" type="u32_t">
+            <grammar pattern="ParenL Table tableidx ParenR">
+                return _op2;
+            </grammar>
+            <grammar>
+                return 0;
+            </grammar>
+        </target>
+        <target name="elem" type="WasmElem">
+            <grammar pattern="ParenL Elem id elemlist ParenR">
+                if(!_op2.empty()){
+                    _this.elem_indices[_op2] = _this.elem_count;
+                }
+                _this.elem_count += 1;
+                return WasmElem {.type = _op3.first, .elemlist = _op3.second, .mode = WasmElem::ElemMode {
+                    .type = WasmElem::ElemMode::Mode::passive
+                }};
             </grammar>
         </target>
     </parser>
