@@ -838,6 +838,15 @@
                     .offset = _op3
                 }};
             </grammar>
+            <grammar pattern="ParenL Elem id Declare elemlist ParenR">
+                if(!_op2.empty()){
+                    _this.elem_indices[_op2] = _this.elem_count;
+                }
+                _this.elem_count += 1;
+                return WasmElem {.type = _op4.first, .elemlist = _op4.second, .mode = WasmElem::ElemMode {
+                    .type = WasmElem::ElemMode::Mode::declarative
+                }};
+            </grammar>
         </target>
     </parser>
 </pxml>

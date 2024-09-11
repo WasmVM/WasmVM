@@ -102,4 +102,17 @@ Suite elem {
         Expect(instr4_1.index == 13);
 
     })
+    Test("declarative", {
+        ParseFile(test_module, "declarative.wat");
+
+        WasmElem& elem0 = test_module.elems[0];
+        Expect(elem0.type == RefType::funcref);
+        Expect(elem0.mode.type == WasmElem::ElemMode::Mode::declarative);
+        Expect(elem0.elemlist.empty());
+
+        WasmElem& elem1 = test_module.elems[1];
+        Expect(elem1.type == RefType::funcref);
+        Expect(elem1.mode.type == WasmElem::ElemMode::Mode::declarative);
+        Expect(elem1.elemlist.empty());
+    })
 };
