@@ -31,6 +31,8 @@ struct Stream {
 
     void print_address(Bytes&);
     void print_address(size_t&);
+    u32_t peek_section(Stream&);
+
     Bytes get_u32(Stream&);
     Bytes get_u64(Stream&);
     u32_t to_u32(Bytes&);

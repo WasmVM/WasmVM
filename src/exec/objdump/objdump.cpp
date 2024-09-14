@@ -73,15 +73,20 @@ int main(int argc, char const *argv[]){
         stream.print_address(version);
         std::cout << version << " ; WASM_BINARY_VERSION" << std::endl;
 
-        std::cout << ";; type section" << std::endl;
-        TypeSection funcs(stream);
-        stream >> funcs;
-        std::cout << funcs;
+        if(stream.peek_section(stream) == 0x01){
+            std::cout << ";; type section" << std::endl;
+            TypeSection funcs(stream);
+            stream >> funcs;
+            std::cout << funcs;
+        }
+        
+        if(stream.peek_section(stream) == 0x02){
+            std::cout << ";; import section" << std::endl;
+            ImportSection import(stream);
+            stream >> import;
+            std::cout << import;
+        }
 
-        std::cout << ";; import section" << std::endl;
-        ImportSection import(stream);
-        stream >> import;
-        std::cout << import;
 
         st.close();
 

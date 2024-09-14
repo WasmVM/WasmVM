@@ -17,12 +17,16 @@ Objdump::Stream::Stream(std::istream& istream) : istream(istream){
     address_width = std::log2(total_bytes) / 4 + 1;
 }
 
+u32_t Objdump::Stream::peek_section(Objdump::Stream& stream){
+    return stream.istream.peek();
+}
+
 Objdump::Bytes Objdump::Stream::get_u32(Objdump::Stream& stream){
     Bytes size;
     for(int i = 0; i < 5; i++){
         char bchar = stream.istream.get();
         size.push_back((byte_t)bchar);
-        if((bchar & 0x80) == 0){
+        if((bchar & 0x80) == 0){ // end of LEB128
             break;
         }
     }
@@ -43,8 +47,6 @@ Objdump::Bytes Objdump::Stream::get_u64(Objdump::Stream& stream){
     return size;
 }
 
-
-
 u32_t Objdump::Stream::to_u32(Objdump::Bytes& bytes){
     u32_t value = 0;
     for(size_t i = 0; (i < bytes.size()) && (i < 5); ++i){
@@ -62,9 +64,9 @@ u64_t Objdump::Stream::to_u64(Objdump::Bytes& bytes){
 }
 
 // ----- INPUT -----
+// get simple bytes and address
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::Bytes& bytes){
-    // get simple bytes and address
     bytes.address = stream.istream.tellg();
     for(size_t i = 0; i < bytes.size(); i++){
         char bchar;
@@ -75,7 +77,7 @@ Objdump::Stream& Objdump::operator>><Objdump::Bytes>(Stream& stream, Objdump::By
     return stream;
 }
 
-// Section entry
+// Section entry, every section needs it ^^
 template<>
 Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::Section& section){
     stream >> section.id;
@@ -225,6 +227,7 @@ Objdump::Stream& Objdump::operator>><Objdump::ImportSection>(Stream& stream, Obj
 // ------------------
 
 // ----- OUTPUT -----
+// Use it when you need to print HEX raw data
 std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
@@ -321,8 +324,6 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << importsection.imports.size() << "  ; Number of imports" << std::endl;
     address++;
-
-    // TODO: print out desc
     
     for(WasmImport import : importsection.imports){        
         // mod
@@ -345,12 +346,19 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
         std::cout << " ; " << import.name << std::endl;
         address += import.name.length();
 
-        // desc
+        //ToDO: print out desc
 
-        address +=2;
+        // 1. print import kind addrerss
+        // 2. print import kind data and explain
+        // 3. print signature
+
+
+        importsection.stream.print_address(++address);
+
 
         std::visit(overloaded{
-            [](index_t arg)     { std::cout << arg << " func;" << std::endl; },
+            [](index_t arg)     { std::cout << "00  ; import kind: func" << std::endl;
+                                  std::cout << "    " << arg << " ; signature index" << std::endl; },
             [](TableType  arg)  { },
             [](MemType arg)     { },
             [](GlobalType arg)  { }
