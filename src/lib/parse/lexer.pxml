@@ -42,6 +42,7 @@
                 throw Exception::Parse("string not close", {_pos.line, _pos.column});
             </rule>
             <rule pattern="." more />
+            <rule pattern="\\.?" more />
             <rule pattern="\"" pop>
                 return Token(String(_text.substr(0, _text.size() - 1)), _pos);
             </rule>

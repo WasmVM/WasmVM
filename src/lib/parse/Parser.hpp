@@ -7,8 +7,10 @@
 #include <map>
 #include <set>
 #include <vector>
+#include <string>
 #include <utility>
 #include <algorithm>
+#include <cctype>
         
 #include <map>
 #include <set>
@@ -51,6 +53,7 @@ struct Parser {
     };
     index_t local_count = 0;
     index_t elem_count = 0;
+    index_t data_count = 0;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
     std::map<std::string, index_t> local_indices;

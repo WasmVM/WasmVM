@@ -8,8 +8,10 @@
             #include \<map>
             #include \<set>
             #include \<vector>
+            #include \<string>
             #include \<utility>
             #include \<algorithm>
+            #include \<cctype>
         </header>
         {% members %}
         <member>
@@ -37,6 +39,7 @@
             };
             index_t local_count = 0;
             index_t elem_count = 0;
+            index_t data_count = 0;
             std::vector\<std::pair\<FuncType, std::map\<std::string, index_t>>> types;
             std::map\<std::string, index_t> type_indices;
             std::map\<std::string, index_t> local_indices;
@@ -87,6 +90,7 @@
                 data_indices.clear();
                 local_count = 0;
                 elem_count = 0;
+                data_count = 0;
                 func_indices = IndexMap();
                 table_indices = IndexMap();
                 mem_indices = IndexMap();
@@ -151,6 +155,10 @@
             </grammar>
             <grammar pattern="modulefield elem">
                 _op0.elems.emplace_back(_op1);
+                return _op0;
+            </grammar>
+            <grammar pattern="modulefield data">
+                _op0.datas.emplace_back(_op1);
                 return _op0;
             </grammar>
             <grammar>
@@ -790,20 +798,209 @@
                 return {RefType::funcref, _op1};
             </grammar>
         </target>
-        <target name="tableuse" type="u32_t">
-            <grammar pattern="ParenL Table tableidx ParenR">
-                return _op2;
-            </grammar>
-            <grammar>
-                return 0;
-            </grammar>
-        </target>
         <target name="offset" type="ConstInstr">
             <grammar pattern="ParenL Offset constexpr ParenR">
                 return _op2;
             </grammar>
             <grammar pattern="ParenL constexpr ParenR">
                 return _op1;
+            </grammar>
+        </target>
+        <target name="tableoffset" type="std::pair<u32_t, ConstInstr>">
+            <grammar pattern="ParenL Table tableidx ParenR offset">
+                return std::pair\<u32_t, ConstInstr>(_op2, _op4);
+            </grammar>
+            <grammar pattern="offset">
+                return std::pair\<u32_t, ConstInstr>(0, _op0);
+            </grammar>
+        </target>
+        <target name="datastrings" type="std::vector<byte_t>">
+            <grammar pattern="datastrings String">
+                for(auto it = _op1.value.begin(); it != _op1.value.end(); it = std::next(it)){
+                    if(*it == '\\'){
+                        if(std::next(it) == _op1.value.end()){
+                            throw Exception::Parse("unclosed escape sequence in string", {_pos[1].line, _pos[1].column});
+                        }
+                        it = std::next(it);
+                        switch(*it){
+                            case 't':
+                                _op0.emplace_back(static_cast\<byte_t>(0x09));
+                            break;
+                            case 'n':
+                                _op0.emplace_back(static_cast\<byte_t>(0x0A));
+                            break;
+                            case 'r':
+                                _op0.emplace_back(static_cast\<byte_t>(0x0D));
+                            break;
+                            case '"':
+                                _op0.emplace_back(static_cast\<byte_t>(0x22));
+                            break;
+                            case '\'':
+                                _op0.emplace_back(static_cast\<byte_t>(0x27));
+                            break;
+                            case '\\':
+                                _op0.emplace_back(static_cast\<byte_t>(0x5C));
+                            break;
+                            case 'u':{
+                                it = std::next(it);
+                                if(*it != '{'){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[1].line, _pos[1].column});
+                                }
+                                it = std::next(it);
+                                if(*it == '_' || *it == '}'){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[1].line, _pos[1].column});
+                                }
+                                std::string hexnum = "";
+                                while(*it != '}'){
+                                    if(*it == '_'){
+                                        it = std::next(it);
+                                    }
+                                    if((it == _op1.value.end()) || !std::isxdigit(*it)){
+                                        throw Exception::Parse("invalid escape sequence in string", {_pos[1].line, _pos[1].column});
+                                    }
+                                    hexnum += *it;
+                                    it = std::next(it);
+                                }
+                                u32_t value = std::stoi(hexnum, nullptr, 16);
+                                if(value >= 0x110000 || (value \< 0xE000 && value >= 0xD800)){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[1].line, _pos[1].column});
+                                }
+                                if(value == 0){
+                                    _op0.emplace_back(static_cast\<byte_t>(0));
+                                }
+                                while(value > 0){
+                                    _op0.emplace_back(static_cast\<byte_t>(value & 0xff));
+                                    value >>= 8;
+                                    value &= 0xffffff;
+                                }
+                            }
+                            break;
+                            default:
+                                if(std::isxdigit(*it) && (std::next(it) != _op1.value.end()) && std::isxdigit(*std::next(it))){
+                                    _op0.emplace_back(static_cast\<byte_t>(std::stoi(std::string{*it, *std::next(it)}, nullptr, 16)));
+                                    it = std::next(it);
+                                }else{
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[1].line, _pos[1].column});
+                                }
+                            break;
+                        }
+                    }else{
+                        _op0.emplace_back(static_cast\<byte_t>(*it));
+                    }
+                }
+                return _op0;
+            </grammar>
+            <grammar pattern="String">
+                std::vector\<byte_t> data;
+                for(auto it = _op0.value.begin(); it != _op0.value.end(); it = std::next(it)){
+                    if(*it == '\\'){
+                        if(std::next(it) == _op0.value.end()){
+                            throw Exception::Parse("unclosed escape sequence in string", {_pos[0].line, _pos[0].column});
+                        }
+                        it = std::next(it);
+                        switch(*it){
+                            case 't':
+                                data.emplace_back(static_cast\<byte_t>(0x09));
+                            break;
+                            case 'n':
+                                data.emplace_back(static_cast\<byte_t>(0x0A));
+                            break;
+                            case 'r':
+                                data.emplace_back(static_cast\<byte_t>(0x0D));
+                            break;
+                            case '"':
+                                data.emplace_back(static_cast\<byte_t>(0x22));
+                            break;
+                            case '\'':
+                                data.emplace_back(static_cast\<byte_t>(0x27));
+                            break;
+                            case '\\':
+                                data.emplace_back(static_cast\<byte_t>(0x5C));
+                            break;
+                            case 'u':{
+                                it = std::next(it);
+                                if(*it != '{'){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[0].line, _pos[0].column});
+                                }
+                                it = std::next(it);
+                                if(*it == '_' || *it == '}'){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[0].line, _pos[0].column});
+                                }
+                                std::string hexnum = "";
+                                while(*it != '}'){
+                                    if(*it == '_'){
+                                        it = std::next(it);
+                                    }
+                                    if((it == _op0.value.end()) || !std::isxdigit(*it)){
+                                        throw Exception::Parse("invalid escape sequence in string", {_pos[0].line, _pos[0].column});
+                                    }
+                                    hexnum += *it;
+                                    it = std::next(it);
+                                }
+                                u32_t value = std::stoi(hexnum, nullptr, 16);
+                                if(value >= 0x110000 || (value \< 0xE000 && value >= 0xD800)){
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[0].line, _pos[0].column});
+                                }
+                                if(value == 0){
+                                    data.emplace_back(static_cast\<byte_t>(0));
+                                }
+                                while(value > 0){
+                                    data.emplace_back(static_cast\<byte_t>(value & 0xff));
+                                    value >>= 8;
+                                    value &= 0xffffff;
+                                }
+                            }
+                            break;
+                            default:
+                                if(std::isxdigit(*it) && (std::next(it) != _op0.value.end()) && std::isxdigit(*std::next(it))){
+                                    data.emplace_back(static_cast\<byte_t>(std::stoi(std::string{*it, *std::next(it)}, nullptr, 16)));
+                                    it = std::next(it);
+                                }else{
+                                    throw Exception::Parse("invalid escape sequence in string", {_pos[0].line, _pos[0].column});
+                                }
+                            break;
+                        }
+                    }else{
+                        data.emplace_back(static_cast\<byte_t>(*it));
+                    }
+                }
+                return data;
+            </grammar>
+        </target>
+        <target name="memoffset" type="std::pair<u32_t, ConstInstr>">
+            <grammar pattern="ParenL Memory memidx ParenR offset">
+                return std::pair\<u32_t, ConstInstr>(_op2, _op4);
+            </grammar>
+            <grammar pattern="offset">
+                return std::pair\<u32_t, ConstInstr>(0, _op0);
+            </grammar>
+        </target>
+        <target name="data" type="WasmData">
+            <grammar pattern="ParenL Data id datastrings ParenR">
+                if(!_op2.empty()){
+                    _this.data_indices[_op2] = _this.data_count;
+                }
+                _this.data_count += 1;
+                return WasmData {
+                    .init = _op3,
+                    .mode = WasmData::DataMode {
+                        .type = WasmData::DataMode::Mode::passive
+                    }
+                };
+            </grammar>
+            <grammar pattern="ParenL Data id memoffset datastrings ParenR">
+                if(!_op2.empty()){
+                    _this.data_indices[_op2] = _this.data_count;
+                }
+                _this.data_count += 1;
+                return WasmData {
+                    .init = _op4,
+                    .mode = WasmData::DataMode {
+                        .type = WasmData::DataMode::Mode::active,
+                        .memidx = _op3.first,
+                        .offset = _op3.second,
+                    }
+                };
             </grammar>
         </target>
         <target name="elem" type="WasmElem">
@@ -816,15 +1013,15 @@
                     .type = WasmElem::ElemMode::Mode::passive
                 }};
             </grammar>
-            <grammar pattern="ParenL Elem id tableuse offset elemlist ParenR">
+            <grammar pattern="ParenL Elem id tableoffset elemlist ParenR">
                 if(!_op2.empty()){
                     _this.elem_indices[_op2] = _this.elem_count;
                 }
                 _this.elem_count += 1;
-                return WasmElem {.type = _op5.first, .elemlist = _op5.second, .mode = WasmElem::ElemMode {
+                return WasmElem {.type = _op4.first, .elemlist = _op4.second, .mode = WasmElem::ElemMode {
                     .type = WasmElem::ElemMode::Mode::active,
-                    .tableidx = _op3,
-                    .offset = _op4
+                    .tableidx = _op3.first,
+                    .offset = _op3.second
                 }};
             </grammar>
             <grammar pattern="ParenL Elem id offset funcindices ParenR">
