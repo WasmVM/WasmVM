@@ -3,6 +3,7 @@
 #define ParGen_Parser_guard
 
 #include <structures/WasmModule.hpp>
+#include <Util.hpp>
 #include <exception.hpp>
 #include <map>
 #include <set>

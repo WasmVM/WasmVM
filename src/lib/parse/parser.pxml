@@ -4,6 +4,7 @@
         {% header file %}
         <header indent=0 position="top">
             #include \<structures/WasmModule.hpp>
+            #include \<Util.hpp>
             #include \<exception.hpp>
             #include \<map>
             #include \<set>
@@ -110,11 +111,18 @@
                 return _op0;
             </grammar>
             <grammar pattern="modulefield table">
-                if(std::holds_alternative\<WasmImport>(_op1)){
-                    _op0.imports.emplace_back(std::get\<WasmImport>(_op1));
-                }else{
-                    _op0.tables.emplace_back(std::get\<TableType>(_op1));
-                }
+                std::visit(overloaded {
+                    [&](std::pair\<TableType, WasmElem>& table_pair){
+                        _op0.tables.emplace_back(table_pair.first);
+                        _op0.elems.emplace_back(table_pair.second);
+                    },
+                    [&](TableType& table){
+                        _op0.tables.emplace_back(table);
+                    },
+                    [&](WasmImport& table){
+                        _op0.imports.emplace_back(table);
+                    }
+                }, _op1);
                 return _op0;
             </grammar>
             <grammar pattern="modulefield memory">
@@ -662,7 +670,7 @@
                 return WasmImport {.module = _op6.value, .name = _op7.value, .desc = _op9};
             </grammar>
         </target>
-        <target name="table" type="std::variant<TableType, WasmImport>">
+        <target name="table" type="std::variant<TableType, WasmImport, std::pair<TableType, WasmElem>>">
             <grammar pattern="ParenL Table id exportabbr importabbr tabletype ParenR">
                 if(_op2.empty()){
                     if(_op4.has_value()){
@@ -697,7 +705,51 @@
                     }
                 }
             </grammar>
-            {% TODO: inline elem %}
+            <grammar pattern="ParenL Table id exportabbr reftype ParenL Elem elemexprs ParenR ParenR">
+                index_t index = 0;
+                if(_op2.empty()){
+                    index = _this.table_indices.insert(Parser::IndexMap::Normal);
+                }else{
+                    if(_this.table_indices.contains(_op2)){
+                        throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    index = _this.table_indices.insert(_op2, Parser::IndexMap::Normal);
+                }
+                for(std::string export_name : _op3){
+                    _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
+                }
+                return std::pair\<TableType, WasmElem>(
+                    TableType {.limits = Limits {.min = _op7.size(), .max = _op7.size()}, .reftype = _op4},
+                    WasmElem {.type = _op4, .elemlist = _op7, .mode = WasmElem::ElemMode {
+                        .type = WasmElem::ElemMode::Mode::active,
+                        .tableidx = index,
+                        .offset = Instr::I32_const()
+                    }}
+                );
+            </grammar>
+            <grammar pattern="ParenL Table id exportabbr reftype ParenL Elem funcindices ParenR ParenR">
+                index_t index = 0;
+                if(_op2.empty()){
+                    index = _this.table_indices.insert(Parser::IndexMap::Normal);
+                }else{
+                    if(_this.table_indices.contains(_op2)){
+                        throw Exception::Parse("table ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    index = _this.table_indices.insert(_op2, Parser::IndexMap::Normal);
+                }
+                for(std::string export_name : _op3){
+                    _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::table, .index = index};
+                }
+                return std::pair\<TableType, WasmElem>(
+                    TableType {.limits = Limits {.min = _op7.size(), .max = _op7.size()}, .reftype = _op4},
+                    WasmElem {.type = RefType::funcref, .elemlist = _op7, .mode = WasmElem::ElemMode {
+                        .type = WasmElem::ElemMode::Mode::active,
+                        .tableidx = index,
+                        .offset = Instr::I32_const()
+                    }}
+                );
+            </grammar>
+            {% TODO: elem funcindices %}
         </target>
         <target name="memory" type="std::variant<Limits, WasmImport>">
             <grammar pattern="ParenL Memory id exportabbr importabbr limits ParenR">

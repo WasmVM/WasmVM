@@ -26,11 +26,72 @@ Suite table {
         Expect(table2.reftype == RefType::externref);
         TableType& table3 = test_module.tables[3];
         Expect(table3.limits.min == 7);
-        Expect(table0.limits.max.has_value() == false);
+        Expect(table3.limits.max.has_value() == false);
         Expect(table3.reftype == RefType::funcref);
     })
     Test("with_elem", {
-        // TODO:
+        ParseFile(test_module, "with_elem.wat");
+
+        TableType& table0 = test_module.tables[0];
+        Expect(table0.limits.min == 2);
+        Expect(table0.limits.max.value() == 2);
+        Expect(table0.reftype == RefType::funcref);
+        TableType& table1 = test_module.tables[1];
+        Expect(table1.limits.min == 2);
+        Expect(table1.limits.max.value() == 2);
+        Expect(table1.reftype == RefType::externref);
+        TableType& table2 = test_module.tables[2];
+        Expect(table2.limits.min == 2);
+        Expect(table2.limits.max.value() == 2);
+        Expect(table2.reftype == RefType::funcref);
+        TableType& table3 = test_module.tables[3];
+        Expect(table3.limits.min == 2);
+        Expect(table3.limits.max.value() == 2);
+        Expect(table3.reftype == RefType::funcref);
+
+        WasmElem& elem0 = test_module.elems[0];
+        Expect(elem0.type == RefType::funcref);
+        Expect(elem0.mode.type == WasmElem::ElemMode::Mode::active);
+        Expect(elem0.mode.tableidx.value() == 0);
+        Expect(std::get<Instr::I32_const>(elem0.mode.offset.value()).value == 0);
+        Expect(elem0.elemlist.size() == 2);
+        Instr::Ref_func& instr0_0 = std::get<Instr::Ref_func>(elem0.elemlist[0]);
+        Expect(instr0_0.index == 1);
+        Instr::Ref_func& instr0_1 = std::get<Instr::Ref_func>(elem0.elemlist[1]);
+        Expect(instr0_1.index == 2);
+
+        WasmElem& elem1 = test_module.elems[1];
+        Expect(elem1.type == RefType::externref);
+        Expect(elem1.mode.type == WasmElem::ElemMode::Mode::active);
+        Expect(elem1.mode.tableidx.value() == 1);
+        Expect(std::get<Instr::I32_const>(elem1.mode.offset.value()).value == 0);
+        Expect(elem1.elemlist.size() == 2);
+        Instr::Ref_null& instr1_0 = std::get<Instr::Ref_null>(elem1.elemlist[0]);
+        Expect(instr1_0.heaptype == RefType::externref);
+        Instr::Ref_null& instr1_1 = std::get<Instr::Ref_null>(elem1.elemlist[1]);
+        Expect(instr1_1.heaptype == RefType::externref);
+
+        WasmElem& elem2 = test_module.elems[2];
+        Expect(elem2.type == RefType::funcref);
+        Expect(elem2.mode.type == WasmElem::ElemMode::Mode::active);
+        Expect(elem2.mode.tableidx.value() == 2);
+        Expect(std::get<Instr::I32_const>(elem2.mode.offset.value()).value == 0);
+        Expect(elem2.elemlist.size() == 2);
+        Instr::Ref_func& instr2_0 = std::get<Instr::Ref_func>(elem2.elemlist[0]);
+        Expect(instr2_0.index == 3);
+        Instr::Ref_func& instr2_1 = std::get<Instr::Ref_func>(elem2.elemlist[1]);
+        Expect(instr2_1.index == 4);
+
+        WasmElem& elem3 = test_module.elems[3];
+        Expect(elem3.type == RefType::funcref);
+        Expect(elem3.mode.type == WasmElem::ElemMode::Mode::active);
+        Expect(elem3.mode.tableidx.value() == 3);
+        Expect(std::get<Instr::I32_const>(elem3.mode.offset.value()).value == 0);
+        Expect(elem3.elemlist.size() == 2);
+        Instr::Ref_func& instr3_0 = std::get<Instr::Ref_func>(elem3.elemlist[0]);
+        Expect(instr3_0.index == 5);
+        Instr::Ref_func& instr3_1 = std::get<Instr::Ref_func>(elem3.elemlist[1]);
+        Expect(instr3_1.index == 6);
     })
     Test("with_import", {
         ParseFile(test_module, "with_import.wat");
