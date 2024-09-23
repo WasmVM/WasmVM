@@ -126,11 +126,18 @@
                 return _op0;
             </grammar>
             <grammar pattern="modulefield memory">
-                if(std::holds_alternative\<WasmImport>(_op1)){
-                    _op0.imports.emplace_back(std::get\<WasmImport>(_op1));
-                }else{
-                    _op0.mems.emplace_back(std::get\<Limits>(_op1));
-                }
+                std::visit(overloaded {
+                    [&](std::pair\<Limits, WasmData>& mem_pair){
+                        _op0.mems.emplace_back(mem_pair.first);
+                        _op0.datas.emplace_back(mem_pair.second);
+                    },
+                    [&](Limits& memory){
+                        _op0.mems.emplace_back(memory);
+                    },
+                    [&](WasmImport& memory){
+                        _op0.imports.emplace_back(memory);
+                    }
+                }, _op1);
                 return _op0;
             </grammar>
             <grammar pattern="modulefield global">
@@ -749,9 +756,8 @@
                     }}
                 );
             </grammar>
-            {% TODO: elem funcindices %}
         </target>
-        <target name="memory" type="std::variant<Limits, WasmImport>">
+        <target name="memory" type="std::variant<Limits, WasmImport, std::pair<Limits, WasmData>>">
             <grammar pattern="ParenL Memory id exportabbr importabbr limits ParenR">
                 if(_op2.empty()){
                     if(_op4.has_value()){
@@ -786,7 +792,29 @@
                     }
                 }
             </grammar>
-            {% TODO: inline data %}
+            <grammar pattern="ParenL Memory id exportabbr ParenL Data datastrings ParenR ParenR">
+                index_t index = 0;
+                if(_op2.empty()){
+                    index = _this.mem_indices.insert(Parser::IndexMap::Normal);
+                }else{
+                    if(_this.mem_indices.contains(_op2)){
+                        throw Exception::Parse("memory ID '" + _op2 + "' is duplicated", {_pos[2].line, _pos[2].column});
+                    }
+                    index = _this.mem_indices.insert(_op2, Parser::IndexMap::Normal);
+                }
+                for(std::string export_name : _op3){
+                    _this.exports[export_name] = WasmExport {.name = export_name, .desc = WasmExport::DescType::mem, .index = index};
+                }
+                offset_t page_num = (_op6.size() + (page_size - 1)) / page_size;
+                return std::pair\<Limits, WasmData>(
+                    Limits {.min = page_num, .max = page_num},
+                    WasmData {.init = _op6, .mode = WasmData::DataMode {
+                        .type = WasmData::DataMode::Mode::active,
+                        .memidx = index,
+                        .offset = Instr::I32_const()
+                    }}
+                );
+            </grammar>
         </target>
         <target name="global" type="std::variant<WasmGlobal, WasmImport>">
             <grammar pattern="ParenL Global id exportabbr globaltype constexpr ParenR">

@@ -23,7 +23,21 @@ Suite memory {
         Expect(mem2.max.has_value() == false);
     })
     Test("with_data", {
-        // TODO:
+        ParseFile(test_module, "with_data.wat");
+        MemType& mem0 = test_module.mems[0];
+        Expect(mem0.min == 1);
+        Expect(mem0.max.value() == 1);
+        MemType& mem1 = test_module.mems[1];
+        Expect(mem1.min == 1);
+        Expect(mem1.max.value() == 1);
+
+        WasmData& data0 = test_module.datas[0];
+        Expect(data0.mode.type == WasmData::DataMode::Mode::active);
+        Expect(std::string_view((const char*)data0.init.data(), 3) == "123");
+
+        WasmData& data1 = test_module.datas[1];
+        Expect(data1.mode.type == WasmData::DataMode::Mode::active);
+        Expect(std::string_view((const char*)data1.init.data(), 3) == "456");
     })
     Test("with_import", {
         ParseFile(test_module, "with_import.wat");
