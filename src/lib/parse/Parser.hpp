@@ -58,6 +58,7 @@ struct Parser {
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
     std::map<std::string, index_t> type_indices;
     std::map<std::string, index_t> local_indices;
+    std::map<std::string, index_t> label_indices;
     std::map<std::string, index_t> elem_indices;
     std::map<std::string, index_t> data_indices;
     std::map<std::string, WasmExport> exports;

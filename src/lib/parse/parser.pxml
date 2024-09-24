@@ -44,6 +44,7 @@
             std::vector\<std::pair\<FuncType, std::map\<std::string, index_t>>> types;
             std::map\<std::string, index_t> type_indices;
             std::map\<std::string, index_t> local_indices;
+            std::map\<std::string, index_t> label_indices;
             std::map\<std::string, index_t> elem_indices;
             std::map\<std::string, index_t> data_indices;
             std::map\<std::string, WasmExport> exports;
@@ -87,6 +88,7 @@
                 exports.clear();
                 type_indices.clear();
                 local_indices.clear();
+                label_indices.clear();
                 elem_indices.clear();
                 data_indices.clear();
                 local_count = 0;
@@ -399,6 +401,26 @@
                 return _this.type_indices[_op0.value];
             </grammar>
         </target>
+        <target name="labelidx" type="u32_t">
+            <grammar pattern="u32">
+                return _op0;
+            </grammar>
+            <grammar pattern="Id">
+                if(!_this.label_indices.contains(_op0.value)){
+                    throw Exception::Parse("label ID '" + _op0.value + "' not found", {_pos[0].line, _pos[0].column});
+                }
+                return _this.label_indices[_op0.value];
+            </grammar>
+        </target>
+        <target name="labelindices" type="std::vector<u32_t>">
+            <grammar pattern="labelindices labelidx">
+                _op0.emplace_back(_op1);
+                return _op0;
+            </grammar>
+            <grammar pattern="labelidx">
+                return std::vector\<u32_t> {_op0};
+            </grammar>
+        </target>
         <target name="funcidx" type="u32_t">
             <grammar pattern="u32">
                 return _op0;
@@ -640,6 +662,10 @@
             </grammar>
         </target>
         <target name="instrs" type="std::vector<WasmInstr>">
+            <grammar pattern="instrs plaininstr">
+                _op0.emplace_back(_op1);
+                return _op0;
+            </grammar>
             <grammar>
                 return std::vector\<WasmInstr>();
             </grammar>
@@ -1123,6 +1149,38 @@
                 return WasmElem {.type = _op4.first, .elemlist = _op4.second, .mode = WasmElem::ElemMode {
                     .type = WasmElem::ElemMode::Mode::declarative
                 }};
+            </grammar>
+        </target>
+        <target name="plaininstr" type="WasmInstr">
+            <grammar pattern="ControlInstr">
+                switch(_op0.value){
+                    case Tokens::ControlInstr::Unreachable:
+                        return Instr::Unreachable();
+                    case Tokens::ControlInstr::Nop:
+                        return Instr::Nop();
+                    case Tokens::ControlInstr::Return:
+                        return Instr::Return();
+                }
+            </grammar>
+            <grammar pattern="Br labelidx">
+                return Instr::Br(_op1);
+            </grammar>
+            <grammar pattern="Br_if labelidx">
+                return Instr::Br_if(_op1);
+            </grammar>
+            <grammar pattern="Br_table labelindices">
+                Instr::Br_table instr;
+                instr.indices.assign(_op1.begin(), _op1.end());
+                return instr;
+            </grammar>
+            <grammar pattern="Call funcidx">
+                return Instr::Call(_op1);
+            </grammar>
+            <grammar pattern="Call_indirect tableidx typeuse">
+                return Instr::Call_indirect(_op1, _op2);
+            </grammar>
+            <grammar pattern="Call_indirect typeuse">
+                return Instr::Call_indirect(0, _op1);
             </grammar>
         </target>
     </parser>
