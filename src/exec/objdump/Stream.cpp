@@ -175,24 +175,42 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
         case 0: {
 
             std::cout << "index 1" << std::endl;
-            Objdump::Bytes byteData = stream.get_u32(stream); 
+            Objdump::Bytes byteData = stream.get_u32(stream);
             u32_t descData = stream.to_u32(byteData);
             import.desc = (index_t)descData;
             
             break;
         }
-        case 1: { // need sample
+        case 1: { // need more sample
             std::cout << "index 2" << std::endl;
             TableType table;
             ValueType ref;
             Limits lim;
+            Objdump::Bytes maxflag(1);
 
             stream >> ref;
-            stream >> lim;
+            stream >> maxflag;
+
+            if((int)maxflag[0] == 1){
+                Objdump::Bytes byteData = stream.get_u64(stream);
+                offset_t min = stream.to_u64(byteData);
+                byteData = stream.get_u64(stream);
+                offset_t max = stream.to_u64(byteData);
+                lim.min = min;
+                lim.max = max;
+            }else{
+                Objdump::Bytes byteData = stream.get_u64(stream);
+                offset_t min = stream.to_u64(byteData);
+                lim.min = min;
+            }
+
             table.reftype = (RefType)ref;
             table.limits = lim;
-
             import.desc = table;
+
+            // std::cout << (int)table.reftype << std::endl;
+            // std::cout << table.limits.min << std::endl;
+            // std::cout << *table.limits.max << std::endl;
             
             break;
         }
@@ -357,9 +375,13 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
 
 
         std::visit(overloaded{
-            [](index_t arg)     { std::cout << "00  ; import kind: func" << std::endl;
-                                  std::cout << "    " << arg << " ; signature index" << std::endl; },
-            [](TableType  arg)  { },
+            [](index_t arg)     {  
+                                    std::cout << "00  ; import kind: func" << std::endl;
+                                    std::cout << "    " << arg << " ; signature index" << std::endl;
+                                },
+            [](TableType  arg)  {   std::cout << "01  ; import kind: table" << std::endl; 
+                                    // std::cout << "    " << (int)arg.limits << " ; signature index" << std::endl;
+                                },
             [](MemType arg)     { },
             [](GlobalType arg)  { }
         }, import.desc);
