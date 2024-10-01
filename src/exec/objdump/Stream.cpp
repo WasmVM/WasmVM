@@ -341,11 +341,10 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << importsection.imports.size() << "  ; Number of imports" << std::endl;
-    address++;
     
     for(WasmImport import : importsection.imports){        
         // mod
-        importsection.stream.print_address(address);
+        importsection.stream.print_address(++address);
         std::cout << std::setfill('0') << std::setw(2) << import.module.length() << "  ; mod length" << std::endl;
         importsection.stream.print_address(++address);
         for(int i = 0; i < import.module.size(); i++){
@@ -369,22 +368,29 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
         // 1. print import kind addrerss
         // 2. print import kind data and explain
         // 3. print signature
+        // p.s. no solution for address
 
 
         importsection.stream.print_address(++address);
-
-
         std::visit(overloaded{
-            [](index_t arg)     {  
+            [&importsection, &address](index_t arg)     {  
                                     std::cout << "00  ; import kind: func" << std::endl;
+                                    importsection.stream.print_address(++address);
                                     std::cout << "    " << arg << " ; signature index" << std::endl;
                                 },
-            [](TableType  arg)  {   std::cout << "01  ; import kind: table" << std::endl; 
-                                    // std::cout << "    " << (int)arg.limits << " ; signature index" << std::endl;
+            [&importsection, &address](TableType  arg)  {   
+                                    std::cout << "01  ; import kind: table" << std::endl;
+                                    importsection.stream.print_address(++address);
+                                    std::cout << "    " << (int)arg.reftype << " ; signature index" << std::endl;
+                                    importsection.stream.print_address(++address);
+                                    std::cout << "    " << (int)arg.limits.min << " ; signature index" << std::endl;
+                                    importsection.stream.print_address(++address);
+                                    std::cout << "    " << (int)*arg.limits.max << " ; signature index" << std::endl;
                                 },
             [](MemType arg)     { },
             [](GlobalType arg)  { }
         }, import.desc);
+
 
 
     }
