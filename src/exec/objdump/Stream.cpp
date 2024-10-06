@@ -173,16 +173,13 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
 
     switch(int_kind){
         case 0: {
-
-            std::cout << "index 1" << std::endl;
             Objdump::Bytes byteData = stream.get_u32(stream);
             u32_t descData = stream.to_u32(byteData);
             import.desc = (index_t)descData;
             
             break;
         }
-        case 1: { // need more sample
-            std::cout << "index 2" << std::endl;
+        case 1: { 
             TableType table;
             ValueType ref;
             Limits lim;
@@ -214,14 +211,43 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
             
             break;
         }
-        case 2:
-            // TODO:
+        case 2:{
+            Limits lim;
+            Objdump::Bytes maxflag(1);
+            stream >> maxflag;
+
+            if((int)maxflag[0] == 1){
+                Objdump::Bytes byteData = stream.get_u64(stream);
+                offset_t min = stream.to_u64(byteData);
+                byteData = stream.get_u64(stream);
+                offset_t max = stream.to_u64(byteData);
+                lim.min = min;
+                lim.max = max;
+            }else{
+                Objdump::Bytes byteData = stream.get_u64(stream);
+                offset_t min = stream.to_u64(byteData);
+                lim.min = min;
+            }
+            import.desc = lim;
+            break;
+        }
+        case 3:{
+            GlobalType global;
+            Objdump::Bytes mut(1);
+
+            stream >> global.type;
+            stream >> mut;
+
+            if((int)mut[0] == 0x00){
+                global.mut = GlobalType::constant;
+            }else if((int)mut[0] == 0x01){
+                global.mut = GlobalType::variable;
+            }
+
+            import.desc = global;
 
             break;
-        case 3:
-            // TODO:
-
-            break;
+        }
         default:{
             Objdump::Bytes dummy(1);
             stream >> dummy;
@@ -342,7 +368,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << importsection.imports.size() << "  ; Number of imports" << std::endl;
     
-    for(WasmImport import : importsection.imports){        
+    for(WasmImport import : importsection.imports){     
         // mod
         importsection.stream.print_address(++address);
         std::cout << std::setfill('0') << std::setw(2) << import.module.length() << "  ; mod length" << std::endl;
@@ -371,27 +397,62 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
         // p.s. no solution for address
 
 
-        importsection.stream.print_address(++address);
+        importsection.stream.print_address(address);
         std::visit(overloaded{
-            [&importsection, &address](index_t arg)     {  
-                                    std::cout << "00  ; import kind: func" << std::endl;
-                                    importsection.stream.print_address(++address);
-                                    std::cout << "    " << arg << " ; signature index" << std::endl;
-                                },
-            [&importsection, &address](TableType  arg)  {   
-                                    std::cout << "01  ; import kind: table" << std::endl;
-                                    importsection.stream.print_address(++address);
-                                    std::cout << "    " << (int)arg.reftype << " ; signature index" << std::endl;
-                                    importsection.stream.print_address(++address);
-                                    std::cout << "    " << (int)arg.limits.min << " ; signature index" << std::endl;
-                                    importsection.stream.print_address(++address);
-                                    std::cout << "    " << (int)*arg.limits.max << " ; signature index" << std::endl;
-                                },
-            [](MemType arg)     { },
-            [](GlobalType arg)  { }
+            [&importsection, &address](index_t arg){
+                std::cout << "00  ; import kind: func" << std::endl;
+                importsection.stream.print_address(++address);
+                std::cout << std::setfill('0') << std::setw(2);
+                std::cout << arg << "  ; signature index" << std::endl;
+            },
+            [&importsection, &address](TableType  arg){
+                std::cout << "01  ; import kind: table" << std::endl;
+                importsection.stream.print_address(++address);
+                std::cout << (int)arg.reftype << "  ; reftype" << std::endl;
+                    importsection.stream.print_address(++address);
+                if(arg.limits.max.has_value()){
+                    std::cout << "01  ; maximum presented" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)arg.limits.min << "  ; min" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)*arg.limits.max << "  ; max" << std::endl;
+                }else{
+                    std::cout << "00  ; no maximum presented" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)arg.limits.min << "  ; min" << std::endl;
+                }
+            },
+            [&importsection, &address](MemType arg){
+                std::cout << "02  ; import kind: memory" << std::endl;
+                importsection.stream.print_address(++address);
+                if(arg.max.has_value()){
+                    std::cout << "01  ; maximum presented" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)arg.min << "  ; min" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)*arg.max << "  ; max" << std::endl;
+                }else{
+                    std::cout << "00  ; no maximum presented" << std::endl;
+                    importsection.stream.print_address(++address);
+                    std::cout << std::setfill('0') << std::setw(2);
+                    std::cout << (int)arg.min << "  ; min" << std::endl;
+                }
+
+            },
+            [&importsection, &address](GlobalType arg){
+                std::cout << "03  ; import kind: global" << std::endl;
+                importsection.stream.print_address(++address);
+                std::cout << (int)arg.type << "  ; valtype: " << arg.type << std::endl;
+                importsection.stream.print_address(++address);
+                std::cout << std::setfill('0') << std::setw(2);
+                std::cout << arg.mut << "  ; mutation" << std::endl;
+            }
         }, import.desc);
-
-
 
     }
 
