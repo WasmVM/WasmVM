@@ -1,3 +1,0 @@
-[submodule "external/antlr4-cpp-runtime"]
-	path = external/antlr4-cpp-runtime
-	url = ../antlr4-cpp-runtime
