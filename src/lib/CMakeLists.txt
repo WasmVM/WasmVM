@@ -1,10 +1,16 @@
 add_subdirectory(parse)
+
+find_package(Java 1.11 REQUIRED)
+add_custom_command(OUTPUT WasmLexer.cpp
+    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} -no-listener ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/Wasm.g4
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wasm.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4
+)
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
-    parse/Lexer.cpp
-    parse/Parser.cpp
-    parse/Token.cpp
+    WasmLexer.cpp
+    # parse/WasmLexer.cpp
+    # parse/WasmParser.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
@@ -15,6 +21,11 @@ add_library(WasmVM_textfmt OBJECT
     dump/elem.cpp
     dump/data.cpp
     dump/global.cpp
+)
+add_dependencies(WasmVM_textfmt antlr4_runtime)
+target_include_directories(WasmVM_textfmt 
+    PUBLIC ${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/include/antlr4-runtime
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 
@@ -97,6 +108,7 @@ add_library(WasmVM SHARED
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
+target_link_libraries(WasmVM antlr4-runtime)
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if(DEV_BUILD)
@@ -108,6 +120,7 @@ add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
+target_link_libraries(WasmVM_static antlr4-runtime)
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 install(TARGETS WasmVM_static 
