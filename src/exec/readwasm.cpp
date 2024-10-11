@@ -42,7 +42,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM assembler version " VERSION << std::endl;
+        std::cerr << "WasmVM assembler version " WASMVM_VERSION << std::endl;
         return 0;
     }
     // input file

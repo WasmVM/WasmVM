@@ -110,7 +110,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM version " VERSION << std::endl;
+        std::cerr << "WasmVM version " WASMVM_VERSION << std::endl;
         return 0;
     }
 
