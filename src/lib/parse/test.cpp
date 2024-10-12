@@ -2,12 +2,20 @@
 #include <fstream>
 #include <exception.hpp>
 #include <WasmVM.hpp>
-// #include "Lexer.hpp"
-// #include "Parser.hpp"
-#include "../dump/dump.hpp"
+#include <antlr4-runtime.h>
+
+// #include "../dump/dump.hpp"
+#include <WatLexer.h>
+#include <WatParser.h>
 
 int main(int argc, char const *argv[]){
     std::ifstream fin(argv[1]);
+    antlr4::ANTLRInputStream input(fin);
+    WasmVM::WatLexer lexer(&input);
+    antlr4::CommonTokenStream tokens(&lexer);
+    WasmVM::WatParser parser(&tokens);
+    
+    parser.module();
     // try{
     //     WasmVM::Lexer lexer(argv[1], fin);
     //     WasmVM::Parser parser(lexer);

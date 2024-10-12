@@ -12,3 +12,4 @@ build*/
 
 .vscode
 packages/
+.antlr/

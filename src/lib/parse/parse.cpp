@@ -3,17 +3,20 @@
 // license that can be found in the LICENSE file.
 
 #include <WasmVM.hpp>
-#include "Lexer.hpp"
-#include "Parser.hpp"
+#include <WatLexer.h>
+// #include "WasmParser.h"
 
 using namespace WasmVM;
 
-WasmModule WasmVM::module_parse(std::istream& stream){
-    Lexer lexer("", stream);
-    Parser parser(lexer);
-    try{
-        return parser.parse();
-    }catch(ParseError& e){
-        throw Exception::Parse(e.what(), {e.pos.line, e.pos.column});
-    }
+WasmModule WasmVM::module_parse(std::istream& is){
+    antlr4::ANTLRInputStream stream(is);
+    WatLexer lexer(&stream);
+    auto token = lexer.nextToken();
+    std::cout << token->getText() << std::endl;
+    // try{
+    //     return parser.parse();
+    // }catch(ParseError& e){
+    //     throw Exception::Parse(e.what(), {e.pos.line, e.pos.column});
+    // }
+    return WasmModule();
 }

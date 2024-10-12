@@ -1,16 +1,13 @@
-add_subdirectory(parse)
-
 find_package(Java 1.11 REQUIRED)
-add_custom_command(OUTPUT WasmLexer.cpp
-    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} -no-listener ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/Wasm.g4
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wasm.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4
+add_custom_command(OUTPUT WatLexer.cpp WatParser.cpp
+    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4
 )
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
-    WasmLexer.cpp
-    # parse/WasmLexer.cpp
-    # parse/WasmParser.cpp
+    WatLexer.cpp
+    WatParser.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
@@ -28,6 +25,8 @@ target_include_directories(WasmVM_textfmt
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
 )
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+
+add_subdirectory(parse)
 
 add_library(WasmVM_binfmt OBJECT
     # encode
