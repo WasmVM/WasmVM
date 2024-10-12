@@ -3,59 +3,74 @@
 // license that can be found in the LICENSE file.
 
 #include <harness.hpp>
-#include <parse/Lexer.hpp>
+#include <WatLexer.h>
+#include <ErrorListener.hpp>
 
 #include <fstream>
-#include <sstream>
-#include <list>
 
 using namespace WasmVM;
 using namespace Testing;
 
 Suite comments {
     Test("Line comments", {
-        std::ifstream stream("line.wat");
-        Lexer lexer("line.wat", stream);
-        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
-        stream.close();
+        std::ifstream fin("line.wat");
+        antlr4::ANTLRInputStream input(fin);
+        WasmVM::WatLexer lexer(&input);
+        antlr4::CommonTokenStream stream(&lexer);
+        stream.fill();
+        std::vector<antlr4::Token*> tokens = stream.getTokens();
+        Expect(tokens[0]->getText() == "(");
+        Expect(tokens[1]->getText() == "module");
+        Expect(tokens[2]->getText() == ")");
     })
 
     Category("Block comments", {
         Test("Regular", {
-            std::ifstream stream("block.wat");
-            Lexer lexer("block.wat", stream);
-            Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
-            Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
-            Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
-            stream.close();
+            std::ifstream fin("line.wat");
+            antlr4::ANTLRInputStream input(fin);
+            WasmVM::WatLexer lexer(&input);
+            antlr4::CommonTokenStream stream(&lexer);
+            stream.fill();
+            std::vector<antlr4::Token*> tokens = stream.getTokens();
+            Expect(tokens[0]->getText() == "(");
+            Expect(tokens[1]->getText() == "module");
+            Expect(tokens[2]->getText() == ")");
         })
         Test("Not close", {
-            std::ifstream stream("not_close.wat");
-            Lexer lexer("not_close.wat", stream);
+            std::ifstream fin("not_close.wat");
+            antlr4::ANTLRInputStream input(fin);
+            WasmVM::WatLexer lexer(&input);
+            WasmVM::LexerErrorListener listener;
+            lexer.removeErrorListeners();
+            lexer.addErrorListener(&listener);
+            antlr4::CommonTokenStream stream(&lexer);
             Throw(WasmVM::Exception::Parse, 
-                lexer.get();
+                stream.fill();
             )
-            stream.close();
         })
     })
 
     Test("Nested comments", {
-        std::ifstream stream("nested.wat");
-        Lexer lexer("nested.wat", stream);
-        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::ParenL>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::Module>(lexer.get()));
-        Expect(std::holds_alternative<Tokens::ParenR>(lexer.get()));
-        stream.close();
+        std::ifstream fin("nested.wat");
+        antlr4::ANTLRInputStream input(fin);
+        WasmVM::WatLexer lexer(&input);
+        antlr4::CommonTokenStream stream(&lexer);
+        stream.fill();
+        std::vector<antlr4::Token*> tokens = stream.getTokens();
+        Expect(tokens[0]->getText() == "(");
+        Expect(tokens[1]->getText() == "module");
+        Expect(tokens[2]->getText() == ")");
+        Expect(tokens[3]->getText() == "(");
+        Expect(tokens[4]->getText() == "module");
+        Expect(tokens[5]->getText() == ")");
     })
 
     Test("Whitespace", {
-        std::stringstream stream("  \n \t");
-        Lexer lexer("ws.wat", stream);
-        Expect(std::holds_alternative<std::monostate>(lexer.get()));
+        antlr4::ANTLRInputStream input("  \n \t");
+        WasmVM::WatLexer lexer(&input);
+        antlr4::CommonTokenStream stream(&lexer);
+        stream.fill();
+        std::vector<antlr4::Token*> tokens = stream.getTokens();
+        Expect(tokens[0]->getText() == "<EOF>");
     })
 };

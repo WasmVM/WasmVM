@@ -18,18 +18,24 @@ macro(add_test_suite suite_name)
   )
 endmacro(add_test_suite)
 
+include_directories(
+  ${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/include/antlr4-runtime
+  ${PROJECT_SOURCE_DIR}/src/lib/parse
+  ${PROJECT_BINARY_DIR}/src/lib
+)
+
 # Add tests under here
 add_test_suite(comments)
-add_test_suite(token)
-add_test_suite(module)
-add_test_suite(type)
-add_test_suite(import)
-add_test_suite(table)
-add_test_suite(memory)
-add_test_suite(global)
-add_test_suite(export)
-add_test_suite(func)
-add_test_suite(start)
-add_test_suite(elem)
-add_test_suite(data)
-add_test_suite(instruction)
+# add_test_suite(token)
+# add_test_suite(module)
+# add_test_suite(type)
+# add_test_suite(import)
+# add_test_suite(table)
+# add_test_suite(memory)
+# add_test_suite(global)
+# add_test_suite(export)
+# add_test_suite(func)
+# add_test_suite(start)
+# add_test_suite(elem)
+# add_test_suite(data)
+# add_test_suite(instruction)

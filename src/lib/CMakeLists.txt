@@ -6,6 +6,7 @@ add_custom_command(OUTPUT WatLexer.cpp WatParser.cpp
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
+    parse/ErrorListener.cpp
     WatLexer.cpp
     WatParser.cpp
     # dump
@@ -23,6 +24,7 @@ add_dependencies(WasmVM_textfmt antlr4_runtime)
 target_include_directories(WasmVM_textfmt 
     PUBLIC ${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/include/antlr4-runtime
     PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/parse
 )
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 

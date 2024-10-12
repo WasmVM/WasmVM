@@ -51,7 +51,7 @@ set(BUILD_TESTS ON CACHE BOOL "Build tests")
 if(BUILD_TESTS)
   include(CTest)
   enable_testing()
-  # add_subdirectory(test)
+  add_subdirectory(test)
 endif(BUILD_TESTS)
 
 include(pack)
