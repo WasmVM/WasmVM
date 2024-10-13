@@ -7,27 +7,28 @@
 // #include "../dump/dump.hpp"
 #include <WatLexer.h>
 #include <WatParser.h>
+#include "ErrorListener.hpp"
+#include "Visitor.hpp"
 
 int main(int argc, char const *argv[]){
     std::ifstream fin(argv[1]);
     antlr4::ANTLRInputStream input(fin);
     WasmVM::WatLexer lexer(&input);
+    WasmVM::LexerErrorListener lexerErrorListener;
+    WasmVM::ParserErrorListener parserErrorListener;
     antlr4::CommonTokenStream tokens(&lexer);
     WasmVM::WatParser parser(&tokens);
-    
-    parser.module();
-    // try{
-    //     WasmVM::Lexer lexer(argv[1], fin);
-    //     WasmVM::Parser parser(lexer);
-    //     WasmVM::WasmModule module = parser.parse();
-    //     WasmVM::module_dump(module, std::cout);
-    // }catch(WasmVM::Exception::Parse& e){
-    //     std::cerr << argv[1] << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;
-    // }catch(WasmVM::ParseError& e){
-    //     std::cerr << argv[1] << ":" << e.pos.line << ":" << e.pos.column << " error: " << e.what() << std::endl;
-    // }catch(WasmVM::UnknownToken& e){
-    //     std::cerr << e.what() << std::endl;
-    // }
-    fin.close();
+
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(&lexerErrorListener);
+    parser.removeErrorListeners();
+    parser.addErrorListener(&parserErrorListener);
+    try{
+        WasmVM::Visitor visitor;
+        WasmVM::WasmModule module = std::any_cast<WasmVM::WasmModule>(visitor.visitModule(parser.module()));
+        WasmVM::module_dump(module, std::cout);
+    }catch(WasmVM::Exception::Parse& e){
+        std::cerr << argv[1] << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;
+    }
     return 0;
 }
