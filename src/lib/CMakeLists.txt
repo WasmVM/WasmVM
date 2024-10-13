@@ -1,12 +1,13 @@
 find_package(Java 1.11 REQUIRED)
 add_custom_command(OUTPUT WatLexer.cpp WatParser.cpp
-    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4
+    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -no-listener -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
+    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/instructions.g4
 )
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
     parse/ErrorListener.cpp
+    parse/Visitor.cpp
     WatLexer.cpp
     WatParser.cpp
     # dump

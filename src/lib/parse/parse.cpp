@@ -4,19 +4,25 @@
 
 #include <WasmVM.hpp>
 #include <WatLexer.h>
-// #include "WasmParser.h"
+#include <WatParser.h>
+#include "ErrorListener.hpp"
+#include "Visitor.hpp"
 
 using namespace WasmVM;
 
 WasmModule WasmVM::module_parse(std::istream& is){
     antlr4::ANTLRInputStream stream(is);
     WatLexer lexer(&stream);
-    auto token = lexer.nextToken();
-    std::cout << token->getText() << std::endl;
-    // try{
-    //     return parser.parse();
-    // }catch(ParseError& e){
-    //     throw Exception::Parse(e.what(), {e.pos.line, e.pos.column});
-    // }
-    return WasmModule();
+    WasmVM::LexerErrorListener lexerErrorListener;
+    WasmVM::ParserErrorListener parserErrorListener;
+    antlr4::CommonTokenStream tokens(&lexer);
+    WasmVM::WatParser parser(&tokens);
+
+    lexer.removeErrorListeners();
+    lexer.addErrorListener(&lexerErrorListener);
+    parser.removeErrorListeners();
+    parser.addErrorListener(&parserErrorListener);
+
+    WasmVM::Visitor visitor;
+    return std::any_cast<WasmVM::WasmModule>(visitor.visitModule(parser.module()));
 }

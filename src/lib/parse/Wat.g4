@@ -4,25 +4,12 @@ options {
     language = Cpp;
 }
 
-import token;
+import token, types, instructions;
 
 /* Module */
-module : '(' 'module' modulefield* ')' | modulefield* ;
+module : '(' ('module' Id? modulefield*)? ')' | modulefield*;
 
 modulefield : type;
 
 /* Sections */
 type : '(' 'type' Id? functype ')' ;
-
-/** Types **/
-NumType : [if] ('32'|'64');
-RefType : 'funcref' | 'externref';
-HeapType : 'func' | 'extern';
-valtype : RefType | HeapType;
-param : '(' 'param' (Id valtype | valtype*) ')' ;
-result : '(' 'result' valtype* ')' ;
-functype : '(' 'func' param* result* ')' ;
-limits : Integer Integer? ;
-memtype : limits ;
-tabletype : limits RefType ;
-globaltype : valtype | '(' 'mut' valtype ')' ;

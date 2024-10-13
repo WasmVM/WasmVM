@@ -6,6 +6,10 @@
 
 #include <exception.hpp>
 
-void WasmVM::LexerErrorListener::syntaxError(antlr4::Recognizer *recognizer, antlr4::Token* token, size_t line, size_t col, const std::string &msg, std::exception_ptr e){
+void WasmVM::LexerErrorListener::syntaxError(antlr4::Recognizer *, antlr4::Token*, size_t line, size_t col, const std::string &msg, std::exception_ptr){
     throw WasmVM::Exception::Parse("unknown token " + msg.substr(28), {line, col});
+}
+
+void WasmVM::ParserErrorListener::syntaxError(antlr4::Recognizer *, antlr4::Token*, size_t line, size_t col, const std::string &msg, std::exception_ptr){
+    throw WasmVM::Exception::Parse(msg, {line, col});
 }
