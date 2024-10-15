@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 
 #include <harness.hpp>
-#include <WatLexer.h>
-#include <ErrorListener.hpp>
+#include <parse/WatLexer.h>
+#include <parse/ErrorListener.hpp>
 
 #include <fstream>
 

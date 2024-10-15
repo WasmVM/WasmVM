@@ -4,9 +4,8 @@
 #include <WasmVM.hpp>
 #include <antlr4-runtime.h>
 
-// #include "../dump/dump.hpp"
-#include <WatLexer.h>
-#include <WatParser.h>
+#include <parse/WatLexer.h>
+#include <parse/WatParser.h>
 #include "ErrorListener.hpp"
 #include "Visitor.hpp"
 
@@ -25,7 +24,7 @@ int main(int argc, char const *argv[]){
     parser.addErrorListener(&parserErrorListener);
     try{
         WasmVM::Visitor visitor;
-        WasmVM::WasmModule module = std::any_cast<WasmVM::WasmModule>(visitor.visitModule(parser.module()));
+        WasmVM::WasmModule module = visitor.visit(parser.module());
         WasmVM::module_dump(module, std::cout);
     }catch(WasmVM::Exception::Parse& e){
         std::cerr << argv[1] << ":" << e.location.first << ":" << e.location.second << " error: " << e.what() << std::endl;

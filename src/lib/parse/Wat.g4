@@ -12,6 +12,13 @@ module : '(' ('module' Id? modulefield*)? ')' | modulefield*;
 modulefield : typesection
     | importsection
     | funcsection
+    | tablesection
+    | memorysection
+    | globalsection
+    | exportsection
+    | startsection
+    | elemsection
+    | datasection
     ;
 
 /* Sections */

@@ -27,9 +27,9 @@ constexpr : 'i32.const' i32
     | 'i64.const' i64
     | 'f32.const' f32
     | 'f64.const' f64
-    | 'ref.null' i32
-    | 'ref.func' u32
-    | 'global.get' i32
+    | 'ref.null' HeapType
+    | 'ref.func' funcidx
+    | 'global.get' globalidx
     ;
 
 plaininstr : controlinstr

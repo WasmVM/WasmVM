@@ -1,15 +1,20 @@
-find_package(Java 1.11 REQUIRED)
-add_custom_command(OUTPUT WatLexer.cpp WatParser.cpp
-    COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -no-listener -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR} ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
-    DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/instructions.g4
-)
+set(REBUILD_WAT_PARSER OFF CACHE BOOL "rebuild wat parser by antlr4")
+
+if(REBUILD_WAT_PARSER)
+    find_package(Java 1.11 REQUIRED)
+    add_custom_command(OUTPUT parse/WatLexer.cpp parse/WatParser.cpp
+        COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -no-listener -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR}/parse ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
+        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/instructions.g4
+    )
+endif(REBUILD_WAT_PARSER)
+
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
     parse/ErrorListener.cpp
     parse/Visitor.cpp
-    WatLexer.cpp
-    WatParser.cpp
+    parse/WatLexer.cpp
+    parse/WatParser.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
@@ -24,9 +29,13 @@ add_library(WasmVM_textfmt OBJECT
 add_dependencies(WasmVM_textfmt antlr4_runtime)
 target_include_directories(WasmVM_textfmt 
     PUBLIC ${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/include/antlr4-runtime
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-    PUBLIC ${CMAKE_CURRENT_LIST_DIR}/parse
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}
 )
+if(REBUILD_WAT_PARSER)
+target_include_directories(WasmVM_textfmt 
+    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
+)
+endif(REBUILD_WAT_PARSER)
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 add_subdirectory(parse)

@@ -3,8 +3,8 @@
 // license that can be found in the LICENSE file.
 
 #include <WasmVM.hpp>
-#include <WatLexer.h>
-#include <WatParser.h>
+#include <parse/WatLexer.h>
+#include <parse/WatParser.h>
 #include "ErrorListener.hpp"
 #include "Visitor.hpp"
 
@@ -24,5 +24,5 @@ WasmModule WasmVM::module_parse(std::istream& is){
     parser.addErrorListener(&parserErrorListener);
 
     WasmVM::Visitor visitor;
-    return std::any_cast<WasmVM::WasmModule>(visitor.visitModule(parser.module()));
+    return visitor.visit(parser.module());
 }

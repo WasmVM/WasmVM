@@ -16,7 +16,7 @@ f64 : Float;
 NumType : [if] ('32'|'64');
 RefType : 'funcref' | 'externref';
 HeapType : 'func' | 'extern';
-valtype : RefType | HeapType;
+valtype : NumType | RefType;
 param : '(' 'param' (Id valtype | valtype*) ')' ;
 result : '(' 'result' valtype* ')' ;
 functype : '(' 'func' param* result* ')' ;
