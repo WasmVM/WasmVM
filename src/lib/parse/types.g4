@@ -8,8 +8,8 @@ import token;
 
 i32 : Integer;
 i64 : Integer;
-u32 : Integer;
-u64 : Integer;
+u32 : Unsigned;
+u64 : Unsigned;
 f32 : Float;
 f64 : Float;
 

@@ -16,6 +16,7 @@ fragment HexDigit : [0-9a-fA-F];
 fragment Num : Digit '_'? Num | Digit;
 fragment HexNum : HexDigit '_'? HexNum | HexDigit;
 Integer : Sign (Num | '0x' HexNum);
+Unsigned : Num | '0x' HexNum;
 
 /* Floats */
 fragment Fmag : 'inf'
