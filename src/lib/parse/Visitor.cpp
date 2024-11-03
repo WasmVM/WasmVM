@@ -122,6 +122,7 @@ std::any Visitor::visitResult(WatParser::ResultContext *ctx){
 
 std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
     index_t func_idx = func_map.records.size();
+    // id
     if(ctx->Id() != nullptr){
         std::string id = ctx->Id()->getText();
         if(func_map.id_map.contains(id)){
@@ -129,6 +130,14 @@ std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
         }
         func_map.id_map[id] = func_idx;
     }
+    // exports
+    for(auto export_ctx : ctx->exportabbr()){
+        WasmExport& exp = module.exports.emplace_back();
+        exp.name = std::any_cast<std::string>(visitExportabbr(export_ctx));
+        exp.index = func_idx;
+        exp.desc = WasmExport::DescType::func;
+    }
+    // body
     if(ctx->importabbr() != nullptr){
         // import
         func_map.records.emplace_back(IndexSpace::Type::Import);
@@ -235,4 +244,9 @@ std::any Visitor::visitLocal(WatParser::LocalContext *ctx){
         values.emplace_back(std::any_cast<ValueType>(visitValtype(value_ctx)));
     }
     return values;
+}
+
+std::any Visitor::visitExportabbr(WatParser::ExportabbrContext *ctx){
+    std::string str = ctx->String()->getText();
+    return str.substr(1, str.size() - 2);
 }

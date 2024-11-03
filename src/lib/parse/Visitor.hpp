@@ -34,6 +34,7 @@ protected:
     virtual std::any visitTypeidx(WatParser::TypeidxContext *ctx) override;
     virtual std::any visitU32(WatParser::U32Context *ctx) override;
     virtual std::any visitImportabbr(WatParser::ImportabbrContext *ctx) override;
+    virtual std::any visitExportabbr(WatParser::ExportabbrContext *ctx) override;
     virtual std::any visitLocal(WatParser::LocalContext *ctx) override;
 
 public:
