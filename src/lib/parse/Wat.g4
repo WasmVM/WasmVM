@@ -32,16 +32,16 @@ importdesc : '(' 'func' Id? typeuse ')'
 importabbr : '(' 'import' String String ')' ;
 importsection : '(' importabbr importdesc ')' ;
 
-funcsection : '(' 'func' Id? exportabbr (importabbr typeuse | typeuse local* instr*) ')' ;
+funcsection : '(' 'func' Id? exportabbr* (importabbr typeuse | typeuse local* instr*) ')' ;
 local : '(' 'local' (Id? valtype | valtype+) ')';
 
-tablesection : '(' 'table' Id? exportabbr (importabbr? tabletype
+tablesection : '(' 'table' Id? exportabbr* (importabbr? tabletype
     | RefType '(' 'elem' (elemexpr* | funcidx*) ')'
     ) ')';
 
-memorysection : '(' 'memory' Id? exportabbr (importabbr? memtype | '(' 'data' String* ')') ')';
+memorysection : '(' 'memory' Id? exportabbr* (importabbr? memtype | '(' 'data' String* ')') ')';
 
-globalsection : '(' 'global' Id? exportabbr (importabbr globaltype | globaltype constexpr) ')';
+globalsection : '(' 'global' Id? exportabbr* (importabbr globaltype | globaltype constexpr) ')';
 
 exportsection : '(' 'export' String exportdesc ')' ;
 exportdesc : '(' 'func' funcidx ')'

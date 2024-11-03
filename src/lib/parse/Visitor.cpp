@@ -7,8 +7,14 @@
 
 #include <algorithm>
 #include <tuple>
+#include <utility>
 
 using namespace WasmVM;
+
+static std::pair<size_t, size_t> getLocation(antlr4::tree::TerminalNode* node){
+    auto symbol = node->getSymbol();
+    return {symbol->getLine(), symbol->getCharPositionInLine()};
+}
 
 WasmModule Visitor::visit(WatParser::ModuleContext *ctx){
     visitModule(ctx);
@@ -31,10 +37,9 @@ std::any Visitor::visitModulefield(WatParser::ModulefieldContext *ctx){
 
 std::any Visitor::visitTypesection(WatParser::TypesectionContext *ctx){
     if(ctx->Id() != nullptr){
-        antlr4::Token* token = ctx->Id()->getSymbol();
         std::string id = ctx->Id()->getText();
         if(type_map.contains(id)){
-            throw Exception::Parse("duplicated type id '" + id + "'", {token->getLine(), token->getCharPositionInLine()});
+            throw Exception::Parse("duplicated type id '" + id + "'", getLocation(ctx->Id()));
         }
         type_map[id] = types.size();
     }
@@ -91,13 +96,14 @@ std::any Visitor::visitFunctype(WatParser::FunctypeContext *ctx){
     return functype;
 }
 std::any Visitor::visitParam(WatParser::ParamContext *ctx){
-    std::variant<std::tuple<std::string, ValueType, std::pair<size_t, size_t>>, std::vector<ValueType>> param;
+    std::variant<
+        std::tuple<std::string, ValueType, std::pair<size_t, size_t>>, 
+        std::vector<ValueType>
+    > param;
     if(ctx->Id() != nullptr){
-        auto symbol = ctx->Id()->getSymbol();
-        std::pair<size_t, size_t> location {symbol->getLine(), symbol->getCharPositionInLine()};
         std::string id = ctx->Id()->getText();
         ValueType valuetype = std::any_cast<ValueType>(visitValtype(ctx->valtype(0)));
-        param = std::tuple<std::string, ValueType, std::pair<size_t, size_t>> {id, valuetype, location};
+        param = std::tuple<std::string, ValueType, std::pair<size_t, size_t>> {id, valuetype, getLocation(ctx->Id())};
     }else{
         std::vector<ValueType>& valuetypes = param.emplace<std::vector<ValueType>>();
         for(auto valuetype : ctx->valtype()){
@@ -112,4 +118,121 @@ std::any Visitor::visitResult(WatParser::ResultContext *ctx){
         results.emplace_back(std::any_cast<ValueType>(visitValtype(valuetype)));
     }
     return results;
+}
+
+std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
+    index_t func_idx = func_map.records.size();
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(func_map.id_map.contains(id)){
+            throw Exception::Parse("duplicated func id '" + id + "'", getLocation(ctx->Id()));
+        }
+        func_map.id_map[id] = func_idx;
+    }
+    if(ctx->importabbr() != nullptr){
+        // import
+        func_map.records.emplace_back(IndexSpace::Type::Import);
+        auto import_pair = std::any_cast<std::pair<std::string, std::string>>(visitImportabbr(ctx->importabbr()));
+        WasmImport& import = module.imports.emplace_back();
+        import.desc = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
+        import.module = import_pair.first;
+        import.name = import_pair.second;
+    }else{
+        // normal
+        func_map.records.emplace_back(IndexSpace::Type::Normal);
+        WasmFunc& func = module.funcs.emplace_back();
+        func.typeidx = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
+        // local
+        local_map = types[func.typeidx].second;
+        for(auto local_ctx : ctx->local()){
+            auto locals = std::any_cast<std::vector<ValueType>>(visitLocal(local_ctx));
+            func.locals.insert(func.locals.end(), locals.begin(), locals.end());
+        }
+        // instr
+        for(auto instr_ctx : ctx->instr()){
+            auto instrs = std::any_cast<std::vector<WasmInstr>>(visitInstr(instr_ctx));
+            func.body.insert(func.body.end(), instrs.begin(), instrs.end());
+        }
+        // epilogue
+        func.body.emplace_back(Instr::End());
+        local_map.clear();
+    }
+    return func_idx;
+}
+
+std::any Visitor::visitTypeuse(WatParser::TypeuseContext *ctx){
+    index_t typeidx = std::any_cast<index_t>(visitTypeidx(ctx->typeidx()));
+    auto params = ctx->param();
+    auto results = ctx->result();
+    if(params.empty() && results.empty()){
+        return typeidx;
+    }
+    // create new type
+    auto& new_type = types.emplace_back(types[typeidx]);
+    typeidx = types.size() - 1;
+    // params
+    for(auto param_ctx : params){
+        auto param = std::any_cast<std::variant<
+            std::tuple<std::string, ValueType, std::pair<size_t, size_t>>, 
+            std::vector<ValueType>
+        >>(visitParam(param_ctx));
+        if(std::holds_alternative<std::vector<ValueType>>(param)){
+            std::vector<ValueType>& values = std::get<std::vector<ValueType>>(param);
+            new_type.first.params.insert(new_type.first.params.end(), values.begin(), values.end());
+        }else{
+            auto param_tuple = std::get<std::tuple<std::string, ValueType, std::pair<size_t, size_t>>>(param);
+            std::string param_id = std::get<0>(param_tuple);
+            if(new_type.second.contains(param_id)){
+                throw Exception::Parse("duplicated param id '" + param_id + "'", std::get<2>(param_tuple));
+            }
+            new_type.second[param_id] = new_type.first.params.size();
+            new_type.first.params.emplace_back(std::get<1>(param_tuple));
+        }
+    }
+    // results
+    for(auto result_ctx : results){
+        auto result = std::any_cast<std::vector<ValueType>>(visitResult(result_ctx));
+        new_type.first.results.insert(new_type.first.results.end(), result.begin(), result.end());
+    }
+    return typeidx;
+}
+
+std::any Visitor::visitTypeidx(WatParser::TypeidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(type_map.contains(id)){
+            return type_map[id];
+        }else{
+            throw Exception::Parse("type id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return visitU32(ctx->u32());
+    }
+}
+
+std::any Visitor::visitU32(WatParser::U32Context *ctx){
+    return (index_t) std::stoul(ctx->Unsigned()->getText());
+}
+
+std::any Visitor::visitImportabbr(WatParser::ImportabbrContext *ctx){
+    std::string module = ctx->String(0)->getText();
+    std::string name = ctx->String(1)->getText();
+    return std::pair<std::string, std::string>(
+        module.substr(1, module.size() - 2),
+        name.substr(1, name.size() - 2)
+    );
+}
+
+std::any Visitor::visitLocal(WatParser::LocalContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(local_map.contains(id)){
+            throw Exception::Parse("duplicated local id '" + id + "'", getLocation(ctx->Id()));
+        }
+    }
+    std::vector<ValueType> values;
+    for(auto value_ctx : ctx->valtype()){
+        values.emplace_back(std::any_cast<ValueType>(visitValtype(value_ctx)));
+    }
+    return values;
 }
