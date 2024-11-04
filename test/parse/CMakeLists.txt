@@ -28,7 +28,7 @@ include_directories(
 add_test_suite(comments)
 add_test_suite(module)
 add_test_suite(type)
-# add_test_suite(import)
+add_test_suite(import)
 # add_test_suite(table)
 # add_test_suite(memory)
 # add_test_suite(global)

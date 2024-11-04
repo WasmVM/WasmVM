@@ -170,9 +170,16 @@ std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
 }
 
 std::any Visitor::visitTypeuse(WatParser::TypeuseContext *ctx){
-    index_t typeidx = std::any_cast<index_t>(visitTypeidx(ctx->typeidx()));
+    
+    index_t typeidx = 0;
     auto params = ctx->param();
     auto results = ctx->result();
+    if(ctx->typeidx() == nullptr){
+        typeidx = types.size();
+        types.emplace_back();
+    }else{
+        typeidx = std::any_cast<index_t>(visitTypeidx(ctx->typeidx()));
+    }
     if(params.empty() && results.empty()){
         return typeidx;
     }
@@ -215,7 +222,7 @@ std::any Visitor::visitTypeidx(WatParser::TypeidxContext *ctx){
             throw Exception::Parse("type id '" + id + "' not found", getLocation(ctx->Id()));
         }
     }else{
-        return visitU32(ctx->u32());
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
     }
 }
 
@@ -228,13 +235,28 @@ std::any Visitor::visitFuncidx(WatParser::FuncidxContext *ctx){
             throw Exception::Parse("func id '" + id + "' not found", getLocation(ctx->Id()));
         }
     }else{
-        return visitU32(ctx->u32());
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
     }
 }
-
-std::any Visitor::visitU32(WatParser::U32Context *ctx){
-    return (index_t) std::stoul(ctx->Unsigned()->getText());
+std::any Visitor::visitI32(WatParser::I32Context *ctx){
+    return (i32_t) std::stoi(ctx->Integer()->getText());
 }
+std::any Visitor::visitI64(WatParser::I64Context *ctx){
+    return (i64_t) std::stoll(ctx->Integer()->getText());
+}
+std::any Visitor::visitU32(WatParser::U32Context *ctx){
+    return (u32_t) std::stoul(ctx->Unsigned()->getText());
+}
+std::any Visitor::visitU64(WatParser::U64Context *ctx){
+    return (u64_t) std::stoull(ctx->Unsigned()->getText());
+}
+std::any Visitor::visitF32(WatParser::F32Context *ctx){
+    return (f32_t) std::stof(ctx->Float()->getText());
+}
+std::any Visitor::visitF64(WatParser::F64Context *ctx){
+    return (f64_t) std::stod(ctx->Float()->getText());
+}
+
 
 std::any Visitor::visitImportabbr(WatParser::ImportabbrContext *ctx){
     std::string module = ctx->String(0)->getText();
@@ -267,4 +289,59 @@ std::any Visitor::visitExportabbr(WatParser::ExportabbrContext *ctx){
 std::any Visitor::visitStartsection(WatParser::StartsectionContext *ctx){
     module.start = std::any_cast<index_t>(visitFuncidx(ctx->funcidx()));
     return module.start;
+}
+
+std::any Visitor::visitImportsection(WatParser::ImportsectionContext *ctx){
+    auto desc = std::any_cast<std::variant<
+        index_t, TableType, MemType, GlobalType
+    >>(visitImportdesc(ctx->importdesc()));
+    WasmImport& import = module.imports.emplace_back();
+    import.module = ctx->String(0)->getText();
+    import.module = import.module.substr(1, import.module.size() - 2);
+    import.name = ctx->String(1)->getText();
+    import.name = import.name.substr(1, import.name.size() - 2);
+    import.desc = desc;
+    return import;
+}
+
+std::any Visitor::visitImportdesc(WatParser::ImportdescContext *ctx){
+    std::variant<
+        index_t, TableType, MemType, GlobalType
+    > desc;
+    if(ctx->typeuse() != nullptr){
+        desc = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
+    }else if(ctx->tabletype() != nullptr){
+        desc = std::any_cast<TableType>(visitTabletype(ctx->tabletype()));
+    }else if(ctx->memtype() != nullptr){
+        desc = std::any_cast<MemType>(visitMemtype(ctx->memtype()));
+    }else{
+        desc = std::any_cast<GlobalType>(visitGlobaltype(ctx->globaltype()));
+    }
+    return desc;
+}
+
+std::any Visitor::visitTabletype(WatParser::TabletypeContext *ctx){
+    std::string reftype = ctx->RefType()->getText();
+    return TableType {
+        .limits = std::any_cast<Limits>(visitLimits(ctx->limits())),
+        .reftype = (reftype == "externref") ? RefType::externref : RefType::funcref
+    };
+}
+
+std::any Visitor::visitMemtype(WatParser::MemtypeContext *ctx){
+    return std::any_cast<MemType>(visitLimits(ctx->limits()));
+}
+
+std::any Visitor::visitGlobaltype(WatParser::GlobaltypeContext *ctx){
+    return GlobalType {
+        .mut = (ctx->children.size() > 1) ? GlobalType::variable : GlobalType::constant,
+        .type = std::any_cast<ValueType>(visitValtype(ctx->valtype()))
+    };
+}
+
+std::any Visitor::visitLimits(WatParser::LimitsContext *ctx){
+    return Limits {
+        .min = std::any_cast<u64_t>(visitU64(ctx->u64(0))),
+        .max = (ctx->u64().size() > 1) ? std::optional<offset_t>(std::any_cast<u64_t>(visitU64(ctx->u64(1)))) : std::nullopt
+    };
 }

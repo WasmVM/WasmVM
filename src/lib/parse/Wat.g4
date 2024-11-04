@@ -30,7 +30,7 @@ importdesc : '(' 'func' Id? typeuse ')'
     | '(' 'global' Id? globaltype ')'
     ;
 importabbr : '(' 'import' String String ')' ;
-importsection : '(' importabbr importdesc ')' ;
+importsection : '(' 'import' String String importdesc ')' ;
 
 funcsection : '(' 'func' Id? exportabbr* (importabbr typeuse | typeuse local* instr*) ')' ;
 local : '(' 'local' (Id? valtype | valtype+) ')';

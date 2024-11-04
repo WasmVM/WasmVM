@@ -20,7 +20,7 @@ valtype : NumType | RefType;
 param : '(' 'param' (Id valtype | valtype*) ')' ;
 result : '(' 'result' valtype* ')' ;
 functype : '(' 'func' param* result* ')' ;
-limits : i64 i64? ;
+limits : u64 u64? ;
 memtype : limits ;
 tabletype : limits RefType ;
 globaltype : valtype | '(' 'mut' valtype ')' ;
