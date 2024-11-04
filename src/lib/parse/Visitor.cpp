@@ -219,6 +219,19 @@ std::any Visitor::visitTypeidx(WatParser::TypeidxContext *ctx){
     }
 }
 
+std::any Visitor::visitFuncidx(WatParser::FuncidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(func_map.id_map.contains(id)){
+            return func_map.id_map[id];
+        }else{
+            throw Exception::Parse("func id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return visitU32(ctx->u32());
+    }
+}
+
 std::any Visitor::visitU32(WatParser::U32Context *ctx){
     return (index_t) std::stoul(ctx->Unsigned()->getText());
 }
@@ -249,4 +262,9 @@ std::any Visitor::visitLocal(WatParser::LocalContext *ctx){
 std::any Visitor::visitExportabbr(WatParser::ExportabbrContext *ctx){
     std::string str = ctx->String()->getText();
     return str.substr(1, str.size() - 2);
+}
+
+std::any Visitor::visitStartsection(WatParser::StartsectionContext *ctx){
+    module.start = std::any_cast<index_t>(visitFuncidx(ctx->funcidx()));
+    return module.start;
 }
