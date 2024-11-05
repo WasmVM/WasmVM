@@ -17,6 +17,11 @@ static std::pair<size_t, size_t> getLocation(antlr4::tree::TerminalNode* node){
     return {symbol->getLine(), symbol->getCharPositionInLine()};
 }
 
+static std::string unquote(std::string str){
+    str = str.substr(1, str.size() - 2);
+    return str;
+}
+
 WasmModule Visitor::visit(WatParser::ModuleContext *ctx){
     visitModule(ctx);
     post_process();
@@ -261,11 +266,9 @@ std::any Visitor::visitF64(WatParser::F64Context *ctx){
 
 
 std::any Visitor::visitImportabbr(WatParser::ImportabbrContext *ctx){
-    std::string module = ctx->String(0)->getText();
-    std::string name = ctx->String(1)->getText();
     return std::pair<std::string, std::string>(
-        module.substr(1, module.size() - 2),
-        name.substr(1, name.size() - 2)
+        unquote(ctx->String(0)->getText()),
+        unquote(ctx->String(1)->getText())
     );
 }
 
@@ -285,7 +288,7 @@ std::any Visitor::visitLocal(WatParser::LocalContext *ctx){
 
 std::any Visitor::visitExportabbr(WatParser::ExportabbrContext *ctx){
     std::string str = ctx->String()->getText();
-    return str.substr(1, str.size() - 2);
+    return unquote(ctx->String()->getText());
 }
 
 std::any Visitor::visitStartsection(WatParser::StartsectionContext *ctx){
@@ -298,10 +301,8 @@ std::any Visitor::visitImportsection(WatParser::ImportsectionContext *ctx){
         index_t, TableType, MemType, GlobalType
     >>(visitImportdesc(ctx->importdesc()));
     WasmImport& import = module.imports.emplace_back();
-    import.module = ctx->String(0)->getText();
-    import.module = import.module.substr(1, import.module.size() - 2);
-    import.name = ctx->String(1)->getText();
-    import.name = import.name.substr(1, import.name.size() - 2);
+    import.module = unquote(ctx->String(0)->getText());
+    import.name = unquote(ctx->String(1)->getText());
     import.desc = desc;
     return import;
 }
@@ -461,8 +462,7 @@ std::any Visitor::visitMemorysection(WatParser::MemorysectionContext *ctx){
                 .offset = Instr::I64_const()
             };
             for(auto datactx : ctx->String()){
-                std::string datastr = datactx->getText();
-                datastr = datastr.substr(1, datastr.size() - 2);
+                std::string datastr = unquote(datactx->getText());
                 size_t orig_size = data.init.size();
                 data.init.resize(orig_size + datastr.size());
                 std::memcpy(data.init.data() + orig_size, datastr.data(), datastr.size());
@@ -544,4 +544,63 @@ std::any Visitor::visitGlobalsection(WatParser::GlobalsectionContext *ctx){
         global.init = std::any_cast<ConstInstr>(visitConstexpr(ctx->constexpr_()));
     }
     return global_idx;
+}
+
+std::any Visitor::visitExportdesc(WatParser::ExportdescContext *ctx){
+    if(ctx->funcidx() != nullptr){
+        return std::pair<WasmExport::DescType, index_t>(
+            WasmExport::DescType::func,
+            std::any_cast<index_t>(visitFuncidx(ctx->funcidx()))
+        );
+    }else if(ctx->tableidx() != nullptr){
+        return std::pair<WasmExport::DescType, index_t>(
+            WasmExport::DescType::table,
+            std::any_cast<index_t>(visitTableidx(ctx->tableidx()))
+        );
+    }else if(ctx->memidx() != nullptr){
+        return std::pair<WasmExport::DescType, index_t>(
+            WasmExport::DescType::mem,
+            std::any_cast<index_t>(visitMemidx(ctx->memidx()))
+        );
+    }else{
+        return std::pair<WasmExport::DescType, index_t>(
+            WasmExport::DescType::global,
+            std::any_cast<index_t>(visitGlobalidx(ctx->globalidx()))
+        );
+    }
+}
+
+std::any Visitor::visitExportsection(WatParser::ExportsectionContext *ctx){
+    WasmExport& export_ = module.exports.emplace_back();
+    export_.name = unquote(ctx->String()->getText());
+    auto desc = std::any_cast<std::pair<WasmExport::DescType, index_t>>(visitExportdesc(ctx->exportdesc()));
+    export_.desc = desc.first;
+    export_.index = desc.second;
+    return export_;
+}
+
+std::any Visitor::visitTableidx(WatParser::TableidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(table_map.id_map.contains(id)){
+            return table_map.id_map[id];
+        }else{
+            throw Exception::Parse("table id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}
+
+std::any Visitor::visitMemidx(WatParser::MemidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(mem_map.id_map.contains(id)){
+            return mem_map.id_map[id];
+        }else{
+            throw Exception::Parse("memory id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
 }

@@ -42,8 +42,11 @@ protected:
     virtual std::any visitImportabbr(WatParser::ImportabbrContext *ctx) override;
     virtual std::any visitImportdesc(WatParser::ImportdescContext *ctx) override;
     virtual std::any visitExportabbr(WatParser::ExportabbrContext *ctx) override;
+    virtual std::any visitExportdesc(WatParser::ExportdescContext *ctx) override;
     virtual std::any visitTypeidx(WatParser::TypeidxContext *ctx) override;
     virtual std::any visitFuncidx(WatParser::FuncidxContext *ctx) override;
+    virtual std::any visitTableidx(WatParser::TableidxContext *ctx) override;
+    virtual std::any visitMemidx(WatParser::MemidxContext *ctx) override;
     virtual std::any visitGlobalidx(WatParser::GlobalidxContext *ctx) override;
     virtual std::any visitI32(WatParser::I32Context *ctx) override;
     virtual std::any visitI64(WatParser::I64Context *ctx) override;
@@ -57,6 +60,7 @@ protected:
     virtual std::any visitTablesection(WatParser::TablesectionContext *ctx) override;
     virtual std::any visitMemorysection(WatParser::MemorysectionContext *ctx) override;
     virtual std::any visitGlobalsection(WatParser::GlobalsectionContext *ctx) override;
+    virtual std::any visitExportsection(WatParser::ExportsectionContext *ctx) override;
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
 
     void post_process();
