@@ -176,7 +176,6 @@ std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
 }
 
 std::any Visitor::visitTypeuse(WatParser::TypeuseContext *ctx){
-    
     index_t typeidx = 0;
     auto params = ctx->param();
     auto results = ctx->result();
@@ -603,4 +602,85 @@ std::any Visitor::visitMemidx(WatParser::MemidxContext *ctx){
     }else{
         return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
     }
+}
+
+std::any Visitor::visitElemlist(WatParser::ElemlistContext *ctx){
+    std::pair<RefType, std::vector<ConstInstr>> elem_pair;
+    if(ctx->RefType() == nullptr){
+        elem_pair.first = RefType::funcref;
+        auto funcindices = ctx->funcidx();
+        std::transform(
+            funcindices.begin(), funcindices.end(),
+            std::back_inserter(elem_pair.second),
+            [&](auto funcidx){
+                return ConstInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(funcidx)))};
+            }
+        );
+    }else{
+        elem_pair.first = (ctx->RefType()->getText() == "funcref") ? RefType::funcref : RefType::externref;
+        auto elemexprs = ctx->elemexpr();
+        std::transform(
+            elemexprs.begin(), elemexprs.end(),
+            std::back_inserter(elem_pair.second),
+            [&](auto elemexpr){
+                return std::any_cast<ConstInstr>(visitElemexpr(elemexpr));
+            }
+        );
+    }
+    return elem_pair;
+}
+
+std::any Visitor::visitElemsection(WatParser::ElemsectionContext *ctx){
+    index_t elem_idx = module.elems.size();
+    // id
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(elem_map.contains(id)){
+            throw Exception::Parse("duplicated elem id '" + id + "'", getLocation(ctx->Id()));
+        }
+        elem_map[id] = elem_idx;
+    }
+    
+    WasmElem& elem = module.elems.emplace_back();
+    if(ctx->constexpr_() != nullptr){
+        // active
+        elem.mode.type = WasmElem::ElemMode::Mode::active;
+        elem.mode.offset = std::any_cast<ConstInstr>(visitConstexpr(ctx->constexpr_()));
+        if(ctx->tableuse() != nullptr){
+            elem.mode.tableidx = std::any_cast<index_t>(visitTableuse(ctx->tableuse()));
+        }else{
+            elem.mode.tableidx = 0;
+        }
+        if(ctx->funcidx().size() > 0){
+            elem.type = RefType::funcref;
+            auto funcindices = ctx->funcidx();
+            std::transform(
+                funcindices.begin(), funcindices.end(),
+                std::back_inserter(elem.elemlist),
+                [&](auto funcidx){
+                    return ConstInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(funcidx)))};
+                }
+            );
+            return elem;
+        }
+    }else{
+        if(std::any_of(ctx->children.begin(), ctx->children.end(), [](auto child){
+            return (child->getTreeType() == antlr4::tree::ParseTreeType::TERMINAL)
+                && (child->getText() == "declare");
+        })){
+            // declarative
+            elem.mode.type = WasmElem::ElemMode::Mode::declarative;
+        }else{
+            // passive
+            elem.mode.type = WasmElem::ElemMode::Mode::passive;
+        }
+    }
+    auto elem_pair = std::any_cast<std::pair<RefType, std::vector<ConstInstr>>>(visitElemlist(ctx->elemlist()));
+    elem.type = elem_pair.first;
+    elem.elemlist = elem_pair.second;
+    return elem;
+}
+
+std::any Visitor::visitTableuse(WatParser::TableuseContext *ctx){
+    return visitTableidx(ctx->tableidx());
 }
