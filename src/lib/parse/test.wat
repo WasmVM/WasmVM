@@ -1,5 +1,5 @@
 (module
-    (type (func))
-    (func $func0 (type 0))
-    (start $func0)
+    (global i64 i64.const 5)
+    (global (mut f32) f32.const 2.8)
+    (global $glo2 funcref ref.null extern)
 )

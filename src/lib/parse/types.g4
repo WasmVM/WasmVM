@@ -8,14 +8,13 @@ import token;
 
 i32 : Integer;
 i64 : Integer;
-u32 : Unsigned;
-u64 : Unsigned;
+u32 : Integer;
+u64 : Integer;
 f32 : Float;
 f64 : Float;
 
 NumType : [if] ('32'|'64');
 RefType : 'funcref' | 'externref';
-HeapType : 'func' | 'extern';
 valtype : NumType | RefType;
 param : '(' 'param' (Id valtype | valtype*) ')' ;
 result : '(' 'result' valtype* ')' ;

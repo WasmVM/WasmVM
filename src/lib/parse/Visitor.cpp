@@ -247,10 +247,10 @@ std::any Visitor::visitI64(WatParser::I64Context *ctx){
     return (i64_t) std::stoll(ctx->Integer()->getText());
 }
 std::any Visitor::visitU32(WatParser::U32Context *ctx){
-    return (u32_t) std::stoul(ctx->Unsigned()->getText());
+    return (u32_t) std::stoul(ctx->Integer()->getText());
 }
 std::any Visitor::visitU64(WatParser::U64Context *ctx){
-    return (u64_t) std::stoull(ctx->Unsigned()->getText());
+    return (u64_t) std::stoull(ctx->Integer()->getText());
 }
 std::any Visitor::visitF32(WatParser::F32Context *ctx){
     return (f32_t) std::stof(ctx->Float()->getText());
@@ -488,8 +488,8 @@ std::any Visitor::visitConstexpr(WatParser::ConstexprContext *ctx){
         return ConstInstr {Instr::F32_const(std::any_cast<f32_t>(visitF32(ctx->f32())))};
     }else if(instr == "f64.const"){
         return ConstInstr {Instr::F64_const(std::any_cast<f64_t>(visitF64(ctx->f64())))};
-    }else if(instr == "ref.null"){
-        return ConstInstr {Instr::Ref_null((ctx->HeapType()->getText() == "func") ? RefType::funcref : RefType::externref)};
+    }else if(instr.starts_with("ref.null")){
+        return ConstInstr {Instr::Ref_null(instr.ends_with("func") ? RefType::funcref : RefType::externref)};
     }else if(instr == "ref.func"){
         return ConstInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(ctx->funcidx())))};
     }else{
@@ -508,4 +508,40 @@ std::any Visitor::visitGlobalidx(WatParser::GlobalidxContext *ctx){
     }else{
         return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
     }
+}
+
+std::any Visitor::visitGlobalsection(WatParser::GlobalsectionContext *ctx){
+    index_t global_idx = global_map.records.size();
+    // id
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(global_map.id_map.contains(id)){
+            throw Exception::Parse("duplicated global id '" + id + "'", getLocation(ctx->Id()));
+        }
+        global_map.id_map[id] = global_idx;
+    }
+    // exports
+    for(auto export_ctx : ctx->exportabbr()){
+        WasmExport& exp = module.exports.emplace_back();
+        exp.name = std::any_cast<std::string>(visitExportabbr(export_ctx));
+        exp.index = global_idx;
+        exp.desc = WasmExport::DescType::global;
+    }
+
+    if(ctx->importabbr() != nullptr){
+        // import
+        global_map.records.emplace_back(IndexSpace::Type::Import);
+        auto import_pair = std::any_cast<std::pair<std::string, std::string>>(visitImportabbr(ctx->importabbr()));
+        WasmImport& import = module.imports.emplace_back();
+        import.desc = std::any_cast<GlobalType>(visitGlobaltype(ctx->globaltype()));
+        import.module = import_pair.first;
+        import.name = import_pair.second;
+    }else{
+        // normal
+        global_map.records.emplace_back(IndexSpace::Type::Normal);
+        WasmGlobal& global = module.globals.emplace_back();
+        global.type = std::any_cast<GlobalType>(visitGlobaltype(ctx->globaltype()));
+        global.init = std::any_cast<ConstInstr>(visitConstexpr(ctx->constexpr_()));
+    }
+    return global_idx;
 }

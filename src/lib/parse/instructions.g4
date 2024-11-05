@@ -27,7 +27,7 @@ constexpr : 'i32.const' i32
     | 'i64.const' i64
     | 'f32.const' f32
     | 'f64.const' f64
-    | 'ref.null' HeapType
+    | RefNull
     | 'ref.func' funcidx
     | 'global.get' globalidx
     ;
@@ -50,7 +50,8 @@ controlinstr : 'unreachable'
     | 'call_indirect' tableidx typeuse
     ;
 
-referenceinstr : 'ref.null' HeapType
+RefNull : 'ref.null' (BlockComment | LineComment | WhiteSpace)+ ('func' | 'extern');
+referenceinstr : RefNull
     | 'ref.is_null'
     | 'ref.func' funcidx
     ;
@@ -76,8 +77,8 @@ tableinstr : 'table.get' tableidx?
 
 memarg : Offset? Align?;
 
-Offset : 'offset=' Unsigned;
-Align : 'align=' Unsigned;
+Offset : 'offset=' Integer;
+Align : 'align=' Integer;
 
 memoryinstr : 'memory.size' memidx?
     | 'memory.grow' memidx?

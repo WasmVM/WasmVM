@@ -56,6 +56,7 @@ protected:
     virtual std::any visitFuncsection(WatParser::FuncsectionContext *ctx) override;
     virtual std::any visitTablesection(WatParser::TablesectionContext *ctx) override;
     virtual std::any visitMemorysection(WatParser::MemorysectionContext *ctx) override;
+    virtual std::any visitGlobalsection(WatParser::GlobalsectionContext *ctx) override;
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
 
     void post_process();
