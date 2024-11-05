@@ -238,6 +238,7 @@ std::any Visitor::visitFuncidx(WatParser::FuncidxContext *ctx){
         return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
     }
 }
+
 std::any Visitor::visitI32(WatParser::I32Context *ctx){
     return (i32_t) std::stoi(ctx->Integer()->getText());
 }
@@ -344,4 +345,115 @@ std::any Visitor::visitLimits(WatParser::LimitsContext *ctx){
         .min = std::any_cast<u64_t>(visitU64(ctx->u64(0))),
         .max = (ctx->u64().size() > 1) ? std::optional<offset_t>(std::any_cast<u64_t>(visitU64(ctx->u64(1)))) : std::nullopt
     };
+}
+
+std::any Visitor::visitTablesection(WatParser::TablesectionContext *ctx){
+    index_t table_idx = table_map.records.size();
+    // id
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(table_map.id_map.contains(id)){
+            throw Exception::Parse("duplicated table id '" + id + "'", getLocation(ctx->Id()));
+        }
+        table_map.id_map[id] = table_idx;
+    }
+    // exports
+    for(auto export_ctx : ctx->exportabbr()){
+        WasmExport& exp = module.exports.emplace_back();
+        exp.name = std::any_cast<std::string>(visitExportabbr(export_ctx));
+        exp.index = table_idx;
+        exp.desc = WasmExport::DescType::table;
+    }
+
+    if(ctx->importabbr() != nullptr){
+        // import
+        table_map.records.emplace_back(IndexSpace::Type::Import);
+        auto import_pair = std::any_cast<std::pair<std::string, std::string>>(visitImportabbr(ctx->importabbr()));
+        WasmImport& import = module.imports.emplace_back();
+        import.desc = std::any_cast<TableType>(visitTabletype(ctx->tabletype()));
+        import.module = import_pair.first;
+        import.name = import_pair.second;
+    }else{
+        // normal
+        table_map.records.emplace_back(IndexSpace::Type::Normal);
+        TableType& table = module.tables.emplace_back();
+        if(ctx->tabletype() != nullptr){
+            // tabletype
+            table = std::any_cast<TableType>(visitTabletype(ctx->tabletype()));
+        }else{
+            // embedded elem
+            table.reftype = (ctx->RefType()->getText() == "funcref") ? RefType::funcref : RefType::externref;
+            WasmElem& elem = module.elems.emplace_back();
+            elem.type = table.reftype;
+            elem.mode = WasmElem::ElemMode {
+                .tableidx = table_idx,
+                .type = WasmElem::ElemMode::Mode::active,
+                .offset = Instr::I32_const()
+            };
+            if(ctx->funcidx().size() > 0){
+                auto funcindices = ctx->funcidx();
+                table.limits.min = funcindices.size();
+                table.limits.max = funcindices.size();
+                std::transform(
+                    funcindices.begin(), funcindices.end(),
+                    std::back_inserter(elem.elemlist),
+                    [&](auto funcidx){
+                        return Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(funcidx)));
+                    }
+                );
+            }else{
+                auto elemexprs = ctx->elemexpr();
+                table.limits.min = elemexprs.size();
+                table.limits.max = elemexprs.size();
+                std::transform(
+                    elemexprs.begin(), elemexprs.end(),
+                    std::back_inserter(elem.elemlist),
+                    [&](auto elemexpr){
+                        return std::any_cast<ConstInstr>(visitElemexpr(elemexpr));
+                    }
+                );
+            }
+        }
+    }
+    return table_idx;
+}
+
+std::any Visitor::visitMemorysection(WatParser::MemorysectionContext *ctx){
+
+}
+
+std::any Visitor::visitElemexpr(WatParser::ElemexprContext *ctx){
+    return visitConstexpr(ctx->constexpr_());
+}
+
+std::any Visitor::visitConstexpr(WatParser::ConstexprContext *ctx){
+    std::string instr = ctx->children[0]->getText();
+    if(instr == "i32.const"){
+        return ConstInstr {Instr::I32_const(std::any_cast<i32_t>(visitI32(ctx->i32())))};
+    }else if(instr == "i64.const"){
+        return ConstInstr {Instr::I64_const(std::any_cast<i64_t>(visitI64(ctx->i64())))};
+    }else if(instr == "f32.const"){
+        return ConstInstr {Instr::F32_const(std::any_cast<f32_t>(visitF32(ctx->f32())))};
+    }else if(instr == "f64.const"){
+        return ConstInstr {Instr::F64_const(std::any_cast<f64_t>(visitF64(ctx->f64())))};
+    }else if(instr == "ref.null"){
+        return ConstInstr {Instr::Ref_null((ctx->HeapType()->getText() == "func") ? RefType::funcref : RefType::externref)};
+    }else if(instr == "ref.func"){
+        return ConstInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(ctx->funcidx())))};
+    }else{
+        return ConstInstr {Instr::Global_get(std::any_cast<index_t>(visitGlobalidx(ctx->globalidx())))};
+    }
+}
+
+std::any Visitor::visitGlobalidx(WatParser::GlobalidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(global_map.id_map.contains(id)){
+            return global_map.id_map[id];
+        }else{
+            throw Exception::Parse("global id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
 }

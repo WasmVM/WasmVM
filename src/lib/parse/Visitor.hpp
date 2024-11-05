@@ -20,6 +20,8 @@ protected:
     std::map<std::string, index_t> type_map;
     std::map<std::string, index_t> local_map;
     IndexSpace func_map;
+    IndexSpace table_map;
+    IndexSpace global_map;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
 
     virtual std::any visitModule(WatParser::ModuleContext *ctx) override;
@@ -34,11 +36,14 @@ protected:
     virtual std::any visitLocal(WatParser::LocalContext *ctx) override;
     virtual std::any visitTypeuse(WatParser::TypeuseContext *ctx) override;
     virtual std::any visitLimits(WatParser::LimitsContext *ctx) override;
+    virtual std::any visitElemexpr(WatParser::ElemexprContext *ctx) override;
+    virtual std::any visitConstexpr(WatParser::ConstexprContext *ctx) override;
     virtual std::any visitImportabbr(WatParser::ImportabbrContext *ctx) override;
     virtual std::any visitImportdesc(WatParser::ImportdescContext *ctx) override;
     virtual std::any visitExportabbr(WatParser::ExportabbrContext *ctx) override;
     virtual std::any visitTypeidx(WatParser::TypeidxContext *ctx) override;
     virtual std::any visitFuncidx(WatParser::FuncidxContext *ctx) override;
+    virtual std::any visitGlobalidx(WatParser::GlobalidxContext *ctx) override;
     virtual std::any visitI32(WatParser::I32Context *ctx) override;
     virtual std::any visitI64(WatParser::I64Context *ctx) override;
     virtual std::any visitU32(WatParser::U32Context *ctx) override;
@@ -48,6 +53,8 @@ protected:
     virtual std::any visitTypesection(WatParser::TypesectionContext *ctx) override;
     virtual std::any visitImportsection(WatParser::ImportsectionContext *ctx) override;
     virtual std::any visitFuncsection(WatParser::FuncsectionContext *ctx) override;
+    virtual std::any visitTablesection(WatParser::TablesectionContext *ctx) override;
+    virtual std::any visitMemorysection(WatParser::MemorysectionContext *ctx) override;
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
 
     void post_process();
