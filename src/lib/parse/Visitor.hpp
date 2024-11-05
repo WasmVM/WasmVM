@@ -21,6 +21,7 @@ protected:
     std::map<std::string, index_t> local_map;
     IndexSpace func_map;
     IndexSpace table_map;
+    IndexSpace mem_map;
     IndexSpace global_map;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
 

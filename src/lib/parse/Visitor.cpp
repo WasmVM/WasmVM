@@ -8,6 +8,7 @@
 #include <algorithm>
 #include <tuple>
 #include <utility>
+#include <cstring>
 
 using namespace WasmVM;
 
@@ -419,7 +420,58 @@ std::any Visitor::visitTablesection(WatParser::TablesectionContext *ctx){
 }
 
 std::any Visitor::visitMemorysection(WatParser::MemorysectionContext *ctx){
+    index_t mem_idx = mem_map.records.size();
+    // id
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(mem_map.id_map.contains(id)){
+            throw Exception::Parse("duplicated memory id '" + id + "'", getLocation(ctx->Id()));
+        }
+        mem_map.id_map[id] = mem_idx;
+    }
+    // exports
+    for(auto export_ctx : ctx->exportabbr()){
+        WasmExport& exp = module.exports.emplace_back();
+        exp.name = std::any_cast<std::string>(visitExportabbr(export_ctx));
+        exp.index = mem_idx;
+        exp.desc = WasmExport::DescType::mem;
+    }
 
+    if(ctx->importabbr() != nullptr){
+        // import
+        mem_map.records.emplace_back(IndexSpace::Type::Import);
+        auto import_pair = std::any_cast<std::pair<std::string, std::string>>(visitImportabbr(ctx->importabbr()));
+        WasmImport& import = module.imports.emplace_back();
+        import.desc = std::any_cast<MemType>(visitMemtype(ctx->memtype()));
+        import.module = import_pair.first;
+        import.name = import_pair.second;
+    }else{
+        // normal
+        mem_map.records.emplace_back(IndexSpace::Type::Normal);
+        MemType& mem = module.mems.emplace_back();
+        if(ctx->memtype() != nullptr){
+            // memtype
+            mem = std::any_cast<MemType>(visitMemtype(ctx->memtype()));
+        }else{
+            // embedded data
+            WasmData& data = module.datas.emplace_back();
+            data.mode = WasmData::DataMode {
+                .memidx = mem_idx,
+                .type = WasmData::DataMode::Mode::active,
+                .offset = Instr::I64_const()
+            };
+            for(auto datactx : ctx->String()){
+                std::string datastr = datactx->getText();
+                datastr = datastr.substr(1, datastr.size() - 2);
+                size_t orig_size = data.init.size();
+                data.init.resize(orig_size + datastr.size());
+                std::memcpy(data.init.data() + orig_size, datastr.data(), datastr.size());
+            }
+            mem.min = (data.init.size() + page_size - 1) / page_size;
+            mem.max = mem.min;
+        }
+    }
+    return mem_idx;
 }
 
 std::any Visitor::visitElemexpr(WatParser::ElemexprContext *ctx){
