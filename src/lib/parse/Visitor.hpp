@@ -50,6 +50,8 @@ protected:
     virtual std::any visitFuncsection(WatParser::FuncsectionContext *ctx) override;
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
 
+    void post_process();
+
 public:
     WasmModule visit(WatParser::ModuleContext *ctx);
 };

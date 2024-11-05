@@ -15,6 +15,7 @@ add_library(WasmVM_textfmt OBJECT
     parse/Visitor.cpp
     parse/WatLexer.cpp
     parse/WatParser.cpp
+    parse/post_process.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp

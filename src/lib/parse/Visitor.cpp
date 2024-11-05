@@ -18,7 +18,7 @@ static std::pair<size_t, size_t> getLocation(antlr4::tree::TerminalNode* node){
 
 WasmModule Visitor::visit(WatParser::ModuleContext *ctx){
     visitModule(ctx);
-    // TODO: post process
+    post_process();
     return module;
 }
 
