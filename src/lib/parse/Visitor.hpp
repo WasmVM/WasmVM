@@ -18,14 +18,16 @@ protected:
 
     WasmModule module;
     std::map<std::string, index_t> type_map;
-    std::map<std::string, index_t> local_map;
     std::map<std::string, index_t> elem_map;
     std::map<std::string, index_t> data_map;
+    std::map<std::string, index_t> local_map;
+    std::map<std::string, index_t> label_map;
     IndexSpace func_map;
     IndexSpace table_map;
     IndexSpace mem_map;
     IndexSpace global_map;
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types;
+    index_t block_level = 0;
 
     virtual std::any visitModule(WatParser::ModuleContext *ctx) override;
     virtual std::any visitModulefield(WatParser::ModulefieldContext *ctx) override;
@@ -53,6 +55,10 @@ protected:
     virtual std::any visitTableidx(WatParser::TableidxContext *ctx) override;
     virtual std::any visitMemidx(WatParser::MemidxContext *ctx) override;
     virtual std::any visitGlobalidx(WatParser::GlobalidxContext *ctx) override;
+    virtual std::any visitElemidx(WatParser::ElemidxContext *ctx) override;
+    virtual std::any visitDataidx(WatParser::DataidxContext *ctx) override;
+    virtual std::any visitLocalidx(WatParser::LocalidxContext *ctx) override;
+    virtual std::any visitLabelidx(WatParser::LabelidxContext *ctx) override;
     virtual std::any visitI32(WatParser::I32Context *ctx) override;
     virtual std::any visitI64(WatParser::I64Context *ctx) override;
     virtual std::any visitU32(WatParser::U32Context *ctx) override;
@@ -69,6 +75,10 @@ protected:
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
     virtual std::any visitElemsection(WatParser::ElemsectionContext *ctx) override;
     virtual std::any visitDatasection(WatParser::DatasectionContext *ctx) override;
+
+    virtual std::any visitInstr(WatParser::InstrContext *ctx) override;
+    virtual std::any visitPlaininstr(WatParser::PlaininstrContext *ctx) override;
+    virtual std::any visitControlinstr(WatParser::ControlinstrContext *ctx) override;
 
     void post_process();
 

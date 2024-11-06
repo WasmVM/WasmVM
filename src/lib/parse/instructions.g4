@@ -47,7 +47,7 @@ controlinstr : 'unreachable'
     | 'br_table' labelidx+
     | 'return'
     | 'call' funcidx
-    | 'call_indirect' tableidx typeuse
+    | 'call_indirect' tableidx? typeuse
     ;
 
 RefNull : 'ref.null' (BlockComment | LineComment | WhiteSpace)+ ('func' | 'extern');

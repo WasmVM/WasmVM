@@ -790,3 +790,55 @@ std::any Visitor::visitDatasection(WatParser::DatasectionContext *ctx){
 std::any Visitor::visitMemuse(WatParser::MemuseContext *ctx){
     return visitMemidx(ctx->memidx());
 }
+
+std::any Visitor::visitElemidx(WatParser::ElemidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(elem_map.contains(id)){
+            return elem_map[id];
+        }else{
+            throw Exception::Parse("element id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}
+
+std::any Visitor::visitDataidx(WatParser::DataidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(data_map.contains(id)){
+            return data_map[id];
+        }else{
+            throw Exception::Parse("data id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}
+
+std::any Visitor::visitLocalidx(WatParser::LocalidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(local_map.contains(id)){
+            return local_map[id];
+        }else{
+            throw Exception::Parse("local id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}
+
+std::any Visitor::visitLabelidx(WatParser::LabelidxContext *ctx){
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(label_map.contains(id)){
+            return label_map[id] - block_level;
+        }else{
+            throw Exception::Parse("label id '" + id + "' not found", getLocation(ctx->Id()));
+        }
+    }else{
+        return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}

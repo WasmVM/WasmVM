@@ -11,6 +11,7 @@ endif(REBUILD_WAT_PARSER)
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
+    parse/instruction.cpp
     parse/ErrorListener.cpp
     parse/Visitor.cpp
     parse/WatLexer.cpp
