@@ -20,6 +20,7 @@ protected:
     std::map<std::string, index_t> type_map;
     std::map<std::string, index_t> local_map;
     std::map<std::string, index_t> elem_map;
+    std::map<std::string, index_t> data_map;
     IndexSpace func_map;
     IndexSpace table_map;
     IndexSpace mem_map;
@@ -38,6 +39,7 @@ protected:
     virtual std::any visitLocal(WatParser::LocalContext *ctx) override;
     virtual std::any visitTypeuse(WatParser::TypeuseContext *ctx) override;
     virtual std::any visitTableuse(WatParser::TableuseContext *ctx) override;
+    virtual std::any visitMemuse(WatParser::MemuseContext *ctx) override;
     virtual std::any visitLimits(WatParser::LimitsContext *ctx) override;
     virtual std::any visitElemlist(WatParser::ElemlistContext *ctx) override;
     virtual std::any visitElemexpr(WatParser::ElemexprContext *ctx) override;
@@ -66,6 +68,7 @@ protected:
     virtual std::any visitExportsection(WatParser::ExportsectionContext *ctx) override;
     virtual std::any visitStartsection(WatParser::StartsectionContext *ctx) override;
     virtual std::any visitElemsection(WatParser::ElemsectionContext *ctx) override;
+    virtual std::any visitDatasection(WatParser::DatasectionContext *ctx) override;
 
     void post_process();
 

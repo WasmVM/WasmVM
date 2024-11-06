@@ -22,6 +22,66 @@ static std::string unquote(std::string str){
     return str;
 }
 
+static std::string removeUnderscore(std::string str){
+    str.erase(std::remove(str.begin(), str.end(), '_'), str.end());
+    return str;
+}
+
+static std::string toDataString(std::string str){
+    std::string datastr;
+    str = unquote(str);
+    for(auto it = str.begin(); it != str.end(); it = std::next(it)){
+        if(*it == '\\'){
+            it = std::next(it);
+            switch(*it){
+                case 't':
+                    datastr += '\t';
+                break;
+                case 'n':
+                    datastr += '\n';
+                break;
+                case 'r':
+                    datastr += '\r';
+                break;
+                case '"':
+                    datastr += '"';
+                break;
+                case '\'':
+                    datastr += '\'';
+                break;
+                case '\\':
+                    datastr += '\\';
+                break;
+                case 'u':{
+                    it = std::next(it, 2);
+                    std::string valstr;
+                    while(*it != '}'){
+                        valstr += *it;
+                        it = std::next(it);
+                    }
+                    u32_t val = std::stoul(removeUnderscore(valstr), nullptr, 16);
+                    if(val == 0){
+                        datastr += '\0';
+                    }else{
+                        while(val != 0){
+                            datastr += val & 0xff;
+                            val >>= CHAR_BIT;
+                        }
+                    }
+                }break;
+                default:{
+                    std::string valstr;
+                    datastr += std::stoi(std::string() + *it + *std::next(it), nullptr, 16);
+                    it = std::next(it);
+                }break;
+            }
+        }else{
+            datastr += *it;
+        }
+    }
+    return datastr;
+}
+
 WasmModule Visitor::visit(WatParser::ModuleContext *ctx){
     visitModule(ctx);
     post_process();
@@ -245,22 +305,30 @@ std::any Visitor::visitFuncidx(WatParser::FuncidxContext *ctx){
 }
 
 std::any Visitor::visitI32(WatParser::I32Context *ctx){
-    return (i32_t) std::stoi(ctx->Integer()->getText());
+    return (i32_t) std::stoi(removeUnderscore(ctx->Integer()->getText()));
 }
 std::any Visitor::visitI64(WatParser::I64Context *ctx){
-    return (i64_t) std::stoll(ctx->Integer()->getText());
+    return (i64_t) std::stoll(removeUnderscore(ctx->Integer()->getText()));
 }
 std::any Visitor::visitU32(WatParser::U32Context *ctx){
-    return (u32_t) std::stoul(ctx->Integer()->getText());
+    return (u32_t) std::stoul(removeUnderscore(ctx->Integer()->getText()));
 }
 std::any Visitor::visitU64(WatParser::U64Context *ctx){
-    return (u64_t) std::stoull(ctx->Integer()->getText());
+    return (u64_t) std::stoull(removeUnderscore(ctx->Integer()->getText()));
 }
 std::any Visitor::visitF32(WatParser::F32Context *ctx){
-    return (f32_t) std::stof(ctx->Float()->getText());
+    std::string text = removeUnderscore(ctx->Float()->getText());
+    if(text.starts_with("nan:0x")){
+        return (f32_t) std::nanf(text.substr(4).c_str());
+    }
+    return (f32_t) std::stof(text);
 }
 std::any Visitor::visitF64(WatParser::F64Context *ctx){
-    return (f64_t) std::stod(ctx->Float()->getText());
+    std::string text = removeUnderscore(ctx->Float()->getText());
+    if(text.starts_with("nan:0x")){
+        return (f32_t) std::nan(text.substr(4).c_str());
+    }
+    return (f64_t) std::stod(text);
 }
 
 
@@ -461,7 +529,7 @@ std::any Visitor::visitMemorysection(WatParser::MemorysectionContext *ctx){
                 .offset = Instr::I64_const()
             };
             for(auto datactx : ctx->String()){
-                std::string datastr = unquote(datactx->getText());
+                std::string datastr = toDataString(datactx->getText());
                 size_t orig_size = data.init.size();
                 data.init.resize(orig_size + datastr.size());
                 std::memcpy(data.init.data() + orig_size, datastr.data(), datastr.size());
@@ -683,4 +751,42 @@ std::any Visitor::visitElemsection(WatParser::ElemsectionContext *ctx){
 
 std::any Visitor::visitTableuse(WatParser::TableuseContext *ctx){
     return visitTableidx(ctx->tableidx());
+}
+
+std::any Visitor::visitDatasection(WatParser::DatasectionContext *ctx){
+    index_t data_idx = module.datas.size();
+    // id
+    if(ctx->Id() != nullptr){
+        std::string id = ctx->Id()->getText();
+        if(data_map.contains(id)){
+            throw Exception::Parse("duplicated data id '" + id + "'", getLocation(ctx->Id()));
+        }
+        data_map[id] = data_idx;
+    }
+
+    WasmData& data = module.datas.emplace_back();
+    if(ctx->constexpr_() != nullptr){
+        // active
+        data.mode.type = WasmData::DataMode::Mode::active;
+        data.mode.offset = std::any_cast<ConstInstr>(visitConstexpr(ctx->constexpr_()));
+        if(ctx->memuse() != nullptr){
+            data.mode.memidx = std::any_cast<index_t>(visitMemuse(ctx->memuse()));
+        }else{
+            data.mode.memidx = 0;
+        }
+    }else{
+        // passive
+        data.mode.type = WasmData::DataMode::Mode::passive;
+    }
+    for(auto datactx : ctx->String()){
+        std::string datastr = toDataString(datactx->getText());
+        size_t orig_size = data.init.size();
+        data.init.resize(orig_size + datastr.size());
+        std::memcpy(data.init.data() + orig_size, datastr.data(), datastr.size());
+    }
+    return data;
+}
+
+std::any Visitor::visitMemuse(WatParser::MemuseContext *ctx){
+    return visitMemidx(ctx->memidx());
 }
