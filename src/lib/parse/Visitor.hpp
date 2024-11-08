@@ -77,14 +77,20 @@ protected:
     virtual std::any visitDatasection(WatParser::DatasectionContext *ctx) override;
 
     virtual std::any visitInstr(WatParser::InstrContext *ctx) override;
+    virtual std::any visitElseinstr(WatParser::ElseinstrContext *ctx) override;
     virtual std::any visitPlaininstr(WatParser::PlaininstrContext *ctx) override;
     virtual std::any visitControlinstr(WatParser::ControlinstrContext *ctx) override;
+    virtual std::any visitLabel(WatParser::LabelContext *ctx) override;
+    virtual std::any visitBlockinstr(WatParser::BlockinstrContext *ctx) override;
 
     void post_process();
+    std::unordered_map<index_t, index_t> reorder_map(IndexSpace& space);
 
 public:
     WasmModule visit(WatParser::ModuleContext *ctx);
 };
+
+std::pair<size_t, size_t> getLocation(antlr4::tree::TerminalNode* node);
 
 }
 

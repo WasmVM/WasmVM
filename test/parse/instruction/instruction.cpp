@@ -43,7 +43,48 @@ Suite instruction {
         Expect(call_indirect1.typeidx == 9);
     })
     Test("block", {
-
+        ParseFile(test_module, "block.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // block with id
+        Expect(std::holds_alternative<Instr::Block>(instrs[0]));
+        Expect(std::get<Instr::Block>(instrs[0]).type.has_value() == false);
+        Expect(std::holds_alternative<Instr::Nop>(instrs[1]));
+        Expect(std::holds_alternative<Instr::End>(instrs[2]));
+        // block with result type
+        Expect(std::holds_alternative<Instr::Block>(instrs[3]));
+        Expect(std::get<Instr::Block>(instrs[3]).type.value() == 1);
+        Expect(std::holds_alternative<Instr::Nop>(instrs[4]));
+        Expect(std::holds_alternative<Instr::End>(instrs[5]));
+        // block with typeuse
+        Expect(std::holds_alternative<Instr::Block>(instrs[6]));
+        Expect(std::get<Instr::Block>(instrs[6]).type.value() == 0);
+        Expect(std::holds_alternative<Instr::Nop>(instrs[7]));
+        Expect(std::holds_alternative<Instr::End>(instrs[8]));
+        // loop
+        Expect(std::holds_alternative<Instr::Loop>(instrs[9]));
+        Expect(std::get<Instr::Loop>(instrs[9]).type.has_value() == false);
+        Expect(std::holds_alternative<Instr::Nop>(instrs[10]));
+        Expect(std::holds_alternative<Instr::End>(instrs[11]));
+        // if then else
+        Expect(std::holds_alternative<Instr::If>(instrs[12]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[13]));
+        Expect(std::holds_alternative<Instr::Else>(instrs[14]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[15]));
+        Expect(std::holds_alternative<Instr::End>(instrs[16]));
+        // if else
+        Expect(std::holds_alternative<Instr::If>(instrs[17]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[18]));
+        Expect(std::holds_alternative<Instr::Else>(instrs[19]));
+        Expect(std::holds_alternative<Instr::End>(instrs[20]));
+        // nested
+        Expect(std::holds_alternative<Instr::Loop>(instrs[21]));
+        Expect(std::holds_alternative<Instr::Block>(instrs[22]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[23]));
+        Expect(std::holds_alternative<Instr::End>(instrs[24]));
+        Expect(std::holds_alternative<Instr::Block>(instrs[25]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[26]));
+        Expect(std::holds_alternative<Instr::End>(instrs[27]));
+        Expect(std::holds_alternative<Instr::End>(instrs[28]));
     })
     Test("reference", {
 

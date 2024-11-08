@@ -12,7 +12,7 @@
 
 using namespace WasmVM;
 
-static std::pair<size_t, size_t> getLocation(antlr4::tree::TerminalNode* node){
+std::pair<size_t, size_t> WasmVM::getLocation(antlr4::tree::TerminalNode* node){
     auto symbol = node->getSymbol();
     return {symbol->getLine(), symbol->getCharPositionInLine()};
 }
@@ -840,5 +840,13 @@ std::any Visitor::visitLabelidx(WatParser::LabelidxContext *ctx){
         }
     }else{
         return (index_t)std::any_cast<u32_t>(visitU32(ctx->u32()));
+    }
+}
+
+std::any Visitor::visitLabel(WatParser::LabelContext *ctx){
+    if(ctx->Id() != nullptr){
+        return ctx->Id()->getText();
+    }else{
+        return std::string();
     }
 }

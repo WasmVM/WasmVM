@@ -10,17 +10,16 @@ instr : plaininstr | blockinstr | foldedinstr;
 
 label : Id?;
 
-blocktype : result? | typeuse;
-
-blockinstr : 'block' label blocktype instr* 'end' Id?
-    | 'loop' label blocktype instr* 'end' Id?
-    | 'if' label blocktype instr* ('else' Id? instr*) 'end' Id?
+elseinstr : instr;
+blockinstr : 'block' label typeuse instr* 'end' Id?
+    | 'loop' label typeuse instr* 'end' Id?
+    | 'if' label typeuse instr* ('else' Id? elseinstr*)? 'end' Id?
     ;
 
 foldedinstr : '(' plaininstr foldedinstr* ')'
-    | '(' 'block' label blocktype instr* ')'
-    | '(' 'loop' label blocktype instr* ')'
-    | '(' 'if' label blocktype foldedinstr* '(' 'then' instr* ')' ('(' 'else' instr* ')')? ')'
+    | '(' 'block' label typeuse instr* ')'
+    | '(' 'loop' label typeuse instr* ')'
+    | '(' 'if' label typeuse foldedinstr* '(' 'then' instr* ')' ('(' 'else' elseinstr* ')')? ')'
     ;
 
 constexpr : 'i32.const' i32
@@ -38,6 +37,7 @@ plaininstr : controlinstr
     | variableinstr
     | tableinstr
     | memoryinstr
+	| numericinstr
     ;
 
 controlinstr : 'unreachable'

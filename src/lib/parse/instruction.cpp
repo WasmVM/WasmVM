@@ -9,6 +9,10 @@
 
 using namespace WasmVM;
 
+std::any Visitor::visitElseinstr(WatParser::ElseinstrContext *ctx){
+    return visitInstr(ctx->instr());
+}
+
 std::any Visitor::visitInstr(WatParser::InstrContext *ctx){
     if(ctx->plaininstr() != nullptr){
         return std::vector<WasmInstr> {std::any_cast<WasmInstr>(visitPlaininstr(ctx->plaininstr()))};
@@ -50,4 +54,40 @@ std::any Visitor::visitControlinstr(WatParser::ControlinstrContext *ctx){
             std::any_cast<index_t>(visitTypeuse(ctx->typeuse()))
         )};
     }
+}
+
+std::any Visitor::visitBlockinstr(WatParser::BlockinstrContext *ctx){
+    std::string label = std::any_cast<std::string>(visitLabel(ctx->label()));
+    auto indices = ctx->Id();
+    for(auto id : indices){
+        if((!id->getText().empty()) && (id->getText() != label)){
+            throw Exception::Parse("id '" + id->getText() + "' not match block label", getLocation(id));
+        }
+    }
+    std::optional<index_t> type;
+    if(!ctx->typeuse()->children.empty()){
+        type = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
+    }
+    std::vector<WasmInstr> instrs;
+    std::string name = ctx->children[0]->getText();
+    if(name == "if"){
+        instrs.emplace_back(Instr::If(type));
+    }else if(name == "block"){
+        instrs.emplace_back(Instr::Block(type));
+    }else{
+        instrs.emplace_back(Instr::Loop(type));
+    }
+    for(auto instr : ctx->instr()){
+        std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitInstr(instr));
+        instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+    }
+    if(name == "if"){
+        instrs.emplace_back(Instr::Else());
+        for(auto instr : ctx->elseinstr()){
+        std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitElseinstr(instr));
+            instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+        }
+    }
+    instrs.emplace_back(Instr::End());
+    return instrs;
 }
