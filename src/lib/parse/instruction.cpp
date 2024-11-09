@@ -91,3 +91,42 @@ std::any Visitor::visitBlockinstr(WatParser::BlockinstrContext *ctx){
     instrs.emplace_back(Instr::End());
     return instrs;
 }
+
+
+std::any Visitor::visitFoldedinstr(WatParser::FoldedinstrContext *ctx){
+    std::vector<WasmInstr> instrs;
+    for(auto folded : ctx->foldedinstr()){
+        std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitFoldedinstr(folded));
+        instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+    }
+    if(ctx->plaininstr() != nullptr){
+        instrs.emplace_back(std::any_cast<WasmInstr>(visitPlaininstr(ctx->plaininstr())));
+        return instrs;
+    }
+    std::string label = std::any_cast<std::string>(visitLabel(ctx->label()));
+    std::optional<index_t> type;
+    if(!ctx->typeuse()->children.empty()){
+        type = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
+    }
+    std::string name = ctx->children[1]->getText();
+    if(name == "if"){
+        instrs.emplace_back(Instr::If(type));
+    }else if(name == "block"){
+        instrs.emplace_back(Instr::Block(type));
+    }else{
+        instrs.emplace_back(Instr::Loop(type));
+    }
+    for(auto instr : ctx->instr()){
+        std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitInstr(instr));
+        instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+    }
+    if(name == "if"){
+        instrs.emplace_back(Instr::Else());
+        for(auto instr : ctx->elseinstr()){
+        std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitElseinstr(instr));
+            instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+        }
+    }
+    instrs.emplace_back(Instr::End());
+    return instrs;
+}

@@ -116,6 +116,39 @@ Suite instruction {
         })
     })
     Test("folded", {
-
+        ParseFile(test_module, "folded.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // Single plain
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[0]));
+        // plain with folded
+        Expect(std::holds_alternative<Instr::Return>(instrs[1]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[2]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[3]));
+        // block
+        Expect(std::holds_alternative<Instr::Block>(instrs[4]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[5]));
+        Expect(std::holds_alternative<Instr::End>(instrs[6]));
+        // loop
+        Expect(std::holds_alternative<Instr::Loop>(instrs[7]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[8]));
+        Expect(std::holds_alternative<Instr::End>(instrs[9]));
+        // if
+        Expect(std::holds_alternative<Instr::If>(instrs[10]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[11]));
+        Expect(std::holds_alternative<Instr::Else>(instrs[12]));
+        Expect(std::holds_alternative<Instr::End>(instrs[13]));
+        // if then else
+        Expect(std::holds_alternative<Instr::If>(instrs[14]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[15]));
+        Expect(std::holds_alternative<Instr::Else>(instrs[16]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[17]));
+        Expect(std::holds_alternative<Instr::End>(instrs[18]));
+        // if folded
+        Expect(std::holds_alternative<Instr::Return>(instrs[19]));
+        Expect(std::holds_alternative<Instr::If>(instrs[20]));
+        Expect(std::holds_alternative<Instr::Unreachable>(instrs[21]));
+        Expect(std::holds_alternative<Instr::Else>(instrs[22]));
+        Expect(std::holds_alternative<Instr::Nop>(instrs[23]));
+        Expect(std::holds_alternative<Instr::End>(instrs[24]));
     })
 };

@@ -82,6 +82,7 @@ protected:
     virtual std::any visitControlinstr(WatParser::ControlinstrContext *ctx) override;
     virtual std::any visitLabel(WatParser::LabelContext *ctx) override;
     virtual std::any visitBlockinstr(WatParser::BlockinstrContext *ctx) override;
+    virtual std::any visitFoldedinstr(WatParser::FoldedinstrContext *ctx) override;
 
     void post_process();
     std::unordered_map<index_t, index_t> reorder_map(IndexSpace& space);
