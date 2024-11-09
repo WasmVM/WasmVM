@@ -87,7 +87,17 @@ Suite instruction {
         Expect(std::holds_alternative<Instr::End>(instrs[28]));
     })
     Test("reference", {
-
+        ParseFile(test_module, "reference.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[1].body;
+        Expect(std::holds_alternative<Instr::Ref_null>(instrs[0]));
+        Expect(std::get<Instr::Ref_null>(instrs[0]).heaptype == RefType::funcref);
+        Expect(std::holds_alternative<Instr::Ref_null>(instrs[1]));
+        Expect(std::get<Instr::Ref_null>(instrs[1]).heaptype == RefType::externref);
+        Expect(std::holds_alternative<Instr::Ref_is_null>(instrs[2]));
+        Expect(std::holds_alternative<Instr::Ref_func>(instrs[3]));
+        Expect(std::get<Instr::Ref_func>(instrs[3]).index == 0);
+        Expect(std::holds_alternative<Instr::Ref_func>(instrs[4]));
+        Expect(std::get<Instr::Ref_func>(instrs[4]).index == 1);
     })
     Test("parametric", {
 

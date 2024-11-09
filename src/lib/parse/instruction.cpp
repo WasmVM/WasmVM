@@ -130,3 +130,17 @@ std::any Visitor::visitFoldedinstr(WatParser::FoldedinstrContext *ctx){
     instrs.emplace_back(Instr::End());
     return instrs;
 }
+
+std::any Visitor::visitReferenceinstr(WatParser::ReferenceinstrContext *ctx){
+    if(ctx->RefNull() != nullptr){
+        if(ctx->children.back()->getText().ends_with("func")){
+            return WasmInstr {Instr::Ref_null(RefType::funcref)};
+        }else{
+            return WasmInstr {Instr::Ref_null(RefType::externref)};
+        }
+    }else if(ctx->children[0]->getText() == "ref.is_null"){
+        return WasmInstr {Instr::Ref_is_null()};
+    }else{
+        return WasmInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(ctx->funcidx())))};
+    }
+}
