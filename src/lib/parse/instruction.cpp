@@ -144,3 +144,18 @@ std::any Visitor::visitReferenceinstr(WatParser::ReferenceinstrContext *ctx){
         return WasmInstr {Instr::Ref_func(std::any_cast<index_t>(visitFuncidx(ctx->funcidx())))};
     }
 }
+
+std::any Visitor::visitParametricinstr(WatParser::ParametricinstrContext *ctx){
+    if(ctx->children[0]->getText() == "select"){
+        Instr::Select instr;
+        if(!ctx->result().empty()){
+            for(auto result : ctx->result()){
+                std::vector<ValueType> new_results = std::any_cast<std::vector<ValueType>>(visitResult(result));
+                instr.valtypes.insert(instr.valtypes.end(), new_results.begin(), new_results.end());
+            }
+        }
+        return WasmInstr {instr};
+    }else{
+        return WasmInstr {Instr::Drop()};
+    }
+}
