@@ -159,3 +159,34 @@ std::any Visitor::visitParametricinstr(WatParser::ParametricinstrContext *ctx){
         return WasmInstr {Instr::Drop()};
     }
 }
+
+std::any Visitor::visitTableinstr(WatParser::TableinstrContext *ctx){
+    std::string name = ctx->children[0]->getText();
+    if(name == "elem.drop"){
+        return WasmInstr {Instr::Elem_drop(std::any_cast<index_t>(visitElemidx(ctx->elemidx())))};
+    }else if(name == "table.copy"){
+        index_t dst = 0, src = 0;
+        if(!ctx->tableidx().empty()){
+            dst = std::any_cast<index_t>(visitTableidx(ctx->tableidx(0)));
+            src = std::any_cast<index_t>(visitTableidx(ctx->tableidx(1)));
+        }
+        return WasmInstr {Instr::Table_copy(dst, src)};
+    }
+    index_t tableidx = 0;
+    if(!ctx->tableidx().empty()){
+        tableidx = std::any_cast<index_t>(visitTableidx(ctx->tableidx(0)));
+    }
+    if(name == "table.get"){
+        return WasmInstr {Instr::Table_get(tableidx)};
+    }else if(name == "table.set"){
+        return WasmInstr {Instr::Table_set(tableidx)};
+    }else if(name == "table.size"){
+        return WasmInstr {Instr::Table_size(tableidx)};
+    }else if(name == "table.grow"){
+        return WasmInstr {Instr::Table_grow(tableidx)};
+    }else if(name == "table.fill"){
+        return WasmInstr {Instr::Table_fill(tableidx)};
+    }else{
+        return WasmInstr {Instr::Table_init(tableidx, std::any_cast<index_t>(visitElemidx(ctx->elemidx())))};
+    }
+}

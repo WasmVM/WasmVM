@@ -106,7 +106,42 @@ Suite instruction {
 
     })
     Test("table", {
-
+        ParseFile(test_module, "table.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        Expect(std::holds_alternative<Instr::Table_get>(instrs[0]));
+        Expect(std::get<Instr::Table_get>(instrs[0]).index == 1);
+        Expect(std::holds_alternative<Instr::Table_get>(instrs[1]));
+        Expect(std::get<Instr::Table_get>(instrs[1]).index == 0);
+        Expect(std::holds_alternative<Instr::Table_set>(instrs[2]));
+        Expect(std::get<Instr::Table_set>(instrs[2]).index == 1);
+        Expect(std::holds_alternative<Instr::Table_set>(instrs[3]));
+        Expect(std::get<Instr::Table_set>(instrs[3]).index == 0);
+        Expect(std::holds_alternative<Instr::Table_size>(instrs[4]));
+        Expect(std::get<Instr::Table_size>(instrs[4]).index == 1);
+        Expect(std::holds_alternative<Instr::Table_size>(instrs[5]));
+        Expect(std::get<Instr::Table_size>(instrs[5]).index == 0);
+        Expect(std::holds_alternative<Instr::Table_grow>(instrs[6]));
+        Expect(std::get<Instr::Table_grow>(instrs[6]).index == 1);
+        Expect(std::holds_alternative<Instr::Table_grow>(instrs[7]));
+        Expect(std::get<Instr::Table_grow>(instrs[7]).index == 0);
+        Expect(std::holds_alternative<Instr::Table_fill>(instrs[8]));
+        Expect(std::get<Instr::Table_fill>(instrs[8]).index == 1);
+        Expect(std::holds_alternative<Instr::Table_fill>(instrs[9]));
+        Expect(std::get<Instr::Table_fill>(instrs[9]).index == 0);
+        Expect(std::holds_alternative<Instr::Table_copy>(instrs[10]));
+        Expect(std::get<Instr::Table_copy>(instrs[10]).dstidx == 1);
+        Expect(std::get<Instr::Table_copy>(instrs[10]).srcidx == 2);
+        Expect(std::holds_alternative<Instr::Table_copy>(instrs[11]));
+        Expect(std::get<Instr::Table_copy>(instrs[11]).dstidx == 0);
+        Expect(std::get<Instr::Table_copy>(instrs[11]).srcidx == 0);
+        Expect(std::holds_alternative<Instr::Table_init>(instrs[12]));
+        Expect(std::get<Instr::Table_init>(instrs[12]).tableidx == 1);
+        Expect(std::get<Instr::Table_init>(instrs[12]).elemidx == 3);
+        Expect(std::holds_alternative<Instr::Table_init>(instrs[13]));
+        Expect(std::get<Instr::Table_init>(instrs[13]).tableidx == 0);
+        Expect(std::get<Instr::Table_init>(instrs[13]).elemidx == 3);
+        Expect(std::holds_alternative<Instr::Elem_drop>(instrs[14]));
+        Expect(std::get<Instr::Elem_drop>(instrs[14]).index == 4);
     })
     Test("memory", {
 
