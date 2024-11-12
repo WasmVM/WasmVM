@@ -100,7 +100,15 @@ Suite instruction {
         Expect(std::get<Instr::Ref_func>(instrs[4]).index == 1);
     })
     Test("parametric", {
-
+        ParseFile(test_module, "parametric.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        Expect(std::holds_alternative<Instr::Select>(instrs[0]));
+        Expect(std::get<Instr::Select>(instrs[0]).valtypes.empty());
+        Expect(std::holds_alternative<Instr::Select>(instrs[1]));
+        Expect(std::get<Instr::Select>(instrs[1]).valtypes.size() == 2);
+        Expect(std::get<Instr::Select>(instrs[1]).valtypes[0] == ValueType::i32);
+        Expect(std::get<Instr::Select>(instrs[1]).valtypes[1] == ValueType::i64);
+        Expect(std::holds_alternative<Instr::Drop>(instrs[2]));
     })
     Test("variable", {
 
