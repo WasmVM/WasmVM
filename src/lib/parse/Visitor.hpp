@@ -86,6 +86,7 @@ protected:
     virtual std::any visitReferenceinstr(WatParser::ReferenceinstrContext *ctx) override;
     virtual std::any visitParametricinstr(WatParser::ParametricinstrContext *ctx) override;
     virtual std::any visitTableinstr(WatParser::TableinstrContext *ctx) override;
+    virtual std::any visitVariableinstr(WatParser::VariableinstrContext *ctx) override;
 
     void post_process();
     std::unordered_map<index_t, index_t> reorder_map(IndexSpace& space);

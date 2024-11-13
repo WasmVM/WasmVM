@@ -111,7 +111,20 @@ Suite instruction {
         Expect(std::holds_alternative<Instr::Drop>(instrs[2]));
     })
     Test("variable", {
-
+        ParseFile(test_module, "variable.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        Expect(std::holds_alternative<Instr::Local_get>(instrs[0]));
+        Expect(std::get<Instr::Local_get>(instrs[0]).index == 0);
+        Expect(std::holds_alternative<Instr::Local_get>(instrs[1]));
+        Expect(std::get<Instr::Local_get>(instrs[1]).index == 1);
+        Expect(std::holds_alternative<Instr::Local_set>(instrs[2]));
+        Expect(std::get<Instr::Local_set>(instrs[2]).index == 0);
+        Expect(std::holds_alternative<Instr::Local_tee>(instrs[3]));
+        Expect(std::get<Instr::Local_tee>(instrs[3]).index == 0);
+        Expect(std::holds_alternative<Instr::Global_get>(instrs[4]));
+        Expect(std::get<Instr::Global_get>(instrs[4]).index == 0);
+        Expect(std::holds_alternative<Instr::Global_set>(instrs[5]));
+        Expect(std::get<Instr::Global_set>(instrs[5]).index == 0);
     })
     Test("table", {
         ParseFile(test_module, "table.wat");

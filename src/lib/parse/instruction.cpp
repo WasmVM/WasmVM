@@ -57,13 +57,6 @@ std::any Visitor::visitControlinstr(WatParser::ControlinstrContext *ctx){
 }
 
 std::any Visitor::visitBlockinstr(WatParser::BlockinstrContext *ctx){
-    std::string label = std::any_cast<std::string>(visitLabel(ctx->label()));
-    auto indices = ctx->Id();
-    for(auto id : indices){
-        if((!id->getText().empty()) && (id->getText() != label)){
-            throw Exception::Parse("id '" + id->getText() + "' not match block label", getLocation(id));
-        }
-    }
     std::optional<index_t> type;
     if(!ctx->typeuse()->children.empty()){
         type = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
@@ -77,16 +70,27 @@ std::any Visitor::visitBlockinstr(WatParser::BlockinstrContext *ctx){
     }else{
         instrs.emplace_back(Instr::Loop(type));
     }
+    block_level += 1;
+    std::string label = std::any_cast<std::string>(visitLabel(ctx->label()));
+    auto indices = ctx->Id();
+    for(auto id : indices){
+        if((!id->getText().empty()) && (id->getText() != label)){
+            throw Exception::Parse("id '" + id->getText() + "' not match block label", getLocation(id));
+        }
+    }
     for(auto instr : ctx->instr()){
         std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitInstr(instr));
         instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
     }
+    block_level -= 1;
     if(name == "if"){
         instrs.emplace_back(Instr::Else());
+        block_level += 1;
         for(auto instr : ctx->elseinstr()){
         std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitElseinstr(instr));
             instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
         }
+        block_level -= 1;
     }
     instrs.emplace_back(Instr::End());
     return instrs;
@@ -103,7 +107,6 @@ std::any Visitor::visitFoldedinstr(WatParser::FoldedinstrContext *ctx){
         instrs.emplace_back(std::any_cast<WasmInstr>(visitPlaininstr(ctx->plaininstr())));
         return instrs;
     }
-    std::string label = std::any_cast<std::string>(visitLabel(ctx->label()));
     std::optional<index_t> type;
     if(!ctx->typeuse()->children.empty()){
         type = std::any_cast<index_t>(visitTypeuse(ctx->typeuse()));
@@ -116,16 +119,21 @@ std::any Visitor::visitFoldedinstr(WatParser::FoldedinstrContext *ctx){
     }else{
         instrs.emplace_back(Instr::Loop(type));
     }
+    block_level += 1;
+    visitLabel(ctx->label());
     for(auto instr : ctx->instr()){
         std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitInstr(instr));
         instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
     }
+    block_level -= 1;
     if(name == "if"){
+        block_level += 1;
         instrs.emplace_back(Instr::Else());
         for(auto instr : ctx->elseinstr()){
         std::vector<WasmInstr> new_instrs = std::any_cast<std::vector<WasmInstr>>(visitElseinstr(instr));
             instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
         }
+        block_level -= 1;
     }
     instrs.emplace_back(Instr::End());
     return instrs;
@@ -188,5 +196,26 @@ std::any Visitor::visitTableinstr(WatParser::TableinstrContext *ctx){
         return WasmInstr {Instr::Table_fill(tableidx)};
     }else{
         return WasmInstr {Instr::Table_init(tableidx, std::any_cast<index_t>(visitElemidx(ctx->elemidx())))};
+    }
+}
+
+std::any Visitor::visitVariableinstr(WatParser::VariableinstrContext *ctx){
+    std::string name = ctx->children[0]->getText();
+    if(name.starts_with("local")){
+        index_t localidx = std::any_cast<index_t>(visitLocalidx(ctx->localidx()));
+        if(name.ends_with("get")){
+            return WasmInstr {Instr::Local_get(localidx)};
+        }else if(name.ends_with("set")){
+            return WasmInstr {Instr::Local_set(localidx)};
+        }else{
+            return WasmInstr {Instr::Local_tee(localidx)};
+        }
+    }else{
+        index_t globalidx = std::any_cast<index_t>(visitGlobalidx(ctx->globalidx()));
+        if(name.ends_with("get")){
+            return WasmInstr {Instr::Global_get(globalidx)};
+        }else{
+            return WasmInstr {Instr::Global_set(globalidx)};
+        }
     }
 }

@@ -220,8 +220,12 @@ std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
         // local
         local_map = types[func.typeidx].second;
         for(auto local_ctx : ctx->local()){
-            auto locals = std::any_cast<std::vector<ValueType>>(visitLocal(local_ctx));
-            func.locals.insert(func.locals.end(), locals.begin(), locals.end());
+            auto local_pair = std::any_cast<std::pair<std::string,std::vector<ValueType>>>(visitLocal(local_ctx));
+            if(!local_pair.first.empty()){
+                index_t index = func.locals.size();
+                local_map[local_pair.first] = index;
+            }
+            func.locals.insert(func.locals.end(), local_pair.second.begin(), local_pair.second.end());
         }
         // instr
         for(auto instr_ctx : ctx->instr()){
@@ -231,6 +235,7 @@ std::any Visitor::visitFuncsection(WatParser::FuncsectionContext *ctx){
         // epilogue
         func.body.emplace_back(Instr::End());
         local_map.clear();
+        label_map.clear();
     }
     return func_idx;
 }
@@ -340,17 +345,21 @@ std::any Visitor::visitImportabbr(WatParser::ImportabbrContext *ctx){
 }
 
 std::any Visitor::visitLocal(WatParser::LocalContext *ctx){
+    std::pair<std::string, std::vector<ValueType>> local_pair;
     if(ctx->Id() != nullptr){
         std::string id = ctx->Id()->getText();
         if(local_map.contains(id)){
             throw Exception::Parse("duplicated local id '" + id + "'", getLocation(ctx->Id()));
         }
+        local_pair.first = id;
+        if(ctx->valtype().size() != 1){
+            throw Exception::Parse("local id should only bind to one local type", getLocation(ctx->Id()));
+        }
     }
-    std::vector<ValueType> values;
     for(auto value_ctx : ctx->valtype()){
-        values.emplace_back(std::any_cast<ValueType>(visitValtype(value_ctx)));
+        local_pair.second.emplace_back(std::any_cast<ValueType>(visitValtype(value_ctx)));
     }
-    return values;
+    return local_pair;
 }
 
 std::any Visitor::visitExportabbr(WatParser::ExportabbrContext *ctx){
@@ -834,7 +843,7 @@ std::any Visitor::visitLabelidx(WatParser::LabelidxContext *ctx){
     if(ctx->Id() != nullptr){
         std::string id = ctx->Id()->getText();
         if(label_map.contains(id)){
-            return label_map[id] - block_level;
+            return block_level - label_map[id];
         }else{
             throw Exception::Parse("label id '" + id + "' not found", getLocation(ctx->Id()));
         }
@@ -845,7 +854,12 @@ std::any Visitor::visitLabelidx(WatParser::LabelidxContext *ctx){
 
 std::any Visitor::visitLabel(WatParser::LabelContext *ctx){
     if(ctx->Id() != nullptr){
-        return ctx->Id()->getText();
+        std::string id = ctx->Id()->getText();
+        if(label_map.contains(id)){
+            throw Exception::Parse("duplicated label id '" + id + "'", getLocation(ctx->Id()));
+        }
+        label_map[id] = block_level;
+        return id;
     }else{
         return std::string();
     }
