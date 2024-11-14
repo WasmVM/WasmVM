@@ -1,0 +1,47 @@
+(module
+    (func 
+        i64.const 2
+        i64.clz
+        i64.ctz
+        i64.popcnt
+        i64.add
+        i64.sub
+        i64.mul
+        i64.div_s
+        i64.div_u
+        i64.rem_s
+        i64.rem_u
+        i64.and
+        i64.or
+        i64.xor
+        i64.shl
+        i64.shr_s
+        i64.shr_u
+        i64.rotl
+        i64.rotr
+        i64.eqz
+        i64.eq
+        i64.ne
+        i64.lt_s
+        i64.lt_u
+        i64.gt_s
+        i64.gt_u
+        i64.le_s
+        i64.le_u
+        i64.ge_s
+        i64.ge_u
+        i64.extend_i32_s
+        i64.extend_i32_u
+        i64.trunc_f32_s
+        i64.trunc_f32_u
+        i64.trunc_f64_s
+        i64.trunc_f64_u
+        i64.trunc_sat_f32_s
+        i64.trunc_sat_f32_u
+        i64.trunc_sat_f64_s
+        i64.trunc_sat_f64_u
+        i64.extend8_s
+        i64.extend16_s
+        i64.extend32_s
+    )
+)

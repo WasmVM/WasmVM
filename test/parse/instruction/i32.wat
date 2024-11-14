@@ -1,0 +1,46 @@
+(module
+    (func 
+        i32.const 2
+        i32.clz
+		i32.ctz
+		i32.popcnt
+		i32.add
+		i32.sub
+		i32.mul
+		i32.div_s
+		i32.div_u
+		i32.rem_s
+		i32.rem_u
+		i32.and
+		i32.or
+		i32.xor
+		i32.shl
+		i32.shr_s
+		i32.shr_u
+		i32.rotl
+		i32.rotr
+        i32.eqz
+		i32.eq
+		i32.ne
+		i32.lt_s
+		i32.lt_u
+		i32.gt_s
+		i32.gt_u
+		i32.le_s
+		i32.le_u
+		i32.ge_s
+		i32.ge_u
+        i32.wrap_i64
+		i32.trunc_f32_s
+		i32.trunc_f32_u
+		i32.trunc_f64_s
+		i32.trunc_f64_u
+		i32.trunc_sat_f32_s
+		i32.trunc_sat_f32_u
+		i32.trunc_sat_f64_s
+		i32.trunc_sat_f64_u
+        i32.reinterpret_f32
+        i32.extend8_s
+        i32.extend16_s
+    )
+)

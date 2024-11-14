@@ -266,16 +266,162 @@ Suite instruction {
     })
     Category("numeric", {
         Test("i32", {
-
+            ParseFile(test_module, "i32.wat");
+            std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+            Expect(std::holds_alternative<Instr::I32_const>(instrs[0]));
+            Expect(std::get<Instr::I32_const>(instrs[0]).value == 2);
+            Expect(std::holds_alternative<Instr::I32_clz>(instrs[1]));
+            Expect(std::holds_alternative<Instr::I32_ctz>(instrs[2]));
+            Expect(std::holds_alternative<Instr::I32_popcnt>(instrs[3]));
+            Expect(std::holds_alternative<Instr::I32_add>(instrs[4]));
+            Expect(std::holds_alternative<Instr::I32_sub>(instrs[5]));
+            Expect(std::holds_alternative<Instr::I32_mul>(instrs[6]));
+            Expect(std::holds_alternative<Instr::I32_div_s>(instrs[7]));
+            Expect(std::holds_alternative<Instr::I32_div_u>(instrs[8]));
+            Expect(std::holds_alternative<Instr::I32_rem_s>(instrs[9]));
+            Expect(std::holds_alternative<Instr::I32_rem_u>(instrs[10]));
+            Expect(std::holds_alternative<Instr::I32_and>(instrs[11]));
+            Expect(std::holds_alternative<Instr::I32_or>(instrs[12]));
+            Expect(std::holds_alternative<Instr::I32_xor>(instrs[13]));
+            Expect(std::holds_alternative<Instr::I32_shl>(instrs[14]));
+            Expect(std::holds_alternative<Instr::I32_shr_s>(instrs[15]));
+            Expect(std::holds_alternative<Instr::I32_shr_u>(instrs[16]));
+            Expect(std::holds_alternative<Instr::I32_rotl>(instrs[17]));
+            Expect(std::holds_alternative<Instr::I32_rotr>(instrs[18]));
+            Expect(std::holds_alternative<Instr::I32_eqz>(instrs[19]));
+            Expect(std::holds_alternative<Instr::I32_eq>(instrs[20]));
+            Expect(std::holds_alternative<Instr::I32_ne>(instrs[21]));
+            Expect(std::holds_alternative<Instr::I32_lt_s>(instrs[22]));
+            Expect(std::holds_alternative<Instr::I32_lt_u>(instrs[23]));
+            Expect(std::holds_alternative<Instr::I32_gt_s>(instrs[24]));
+            Expect(std::holds_alternative<Instr::I32_gt_u>(instrs[25]));
+            Expect(std::holds_alternative<Instr::I32_le_s>(instrs[26]));
+            Expect(std::holds_alternative<Instr::I32_le_u>(instrs[27]));
+            Expect(std::holds_alternative<Instr::I32_ge_s>(instrs[28]));
+            Expect(std::holds_alternative<Instr::I32_ge_u>(instrs[29]));
+            Expect(std::holds_alternative<Instr::I32_wrap_i64>(instrs[30]));
+            Expect(std::holds_alternative<Instr::I32_trunc_f32_s>(instrs[31]));
+            Expect(std::holds_alternative<Instr::I32_trunc_f32_u>(instrs[32]));
+            Expect(std::holds_alternative<Instr::I32_trunc_f64_s>(instrs[33]));
+            Expect(std::holds_alternative<Instr::I32_trunc_f64_u>(instrs[34]));
+            Expect(std::holds_alternative<Instr::I32_trunc_sat_f32_s>(instrs[35]));
+            Expect(std::holds_alternative<Instr::I32_trunc_sat_f32_u>(instrs[36]));
+            Expect(std::holds_alternative<Instr::I32_trunc_sat_f64_s>(instrs[37]));
+            Expect(std::holds_alternative<Instr::I32_trunc_sat_f64_u>(instrs[38]));
+            Expect(std::holds_alternative<Instr::I32_reinterpret_f32>(instrs[39]));
+            Expect(std::holds_alternative<Instr::I32_extend8_s>(instrs[40]));
+            Expect(std::holds_alternative<Instr::I32_extend16_s>(instrs[41]));
         })
         Test("i64", {
-
+            ParseFile(test_module, "i64.wat");
+            std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+            Expect(std::holds_alternative<Instr::I64_const>(instrs[0]));
+            Expect(std::get<Instr::I64_const>(instrs[0]).value == 2);
+            Expect(std::holds_alternative<Instr::I64_clz>(instrs[1]));
+		    Expect(std::holds_alternative<Instr::I64_ctz>(instrs[2]));
+		    Expect(std::holds_alternative<Instr::I64_popcnt>(instrs[3]));
+		    Expect(std::holds_alternative<Instr::I64_add>(instrs[4]));
+		    Expect(std::holds_alternative<Instr::I64_sub>(instrs[5]));
+		    Expect(std::holds_alternative<Instr::I64_mul>(instrs[6]));
+		    Expect(std::holds_alternative<Instr::I64_div_s>(instrs[7]));
+		    Expect(std::holds_alternative<Instr::I64_div_u>(instrs[8]));
+		    Expect(std::holds_alternative<Instr::I64_rem_s>(instrs[9]));
+		    Expect(std::holds_alternative<Instr::I64_rem_u>(instrs[10]));
+		    Expect(std::holds_alternative<Instr::I64_and>(instrs[11]));
+		    Expect(std::holds_alternative<Instr::I64_or>(instrs[12]));
+		    Expect(std::holds_alternative<Instr::I64_xor>(instrs[13]));
+		    Expect(std::holds_alternative<Instr::I64_shl>(instrs[14]));
+		    Expect(std::holds_alternative<Instr::I64_shr_s>(instrs[15]));
+		    Expect(std::holds_alternative<Instr::I64_shr_u>(instrs[16]));
+		    Expect(std::holds_alternative<Instr::I64_rotl>(instrs[17]));
+		    Expect(std::holds_alternative<Instr::I64_rotr>(instrs[18]));
+            Expect(std::holds_alternative<Instr::I64_eqz>(instrs[19]));
+		    Expect(std::holds_alternative<Instr::I64_eq>(instrs[20]));
+		    Expect(std::holds_alternative<Instr::I64_ne>(instrs[21]));
+		    Expect(std::holds_alternative<Instr::I64_lt_s>(instrs[22]));
+		    Expect(std::holds_alternative<Instr::I64_lt_u>(instrs[23]));
+		    Expect(std::holds_alternative<Instr::I64_gt_s>(instrs[24]));
+		    Expect(std::holds_alternative<Instr::I64_gt_u>(instrs[25]));
+		    Expect(std::holds_alternative<Instr::I64_le_s>(instrs[26]));
+		    Expect(std::holds_alternative<Instr::I64_le_u>(instrs[27]));
+		    Expect(std::holds_alternative<Instr::I64_ge_s>(instrs[28]));
+		    Expect(std::holds_alternative<Instr::I64_ge_u>(instrs[29]));
+		    Expect(std::holds_alternative<Instr::I64_extend_i32_s>(instrs[30]));
+		    Expect(std::holds_alternative<Instr::I64_extend_i32_u>(instrs[31]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_f32_s>(instrs[32]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_f32_u>(instrs[33]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_f64_s>(instrs[34]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_f64_u>(instrs[35]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_sat_f32_s>(instrs[36]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_sat_f32_u>(instrs[37]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_sat_f64_s>(instrs[38]));
+		    Expect(std::holds_alternative<Instr::I64_trunc_sat_f64_u>(instrs[39]));
+		    Expect(std::holds_alternative<Instr::I64_extend8_s>(instrs[40]));
+		    Expect(std::holds_alternative<Instr::I64_extend16_s>(instrs[41]));
+		    Expect(std::holds_alternative<Instr::I64_extend32_s>(instrs[42]));
         })
         Test("f32", {
-
+            ParseFile(test_module, "f32.wat");
+            std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+            Expect(std::holds_alternative<Instr::F32_const>(instrs[0]));
+            Expect(std::get<Instr::F32_const>(instrs[0]).value == 3.14f);
+            Expect(std::holds_alternative<Instr::F32_abs>(instrs[1]));
+            Expect(std::holds_alternative<Instr::F32_neg>(instrs[2]));
+            Expect(std::holds_alternative<Instr::F32_ceil>(instrs[3]));
+            Expect(std::holds_alternative<Instr::F32_floor>(instrs[4]));
+            Expect(std::holds_alternative<Instr::F32_trunc>(instrs[5]));
+            Expect(std::holds_alternative<Instr::F32_nearest>(instrs[6]));
+            Expect(std::holds_alternative<Instr::F32_sqrt>(instrs[7]));
+            Expect(std::holds_alternative<Instr::F32_add>(instrs[8]));
+            Expect(std::holds_alternative<Instr::F32_sub>(instrs[9]));
+            Expect(std::holds_alternative<Instr::F32_mul>(instrs[10]));
+            Expect(std::holds_alternative<Instr::F32_div>(instrs[11]));
+            Expect(std::holds_alternative<Instr::F32_min>(instrs[12]));
+            Expect(std::holds_alternative<Instr::F32_max>(instrs[13]));
+            Expect(std::holds_alternative<Instr::F32_copysign>(instrs[14]));
+            Expect(std::holds_alternative<Instr::F32_eq>(instrs[15]));
+            Expect(std::holds_alternative<Instr::F32_ne>(instrs[16]));
+            Expect(std::holds_alternative<Instr::F32_lt>(instrs[17]));
+            Expect(std::holds_alternative<Instr::F32_gt>(instrs[18]));
+            Expect(std::holds_alternative<Instr::F32_le>(instrs[19]));
+            Expect(std::holds_alternative<Instr::F32_ge>(instrs[20]));
+            Expect(std::holds_alternative<Instr::F32_convert_i32_s>(instrs[21]));
+            Expect(std::holds_alternative<Instr::F32_convert_i32_u>(instrs[22]));
+            Expect(std::holds_alternative<Instr::F32_convert_i64_s>(instrs[23]));
+            Expect(std::holds_alternative<Instr::F32_convert_i64_u>(instrs[24]));
+            Expect(std::holds_alternative<Instr::F32_demote_f64>(instrs[25]));
         })
         Test("f64", {
-
+            ParseFile(test_module, "f64.wat");
+            std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+            Expect(std::holds_alternative<Instr::F64_const>(instrs[0]));
+            Expect(std::get<Instr::F64_const>(instrs[0]).value == 3.14);
+            Expect(std::holds_alternative<Instr::F64_abs>(instrs[1]));
+            Expect(std::holds_alternative<Instr::F64_neg>(instrs[2]));
+            Expect(std::holds_alternative<Instr::F64_ceil>(instrs[3]));
+            Expect(std::holds_alternative<Instr::F64_floor>(instrs[4]));
+            Expect(std::holds_alternative<Instr::F64_trunc>(instrs[5]));
+            Expect(std::holds_alternative<Instr::F64_nearest>(instrs[6]));
+            Expect(std::holds_alternative<Instr::F64_sqrt>(instrs[7]));
+            Expect(std::holds_alternative<Instr::F64_add>(instrs[8]));
+            Expect(std::holds_alternative<Instr::F64_sub>(instrs[9]));
+            Expect(std::holds_alternative<Instr::F64_mul>(instrs[10]));
+            Expect(std::holds_alternative<Instr::F64_div>(instrs[11]));
+            Expect(std::holds_alternative<Instr::F64_min>(instrs[12]));
+            Expect(std::holds_alternative<Instr::F64_max>(instrs[13]));
+            Expect(std::holds_alternative<Instr::F64_copysign>(instrs[14]));
+            Expect(std::holds_alternative<Instr::F64_eq>(instrs[15]));
+            Expect(std::holds_alternative<Instr::F64_ne>(instrs[16]));
+            Expect(std::holds_alternative<Instr::F64_lt>(instrs[17]));
+            Expect(std::holds_alternative<Instr::F64_gt>(instrs[18]));
+            Expect(std::holds_alternative<Instr::F64_le>(instrs[19]));
+            Expect(std::holds_alternative<Instr::F64_ge>(instrs[20]));
+            Expect(std::holds_alternative<Instr::F64_convert_i32_s>(instrs[21]));
+            Expect(std::holds_alternative<Instr::F64_convert_i32_u>(instrs[22]));
+            Expect(std::holds_alternative<Instr::F64_convert_i64_s>(instrs[23]));
+            Expect(std::holds_alternative<Instr::F64_convert_i64_u>(instrs[24]));
+            Expect(std::holds_alternative<Instr::F64_promote_f32>(instrs[25]));
+            Expect(std::holds_alternative<Instr::F64_reinterpret_i64>(instrs[26]));
         })
     })
     Test("folded", {

@@ -53,9 +53,9 @@ public:
     T__204 = 205, T__205 = 206, T__206 = 207, T__207 = 208, T__208 = 209, 
     T__209 = 210, T__210 = 211, T__211 = 212, T__212 = 213, T__213 = 214, 
     T__214 = 215, T__215 = 216, T__216 = 217, T__217 = 218, T__218 = 219, 
-    BlockComment = 220, LineComment = 221, WhiteSpace = 222, Integer = 223, 
-    Float = 224, String = 225, Id = 226, NumType = 227, RefType = 228, RefNull = 229, 
-    Offset = 230, Align = 231
+    T__219 = 220, BlockComment = 221, LineComment = 222, WhiteSpace = 223, 
+    Integer = 224, Float = 225, String = 226, Id = 227, NumType = 228, RefType = 229, 
+    RefNull = 230, Offset = 231, Align = 232
   };
 
   explicit WatLexer(antlr4::CharStream *input);

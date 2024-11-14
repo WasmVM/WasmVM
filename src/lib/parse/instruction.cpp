@@ -327,5 +327,293 @@ std::any Visitor::visitMemoryinstr(WatParser::MemoryinstrContext *ctx){
 }
 
 std::any Visitor::visitNumericinstr(WatParser::NumericinstrContext *ctx){
-
+    std::string name = ctx->children[0]->getText();
+    if(name.ends_with("const")){
+        if(name.starts_with("i32")){
+            return WasmInstr {Instr::I32_const(std::any_cast<i32_t>(visitI32(ctx->i32())))};
+        }else if(name.starts_with("i64")){
+            return WasmInstr {Instr::I64_const(std::any_cast<i64_t>(visitI64(ctx->i64())))};
+        }else if(name.starts_with("f32")){
+            return WasmInstr {Instr::F32_const(std::any_cast<f32_t>(visitF32(ctx->f32())))};
+        }else{
+            return WasmInstr {Instr::F64_const(std::any_cast<f64_t>(visitF64(ctx->f64())))};
+        }
+    }
+    if(name.starts_with("i32")){
+        if(name.ends_with("clz")){
+            return WasmInstr {Instr::I32_clz()};
+        }else if(name.ends_with("ctz")){
+            return WasmInstr {Instr::I32_ctz()};
+        }else if(name.ends_with("popcnt")){
+            return WasmInstr {Instr::I32_popcnt()};
+        }else if(name.ends_with("add")){
+            return WasmInstr {Instr::I32_add()};
+        }else if(name.ends_with("sub")){
+            return WasmInstr {Instr::I32_sub()};
+        }else if(name.ends_with("mul")){
+            return WasmInstr {Instr::I32_mul()};
+        }else if(name.ends_with("div_s")){
+            return WasmInstr {Instr::I32_div_s()};
+        }else if(name.ends_with("div_u")){
+            return WasmInstr {Instr::I32_div_u()};
+        }else if(name.ends_with("rem_s")){
+            return WasmInstr {Instr::I32_rem_s()};
+        }else if(name.ends_with("rem_u")){
+            return WasmInstr {Instr::I32_rem_u()};
+        }else if(name.ends_with("and")){
+            return WasmInstr {Instr::I32_and()};
+        }else if(name.ends_with("xor")){
+            return WasmInstr {Instr::I32_xor()};
+        }else if(name.ends_with("or")){
+            return WasmInstr {Instr::I32_or()};
+        }else if(name.ends_with("shl")){
+            return WasmInstr {Instr::I32_shl()};
+        }else if(name.ends_with("shr_s")){
+            return WasmInstr {Instr::I32_shr_s()};
+        }else if(name.ends_with("shr_u")){
+            return WasmInstr {Instr::I32_shr_u()};
+        }else if(name.ends_with("rotl")){
+            return WasmInstr {Instr::I32_rotl()};
+        }else if(name.ends_with("rotr")){
+            return WasmInstr {Instr::I32_rotr()};
+        }else if(name.ends_with("eqz")){
+            return WasmInstr {Instr::I32_eqz()};
+        }else if(name.ends_with("eq")){
+            return WasmInstr {Instr::I32_eq()};
+        }else if(name.ends_with("ne")){
+            return WasmInstr {Instr::I32_ne()};
+        }else if(name.ends_with("lt_s")){
+            return WasmInstr {Instr::I32_lt_s()};
+        }else if(name.ends_with("lt_u")){
+            return WasmInstr {Instr::I32_lt_u()};
+        }else if(name.ends_with("gt_s")){
+            return WasmInstr {Instr::I32_gt_s()};
+        }else if(name.ends_with("gt_u")){
+            return WasmInstr {Instr::I32_gt_u()};
+        }else if(name.ends_with("le_s")){
+            return WasmInstr {Instr::I32_le_s()};
+        }else if(name.ends_with("le_u")){
+            return WasmInstr {Instr::I32_le_u()};
+        }else if(name.ends_with("ge_s")){
+            return WasmInstr {Instr::I32_ge_s()};
+        }else if(name.ends_with("ge_u")){
+            return WasmInstr {Instr::I32_ge_u()};
+        }else if(name.ends_with("wrap_i64")){
+            return WasmInstr {Instr::I32_wrap_i64()};
+        }else if(name.ends_with("trunc_f32_s")){
+            return WasmInstr {Instr::I32_trunc_f32_s()};
+        }else if(name.ends_with("trunc_f32_u")){
+            return WasmInstr {Instr::I32_trunc_f32_u()};
+        }else if(name.ends_with("trunc_f64_s")){
+            return WasmInstr {Instr::I32_trunc_f64_s()};
+        }else if(name.ends_with("trunc_f64_u")){
+            return WasmInstr {Instr::I32_trunc_f64_u()};
+        }else if(name.ends_with("trunc_sat_f32_s")){
+            return WasmInstr {Instr::I32_trunc_sat_f32_s()};
+        }else if(name.ends_with("trunc_sat_f32_u")){
+            return WasmInstr {Instr::I32_trunc_sat_f32_u()};
+        }else if(name.ends_with("trunc_sat_f64_s")){
+            return WasmInstr {Instr::I32_trunc_sat_f64_s()};
+        }else if(name.ends_with("trunc_sat_f64_u")){
+            return WasmInstr {Instr::I32_trunc_sat_f64_u()};
+        }else if(name.ends_with("reinterpret_f32")){
+            return WasmInstr {Instr::I32_reinterpret_f32()};
+        }else if(name.ends_with("extend8_s")){
+            return WasmInstr {Instr::I32_extend8_s()};
+        }else{
+            return WasmInstr {Instr::I32_extend16_s()};
+        }
+    }else if(name.starts_with("i64")){
+        if(name.ends_with("clz")){
+            return WasmInstr {Instr::I64_clz()};
+        }else if(name.ends_with("ctz")){
+            return WasmInstr {Instr::I64_ctz()};
+        }else if(name.ends_with("popcnt")){
+            return WasmInstr {Instr::I64_popcnt()};
+        }else if(name.ends_with("add")){
+            return WasmInstr {Instr::I64_add()};
+        }else if(name.ends_with("sub")){
+            return WasmInstr {Instr::I64_sub()};
+        }else if(name.ends_with("mul")){
+            return WasmInstr {Instr::I64_mul()};
+        }else if(name.ends_with("div_s")){
+            return WasmInstr {Instr::I64_div_s()};
+        }else if(name.ends_with("div_u")){
+            return WasmInstr {Instr::I64_div_u()};
+        }else if(name.ends_with("rem_s")){
+            return WasmInstr {Instr::I64_rem_s()};
+        }else if(name.ends_with("rem_u")){
+            return WasmInstr {Instr::I64_rem_u()};
+        }else if(name.ends_with("and")){
+            return WasmInstr {Instr::I64_and()};
+        }else if(name.ends_with("xor")){
+            return WasmInstr {Instr::I64_xor()};
+        }else if(name.ends_with("or")){
+            return WasmInstr {Instr::I64_or()};
+        }else if(name.ends_with("shl")){
+            return WasmInstr {Instr::I64_shl()};
+        }else if(name.ends_with("shr_s")){
+            return WasmInstr {Instr::I64_shr_s()};
+        }else if(name.ends_with("shr_u")){
+            return WasmInstr {Instr::I64_shr_u()};
+        }else if(name.ends_with("rotl")){
+            return WasmInstr {Instr::I64_rotl()};
+        }else if(name.ends_with("rotr")){
+            return WasmInstr {Instr::I64_rotr()};
+        }else if(name.ends_with("eqz")){
+            return WasmInstr {Instr::I64_eqz()};
+        }else if(name.ends_with("eq")){
+            return WasmInstr {Instr::I64_eq()};
+        }else if(name.ends_with("ne")){
+            return WasmInstr {Instr::I64_ne()};
+        }else if(name.ends_with("lt_s")){
+            return WasmInstr {Instr::I64_lt_s()};
+        }else if(name.ends_with("lt_u")){
+            return WasmInstr {Instr::I64_lt_u()};
+        }else if(name.ends_with("gt_s")){
+            return WasmInstr {Instr::I64_gt_s()};
+        }else if(name.ends_with("gt_u")){
+            return WasmInstr {Instr::I64_gt_u()};
+        }else if(name.ends_with("le_s")){
+            return WasmInstr {Instr::I64_le_s()};
+        }else if(name.ends_with("le_u")){
+            return WasmInstr {Instr::I64_le_u()};
+        }else if(name.ends_with("ge_s")){
+            return WasmInstr {Instr::I64_ge_s()};
+        }else if(name.ends_with("ge_u")){
+            return WasmInstr {Instr::I64_ge_u()};
+        }else if(name.ends_with("extend_i32_s")){
+            return WasmInstr {Instr::I64_extend_i32_s()};
+        }else if(name.ends_with("extend_i32_u")){
+            return WasmInstr {Instr::I64_extend_i32_u()};
+        }else if(name.ends_with("trunc_f32_s")){
+            return WasmInstr {Instr::I64_trunc_f32_s()};
+        }else if(name.ends_with("trunc_f32_u")){
+            return WasmInstr {Instr::I64_trunc_f32_u()};
+        }else if(name.ends_with("trunc_f64_s")){
+            return WasmInstr {Instr::I64_trunc_f64_s()};
+        }else if(name.ends_with("trunc_f64_u")){
+            return WasmInstr {Instr::I64_trunc_f64_u()};
+        }else if(name.ends_with("trunc_sat_f32_s")){
+            return WasmInstr {Instr::I64_trunc_sat_f32_s()};
+        }else if(name.ends_with("trunc_sat_f32_u")){
+            return WasmInstr {Instr::I64_trunc_sat_f32_u()};
+        }else if(name.ends_with("trunc_sat_f64_s")){
+            return WasmInstr {Instr::I64_trunc_sat_f64_s()};
+        }else if(name.ends_with("trunc_sat_f64_u")){
+            return WasmInstr {Instr::I64_trunc_sat_f64_u()};
+        }else if(name.ends_with("extend8_s")){
+            return WasmInstr {Instr::I64_extend8_s()};
+        }else if(name.ends_with("extend16_s")){
+            return WasmInstr {Instr::I64_extend16_s()};
+        }else{
+            return WasmInstr {Instr::I64_extend32_s()};
+        }
+    }else if(name.starts_with("f32")){
+        if(name.ends_with("abs")){
+            return WasmInstr {Instr::F32_abs()};
+        }else if(name.ends_with("neg")){
+            return WasmInstr {Instr::F32_neg()};
+        }else if(name.ends_with("ceil")){
+            return WasmInstr {Instr::F32_ceil()};
+        }else if(name.ends_with("floor")){
+            return WasmInstr {Instr::F32_floor()};
+        }else if(name.ends_with("trunc")){
+            return WasmInstr {Instr::F32_trunc()};
+        }else if(name.ends_with("nearest")){
+            return WasmInstr {Instr::F32_nearest()};
+        }else if(name.ends_with("sqrt")){
+            return WasmInstr {Instr::F32_sqrt()};
+        }else if(name.ends_with("add")){
+            return WasmInstr {Instr::F32_add()};
+        }else if(name.ends_with("sub")){
+            return WasmInstr {Instr::F32_sub()};
+        }else if(name.ends_with("mul")){
+            return WasmInstr {Instr::F32_mul()};
+        }else if(name.ends_with("div")){
+            return WasmInstr {Instr::F32_div()};
+        }else if(name.ends_with("min")){
+            return WasmInstr {Instr::F32_min()};
+        }else if(name.ends_with("max")){
+            return WasmInstr {Instr::F32_max()};
+        }else if(name.ends_with("copysign")){
+            return WasmInstr {Instr::F32_copysign()};
+        }else if(name.ends_with("eq")){
+            return WasmInstr {Instr::F32_eq()};
+        }else if(name.ends_with("ne")){
+            return WasmInstr {Instr::F32_ne()};
+        }else if(name.ends_with("lt")){
+            return WasmInstr {Instr::F32_lt()};
+        }else if(name.ends_with("gt")){
+            return WasmInstr {Instr::F32_gt()};
+        }else if(name.ends_with("le")){
+            return WasmInstr {Instr::F32_le()};
+        }else if(name.ends_with("ge")){
+            return WasmInstr {Instr::F32_ge()};
+        }else if(name.ends_with("convert_i32_s")){
+            return WasmInstr {Instr::F32_convert_i32_s()};
+        }else if(name.ends_with("convert_i32_u")){
+            return WasmInstr {Instr::F32_convert_i32_u()};
+        }else if(name.ends_with("convert_i64_s")){
+            return WasmInstr {Instr::F32_convert_i64_s()};
+        }else if(name.ends_with("convert_i64_u")){
+            return WasmInstr {Instr::F32_convert_i64_u()};
+        }else{
+            return WasmInstr {Instr::F32_demote_f64()};
+        }
+    }else{
+        if(name.ends_with("abs")){
+            return WasmInstr {Instr::F64_abs()};
+        }else if(name.ends_with("neg")){
+            return WasmInstr {Instr::F64_neg()};
+        }else if(name.ends_with("ceil")){
+            return WasmInstr {Instr::F64_ceil()};
+        }else if(name.ends_with("floor")){
+            return WasmInstr {Instr::F64_floor()};
+        }else if(name.ends_with("trunc")){
+            return WasmInstr {Instr::F64_trunc()};
+        }else if(name.ends_with("nearest")){
+            return WasmInstr {Instr::F64_nearest()};
+        }else if(name.ends_with("sqrt")){
+            return WasmInstr {Instr::F64_sqrt()};
+        }else if(name.ends_with("add")){
+            return WasmInstr {Instr::F64_add()};
+        }else if(name.ends_with("sub")){
+            return WasmInstr {Instr::F64_sub()};
+        }else if(name.ends_with("mul")){
+            return WasmInstr {Instr::F64_mul()};
+        }else if(name.ends_with("div")){
+            return WasmInstr {Instr::F64_div()};
+        }else if(name.ends_with("min")){
+            return WasmInstr {Instr::F64_min()};
+        }else if(name.ends_with("max")){
+            return WasmInstr {Instr::F64_max()};
+        }else if(name.ends_with("copysign")){
+            return WasmInstr {Instr::F64_copysign()};
+        }else if(name.ends_with("eq")){
+            return WasmInstr {Instr::F64_eq()};
+        }else if(name.ends_with("ne")){
+            return WasmInstr {Instr::F64_ne()};
+        }else if(name.ends_with("lt")){
+            return WasmInstr {Instr::F64_lt()};
+        }else if(name.ends_with("gt")){
+            return WasmInstr {Instr::F64_gt()};
+        }else if(name.ends_with("le")){
+            return WasmInstr {Instr::F64_le()};
+        }else if(name.ends_with("ge")){
+            return WasmInstr {Instr::F64_ge()};
+        }else if(name.ends_with("convert_i32_s")){
+            return WasmInstr {Instr::F64_convert_i32_s()};
+        }else if(name.ends_with("convert_i32_u")){
+            return WasmInstr {Instr::F64_convert_i32_u()};
+        }else if(name.ends_with("convert_i64_s")){
+            return WasmInstr {Instr::F64_convert_i64_s()};
+        }else if(name.ends_with("convert_i64_u")){
+            return WasmInstr {Instr::F64_convert_i64_u()};
+        }else if(name.ends_with("promote_f32")){
+            return WasmInstr {Instr::F64_promote_f32()};
+        }else{
+            return WasmInstr {Instr::F64_reinterpret_i64()};
+        }
+    }
 }
