@@ -325,3 +325,7 @@ std::any Visitor::visitMemoryinstr(WatParser::MemoryinstrContext *ctx){
         }
     }
 }
+
+std::any Visitor::visitNumericinstr(WatParser::NumericinstrContext *ctx){
+
+}

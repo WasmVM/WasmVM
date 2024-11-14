@@ -1,14 +1,14 @@
 #ifndef WASMVM_Parse_Visitor
 #define WASMVM_Parse_Visitor
 
-#include <parse/WatBaseVisitor.h>
+#include <parse/WatVisitor.h>
 #include <WasmVM.hpp>
 
 #include <map>
 
 namespace WasmVM {
 
-class Visitor : WatBaseVisitor {
+class Visitor : WatVisitor {
 protected:
     struct IndexSpace {
         enum class Type {Import, Normal};
@@ -89,6 +89,7 @@ protected:
     virtual std::any visitVariableinstr(WatParser::VariableinstrContext *ctx) override;
     virtual std::any visitMemarg(WatParser::MemargContext *ctx) override;
     virtual std::any visitMemoryinstr(WatParser::MemoryinstrContext *ctx) override;
+    virtual std::any visitNumericinstr(WatParser::NumericinstrContext *ctx) override;
 
     void post_process();
     std::unordered_map<index_t, index_t> reorder_map(IndexSpace& space);
