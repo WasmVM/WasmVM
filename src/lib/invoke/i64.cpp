@@ -128,22 +128,22 @@ void RunVisitor::operator()(Instr::I64_rotr&){
     auto ops = get_ops<i64_t>(stack);
     put_op(stack, (i64_t)std::rotr((u64_t)ops.first, (u64_t)ops.second));
 }
-void RunVisitor::operator()(Instr::I64_extend_s_i32&){
+void RunVisitor::operator()(Instr::I64_extend_i32_s&){
     put_op(stack, (i64_t)get_op<i32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I64_extend_u_i32&){
+void RunVisitor::operator()(Instr::I64_extend_i32_u&){
     put_op(stack, (i64_t)(u32_t)get_op<i32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I64_trunc_s_f32&){
+void RunVisitor::operator()(Instr::I64_trunc_f32_s&){
     put_op(stack, (i64_t)get_op<f32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I64_trunc_u_f32&){
+void RunVisitor::operator()(Instr::I64_trunc_f32_u&){
     put_op(stack, (i64_t)(u32_t)get_op<f32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I64_trunc_s_f64&){
+void RunVisitor::operator()(Instr::I64_trunc_f64_s&){
     put_op(stack, (i64_t)get_op<f64_t>(stack));
 }
-void RunVisitor::operator()(Instr::I64_trunc_u_f64&){
+void RunVisitor::operator()(Instr::I64_trunc_f64_u&){
     put_op(stack, (i64_t)(u64_t)get_op<f64_t>(stack));
 }
 void RunVisitor::operator()(Instr::I64_reinterpret_f64&){

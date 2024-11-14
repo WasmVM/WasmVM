@@ -276,25 +276,25 @@ using F64_min = Atomic<Opcode::F64_min>;
 using F64_max = Atomic<Opcode::F64_max>;
 using F64_copysign = Atomic<Opcode::F64_copysign>;
 using I32_wrap_i64 = Atomic<Opcode::I32_wrap_i64>;
-using I32_trunc_s_f32 = Atomic<Opcode::I32_trunc_s_f32>;
-using I32_trunc_u_f32 = Atomic<Opcode::I32_trunc_u_f32>;
-using I32_trunc_s_f64 = Atomic<Opcode::I32_trunc_s_f64>;
-using I32_trunc_u_f64 = Atomic<Opcode::I32_trunc_u_f64>;
-using I64_extend_s_i32 = Atomic<Opcode::I64_extend_s_i32>;
-using I64_extend_u_i32 = Atomic<Opcode::I64_extend_u_i32>;
-using I64_trunc_s_f32 = Atomic<Opcode::I64_trunc_s_f32>;
-using I64_trunc_u_f32 = Atomic<Opcode::I64_trunc_u_f32>;
-using I64_trunc_s_f64 = Atomic<Opcode::I64_trunc_s_f64>;
-using I64_trunc_u_f64 = Atomic<Opcode::I64_trunc_u_f64>;
-using F32_convert_s_i32 = Atomic<Opcode::F32_convert_s_i32>;
-using F32_convert_u_i32 = Atomic<Opcode::F32_convert_u_i32>;
-using F32_convert_s_i64 = Atomic<Opcode::F32_convert_s_i64>;
-using F32_convert_u_i64 = Atomic<Opcode::F32_convert_u_i64>;
+using I32_trunc_f32_s = Atomic<Opcode::I32_trunc_f32_s>;
+using I32_trunc_f32_u = Atomic<Opcode::I32_trunc_f32_u>;
+using I32_trunc_f64_s = Atomic<Opcode::I32_trunc_f64_s>;
+using I32_trunc_f64_u = Atomic<Opcode::I32_trunc_f64_u>;
+using I64_extend_i32_s = Atomic<Opcode::I64_extend_i32_s>;
+using I64_extend_i32_u = Atomic<Opcode::I64_extend_i32_u>;
+using I64_trunc_f32_s = Atomic<Opcode::I64_trunc_f32_s>;
+using I64_trunc_f32_u = Atomic<Opcode::I64_trunc_f32_u>;
+using I64_trunc_f64_s = Atomic<Opcode::I64_trunc_f64_s>;
+using I64_trunc_f64_u = Atomic<Opcode::I64_trunc_f64_u>;
+using F32_convert_i32_s = Atomic<Opcode::F32_convert_i32_s>;
+using F32_convert_i32_u = Atomic<Opcode::F32_convert_i32_u>;
+using F32_convert_i64_s = Atomic<Opcode::F32_convert_i64_s>;
+using F32_convert_i64_u = Atomic<Opcode::F32_convert_i64_u>;
 using F32_demote_f64 = Atomic<Opcode::F32_demote_f64>;
-using F64_convert_s_i32 = Atomic<Opcode::F64_convert_s_i32>;
-using F64_convert_u_i32 = Atomic<Opcode::F64_convert_u_i32>;
-using F64_convert_s_i64 = Atomic<Opcode::F64_convert_s_i64>;
-using F64_convert_u_i64 = Atomic<Opcode::F64_convert_u_i64>;
+using F64_convert_i32_s = Atomic<Opcode::F64_convert_i32_s>;
+using F64_convert_i32_u = Atomic<Opcode::F64_convert_i32_u>;
+using F64_convert_i64_s = Atomic<Opcode::F64_convert_i64_s>;
+using F64_convert_i64_u = Atomic<Opcode::F64_convert_i64_u>;
 using F64_promote_f32 = Atomic<Opcode::F64_promote_f32>;
 using I32_reinterpret_f32 = Atomic<Opcode::I32_reinterpret_f32>;
 using I64_reinterpret_f64 = Atomic<Opcode::I64_reinterpret_f64>;
@@ -487,25 +487,25 @@ using WasmInstr = std::variant<
     Instr::F64_max,
     Instr::F64_copysign,
     Instr::I32_wrap_i64,
-    Instr::I32_trunc_s_f32,
-    Instr::I32_trunc_u_f32,
-    Instr::I32_trunc_s_f64,
-    Instr::I32_trunc_u_f64,
-    Instr::I64_extend_s_i32,
-    Instr::I64_extend_u_i32,
-    Instr::I64_trunc_s_f32,
-    Instr::I64_trunc_u_f32,
-    Instr::I64_trunc_s_f64,
-    Instr::I64_trunc_u_f64,
-    Instr::F32_convert_s_i32,
-    Instr::F32_convert_u_i32,
-    Instr::F32_convert_s_i64,
-    Instr::F32_convert_u_i64,
+    Instr::I32_trunc_f32_s,
+    Instr::I32_trunc_f32_u,
+    Instr::I32_trunc_f64_s,
+    Instr::I32_trunc_f64_u,
+    Instr::I64_extend_i32_s,
+    Instr::I64_extend_i32_u,
+    Instr::I64_trunc_f32_s,
+    Instr::I64_trunc_f32_u,
+    Instr::I64_trunc_f64_s,
+    Instr::I64_trunc_f64_u,
+    Instr::F32_convert_i32_s,
+    Instr::F32_convert_i32_u,
+    Instr::F32_convert_i64_s,
+    Instr::F32_convert_i64_u,
     Instr::F32_demote_f64,
-    Instr::F64_convert_s_i32,
-    Instr::F64_convert_u_i32,
-    Instr::F64_convert_s_i64,
-    Instr::F64_convert_u_i64,
+    Instr::F64_convert_i32_s,
+    Instr::F64_convert_i32_u,
+    Instr::F64_convert_i64_s,
+    Instr::F64_convert_i64_u,
     Instr::F64_promote_f32,
     Instr::I32_reinterpret_f32,
     Instr::I64_reinterpret_f64,

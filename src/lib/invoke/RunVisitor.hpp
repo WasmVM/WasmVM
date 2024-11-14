@@ -92,10 +92,10 @@ struct RunVisitor {
     void operator()(Instr::I32_ge_s&);
     void operator()(Instr::I32_ge_u&);
     void operator()(Instr::I32_wrap_i64&);
-    void operator()(Instr::I32_trunc_s_f32&);
-    void operator()(Instr::I32_trunc_u_f32&);
-    void operator()(Instr::I32_trunc_s_f64&);
-    void operator()(Instr::I32_trunc_u_f64&);
+    void operator()(Instr::I32_trunc_f32_s&);
+    void operator()(Instr::I32_trunc_f32_u&);
+    void operator()(Instr::I32_trunc_f64_s&);
+    void operator()(Instr::I32_trunc_f64_u&);
     void operator()(Instr::I32_clz&);
     void operator()(Instr::I32_ctz&);
     void operator()(Instr::I32_popcnt&);
@@ -152,12 +152,12 @@ struct RunVisitor {
     void operator()(Instr::I64_shr_u&);
     void operator()(Instr::I64_rotl&);
     void operator()(Instr::I64_rotr&);
-    void operator()(Instr::I64_extend_s_i32&);
-    void operator()(Instr::I64_extend_u_i32&);
-    void operator()(Instr::I64_trunc_s_f32&);
-    void operator()(Instr::I64_trunc_u_f32&);
-    void operator()(Instr::I64_trunc_s_f64&);
-    void operator()(Instr::I64_trunc_u_f64&);
+    void operator()(Instr::I64_extend_i32_s&);
+    void operator()(Instr::I64_extend_i32_u&);
+    void operator()(Instr::I64_trunc_f32_s&);
+    void operator()(Instr::I64_trunc_f32_u&);
+    void operator()(Instr::I64_trunc_f64_s&);
+    void operator()(Instr::I64_trunc_f64_u&);
     void operator()(Instr::I64_reinterpret_f64&);
     void operator()(Instr::I64_extend8_s&);
     void operator()(Instr::I64_extend16_s&);
@@ -189,10 +189,10 @@ struct RunVisitor {
     void operator()(Instr::F32_max&);
     void operator()(Instr::F32_copysign&);
     void operator()(Instr::F32_reinterpret_i32&);
-    void operator()(Instr::F32_convert_s_i32&);
-    void operator()(Instr::F32_convert_u_i32&);
-    void operator()(Instr::F32_convert_s_i64&);
-    void operator()(Instr::F32_convert_u_i64&);
+    void operator()(Instr::F32_convert_i32_s&);
+    void operator()(Instr::F32_convert_i32_u&);
+    void operator()(Instr::F32_convert_i64_s&);
+    void operator()(Instr::F32_convert_i64_u&);
     void operator()(Instr::F32_demote_f64&);
     // f64
     void operator()(Instr::F64_const&);
@@ -217,10 +217,10 @@ struct RunVisitor {
     void operator()(Instr::F64_max&);
     void operator()(Instr::F64_copysign&);
     void operator()(Instr::F64_reinterpret_i64&);
-    void operator()(Instr::F64_convert_s_i32&);
-    void operator()(Instr::F64_convert_u_i32&);
-    void operator()(Instr::F64_convert_s_i64&);
-    void operator()(Instr::F64_convert_u_i64&);
+    void operator()(Instr::F64_convert_i32_s&);
+    void operator()(Instr::F64_convert_i32_u&);
+    void operator()(Instr::F64_convert_i64_s&);
+    void operator()(Instr::F64_convert_i64_u&);
     void operator()(Instr::F64_promote_f32&);
 };
 

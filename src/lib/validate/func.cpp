@@ -137,21 +137,21 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [i32] -> [i64]
-                case Opcode::I64_extend_s_i32 :
-                case Opcode::I64_extend_u_i32 :
+                case Opcode::I64_extend_i32_s :
+                case Opcode::I64_extend_i32_u :
                     state.pop(ValueType::i32);
                     state.push(ValueType::i64);
                 break;
                 // [i32] -> [f32]
-                case Opcode::F32_convert_s_i32 :
-                case Opcode::F32_convert_u_i32 :
+                case Opcode::F32_convert_i32_s :
+                case Opcode::F32_convert_i32_u :
                 case Opcode::F32_reinterpret_i32 :
                     state.pop(ValueType::i32);
                     state.push(ValueType::f32);
                 break;
                 // [i32] -> [f64]
-                case Opcode::F64_convert_s_i32 :
-                case Opcode::F64_convert_u_i32 :
+                case Opcode::F64_convert_i32_s :
+                case Opcode::F64_convert_i32_u :
                     state.pop(ValueType::i32);
                     state.push(ValueType::f64);
                 break;
@@ -172,14 +172,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [i64] -> [f32]
-                case Opcode::F32_convert_s_i64 :
-                case Opcode::F32_convert_u_i64 :
+                case Opcode::F32_convert_i64_s :
+                case Opcode::F32_convert_i64_u :
                     state.pop(ValueType::i64);
                     state.push(ValueType::f32);
                 break;
                 // [i64] -> [f64]
-                case Opcode::F64_convert_s_i64 :
-                case Opcode::F64_convert_u_i64 :
+                case Opcode::F64_convert_i64_s :
+                case Opcode::F64_convert_i64_u :
                 case Opcode::F64_reinterpret_i64 :
                     state.pop(ValueType::i64);
                     state.push(ValueType::f64);
@@ -196,8 +196,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::f32);
                 break;
                 // [f32] -> [i32]
-                case Opcode::I32_trunc_s_f32 :
-                case Opcode::I32_trunc_u_f32 :
+                case Opcode::I32_trunc_f32_s :
+                case Opcode::I32_trunc_f32_u :
                 case Opcode::I32_trunc_sat_f32_s :
                 case Opcode::I32_trunc_sat_f32_u :
                 case Opcode::I32_reinterpret_f32 :
@@ -205,8 +205,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [f32] -> [i64]
-                case Opcode::I64_trunc_s_f32 :
-                case Opcode::I64_trunc_u_f32 :
+                case Opcode::I64_trunc_f32_s :
+                case Opcode::I64_trunc_f32_u :
                 case Opcode::I64_trunc_sat_f32_s :
                 case Opcode::I64_trunc_sat_f32_u :
                     state.pop(ValueType::f32);
@@ -229,16 +229,16 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::f64);
                 break;
                 // [f64] -> [i32]
-                case Opcode::I32_trunc_s_f64 :
-                case Opcode::I32_trunc_u_f64 :
+                case Opcode::I32_trunc_f64_s :
+                case Opcode::I32_trunc_f64_u :
                 case Opcode::I32_trunc_sat_f64_s :
                 case Opcode::I32_trunc_sat_f64_u :
                     state.pop(ValueType::f64);
                     state.push(ValueType::i32);
                 break;
                 // [f64] -> [i64]
-                case Opcode::I64_trunc_s_f64 :
-                case Opcode::I64_trunc_u_f64 :
+                case Opcode::I64_trunc_f64_s :
+                case Opcode::I64_trunc_f64_u :
                 case Opcode::I64_trunc_sat_f64_s :
                 case Opcode::I64_trunc_sat_f64_u :
                 case Opcode::I64_reinterpret_f64 :

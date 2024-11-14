@@ -197,15 +197,15 @@ void RunVisitor::operator()(Instr::I32_trunc_sat_f64_u&){
 void RunVisitor::operator()(Instr::I32_wrap_i64&){
     put_op(stack, (i32_t)get_op<i64_t>(stack));
 }
-void RunVisitor::operator()(Instr::I32_trunc_s_f32&){
+void RunVisitor::operator()(Instr::I32_trunc_f32_s&){
     put_op(stack, (i32_t)get_op<f32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I32_trunc_u_f32&){
+void RunVisitor::operator()(Instr::I32_trunc_f32_u&){
     put_op(stack, (i32_t)(u32_t)get_op<f32_t>(stack));
 }
-void RunVisitor::operator()(Instr::I32_trunc_s_f64&){
+void RunVisitor::operator()(Instr::I32_trunc_f64_s&){
     put_op(stack, (i32_t)get_op<f64_t>(stack));
 }
-void RunVisitor::operator()(Instr::I32_trunc_u_f64&){
+void RunVisitor::operator()(Instr::I32_trunc_f64_u&){
     put_op(stack, (i32_t)(u64_t)get_op<f64_t>(stack));
 }
