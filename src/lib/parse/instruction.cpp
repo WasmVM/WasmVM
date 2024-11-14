@@ -219,3 +219,109 @@ std::any Visitor::visitVariableinstr(WatParser::VariableinstrContext *ctx){
         }
     }
 }
+
+std::any Visitor::visitMemoryinstr(WatParser::MemoryinstrContext *ctx){
+    std::string name = ctx->children[0]->getText();
+    if(name == "data.drop"){
+        return WasmInstr {Instr::Data_drop(std::any_cast<index_t>(visitDataidx(ctx->dataidx())))};
+    }else if(name == "memory.copy"){
+        index_t dst = 0, src = 0;
+        if(!ctx->memidx().empty()){
+            dst = std::any_cast<index_t>(visitMemidx(ctx->memidx(0)));
+            src = std::any_cast<index_t>(visitMemidx(ctx->memidx(1)));
+        }
+        return WasmInstr {Instr::Memory_copy(dst, src)};
+    }
+    index_t memidx = 0;
+    if(!ctx->memidx().empty()){
+        memidx = std::any_cast<index_t>(visitMemidx(ctx->memidx(0)));
+    }
+    if(name.starts_with("memory")){
+        if(name.ends_with("size")){
+            return WasmInstr {Instr::Memory_size(memidx)};
+        }else if(name.ends_with("grow")){
+            return WasmInstr {Instr::Memory_grow(memidx)};
+        }else if(name.ends_with("fill")){
+            return WasmInstr {Instr::Memory_fill(memidx)};
+        }else{
+            return WasmInstr {Instr::Memory_init(memidx, std::any_cast<index_t>(visitDataidx(ctx->dataidx())))};
+        }
+    }
+    auto memarg = std::any_cast<std::pair<offset_t, std::optional<align_t>>>(visitMemarg(ctx->memarg()));
+    if(!memarg.second.has_value()){
+        if(name.ends_with("8") || name.ends_with("8_s") || name.ends_with("8_u")){
+            memarg.second = 0;
+        }else if(name.ends_with("16") || name.ends_with("16_s") || name.ends_with("16_u")){
+            memarg.second = 1;
+        }else if(name.ends_with("32") || name.ends_with("32_s") || name.ends_with("32_u")){
+            memarg.second = 2;
+        }
+    }
+    if(name.starts_with("i32")){
+        if(!memarg.second.has_value()){
+            memarg.second = 2;
+        }
+        if(name.ends_with("load")){
+            return WasmInstr {Instr::I32_load(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load8_s")){
+            return WasmInstr {Instr::I32_load8_s(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load8_u")){
+            return WasmInstr {Instr::I32_load8_u(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load16_s")){
+            return WasmInstr {Instr::I32_load16_s(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load16_u")){
+            return WasmInstr {Instr::I32_load16_u(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("store")){
+            return WasmInstr {Instr::I32_store(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("store8")){
+            return WasmInstr {Instr::I32_store8(memidx, memarg.first, memarg.second.value())};
+        }else{
+            return WasmInstr {Instr::I32_store16(memidx, memarg.first, memarg.second.value())};
+        }
+    }else if(name.starts_with("i64")){
+        if(!memarg.second.has_value()){
+            memarg.second = 3;
+        }
+        if(name.ends_with("load")){
+            return WasmInstr {Instr::I64_load(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load8_s")){
+            return WasmInstr {Instr::I64_load8_s(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load8_u")){
+            return WasmInstr {Instr::I64_load8_u(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load16_s")){
+            return WasmInstr {Instr::I64_load16_s(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load16_u")){
+            return WasmInstr {Instr::I64_load16_u(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load32_s")){
+            return WasmInstr {Instr::I64_load32_s(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("load32_u")){
+            return WasmInstr {Instr::I64_load32_u(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("store")){
+            return WasmInstr {Instr::I64_store(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("store8")){
+            return WasmInstr {Instr::I64_store8(memidx, memarg.first, memarg.second.value())};
+        }else if(name.ends_with("store16")){
+            return WasmInstr {Instr::I64_store16(memidx, memarg.first, memarg.second.value())};
+        }else{
+            return WasmInstr {Instr::I64_store32(memidx, memarg.first, memarg.second.value())};
+        }
+    }else if(name.starts_with("f32")){
+        if(!memarg.second.has_value()){
+            memarg.second = 2;
+        }
+        if(name.ends_with("load")){
+            return WasmInstr {Instr::F32_load(memidx, memarg.first, memarg.second.value())};
+        }else{
+            return WasmInstr {Instr::F32_store(memidx, memarg.first, memarg.second.value())};
+        }
+    }else{
+        if(!memarg.second.has_value()){
+            memarg.second = 3;
+        }
+        if(name.ends_with("load")){
+            return WasmInstr {Instr::F64_load(memidx, memarg.first, memarg.second.value())};
+        }else{
+            return WasmInstr {Instr::F64_store(memidx, memarg.first, memarg.second.value())};
+        }
+    }
+}

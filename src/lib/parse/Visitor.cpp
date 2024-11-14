@@ -864,3 +864,14 @@ std::any Visitor::visitLabel(WatParser::LabelContext *ctx){
         return std::string();
     }
 }
+
+std::any Visitor::visitMemarg(WatParser::MemargContext *ctx){
+    std::pair<offset_t, std::optional<align_t>> memarg {0, std::nullopt};
+    if(ctx->Offset() != nullptr){
+        memarg.first = std::stoull(ctx->Offset()->getText().substr(7));
+    }
+    if(ctx->Align() != nullptr){
+        memarg.second = std::stoi(ctx->Align()->getText().substr(6));
+    }
+    return memarg;
+}

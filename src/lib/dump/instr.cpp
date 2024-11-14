@@ -21,7 +21,7 @@ struct InstrVisitor {
     }
 #define MemoryInstr(T, S) \
     std::ostream& operator()(const T& instr){ \
-        return stream << S << " " << instr.memidx << " offset=" << (u64_t)instr.offset << " align=" << (1 << (u32_t)instr.align); \
+        return stream << S << " " << instr.memidx << " offset=" << (u64_t)instr.offset << " align=" << (u32_t)instr.align; \
     }
 
     AtomicInstr(WasmVM::Instr::Unreachable, "unreachable")

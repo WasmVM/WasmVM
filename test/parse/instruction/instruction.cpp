@@ -165,7 +165,104 @@ Suite instruction {
         Expect(std::get<Instr::Elem_drop>(instrs[14]).index == 4);
     })
     Test("memory", {
-
+        ParseFile(test_module, "memory.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // i32
+        Expect(std::holds_alternative<Instr::I32_load>(instrs[0]));
+        Expect(std::get<Instr::I32_load>(instrs[0]).memidx == 0);
+        Expect(std::get<Instr::I32_load>(instrs[0]).offset == 4);
+        Expect(std::get<Instr::I32_load>(instrs[0]).align == 2);
+        Expect(std::holds_alternative<Instr::I32_load8_s>(instrs[1]));
+        Expect(std::get<Instr::I32_load8_s>(instrs[1]).memidx == 1);
+        Expect(std::get<Instr::I32_load8_s>(instrs[1]).offset == 0);
+        Expect(std::get<Instr::I32_load8_s>(instrs[1]).align == 0);
+        Expect(std::holds_alternative<Instr::I32_load8_u>(instrs[2]));
+        Expect(std::get<Instr::I32_load8_u>(instrs[2]).memidx == 0);
+        Expect(std::get<Instr::I32_load8_u>(instrs[2]).offset == 0);
+        Expect(std::get<Instr::I32_load8_u>(instrs[2]).align == 0);
+        Expect(std::holds_alternative<Instr::I32_load16_s>(instrs[3]));
+        Expect(std::get<Instr::I32_load16_s>(instrs[3]).memidx == 0);
+        Expect(std::get<Instr::I32_load16_s>(instrs[3]).offset == 0);
+        Expect(std::get<Instr::I32_load16_s>(instrs[3]).align == 1);
+        Expect(std::holds_alternative<Instr::I32_load16_u>(instrs[4]));
+        Expect(std::get<Instr::I32_load16_u>(instrs[4]).memidx == 0);
+        Expect(std::get<Instr::I32_load16_u>(instrs[4]).offset == 0);
+        Expect(std::get<Instr::I32_load16_u>(instrs[4]).align == 1);
+        Expect(std::holds_alternative<Instr::I32_store>(instrs[5]));
+        Expect(std::get<Instr::I32_store>(instrs[5]).memidx == 0);
+        Expect(std::get<Instr::I32_store>(instrs[5]).offset == 0);
+        Expect(std::get<Instr::I32_store>(instrs[5]).align == 2);
+        Expect(std::holds_alternative<Instr::I32_store8>(instrs[6]));
+        Expect(std::get<Instr::I32_store8>(instrs[6]).memidx == 0);
+        Expect(std::get<Instr::I32_store8>(instrs[6]).offset == 0);
+        Expect(std::get<Instr::I32_store8>(instrs[6]).align == 0);
+        Expect(std::holds_alternative<Instr::I32_store16>(instrs[7]));
+        Expect(std::get<Instr::I32_store16>(instrs[7]).memidx == 0);
+        Expect(std::get<Instr::I32_store16>(instrs[7]).offset == 0);
+        Expect(std::get<Instr::I32_store16>(instrs[7]).align == 1);
+        // i64
+        Expect(std::holds_alternative<Instr::I64_load>(instrs[8]));
+        Expect(std::get<Instr::I64_load>(instrs[8]).memidx == 0);
+        Expect(std::get<Instr::I64_load>(instrs[8]).offset == 0);
+        Expect(std::get<Instr::I64_load>(instrs[8]).align == 3);
+        Expect(std::holds_alternative<Instr::I64_load8_s>(instrs[9]));
+        Expect(std::get<Instr::I64_load8_s>(instrs[9]).memidx == 0);
+        Expect(std::get<Instr::I64_load8_s>(instrs[9]).offset == 0);
+        Expect(std::get<Instr::I64_load8_s>(instrs[9]).align == 0);
+        Expect(std::holds_alternative<Instr::I64_load8_u>(instrs[10]));
+        Expect(std::get<Instr::I64_load8_u>(instrs[10]).memidx == 0);
+        Expect(std::get<Instr::I64_load8_u>(instrs[10]).offset == 0);
+        Expect(std::get<Instr::I64_load8_u>(instrs[10]).align == 0);
+        Expect(std::holds_alternative<Instr::I64_load16_s>(instrs[11]));
+        Expect(std::get<Instr::I64_load16_s>(instrs[11]).memidx == 0);
+        Expect(std::get<Instr::I64_load16_s>(instrs[11]).offset == 0);
+        Expect(std::get<Instr::I64_load16_s>(instrs[11]).align == 1);
+        Expect(std::holds_alternative<Instr::I64_load16_u>(instrs[12]));
+        Expect(std::get<Instr::I64_load16_u>(instrs[12]).memidx == 0);
+        Expect(std::get<Instr::I64_load16_u>(instrs[12]).offset == 0);
+        Expect(std::get<Instr::I64_load16_u>(instrs[12]).align == 1);
+        Expect(std::holds_alternative<Instr::I64_load32_s>(instrs[13]));
+        Expect(std::get<Instr::I64_load32_s>(instrs[13]).memidx == 0);
+        Expect(std::get<Instr::I64_load32_s>(instrs[13]).offset == 0);
+        Expect(std::get<Instr::I64_load32_s>(instrs[13]).align == 2);
+        Expect(std::holds_alternative<Instr::I64_load32_u>(instrs[14]));
+        Expect(std::get<Instr::I64_load32_u>(instrs[14]).memidx == 0);
+        Expect(std::get<Instr::I64_load32_u>(instrs[14]).offset == 0);
+        Expect(std::get<Instr::I64_load32_u>(instrs[14]).align == 2);
+        Expect(std::holds_alternative<Instr::I64_store>(instrs[15]));
+        Expect(std::get<Instr::I64_store>(instrs[15]).memidx == 0);
+        Expect(std::get<Instr::I64_store>(instrs[15]).offset == 0);
+        Expect(std::get<Instr::I64_store>(instrs[15]).align == 3);
+        Expect(std::holds_alternative<Instr::I64_store8>(instrs[16]));
+        Expect(std::get<Instr::I64_store8>(instrs[16]).memidx == 0);
+        Expect(std::get<Instr::I64_store8>(instrs[16]).offset == 0);
+        Expect(std::get<Instr::I64_store8>(instrs[16]).align == 0);
+        Expect(std::holds_alternative<Instr::I64_store16>(instrs[17]));
+        Expect(std::get<Instr::I64_store16>(instrs[17]).memidx == 0);
+        Expect(std::get<Instr::I64_store16>(instrs[17]).offset == 0);
+        Expect(std::get<Instr::I64_store16>(instrs[17]).align == 1);
+        Expect(std::holds_alternative<Instr::I64_store32>(instrs[18]));
+        Expect(std::get<Instr::I64_store32>(instrs[18]).memidx == 0);
+        Expect(std::get<Instr::I64_store32>(instrs[18]).offset == 0);
+        Expect(std::get<Instr::I64_store32>(instrs[18]).align == 2);
+        // f32
+        Expect(std::holds_alternative<Instr::F32_load>(instrs[19]));
+        Expect(std::get<Instr::F32_load>(instrs[19]).memidx == 0);
+        Expect(std::get<Instr::F32_load>(instrs[19]).offset == 0);
+        Expect(std::get<Instr::F32_load>(instrs[19]).align == 2);
+        Expect(std::holds_alternative<Instr::F32_store>(instrs[20]));
+        Expect(std::get<Instr::F32_store>(instrs[20]).memidx == 0);
+        Expect(std::get<Instr::F32_store>(instrs[20]).offset == 0);
+        Expect(std::get<Instr::F32_store>(instrs[20]).align == 2);
+        // f64
+        Expect(std::holds_alternative<Instr::F64_load>(instrs[21]));
+        Expect(std::get<Instr::F64_load>(instrs[21]).memidx == 0);
+        Expect(std::get<Instr::F64_load>(instrs[21]).offset == 0);
+        Expect(std::get<Instr::F64_load>(instrs[21]).align == 3);
+        Expect(std::holds_alternative<Instr::F64_store>(instrs[22]));
+        Expect(std::get<Instr::F64_store>(instrs[22]).memidx == 0);
+        Expect(std::get<Instr::F64_store>(instrs[22]).offset == 0);
+        Expect(std::get<Instr::F64_store>(instrs[22]).align == 3);
     })
     Category("numeric", {
         Test("i32", {
