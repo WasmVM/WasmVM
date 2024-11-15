@@ -2,9 +2,7 @@ include(ExternalProject)
 
 ExternalProject_Add(antlr4_runtime
     PREFIX antlr4_runtime
-    URL ${CMAKE_CURRENT_LIST_DIR}/antlr4-4.13.3-runtime-dev.zip
-    URL_MD5 8301b1da8af7a3a689ac5e48a604e8ea
-    DOWNLOAD_EXTRACT_TIMESTAMP ON
+    SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/antlr4-4.13.3-runtime-dev
     CMAKE_CACHE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DWITH_STATIC_CRT:BOOL=ON
