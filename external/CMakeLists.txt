@@ -11,4 +11,6 @@ ExternalProject_Add(antlr4_runtime
         -DBUILD_GMOCK:BOOL=OFF
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/antlr4_runtime/src/antlr4_runtime-install
         -DINSTALL_GTEST:BOOL=OFF
+        -DCMAKE_C_FLAGS:STRING=-fPIC
+        -DCMAKE_CXX_FLAGS:STRING=-fPIC
 )
