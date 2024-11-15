@@ -3,6 +3,7 @@ include(ExternalProject)
 ExternalProject_Add(antlr4_runtime
     PREFIX antlr4_runtime
     SOURCE_DIR ${CMAKE_CURRENT_LIST_DIR}/antlr4-4.13.3-runtime-dev
+    DOWNLOAD_EXTRACT_TIMESTAMP ON
     CMAKE_CACHE_ARGS
         -DCMAKE_BUILD_TYPE:STRING=${CMAKE_BUILD_TYPE}
         -DWITH_STATIC_CRT:BOOL=ON
@@ -11,6 +12,5 @@ ExternalProject_Add(antlr4_runtime
         -DBUILD_GMOCK:BOOL=OFF
         -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_CURRENT_BINARY_DIR}/antlr4_runtime/src/antlr4_runtime-install
         -DINSTALL_GTEST:BOOL=OFF
-        -DCMAKE_C_FLAGS:STRING=-fPIC
-        -DCMAKE_CXX_FLAGS:STRING=-fPIC
+        -DCMAKE_POSITION_INDEPENDENT_CODE:BOOL=ON
 )
