@@ -9,6 +9,7 @@
 #include <tuple>
 #include <utility>
 #include <cstring>
+#include <cmath>
 
 using namespace WasmVM;
 
@@ -464,8 +465,8 @@ std::any Visitor::visitTablesection(WatParser::TablesectionContext *ctx){
             WasmElem& elem = module.elems.emplace_back();
             elem.type = table.reftype;
             elem.mode = WasmElem::ElemMode {
-                .tableidx = table_idx,
                 .type = WasmElem::ElemMode::Mode::active,
+                .tableidx = table_idx,
                 .offset = Instr::I32_const()
             };
             if(ctx->funcidx().size() > 0){
@@ -533,8 +534,8 @@ std::any Visitor::visitMemorysection(WatParser::MemorysectionContext *ctx){
             // embedded data
             WasmData& data = module.datas.emplace_back();
             data.mode = WasmData::DataMode {
-                .memidx = mem_idx,
                 .type = WasmData::DataMode::Mode::active,
+                .memidx = mem_idx,
                 .offset = Instr::I64_const()
             };
             for(auto datactx : ctx->String()){
