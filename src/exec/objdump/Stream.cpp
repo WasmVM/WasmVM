@@ -131,7 +131,6 @@ Objdump::Stream& Objdump::operator>><byte_t>(Stream& stream, byte_t& byte){
     return stream;
 }
 
-
 // get limit
 template<>
 Objdump::Stream& Objdump::operator>><Limits>(Stream& stream, Limits& limits){
@@ -151,7 +150,6 @@ Objdump::Stream& Objdump::operator>><Limits>(Stream& stream, Limits& limits){
 
     return stream;
 }
-
 
 // import
 template<>
@@ -267,6 +265,24 @@ Objdump::Stream& Objdump::operator>><Objdump::ImportSection>(Stream& stream, Obj
     return stream;
 }
 
+// function
+template<>
+Objdump::Stream& Objdump::operator>><index_t>(Stream& stream, index_t& index){
+    Objdump::Bytes byteData = stream.get_u32(stream);
+    index_t funcID = stream.to_u32(byteData);
+    index = funcID;
+
+    return stream;
+}
+
+// functionsection
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::FunctionSection>(Stream& stream, Objdump::FunctionSection& functionsection){
+    stream >> (Objdump::Section&)functionsection; // call section
+    stream >> functionsection.functions; // vec of idex_t
+
+    return stream;
+}
 
 // ------------------
 
@@ -461,6 +477,22 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
     return os;
 }
 
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::FunctionSection& functionsection){
+    size_t address = functionsection.size_address;
+    std::cout << (Objdump::Section&)functionsection;
+    functionsection.stream.print_address(++address);
+
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << std::hex;
+    std::cout << std::setfill('0') << std::setw(2) << functionsection.functions.size() << "  ; Number of func" << std::endl;
+
+    for(index_t idx : functionsection.functions){
+        functionsection.stream.print_address(++address);
+        std::cout << idx <<std::endl;
+    }
+
+    return os;
+}
 
 // Print function
 void Objdump::Stream::print_address(Bytes& bytes){
@@ -476,6 +508,7 @@ void Objdump::Stream::print_address(size_t& address){
     std::cout.setf(flags);
 }
 
+// what is it for
 std::ostream& Objdump::operator<<(std::ostream& os, Stream& stream){
     while(!stream.istream.eof()){
         Bytes bytes(1);

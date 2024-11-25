@@ -49,9 +49,7 @@ int main(int argc, char const *argv[]){
         return -1;
     }
 
-
     try {
-
         std::ifstream st(input_path, std::ios::binary);
         Stream stream(st);
     	
@@ -61,7 +59,6 @@ int main(int argc, char const *argv[]){
             st.close();
             return 0;
         }
-
 
         Bytes magic(4);
         stream >> magic;
@@ -85,6 +82,13 @@ int main(int argc, char const *argv[]){
             ImportSection import(stream);
             stream >> import;
             std::cout << import;
+        }
+        
+        if(stream.peek_section(stream) == 0x03){
+            std::cout << ";; function section" << std::endl;
+            FunctionSection function(stream);
+            stream >> function;
+            std::cout << function;
         }
 
 

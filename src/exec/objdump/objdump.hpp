@@ -61,7 +61,10 @@ struct ImportSection : public Section {
     std::vector<WasmImport> imports;
 };
 
-
+struct FunctionSection : public Section {
+    FunctionSection(Stream& stream) : Section(stream) {}
+    std::vector<index_t> functions;
+};
 
 template <typename T>
 Stream& operator>>(Stream&, T&);
@@ -89,6 +92,7 @@ std::ostream& operator<<(std::ostream&, Section&);
 std::ostream& operator<<(std::ostream&, TypeSection&);
 std::ostream& operator<<(std::ostream&, ValueType&);
 std::ostream& operator<<(std::ostream&, ImportSection&);
+std::ostream& operator<<(std::ostream&, FunctionSection&);
 
 
 } // namespace Objdump
