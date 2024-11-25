@@ -481,6 +481,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::FunctionSection& fu
     size_t address = functionsection.size_address;
     std::cout << (Objdump::Section&)functionsection;
     functionsection.stream.print_address(++address);
+    int order = 0;
 
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
@@ -488,7 +489,8 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::FunctionSection& fu
 
     for(index_t idx : functionsection.functions){
         functionsection.stream.print_address(++address);
-        std::cout << idx <<std::endl;
+        std::cout << std::setfill('0') << std::setw(2) << idx << "  ; signature ID for function " << order <<std::endl;
+        order++;
     }
 
     return os;
