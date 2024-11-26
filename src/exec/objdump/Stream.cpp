@@ -268,8 +268,8 @@ Objdump::Stream& Objdump::operator>><Objdump::ImportSection>(Stream& stream, Obj
 // function
 template<>
 Objdump::Stream& Objdump::operator>><index_t>(Stream& stream, index_t& index){
-    Objdump::Bytes byteData = stream.get_u32(stream);
-    index_t funcID = stream.to_u32(byteData);
+    Objdump::Bytes byteData = stream.get_u32(stream); // get raw leb128 
+    index_t funcID = stream.to_u32(byteData); // transfer to u_32
     index = funcID;
 
     return stream;
@@ -489,6 +489,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::FunctionSection& fu
 
     for(index_t idx : functionsection.functions){
         functionsection.stream.print_address(++address);
+        // ToDO: it doesn't prinnt out raw data, the decoded typeidx instead
         std::cout << std::setfill('0') << std::setw(2) << idx << "  ; signature ID for function " << order <<std::endl;
         order++;
     }
@@ -510,7 +511,7 @@ void Objdump::Stream::print_address(size_t& address){
     std::cout.setf(flags);
 }
 
-// what is it for
+// dump raw
 std::ostream& Objdump::operator<<(std::ostream& os, Stream& stream){
     while(!stream.istream.eof()){
         Bytes bytes(1);
