@@ -91,6 +91,13 @@ int main(int argc, char const *argv[]){
             std::cout << function;
         }
 
+        if(stream.peek_section(stream) == 0x04){
+            std::cout << ";; table section" << std::endl;
+            TableSection table(stream);
+            stream >> table;
+            std::cout << table;
+        }
+
 
         st.close();
 

@@ -66,6 +66,11 @@ struct FunctionSection : public Section {
     std::vector<index_t> functions;
 };
 
+struct TableSection : public Section {
+    TableSection(Stream& stream) : Section(stream) {}
+    std::vector<TableType> tables;
+};
+
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
@@ -93,6 +98,7 @@ std::ostream& operator<<(std::ostream&, TypeSection&);
 std::ostream& operator<<(std::ostream&, ValueType&);
 std::ostream& operator<<(std::ostream&, ImportSection&);
 std::ostream& operator<<(std::ostream&, FunctionSection&);
+std::ostream& operator<<(std::ostream&, TableSection&);
 
 
 } // namespace Objdump

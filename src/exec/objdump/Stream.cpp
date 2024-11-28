@@ -284,6 +284,44 @@ Objdump::Stream& Objdump::operator>><Objdump::FunctionSection>(Stream& stream, O
     return stream;
 }
 
+// table
+template<>
+Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, WasmVM::TableType& tt){
+    ValueType et;
+    Limits lim;
+    Objdump::Bytes maxflag(1);
+
+    stream >> et;
+    stream >> maxflag;
+
+    if((int)maxflag[0] == 1){
+        Objdump::Bytes byteData = stream.get_u64(stream);
+        offset_t min = stream.to_u64(byteData);
+        byteData = stream.get_u64(stream);
+        offset_t max = stream.to_u64(byteData);
+        lim.min = min;
+        lim.max = max;
+    }else{
+        Objdump::Bytes byteData = stream.get_u64(stream);
+        offset_t min = stream.to_u64(byteData);
+        lim.min = min;
+    }
+
+    tt.limits = lim;
+    tt.reftype = (RefType)et;
+
+    return stream;
+}
+
+// tablesection
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::TableSection>(Stream& stream, Objdump::TableSection& tablesection){
+    stream >> (Objdump::Section&)tablesection;
+    stream >> tablesection.tables;
+
+    return stream;
+}
+
 // ------------------
 
 // ----- OUTPUT -----
@@ -481,18 +519,38 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::FunctionSection& fu
     size_t address = functionsection.size_address;
     std::cout << (Objdump::Section&)functionsection;
     functionsection.stream.print_address(++address);
-    int order = 0;
 
     std::ios::fmtflags flags = std::cout.flags();
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << functionsection.functions.size() << "  ; Number of func" << std::endl;
 
+    int order = 0;
     for(index_t idx : functionsection.functions){
         functionsection.stream.print_address(++address);
         // ToDO: it doesn't prinnt out raw data, the decoded typeidx instead
         std::cout << std::setfill('0') << std::setw(2) << idx << "  ; signature ID for function " << order <<std::endl;
         order++;
     }
+
+    return os;
+}
+
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TableSection& tablesection){
+    size_t address = tablesection.size_address;
+    std::cout << (Objdump::Section&)tablesection;
+    tablesection.stream.print_address(++address);
+
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << std::hex;
+    std::cout << std::setfill('0') << std::setw(2) << tablesection.tables.size() << "  ; Number of table" << std::endl;
+
+    // ToDO: re design an print limit
+    // for(TableType tb : tablesection.tables){
+    //     functionsection.stream.print_address(++address);
+    //     std::cout << tb.
+
+
+    // }
 
     return os;
 }
