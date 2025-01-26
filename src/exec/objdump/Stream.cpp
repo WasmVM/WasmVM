@@ -544,13 +544,25 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TableSection& table
     std::cout << std::hex;
     std::cout << std::setfill('0') << std::setw(2) << tablesection.tables.size() << "  ; Number of table" << std::endl;
 
-    // ToDO: re design an print limit
-    // for(TableType tb : tablesection.tables){
-    //     functionsection.stream.print_address(++address);
-    //     std::cout << tb.
-
-
-    // }
+    for(TableType tb : tablesection.tables){
+        tablesection.stream.print_address(++address);
+        std::cout << (int)tb.reftype << "  ; Reference Type" << std:: endl;
+        tablesection.stream.print_address(++address);
+        if(tb.limits.max.has_value()){
+            std::cout << "01  ; maximum presented" << std::endl;
+            tablesection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)tb.limits.min << "  ; min" << std::endl;
+            tablesection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)*tb.limits.max << "  ; max" << std::endl;
+        }else{
+            std::cout << "00  ; no maximum presented" << std::endl;
+            tablesection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)tb.limits.min << "  ; min" << std::endl;
+        }
+    }
 
     return os;
 }
