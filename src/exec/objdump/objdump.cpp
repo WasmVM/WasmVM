@@ -98,6 +98,14 @@ int main(int argc, char const *argv[]){
             std::cout << table;
         }
 
+        if(stream.peek_section(stream) == 0x05){
+            std::cout << ";; memory section" << std::endl;
+            MemorySection memory(stream);
+            stream >> memory;
+            std::cout << memory;
+        }
+
+
 
         st.close();
 

@@ -131,26 +131,6 @@ Objdump::Stream& Objdump::operator>><byte_t>(Stream& stream, byte_t& byte){
     return stream;
 }
 
-// get limit
-template<>
-Objdump::Stream& Objdump::operator>><Limits>(Stream& stream, Limits& limits){
-    // 1. get 0 or 1
-    Objdump::Bytes nums(1);
-    stream >> nums;
-    Objdump::Bytes byteData;
-    if((int)nums[0] == 0x00){
-        byteData = stream.get_u64(stream); 
-        limits.min = stream.to_u64(byteData);
-    }else{ // 0x01
-        byteData = stream.get_u64(stream);
-        limits.min = stream.to_u64(byteData);
-        byteData = stream.get_u64(stream);
-        limits.max = stream.to_u64(byteData);
-    }
-
-    return stream;
-}
-
 // import
 template<>
 Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& import){
@@ -186,26 +166,18 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
             stream >> ref;
             stream >> maxflag;
 
-            if((int)maxflag[0] == 1){
-                Objdump::Bytes byteData = stream.get_u64(stream);
-                offset_t min = stream.to_u64(byteData);
-                byteData = stream.get_u64(stream);
-                offset_t max = stream.to_u64(byteData);
-                lim.min = min;
+            bool hasMax = (maxflag[0] == byte_t{0b1});
+            Objdump::Bytes Data = stream.get_u64(stream);
+            lim.min = stream.to_u64(Data);
+            if (hasMax) {
+                Data = stream.get_u64(stream);
+                offset_t max = stream.to_u64(Data);
                 lim.max = max;
-            }else{
-                Objdump::Bytes byteData = stream.get_u64(stream);
-                offset_t min = stream.to_u64(byteData);
-                lim.min = min;
             }
 
             table.reftype = (RefType)ref;
             table.limits = lim;
             import.desc = table;
-
-            // std::cout << (int)table.reftype << std::endl;
-            // std::cout << table.limits.min << std::endl;
-            // std::cout << *table.limits.max << std::endl;
             
             break;
         }
@@ -214,18 +186,15 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
             Objdump::Bytes maxflag(1);
             stream >> maxflag;
 
-            if((int)maxflag[0] == 1){
-                Objdump::Bytes byteData = stream.get_u64(stream);
-                offset_t min = stream.to_u64(byteData);
-                byteData = stream.get_u64(stream);
-                offset_t max = stream.to_u64(byteData);
-                lim.min = min;
+            bool hasMax = (maxflag[0] == byte_t{0b1});
+            Objdump::Bytes Data = stream.get_u64(stream);
+            lim.min = stream.to_u64(Data);
+            if (hasMax) {
+                Data = stream.get_u64(stream);
+                offset_t max = stream.to_u64(Data);
                 lim.max = max;
-            }else{
-                Objdump::Bytes byteData = stream.get_u64(stream);
-                offset_t min = stream.to_u64(byteData);
-                lim.min = min;
             }
+
             import.desc = lim;
             break;
         }
@@ -286,7 +255,7 @@ Objdump::Stream& Objdump::operator>><Objdump::FunctionSection>(Stream& stream, O
 
 // table
 template<>
-Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, WasmVM::TableType& tt){
+Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, TableType& tt){
     ValueType et;
     Limits lim;
     Objdump::Bytes maxflag(1);
@@ -294,17 +263,13 @@ Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, WasmVM::TableTyp
     stream >> et;
     stream >> maxflag;
 
-    if((int)maxflag[0] == 1){
-        Objdump::Bytes byteData = stream.get_u64(stream);
-        offset_t min = stream.to_u64(byteData);
-        byteData = stream.get_u64(stream);
-        offset_t max = stream.to_u64(byteData);
-        lim.min = min;
+    bool hasMax = (maxflag[0] == byte_t{0b1});
+    Objdump::Bytes Data = stream.get_u64(stream);
+    lim.min = stream.to_u64(Data);
+    if (hasMax) {
+        Data = stream.get_u64(stream);
+        offset_t max = stream.to_u64(Data);
         lim.max = max;
-    }else{
-        Objdump::Bytes byteData = stream.get_u64(stream);
-        offset_t min = stream.to_u64(byteData);
-        lim.min = min;
     }
 
     tt.limits = lim;
@@ -318,6 +283,35 @@ template<>
 Objdump::Stream& Objdump::operator>><Objdump::TableSection>(Stream& stream, Objdump::TableSection& tablesection){
     stream >> (Objdump::Section&)tablesection;
     stream >> tablesection.tables;
+
+    return stream;
+}
+
+template<>
+Objdump::Stream& Objdump::operator>><MemType>(Stream& stream, MemType& mt){
+    MemType mem;
+    Objdump::Bytes maxflag(1);
+    stream >> maxflag;
+
+    bool hasMax = (maxflag[0] == byte_t{0b01});
+    Objdump::Bytes Data = stream.get_u64(stream);
+    mem.min = stream.to_u64(Data);
+    if (hasMax) {
+        Data = stream.get_u64(stream);
+        offset_t max = stream.to_u64(Data);
+        mem.max = max;
+    }
+    mt = mem;
+
+    return stream;
+}
+
+
+// memorysection
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::MemorySection>(Stream& stream, Objdump::MemorySection& memorysection){
+    stream >> (Objdump::Section&)memorysection;
+    stream >> memorysection.memories;
 
     return stream;
 }
@@ -561,6 +555,36 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TableSection& table
             tablesection.stream.print_address(++address);
             std::cout << std::setfill('0') << std::setw(2);
             std::cout << (int)tb.limits.min << "  ; min" << std::endl;
+        }
+    }
+
+    return os;
+}
+
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::MemorySection& memorysection){
+    size_t address = memorysection.size_address;
+    std::cout << (Objdump::Section&)memorysection;
+    memorysection.stream.print_address(++address);
+
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << std::hex;
+    std::cout << std::setfill('0') << std::setw(2) << memorysection.memories.size() << "  ; Number of memory" << std::endl;
+
+    for(MemType mt : memorysection.memories){
+        memorysection.stream.print_address(++address);
+        if(mt.max.has_value()){
+            std::cout << "01  ; maximum presented" << std::endl;
+            memorysection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)mt.min << "  ; min" << std::endl;
+            memorysection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)*mt.max << "  ; max" << std::endl;
+        }else{
+            std::cout << "00  ; no maximum presented" << std::endl;
+            memorysection.stream.print_address(++address);
+            std::cout << std::setfill('0') << std::setw(2);
+            std::cout << (int)mt.min << "  ; min" << std::endl;
         }
     }
 

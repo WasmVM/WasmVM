@@ -71,6 +71,12 @@ struct TableSection : public Section {
     std::vector<TableType> tables;
 };
 
+struct MemorySection : public Section {
+    MemorySection(Stream& stream) : Section(stream) {}
+    std::vector<MemType> memories;
+};
+
+
 template <typename T>
 Stream& operator>>(Stream&, T&);
 
@@ -99,6 +105,7 @@ std::ostream& operator<<(std::ostream&, ValueType&);
 std::ostream& operator<<(std::ostream&, ImportSection&);
 std::ostream& operator<<(std::ostream&, FunctionSection&);
 std::ostream& operator<<(std::ostream&, TableSection&);
+std::ostream& operator<<(std::ostream&, MemorySection&);
 
 
 } // namespace Objdump
