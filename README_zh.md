@@ -1,30 +1,24 @@
 # WasmVM
 
-#### 可以獨立執行 WebAssembly 的程序性虛擬機器
+#### 獨立的 WebAssembly 虛擬機
 
-**[document](https://wasmvm.github.io/WasmVM/)**
+**[線上文件](https://wasmvm.github.io/WasmVM/)**
 
-**[English README](README.md)**
+**[English](README.md)**
 
-## 先備條件
-
-### 一般建置
+## 先決條件
 
 * CMake >= 3.16
 
-* 支援 C11 和 C++20 的 C/C++ 編譯器
-
-### 開發者建置
-
-#### VSCode 搭配 Docker
-
-請參考 [使用 VSCode 搭配 Docker 開發 WasmVM](docs/vscode-docker.md)
+* 支援 C11 標準的 C 編譯器
 
 ## 注意事項
 
-1. 本專案以 **台灣正體中文** 為主要使用語言，英文為次要使用語言，其他語言 （例如: 簡體中文）僅能做為參考或翻譯使用。
+1. 本專案文件主要使用 **「台灣繁體中文」**，英文為次要語言。
+  
+  其他語言（例如：簡體中文）僅作為參考或翻譯。
 
-## 編譯
+## 建置
 
 1. 執行 CMake
 
@@ -32,13 +26,13 @@
 mkdir build && cd build && cmake ..
 ```
 
-1. 執行 Make
+2. 執行 Make
 
 ```shell
 make -j4
 ```
 
-## 產生 HTML 文件
+## 執行單元測試
 
 1. 執行 CMake
 
@@ -46,16 +40,24 @@ make -j4
 mkdir build && cd build && cmake ..
 ```
 
-1. 執行 Make
+2. 執行 Make 測試目標
+
+```shell
+make test
+```
+
+## 生成 HTML 文件
+
+1. 執行 CMake
+
+```shell
+mkdir build && cd build && cmake ..
+```
+
+2. 執行 Make
 
 ```shell
 make docs
 ```
 
-產生出的文件會在 `build/docs/html` 之下
-
-## 測試
-
-```shell
-cd build && ctest
-```
+生成的文件將位於 `build/docs/html`
