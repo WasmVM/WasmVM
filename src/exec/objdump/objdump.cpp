@@ -105,6 +105,14 @@ int main(int argc, char const *argv[]){
             std::cout << memory;
         }
 
+        if(stream.peek_section(stream) == 0x06){
+            std::cout << ";; global section" << std::endl;
+            GlobalSection global(stream);
+            stream >> global;
+            std::cout << global;
+        }
+
+
 
 
         st.close();

@@ -76,6 +76,10 @@ struct MemorySection : public Section {
     std::vector<MemType> memories;
 };
 
+struct GlobalSection : public Section {
+    GlobalSection(Stream& stream) : Section(stream) {}
+    std::vector<WasmGlobal> globals;
+};
 
 template <typename T>
 Stream& operator>>(Stream&, T&);
@@ -106,6 +110,8 @@ std::ostream& operator<<(std::ostream&, ImportSection&);
 std::ostream& operator<<(std::ostream&, FunctionSection&);
 std::ostream& operator<<(std::ostream&, TableSection&);
 std::ostream& operator<<(std::ostream&, MemorySection&);
+std::ostream& operator<<(std::ostream&, GlobalSection&);
+
 
 
 } // namespace Objdump

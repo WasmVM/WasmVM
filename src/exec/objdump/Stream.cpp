@@ -38,6 +38,7 @@ Objdump::Bytes Objdump::Stream::get_u64(Objdump::Stream& stream){
     Bytes size;
     for(int i = 0; i < 10; i++){
         char bchar = stream.istream.get();
+        std::cout << (int)bchar << "end" << std::endl;
         size.push_back((byte_t)bchar);
         if((bchar & 0x80) == 0){
             break;
@@ -316,6 +317,85 @@ Objdump::Stream& Objdump::operator>><Objdump::MemorySection>(Stream& stream, Obj
     return stream;
 }
 
+template<>
+Objdump::Stream& Objdump::operator>><WasmGlobal>(Stream& stream, WasmGlobal& gt){
+    GlobalType gt_data;
+    Objdump::Bytes mutation(1);
+
+    stream >> gt_data.type;
+    stream >> mutation;
+
+    if(mutation[0] == byte_t{0b00}){
+        gt_data.mut = GlobalType::constant;
+    }else{
+        gt_data.mut = GlobalType::variable;
+    }
+
+    gt.type = gt_data;
+
+    // loop until 0b
+    // call another func for switch
+    Objdump::Bytes next_b(1);
+    stream >> next_b;
+
+    switch((int)next_b[0]){
+        case 0x41: {
+            Objdump::Bytes byteData = stream.get_u32(stream);
+            u32_t i32_data = stream.to_u32(byteData);
+            Instr::I32_const I32(i32_data);
+            break;
+        }
+        case 0x42: {
+    //             Objdump::Bytes firstBit(1);
+    // stream >> firstBit;
+    // std::cout << "terminal bit: " << std::hex << (int)firstBit[0] << std::endl;
+
+            Objdump::Bytes byteData = stream.get_u64(stream);
+            // u32_t i64_data = stream.to_u64(byteData);
+            // Instr::I64_const I64(i64_data);
+
+            // std::cout << I64.value << std::endl;
+
+            Objdump::Bytes lastBit(1);
+            stream >> lastBit;
+            std::cout << "terminal bit: " << std::hex << (int)lastBit[0] << std::endl;
+
+
+            break;
+        }
+        case 0x43: {
+
+            break;
+        }
+        case 0x44: {
+            break;
+        }
+
+    };
+
+
+    // Objdump::Bytes lastBit(1);
+    // stream >> lastBit;
+    // std::cout << "terminal bit: " << std::hex << (int)lastBit[0] << std::endl;
+
+
+
+
+
+    return stream;
+}
+
+
+
+// globalsection
+template<>
+Objdump::Stream& Objdump::operator>><Objdump::GlobalSection>(Stream& stream, Objdump::GlobalSection& globalsection){
+    stream >> (Objdump::Section&)globalsection;
+    stream >> globalsection.globals;
+
+    return stream;
+}
+
 // ------------------
 
 // ----- OUTPUT -----
@@ -439,9 +519,6 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ImportSection& impo
 
         //ToDO: print out desc
 
-        // 1. print import kind addrerss
-        // 2. print import kind data and explain
-        // 3. print signature
         // p.s. no solution for address
 
 
@@ -587,6 +664,27 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::MemorySection& memo
             std::cout << (int)mt.min << "  ; min" << std::endl;
         }
     }
+
+    return os;
+}
+
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::GlobalSection& globalsection){
+    size_t address = globalsection.size_address;
+    std::cout << (Objdump::Section&)globalsection;
+    globalsection.stream.print_address(++address);
+
+    std::ios::fmtflags flags = std::cout.flags();
+    std::cout << std::hex;
+    std::cout << std::setfill('0') << std::setw(2) << globalsection.globals.size() << "  ; Number of global" << std::endl;
+
+
+    for(WasmGlobal gt : globalsection.globals){
+        std::cout << gt.type.type << std::endl;
+
+        std::cout << (gt.type.mut ? "const" : "variable") << std::endl;
+
+    }
+
 
     return os;
 }
