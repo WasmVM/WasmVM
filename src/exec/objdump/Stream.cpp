@@ -38,7 +38,6 @@ Objdump::Bytes Objdump::Stream::get_u64(Objdump::Stream& stream){
     Bytes size;
     for(int i = 0; i < 10; i++){
         char bchar = stream.istream.get();
-        std::cout << (int)bchar << "end" << std::endl;
         size.push_back((byte_t)bchar);
         if((bchar & 0x80) == 0){
             break;
@@ -47,6 +46,16 @@ Objdump::Bytes Objdump::Stream::get_u64(Objdump::Stream& stream){
 
     return size;
 }
+
+Objdump::Bytes Objdump::Stream::get_f32(Objdump::Stream& stream){
+
+// ToDo: memcpy
+}
+
+Objdump::Bytes Objdump::Stream::get_f64(Objdump::Stream& stream){
+    
+}
+
 
 u32_t Objdump::Stream::to_u32(Objdump::Bytes& bytes){
     u32_t value = 0;
@@ -343,44 +352,47 @@ Objdump::Stream& Objdump::operator>><WasmGlobal>(Stream& stream, WasmGlobal& gt)
             Objdump::Bytes byteData = stream.get_u32(stream);
             u32_t i32_data = stream.to_u32(byteData);
             Instr::I32_const I32(i32_data);
+            std::cout << I32.value << std::endl;
+            gt.init = I32;
+            std::cout << "Cannot get 0x0b here" << std::endl;
             break;
         }
         case 0x42: {
-    //             Objdump::Bytes firstBit(1);
-    // stream >> firstBit;
-    // std::cout << "terminal bit: " << std::hex << (int)firstBit[0] << std::endl;
-
             Objdump::Bytes byteData = stream.get_u64(stream);
-            // u32_t i64_data = stream.to_u64(byteData);
-            // Instr::I64_const I64(i64_data);
-
-            // std::cout << I64.value << std::endl;
-
-            Objdump::Bytes lastBit(1);
-            stream >> lastBit;
-            std::cout << "terminal bit: " << std::hex << (int)lastBit[0] << std::endl;
-
-
+            u64_t i64_data = stream.to_u64(byteData);
+            Instr::I64_const I64(i64_data);
+            std::cout << I64.value << std::endl;
+            gt.init = I64;
+            std::cout << "Cannot get 0x0b here" << std::endl;
             break;
         }
         case 0x43: {
+
+            f32_t 
 
             break;
         }
         case 0x44: {
             break;
         }
+        case 0xD0: {
+            // ValueType ref;
+            // stream >> ref;
+            // Instr::Ref_null ref_null(0x70);
+            // gt.init = ref_null;
+            break;
+        }
+        case 0xD2: {
+            // ValueType ref;
+            // stream >> ref;
+            // Instr::Ref_null ref_null = ref;
+            // gt.init = ref_null;
+            break;
+        }
+
+
 
     };
-
-
-    // Objdump::Bytes lastBit(1);
-    // stream >> lastBit;
-    // std::cout << "terminal bit: " << std::hex << (int)lastBit[0] << std::endl;
-
-
-
-
 
     return stream;
 }
@@ -681,7 +693,7 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::GlobalSection& glob
     for(WasmGlobal gt : globalsection.globals){
         std::cout << gt.type.type << std::endl;
 
-        std::cout << (gt.type.mut ? "const" : "variable") << std::endl;
+        std::cout << (gt.type.mut ? "variable" : "const") << std::endl;
 
     }
 
