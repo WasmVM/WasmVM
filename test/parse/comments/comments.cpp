@@ -22,11 +22,18 @@ Suite comments {
         Expect(tokens[0]->getText() == "(");
         Expect(tokens[1]->getText() == "module");
         Expect(tokens[2]->getText() == ")");
+        Expect(tokens[3]->getText() == "(");
+        Expect(tokens[4]->getText() == "module");
+        Expect(tokens[5]->getText() == ")");
+        Expect(tokens[6]->getText() == "(");
+        Expect(tokens[7]->getText() == "module");
+        Expect(tokens[8]->getText() == ")");
+        Expect(tokens[9]->getText() == "<EOF>");
     })
 
     Category("Block comments", {
         Test("Regular", {
-            std::ifstream fin("line.wat");
+            std::ifstream fin("block.wat");
             antlr4::ANTLRInputStream input(fin);
             WasmVM::WatLexer lexer(&input);
             antlr4::CommonTokenStream stream(&lexer);
@@ -35,6 +42,7 @@ Suite comments {
             Expect(tokens[0]->getText() == "(");
             Expect(tokens[1]->getText() == "module");
             Expect(tokens[2]->getText() == ")");
+            Expect(tokens[3]->getText() == "<EOF>");
         })
         Test("Not close", {
             std::ifstream fin("not_close.wat");
@@ -44,9 +52,13 @@ Suite comments {
             lexer.removeErrorListeners();
             lexer.addErrorListener(&listener);
             antlr4::CommonTokenStream stream(&lexer);
-            Throw(WasmVM::Exception::Parse, 
+            bool exceptionThrown = false;
+            try {
                 stream.fill();
-            )
+            } catch (const WasmVM::Exception::Parse&) {
+                exceptionThrown = true;
+            }
+            Expect(exceptionThrown);
         })
     })
 
@@ -63,6 +75,7 @@ Suite comments {
         Expect(tokens[3]->getText() == "(");
         Expect(tokens[4]->getText() == "module");
         Expect(tokens[5]->getText() == ")");
+        Expect(tokens[6]->getText() == "<EOF>");
     })
 
     Test("Whitespace", {
