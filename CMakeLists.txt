@@ -38,7 +38,6 @@ if(BUILD_HOST_MODULES)
   add_compile_definitions(HOST_MODULES)
 endif(BUILD_HOST_MODULES)
 
-link_directories(${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/lib)
 add_subdirectory(external)
 add_subdirectory(src)
 

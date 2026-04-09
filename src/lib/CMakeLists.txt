@@ -1,21 +1,9 @@
-set(REBUILD_WAT_PARSER OFF CACHE BOOL "rebuild wat parser by antlr4")
-
-if(REBUILD_WAT_PARSER)
-    find_package(Java 1.11 REQUIRED)
-    add_custom_command(OUTPUT parse/WatLexer.cpp parse/WatParser.cpp
-        COMMAND ${Java_JAVA_EXECUTABLE} -jar ${PROJECT_ROOT}/external/antlr4-4.13.3-dev-complete.jar -package WasmVM -visitor -no-listener -Xexact-output-dir -o ${CMAKE_CURRENT_BINARY_DIR}/parse ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4
-        DEPENDS ${CMAKE_CURRENT_LIST_DIR}/parse/Wat.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/token.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/instructions.g4 ${CMAKE_CURRENT_LIST_DIR}/parse/types.g4
-    )
-endif(REBUILD_WAT_PARSER)
-
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
-    parse/instruction.cpp
-    parse/ErrorListener.cpp
-    parse/Visitor.cpp
-    parse/WatLexer.cpp
-    parse/WatParser.cpp
+    parse/Tokenizer.cpp
+    parse/ParseContext.cpp
+    parse/instr_parse.cpp
     parse/post_process.cpp
     # dump
     dump/dump.cpp
@@ -28,19 +16,10 @@ add_library(WasmVM_textfmt OBJECT
     dump/data.cpp
     dump/global.cpp
 )
-add_dependencies(WasmVM_textfmt antlr4_runtime)
-target_include_directories(WasmVM_textfmt 
-    PUBLIC ${PROJECT_BINARY_DIR}/external/antlr4_runtime/src/antlr4_runtime-install/include/antlr4-runtime
+target_include_directories(WasmVM_textfmt
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}
 )
-if(REBUILD_WAT_PARSER)
-target_include_directories(WasmVM_textfmt 
-    PUBLIC ${CMAKE_CURRENT_BINARY_DIR}
-)
-endif(REBUILD_WAT_PARSER)
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
-
-add_subdirectory(parse)
 
 add_library(WasmVM_binfmt OBJECT
     # encode
@@ -121,7 +100,7 @@ add_library(WasmVM SHARED
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
-target_link_libraries(WasmVM antlr4-runtime)
+target_link_libraries(WasmVM)
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if(DEV_BUILD)
@@ -133,7 +112,7 @@ add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
-target_link_libraries(WasmVM_static antlr4-runtime)
+target_link_libraries(WasmVM_static)
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 install(TARGETS WasmVM_static 
