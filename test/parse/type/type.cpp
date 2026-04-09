@@ -79,4 +79,24 @@ Suite type {
         std::stringstream stream("(type $ty1 (func))");
         module_parse(stream);
     })
+    Category("invalid", {
+        Test("unknown param valtype", {
+            Throw(Exception::Parse, {
+                std::stringstream stream("(module (type (func (param bad))))");
+                module_parse(stream);
+            });
+        })
+        Test("unknown result valtype", {
+            Throw(Exception::Parse, {
+                std::stringstream stream("(module (type (func (result bad))))");
+                module_parse(stream);
+            });
+        })
+        Test("duplicate type id", {
+            Throw(Exception::Parse, {
+                std::stringstream stream("(module (type $t (func)) (type $t (func (param i32))))");
+                module_parse(stream);
+            });
+        })
+    })
 };

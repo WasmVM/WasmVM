@@ -58,6 +58,27 @@ struct Suite {
 
 #define Throw(EXCEPTION, STMT) try { STMT; _is_passed = false;} catch( EXCEPTION ){ _is_passed = true; }
 
+#define ExpectEq(ACTUAL, EXPECTED) \
+    if (!((ACTUAL) == (EXPECTED))) { \
+        std::cout << "Expected: " << (EXPECTED) << ", Got: " << (ACTUAL) << "\n"; \
+        _is_passed = false; \
+    }
+
+#define AssertEq(ACTUAL, EXPECTED) \
+    if (!((ACTUAL) == (EXPECTED))) { \
+        std::cout << "Expected: " << (EXPECTED) << ", Got: " << (ACTUAL) << "\n"; \
+        _is_passed = false; return; \
+    }
+
+#define ExpectThrows(EXCEPTION, STMT) \
+    try { STMT; \
+        std::cout << "Expected " #EXCEPTION " to be thrown\n"; \
+        _is_passed = false; \
+    } catch(EXCEPTION&) {}
+
+#define ForEach(VAR, CONTAINER, STMT) \
+    for (auto& VAR : CONTAINER) { STMT }
+
 #define ParseFile(NAME, FILEPATH) \
     std::ifstream NAME ## _stream(FILEPATH); \
     WasmVM::WasmModule NAME = WasmVM::module_parse(NAME ## _stream)

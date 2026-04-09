@@ -5,6 +5,9 @@
 #include <harness.hpp>
 #include <WasmVM.hpp>
 #include <exception.hpp>
+#include <sstream>
+#include <vector>
+#include <string>
 
 using namespace WasmVM;
 using namespace Testing;
@@ -69,6 +72,24 @@ Suite memory {
         MemType& mem3 = test_module.mems[0];
         Expect(mem3.min == 14);
         Expect(mem3.max.has_value() == false);
+    })
+    Category("invalid", {
+        Test("min greater than max", {
+            Throw(Exception::Parse, {
+                std::istringstream stream("(module (memory 5 3))");
+                module_parse(stream);
+            });
+        })
+        Test("multiple invalid limits", {
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (memory 10 1))");
+                module_parse(ss);
+            });
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (memory 100 0))");
+                module_parse(ss);
+            });
+        })
     })
     Test("with_export", {
         ParseFile(test_module, "with_export.wat");

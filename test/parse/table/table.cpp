@@ -5,6 +5,9 @@
 #include <harness.hpp>
 #include <WasmVM.hpp>
 #include <exception.hpp>
+#include <sstream>
+#include <vector>
+#include <string>
 
 using namespace WasmVM;
 using namespace Testing;
@@ -28,6 +31,24 @@ Suite table {
         Expect(table3.limits.min == 7);
         Expect(table3.limits.max.has_value() == false);
         Expect(table3.reftype == RefType::funcref);
+    })
+    Category("invalid", {
+        Test("min greater than max", {
+            Throw(Exception::Parse, {
+                std::istringstream stream("(module (table 5 3 funcref))");
+                module_parse(stream);
+            });
+        })
+        Test("multiple invalid limits", {
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (table 10 1 funcref))");
+                module_parse(ss);
+            });
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (table 100 0 externref))");
+                module_parse(ss);
+            });
+        })
     })
     Test("with_elem", {
         ParseFile(test_module, "with_elem.wat");
