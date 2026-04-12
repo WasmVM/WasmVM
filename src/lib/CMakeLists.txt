@@ -42,6 +42,7 @@ add_library(WasmVM_binfmt OBJECT
     decode/global.cpp
     decode/func.cpp
     decode/memory.cpp
+    decode/tag.cpp
     decode/instr.cpp
     decode/export.cpp
     decode/start.cpp
@@ -75,6 +76,8 @@ add_library(WasmVM_exec OBJECT
     invoke/invoke.cpp
     invoke/control.cpp
     invoke/reference.cpp
+    invoke/exception_instr.cpp
+    invoke/gc.cpp
     invoke/parametric.cpp
     invoke/variable.cpp
     invoke/table.cpp

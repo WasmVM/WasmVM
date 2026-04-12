@@ -6,6 +6,7 @@
 #include <exception.hpp>
 #include <Util.hpp>
 #include <instances/Stack.hpp>
+#include <instances/TagInst.hpp>
 
 using namespace WasmVM;
 
@@ -147,6 +148,13 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
     }
     // Types
     moduleInst.types = module.types;
+    // Tags
+    for(index_t typeidx : module.tags){
+        index_t address = store.tags.size();
+        TagInst& taginst = store.tags.emplace_back();
+        taginst.type = moduleInst.types[typeidx];
+        moduleInst.tagaddrs.emplace_back(address);
+    }
     // Funcs
     for(size_t idx = 0; idx < module.funcs.size(); ++idx){
         index_t address = store.funcs.size();
@@ -350,5 +358,6 @@ void ModuleInst::reset(){
     globaladdrs.clear();
     elemaddrs.clear();
     dataaddrs.clear();
+    tagaddrs.clear();
     exports.clear();
 }

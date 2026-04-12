@@ -17,7 +17,7 @@ std::vector<WasmInstr> ParseContext::parse_instr() {
         return parse_foldedinstr();
     if (tok_.peek().type == TokenType::Keyword) {
         std::string kw = tok_.peek().text;
-        if (kw == "block" || kw == "loop" || kw == "if")
+        if (kw == "block" || kw == "loop" || kw == "if" || kw == "try_table")
             return parse_blockinstr(kw);
     }
     return {parse_plaininstr()};
@@ -28,9 +28,18 @@ WasmInstr ParseContext::parse_plaininstr() {
     const std::string& name = kw.text;
     if (name == "unreachable" || name == "nop" || name == "return" ||
         name == "br" || name == "br_if" || name == "br_table" ||
-        name == "call" || name == "call_indirect")
+        name == "call" || name == "call_indirect" ||
+        name == "call_ref" || name == "return_call" ||
+        name == "return_call_indirect" || name == "return_call_ref" ||
+        name == "throw" || name == "throw_ref")
         return parse_controlinstr(name);
-    if (name == "ref.null" || name == "ref.is_null" || name == "ref.func")
+    if (name == "ref.null" || name == "ref.is_null" || name == "ref.func" ||
+        name == "ref.eq" || name == "ref.as_non_null" || name == "ref.i31" ||
+        name == "ref.test" || name == "ref.cast" ||
+        name == "i31.get_s" || name == "i31.get_u" ||
+        name == "any.convert_extern" || name == "extern.convert_any" ||
+        name == "br_on_null" || name == "br_on_non_null" ||
+        name == "br_on_cast" || name == "br_on_cast_fail")
         return parse_referenceinstr(name);
     if (name == "drop" || name == "select")
         return parse_parametricinstr(name);
@@ -41,13 +50,15 @@ WasmInstr ParseContext::parse_plaininstr() {
     if (name == "data.drop" || name.starts_with("memory.") ||
         name.find(".load") != std::string::npos || name.find(".store") != std::string::npos)
         return parse_memoryinstr(name);
+    if (name.starts_with("struct.") || name.starts_with("array."))
+        return parse_gcinstr(name);
     return parse_numericinstr(name);
 }
 
 // ── Block instructions (non-folded form) ─────────────────────────────────────
 
 std::vector<WasmInstr> ParseContext::parse_blockinstr(const std::string& kw) {
-    tok_.consume(); // consume 'block'/'loop'/'if'
+    tok_.consume(); // consume 'block'/'loop'/'if'/'try_table'
 
     // Increment block level FIRST, then register the label at that level
     block_level_ += 1;
@@ -55,6 +66,49 @@ std::vector<WasmInstr> ParseContext::parse_blockinstr(const std::string& kw) {
 
     std::optional<index_t> type;
     if (is_typeuse_start()) type = parse_typeuse();
+
+    // try_table: parse catch entries before body
+    if (kw == "try_table") {
+        Instr::Try_table tt;
+        tt.type = type;
+        while (tok_.peek().type == TokenType::LParen) {
+            const Token& peek2 = tok_.peek2();
+            if (peek2.type != TokenType::Keyword) break;
+            const std::string& ck = peek2.text;
+            if (ck != "catch" && ck != "catch_ref" && ck != "catch_all" && ck != "catch_all_ref")
+                break;
+            tok_.consume(); // '('
+            tok_.consume(); // catch keyword
+            Instr::TryCatchEntry entry;
+            if      (ck == "catch")     entry.kind = Instr::TryCatchEntry::Catch;
+            else if (ck == "catch_ref") entry.kind = Instr::TryCatchEntry::CatchRef;
+            else if (ck == "catch_all") entry.kind = Instr::TryCatchEntry::CatchAll;
+            else                        entry.kind = Instr::TryCatchEntry::CatchAllRef;
+            if (entry.kind == Instr::TryCatchEntry::Catch || entry.kind == Instr::TryCatchEntry::CatchRef)
+                entry.tag_idx = parse_tagidx();
+            else
+                entry.tag_idx = 0;
+            entry.label_idx = parse_labelidx();
+            tok_.expect(TokenType::RParen);
+            tt.catches.push_back(entry);
+        }
+        std::vector<WasmInstr> instrs;
+        instrs.emplace_back(tt);
+        while (!tok_.at_eof() && !tok_.peek_keyword("end")) {
+            auto new_instrs = parse_instr();
+            instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
+        }
+        block_level_ -= 1;
+        tok_.expect_keyword("end");
+        if (tok_.peek().type == TokenType::Id) {
+            Token closing = tok_.consume();
+            if (!label.empty() && closing.text != label)
+                throw Exception::Parse("id '" + closing.text + "' does not match block label",
+                                       {closing.line, closing.column});
+        }
+        instrs.emplace_back(Instr::End());
+        return instrs;
+    }
 
     std::vector<WasmInstr> instrs;
     if      (kw == "if")    instrs.emplace_back(Instr::If(type));
@@ -196,7 +250,19 @@ WasmInstr ParseContext::parse_controlinstr(const std::string& name) {
             instr.indices.push_back(parse_labelidx());
         return instr;
     }
-    if (name == "call") return Instr::Call(parse_funcidx());
+    if (name == "call")          return Instr::Call(parse_funcidx());
+    if (name == "call_ref")      return Instr::Call_ref(parse_typeidx());
+    if (name == "return_call")   return Instr::Return_call(parse_funcidx());
+    if (name == "return_call_ref") return Instr::Return_call_ref(parse_typeidx());
+    if (name == "throw")         return Instr::Throw(parse_tagidx());
+    if (name == "throw_ref")     return Instr::Throw_ref();
+    if (name == "return_call_indirect") {
+        index_t tableidx = 0;
+        if ((tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id)
+            && !is_typeuse_start())
+            tableidx = parse_tableidx();
+        return Instr::Return_call_indirect(tableidx, parse_typeuse());
+    }
     // call_indirect: tableidx? typeuse
     index_t tableidx = 0;
     if ((tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id)
@@ -209,14 +275,62 @@ WasmInstr ParseContext::parse_controlinstr(const std::string& name) {
 
 // ── Reference instructions ────────────────────────────────────────────────────
 
+std::pair<bool, int32_t> ParseContext::parse_reftype_annot() {
+    tok_.expect(TokenType::LParen);
+    tok_.expect_keyword("ref");
+    bool nullable = false;
+    if (tok_.peek_keyword("null")) { tok_.consume(); nullable = true; }
+    int32_t heaptype;
+    if (tok_.peek().type == TokenType::Integer) {
+        heaptype = (int32_t)parse_u32();
+    } else {
+        Token ht = tok_.expect(TokenType::Keyword, "heap type");
+        if      (ht.text == "func")   heaptype = -16;
+        else if (ht.text == "extern") heaptype = -17;
+        else if (ht.text == "any")    heaptype = -18;
+        else if (ht.text == "eq")     heaptype = -19;
+        else if (ht.text == "i31")    heaptype = -20;
+        else if (ht.text == "struct") heaptype = -21;
+        else if (ht.text == "array")  heaptype = -22;
+        else throw Exception::Parse("unknown heap type '" + ht.text + "'", {ht.line, ht.column});
+    }
+    tok_.expect(TokenType::RParen);
+    return {nullable, heaptype};
+}
+
 WasmInstr ParseContext::parse_referenceinstr(const std::string& name) {
-    if (name == "ref.is_null") return Instr::Ref_is_null();
-    if (name == "ref.func")    return Instr::Ref_func(parse_funcidx());
-    // ref.null — next token must be 'func' or 'extern'
-    Token ref = tok_.expect(TokenType::Keyword, "func or extern");
-    if (ref.text != "func" && ref.text != "extern")
-        throw Exception::Parse("expected 'func' or 'extern' after ref.null", {ref.line, ref.column});
-    return Instr::Ref_null(ref.text == "func" ? RefType::funcref : RefType::externref);
+    if (name == "ref.is_null")       return Instr::Ref_is_null();
+    if (name == "ref.func")          return Instr::Ref_func(parse_funcidx());
+    if (name == "ref.eq")            return Instr::Ref_eq();
+    if (name == "ref.as_non_null")   return Instr::Ref_as_non_null();
+    if (name == "ref.i31")           return Instr::Ref_i31();
+    if (name == "i31.get_s")         return Instr::I31_get_s();
+    if (name == "i31.get_u")         return Instr::I31_get_u();
+    if (name == "any.convert_extern") return Instr::Any_convert_extern();
+    if (name == "extern.convert_any") return Instr::Extern_convert_any();
+    if (name == "br_on_null")        return Instr::Br_on_null(parse_labelidx());
+    if (name == "br_on_non_null")    return Instr::Br_on_non_null(parse_labelidx());
+    if (name == "ref.test") {
+        auto [nullable, ht] = parse_reftype_annot();
+        return nullable ? WasmInstr(Instr::Ref_test_null(ht)) : WasmInstr(Instr::Ref_test(ht));
+    }
+    if (name == "ref.cast") {
+        auto [nullable, ht] = parse_reftype_annot();
+        return nullable ? WasmInstr(Instr::Ref_cast_null(ht)) : WasmInstr(Instr::Ref_cast(ht));
+    }
+    if (name == "br_on_cast" || name == "br_on_cast_fail") {
+        index_t labelidx = parse_labelidx();
+        auto [src_nullable, src_ht] = parse_reftype_annot();
+        auto [dst_nullable, dst_ht] = parse_reftype_annot();
+        if (name == "br_on_cast")
+            return Instr::Br_on_cast(labelidx, src_nullable, dst_nullable, src_ht, dst_ht);
+        return Instr::Br_on_cast_fail(labelidx, src_nullable, dst_nullable, src_ht, dst_ht);
+    }
+    // ref.null — heaptype keyword
+    Token ref = tok_.expect(TokenType::Keyword, "heap type");
+    if (ref.text == "func")   return Instr::Ref_null(RefType::funcref);
+    if (ref.text == "extern") return Instr::Ref_null(RefType::externref);
+    throw Exception::Parse("expected heap type after ref.null", {ref.line, ref.column});
 }
 
 // ── Parametric instructions ───────────────────────────────────────────────────
@@ -540,4 +654,32 @@ WasmInstr ParseContext::parse_numericinstr(const std::string& name) {
         if (name == "f64.reinterpret_i64")  return Instr::F64_reinterpret_i64();
     }
     throw Exception::Parse("unknown instruction '" + name + "'", tok_.location());
+}
+
+// ── GC struct/array instructions ──────────────────────────────────────────────
+
+WasmInstr ParseContext::parse_gcinstr(const std::string& name) {
+    // Struct
+    if (name == "struct.new")         return Instr::Struct_new(parse_typeidx());
+    if (name == "struct.new_default") return Instr::Struct_new_default(parse_typeidx());
+    if (name == "struct.get")   { index_t t = parse_typeidx(); return Instr::Struct_get(t, parse_u32()); }
+    if (name == "struct.get_s") { index_t t = parse_typeidx(); return Instr::Struct_get_s(t, parse_u32()); }
+    if (name == "struct.get_u") { index_t t = parse_typeidx(); return Instr::Struct_get_u(t, parse_u32()); }
+    if (name == "struct.set")   { index_t t = parse_typeidx(); return Instr::Struct_set(t, parse_u32()); }
+    // Array
+    if (name == "array.new")         return Instr::Array_new(parse_typeidx());
+    if (name == "array.new_default") return Instr::Array_new_default(parse_typeidx());
+    if (name == "array.new_fixed")   { index_t t = parse_typeidx(); return Instr::Array_new_fixed(t, parse_u32()); }
+    if (name == "array.new_data")    { index_t t = parse_typeidx(); return Instr::Array_new_data(t, parse_dataidx()); }
+    if (name == "array.new_elem")    { index_t t = parse_typeidx(); return Instr::Array_new_elem(t, parse_elemidx()); }
+    if (name == "array.get")         return Instr::Array_get(parse_typeidx());
+    if (name == "array.get_s")       return Instr::Array_get_s(parse_typeidx());
+    if (name == "array.get_u")       return Instr::Array_get_u(parse_typeidx());
+    if (name == "array.set")         return Instr::Array_set(parse_typeidx());
+    if (name == "array.len")         return Instr::Array_len();
+    if (name == "array.fill")        return Instr::Array_fill(parse_typeidx());
+    if (name == "array.copy")        { index_t d = parse_typeidx(); return Instr::Array_copy(d, parse_typeidx()); }
+    if (name == "array.init_data")   { index_t t = parse_typeidx(); return Instr::Array_init_data(t, parse_dataidx()); }
+    if (name == "array.init_elem")   { index_t t = parse_typeidx(); return Instr::Array_init_elem(t, parse_elemidx()); }
+    throw Exception::Parse("unknown GC instruction '" + name + "'", tok_.location());
 }

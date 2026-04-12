@@ -118,6 +118,7 @@ void ParseContext::parse_modulefield() {
     else if (name == "start")  parse_startsection();
     else if (name == "elem")   parse_elemsection();
     else if (name == "data")   parse_datasection();
+    else if (name == "tag")    parse_tagsection();
     else throw Exception::Parse("unknown module section '" + name + "'", {kw.line, kw.column});
 }
 
@@ -420,6 +421,16 @@ index_t ParseContext::parse_localidx() {
         if (!local_map_.contains(t.text))
             throw Exception::Parse("local id '" + t.text + "' not found", {t.line, t.column});
         return local_map_[t.text];
+    }
+    return (index_t)parse_u32();
+}
+
+index_t ParseContext::parse_tagidx() {
+    if (tok_.peek().type == TokenType::Id) {
+        Token t = tok_.consume();
+        if (!tag_map_.contains(t.text))
+            throw Exception::Parse("tag id '" + t.text + "' not found", {t.line, t.column});
+        return tag_map_[t.text];
     }
     return (index_t)parse_u32();
 }
@@ -969,5 +980,23 @@ void ParseContext::parse_datasection() {
         data.init.resize(orig + bytes.size());
         std::memcpy(data.init.data() + orig, bytes.data(), bytes.size());
     }
+    tok_.expect(TokenType::RParen);
+}
+
+// ── Tag section ───────────────────────────────────────────────────────────────
+
+void ParseContext::parse_tagsection() {
+    tok_.expect(TokenType::LParen);
+    tok_.expect_keyword("tag");
+    // optional Id
+    if (tok_.peek().type == TokenType::Id) {
+        std::string id = tok_.consume().text;
+        tag_map_[id] = module_.tags.size();
+    }
+    // typeuse: (type N) or inline params
+    index_t typeidx = 0;
+    if (is_typeuse_start())
+        typeidx = parse_typeuse();
+    module_.tags.push_back(typeidx);
     tok_.expect(TokenType::RParen);
 }

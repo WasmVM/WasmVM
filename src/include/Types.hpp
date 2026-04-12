@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <cstddef>
 #include <functional>
+#include <memory>
 
 namespace WasmVM {
 
@@ -34,12 +35,30 @@ constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
 
+// Forward declaration for exnref_t
+struct WasmException;
+
+struct exnref_t {
+    std::shared_ptr<WasmException> value; // nullptr = null exnref
+    constexpr exnref_t() : value() {}
+    explicit exnref_t(std::shared_ptr<WasmException> e) : value(std::move(e)) {}
+    bool has_value() const { return value != nullptr; }
+};
+
+struct i31ref_t { // stores 31-bit value; nullopt = null i31ref
+    std::optional<uint32_t> value;
+    constexpr i31ref_t() : value(std::nullopt) {}
+    constexpr explicit i31ref_t(uint32_t v) : value(v) {}
+    constexpr bool has_value() const { return value.has_value(); }
+    constexpr uint32_t operator*() const { return *value; }
+};
+
 constexpr u64_t page_size = 65536;
 
-using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>;
+using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>;
 
 enum ValueType {
-    i32, i64, f32, f64, funcref, externref
+    i32, i64, f32, f64, funcref, externref, i31ref, exnref
 };
 
 static_assert(Value(std::in_place_type<i32_t>).index() == ValueType::i32);
@@ -48,6 +67,15 @@ static_assert(Value(std::in_place_type<f32_t>).index() == ValueType::f32);
 static_assert(Value(std::in_place_type<f64_t>).index() == ValueType::f64);
 static_assert(Value(std::in_place_type<funcref_t>).index() == ValueType::funcref);
 static_assert(Value(std::in_place_type<externref_t>).index() == ValueType::externref);
+static_assert(Value(std::in_place_type<i31ref_t>).index() == ValueType::i31ref);
+// Note: exnref_t index == ValueType::exnref (verified by variant order)
+
+// Full definition (after Value is defined above)
+struct WasmException {
+    index_t tag_addr;
+    std::vector<Value> values;
+    WasmException(index_t addr, std::vector<Value> vals) : tag_addr(addr), values(std::move(vals)) {}
+};
 
 enum class RefType {
     funcref = ValueType::funcref,

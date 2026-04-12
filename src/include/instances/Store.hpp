@@ -10,6 +10,7 @@
 #include "GlobalInst.hpp"
 #include "ElemInst.hpp"
 #include "DataInst.hpp"
+#include "TagInst.hpp"
 
 namespace WasmVM {
 
@@ -20,6 +21,7 @@ struct Store {
     std::vector<GlobalInst> globals;
     std::vector<ElemInst> elems;
     std::vector<DataInst> datas;
+    std::vector<TagInst> tags;
 };
 
 }

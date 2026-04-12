@@ -14,6 +14,8 @@ using namespace Encode;
     template<> Section::Stream& Section::Stream::operator<< <T>(T instr){ \
         if(instr.opcode <= 0xff){ \
             return *this << (byte_t)instr.opcode; \
+        }else if((instr.opcode >> 8) == 0xfb){ \
+            return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff); \
         }else{ \
             return *this << (byte_t)0xfc << (byte_t)(instr.opcode & 0xff); \
         } \
@@ -47,7 +49,16 @@ AtomicInstr(WasmVM::Instr::Nop)
 AtomicInstr(WasmVM::Instr::Else)
 AtomicInstr(WasmVM::Instr::End)
 AtomicInstr(WasmVM::Instr::Return)
+AtomicInstr(WasmVM::Instr::Throw_ref)
 AtomicInstr(WasmVM::Instr::Ref_is_null)
+AtomicInstr(WasmVM::Instr::Ref_eq)
+AtomicInstr(WasmVM::Instr::Ref_as_non_null)
+AtomicInstr(WasmVM::Instr::Ref_i31)
+AtomicInstr(WasmVM::Instr::I31_get_s)
+AtomicInstr(WasmVM::Instr::I31_get_u)
+AtomicInstr(WasmVM::Instr::Any_convert_extern)
+AtomicInstr(WasmVM::Instr::Extern_convert_any)
+AtomicInstr(WasmVM::Instr::Array_len)
 AtomicInstr(WasmVM::Instr::Drop)
 AtomicInstr(WasmVM::Instr::I32_eqz)
 AtomicInstr(WasmVM::Instr::I32_eq)
@@ -186,9 +197,23 @@ AtomicInstr(WasmVM::Instr::I64_trunc_sat_f32_u)
 AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_s)
 AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_u)
 
+OneIndexInstr(WasmVM::Instr::Throw)
+OneIndexInstr(WasmVM::Instr::Struct_new)
+OneIndexInstr(WasmVM::Instr::Struct_new_default)
+OneIndexInstr(WasmVM::Instr::Array_new)
+OneIndexInstr(WasmVM::Instr::Array_new_default)
+OneIndexInstr(WasmVM::Instr::Array_get)
+OneIndexInstr(WasmVM::Instr::Array_get_s)
+OneIndexInstr(WasmVM::Instr::Array_get_u)
+OneIndexInstr(WasmVM::Instr::Array_set)
 OneIndexInstr(WasmVM::Instr::Call)
+OneIndexInstr(WasmVM::Instr::Call_ref)
+OneIndexInstr(WasmVM::Instr::Return_call)
+OneIndexInstr(WasmVM::Instr::Return_call_ref)
 OneIndexInstr(WasmVM::Instr::Br)
 OneIndexInstr(WasmVM::Instr::Br_if)
+OneIndexInstr(WasmVM::Instr::Br_on_null)
+OneIndexInstr(WasmVM::Instr::Br_on_non_null)
 OneIndexInstr(WasmVM::Instr::Ref_func)
 OneIndexInstr(WasmVM::Instr::Local_get)
 OneIndexInstr(WasmVM::Instr::Local_set)
@@ -261,6 +286,23 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::If>(Wasm
     }
     return *this;
 }
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Try_table>(WasmVM::Instr::Try_table instr){
+    *this << (byte_t)instr.opcode;
+    if(instr.type){
+        *this << (i64_t)instr.type.value();
+    }else{
+        *this << (byte_t) 0x40;
+    }
+    *this << (u32_t)instr.catches.size();
+    for(const WasmVM::Instr::TryCatchEntry& ce : instr.catches){
+        *this << (byte_t)ce.kind;
+        if(ce.kind == 0 || ce.kind == 1){
+            *this << ce.tag_idx;
+        }
+        *this << ce.label_idx;
+    }
+    return *this;
+}
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Br_table>(WasmVM::Instr::Br_table instr){
     *this << (byte_t)instr.opcode << (u32_t)(instr.indices.size() - 1);
     for(index_t index : instr.indices){
@@ -271,8 +313,64 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Br_table
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Call_indirect>(WasmVM::Instr::Call_indirect instr){
     return *this << (byte_t)instr.opcode << instr.typeidx << instr.tableidx;
 }
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Return_call_indirect>(WasmVM::Instr::Return_call_indirect instr){
+    return *this << (byte_t)instr.opcode << instr.typeidx << instr.tableidx;
+}
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_null>(WasmVM::Instr::Ref_null instr){
     return *this << (byte_t)instr.opcode << instr.heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_test>(WasmVM::Instr::Ref_test instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (i64_t)instr.heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_test_null>(WasmVM::Instr::Ref_test_null instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (i64_t)instr.heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_cast>(WasmVM::Instr::Ref_cast instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (i64_t)instr.heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_cast_null>(WasmVM::Instr::Ref_cast_null instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (i64_t)instr.heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Br_on_cast>(WasmVM::Instr::Br_on_cast instr){
+    u8_t flags = (instr.src_nullable ? 1 : 0) | (instr.dst_nullable ? 2 : 0);
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (byte_t)flags << instr.labelidx << (i64_t)instr.src_heaptype << (i64_t)instr.dst_heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Br_on_cast_fail>(WasmVM::Instr::Br_on_cast_fail instr){
+    u8_t flags = (instr.src_nullable ? 1 : 0) | (instr.dst_nullable ? 2 : 0);
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (byte_t)flags << instr.labelidx << (i64_t)instr.src_heaptype << (i64_t)instr.dst_heaptype;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Struct_get>(WasmVM::Instr::Struct_get instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.fieldidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Struct_get_s>(WasmVM::Instr::Struct_get_s instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.fieldidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Struct_get_u>(WasmVM::Instr::Struct_get_u instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.fieldidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Struct_set>(WasmVM::Instr::Struct_set instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.fieldidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_new_fixed>(WasmVM::Instr::Array_new_fixed instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.n;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_new_data>(WasmVM::Instr::Array_new_data instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.dataidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_new_elem>(WasmVM::Instr::Array_new_elem instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.elemidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_fill>(WasmVM::Instr::Array_fill instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_copy>(WasmVM::Instr::Array_copy instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.dst_typeidx << instr.src_typeidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_init_data>(WasmVM::Instr::Array_init_data instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.dataidx;
+}
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Array_init_elem>(WasmVM::Instr::Array_init_elem instr){
+    return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.typeidx << instr.elemidx;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Select>(WasmVM::Instr::Select instr){
     if(instr.valtypes.empty()){

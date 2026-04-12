@@ -35,7 +35,7 @@ using BlockType = std::optional<index_t>;
 
 template<> Opcode::opcode_t Stream::get<Opcode::opcode_t>(){
     Opcode::opcode_t opcode = (Opcode::opcode_t) get<byte_t>();
-    if(opcode == 0xfc){
+    if(opcode == 0xfc || opcode == 0xfb){
         opcode = (opcode << 8) | (Opcode::opcode_t) get<byte_t>();
     }
     return opcode;
@@ -76,7 +76,16 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         AtomicInstr(Else)
         AtomicInstr(End)
         AtomicInstr(Return)
+        AtomicInstr(Throw_ref)
         AtomicInstr(Ref_is_null)
+        AtomicInstr(Ref_eq)
+        AtomicInstr(Ref_as_non_null)
+        AtomicInstr(Ref_i31)
+        AtomicInstr(I31_get_s)
+        AtomicInstr(I31_get_u)
+        AtomicInstr(Any_convert_extern)
+        AtomicInstr(Extern_convert_any)
+        AtomicInstr(Array_len)
         AtomicInstr(Drop)
         AtomicInstr(Select)
         AtomicInstr(I32_eqz)
@@ -216,8 +225,22 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         AtomicInstr(I64_trunc_sat_f64_s)
         AtomicInstr(I64_trunc_sat_f64_u)
         OneIndexInstr(Call)
+        OneIndexInstr(Call_ref)
+        OneIndexInstr(Throw)
+        OneIndexInstr(Struct_new)
+        OneIndexInstr(Struct_new_default)
+        OneIndexInstr(Array_new)
+        OneIndexInstr(Array_new_default)
+        OneIndexInstr(Array_get)
+        OneIndexInstr(Array_get_s)
+        OneIndexInstr(Array_get_u)
+        OneIndexInstr(Array_set)
+        OneIndexInstr(Return_call)
+        OneIndexInstr(Return_call_ref)
         OneIndexInstr(Br)
         OneIndexInstr(Br_if)
+        OneIndexInstr(Br_on_null)
+        OneIndexInstr(Br_on_non_null)
         OneIndexInstr(Ref_func)
         OneIndexInstr(Local_get)
         OneIndexInstr(Local_set)
@@ -266,6 +289,20 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         case Opcode::If :
             instr.emplace<Instr::If>(stream.get<BlockType>());
         break;
+        case Opcode::Try_table : {
+            Instr::Try_table& try_table = instr.emplace<Instr::Try_table>();
+            try_table.type = stream.get<BlockType>();
+            u32_t catch_count = stream.get<u32_t>();
+            for(u32_t i = 0; i < catch_count; ++i){
+                Instr::TryCatchEntry& entry = try_table.catches.emplace_back();
+                u8_t kind = (u8_t)stream.get<byte_t>();
+                entry.kind = (Instr::TryCatchEntry::Kind)kind;
+                if(kind == 0 || kind == 1){
+                    entry.tag_idx = stream.get<index_t>();
+                }
+                entry.label_idx = stream.get<index_t>();
+            }
+        }break;
         case Opcode::Br_table : {
             Instr::Br_table& br_table = instr.emplace<Instr::Br_table>();
             stream >> br_table.indices;
@@ -275,9 +312,82 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
             index_t typeidx = stream.get<index_t>();
             instr.emplace<Instr::Call_indirect>(stream.get<index_t>(), typeidx);
         }break;
+        case Opcode::Return_call_indirect : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Return_call_indirect>(stream.get<index_t>(), typeidx);
+        }break;
         case Opcode::Ref_null :
             instr.emplace<Instr::Ref_null>(stream.get<RefType>());
         break;
+        case Opcode::Ref_test :
+            instr.emplace<Instr::Ref_test>((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_test_null :
+            instr.emplace<Instr::Ref_test_null>((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_cast :
+            instr.emplace<Instr::Ref_cast>((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_cast_null :
+            instr.emplace<Instr::Ref_cast_null>((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Br_on_cast : {
+            u8_t flags = (u8_t)stream.get<byte_t>();
+            index_t labelidx = stream.get<index_t>();
+            int32_t ht1 = (int32_t)stream.get<i64_t>();
+            int32_t ht2 = (int32_t)stream.get<i64_t>();
+            instr.emplace<Instr::Br_on_cast>(labelidx, (flags & 1) != 0, (flags & 2) != 0, ht1, ht2);
+        }break;
+        case Opcode::Br_on_cast_fail : {
+            u8_t flags = (u8_t)stream.get<byte_t>();
+            index_t labelidx = stream.get<index_t>();
+            int32_t ht1 = (int32_t)stream.get<i64_t>();
+            int32_t ht2 = (int32_t)stream.get<i64_t>();
+            instr.emplace<Instr::Br_on_cast_fail>(labelidx, (flags & 1) != 0, (flags & 2) != 0, ht1, ht2);
+        }break;
+        case Opcode::Struct_get : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Struct_get>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_get_s : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Struct_get_s>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_get_u : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Struct_get_u>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_set : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Struct_set>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_new_fixed : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Array_new_fixed>(typeidx, stream.get<u32_t>());
+        }break;
+        case Opcode::Array_new_data : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Array_new_data>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_new_elem : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Array_new_elem>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_fill : {
+            instr.emplace<Instr::Array_fill>(stream.get<index_t>());
+        }break;
+        case Opcode::Array_copy : {
+            index_t dst = stream.get<index_t>();
+            instr.emplace<Instr::Array_copy>(dst, stream.get<index_t>());
+        }break;
+        case Opcode::Array_init_data : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Array_init_data>(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_init_elem : {
+            index_t typeidx = stream.get<index_t>();
+            instr.emplace<Instr::Array_init_elem>(typeidx, stream.get<index_t>());
+        }break;
         case Opcode::Select_t : {
             Instr::Select& ins = instr.emplace<Instr::Select>();
             stream >> ins.valtypes;

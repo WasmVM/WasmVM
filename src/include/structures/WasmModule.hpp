@@ -20,6 +20,7 @@ struct WasmModule {
     std::vector<WasmFunc> funcs;
     std::vector<TableType> tables;
     std::vector<MemType> mems;
+    std::vector<index_t> tags;  // tag typeidx list (tag section)
     std::vector<WasmGlobal> globals;
     std::vector<WasmExport> exports;
     std::optional<index_t> start;

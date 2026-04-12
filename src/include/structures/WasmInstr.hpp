@@ -48,12 +48,33 @@ struct Br_table : public Base {
     std::vector<index_t> indices;
 };
 using Return = Atomic<Opcode::Return>;
+using Throw = OneIndex<Opcode::Throw>;
+using Throw_ref = Atomic<Opcode::Throw_ref>;
+// try_table catch entry (unresolved, module-level tagidx)
+struct TryCatchEntry {
+    enum Kind { Catch = 0, CatchRef = 1, CatchAll = 2, CatchAllRef = 3 } kind;
+    index_t tag_idx;    // only for Catch/CatchRef
+    index_t label_idx;
+};
+struct Try_table : public Base {
+    Try_table() : Base(Opcode::Try_table) {}
+    std::optional<index_t> type;
+    std::vector<TryCatchEntry> catches;
+};
 struct Call_indirect : public Base {
     Call_indirect() : Base(Opcode::Call_indirect) {}
     Call_indirect(index_t tableidx, index_t typeidx) : Base(Opcode::Call_indirect), tableidx(tableidx), typeidx(typeidx) {}
     index_t tableidx;
     index_t typeidx;
 };
+using Return_call = OneIndex<Opcode::Return_call>;
+struct Return_call_indirect : public Base {
+    Return_call_indirect() : Base(Opcode::Return_call_indirect), tableidx(0), typeidx(0) {}
+    Return_call_indirect(index_t tableidx, index_t typeidx) : Base(Opcode::Return_call_indirect), tableidx(tableidx), typeidx(typeidx) {}
+    index_t tableidx;
+    index_t typeidx;
+};
+using Return_call_ref = OneIndex<Opcode::Return_call_ref>;
 
 // Reference instructions
 struct Ref_null : public Base {
@@ -63,6 +84,135 @@ struct Ref_null : public Base {
 };
 using Ref_is_null = Atomic<Opcode::Ref_is_null>;
 using Ref_func = OneIndex<Opcode::Ref_func>;
+using Ref_eq = Atomic<Opcode::Ref_eq>;
+using Ref_as_non_null = Atomic<Opcode::Ref_as_non_null>;
+using Br_on_null = OneIndex<Opcode::Br_on_null>;
+using Br_on_non_null = OneIndex<Opcode::Br_on_non_null>;
+// castop: flags (bit0=src nullable, bit1=dst nullable), two heaptypes
+struct Br_on_cast : public Base {
+    Br_on_cast() : Base(Opcode::Br_on_cast), labelidx(0), src_nullable(false), dst_nullable(false), src_heaptype(0), dst_heaptype(0) {}
+    Br_on_cast(index_t labelidx, bool src_nullable, bool dst_nullable, int32_t src_heaptype, int32_t dst_heaptype)
+        : Base(Opcode::Br_on_cast), labelidx(labelidx), src_nullable(src_nullable), dst_nullable(dst_nullable), src_heaptype(src_heaptype), dst_heaptype(dst_heaptype) {}
+    index_t labelidx;
+    bool src_nullable;
+    bool dst_nullable;
+    int32_t src_heaptype;
+    int32_t dst_heaptype;
+};
+struct Br_on_cast_fail : public Base {
+    Br_on_cast_fail() : Base(Opcode::Br_on_cast_fail), labelidx(0), src_nullable(false), dst_nullable(false), src_heaptype(0), dst_heaptype(0) {}
+    Br_on_cast_fail(index_t labelidx, bool src_nullable, bool dst_nullable, int32_t src_heaptype, int32_t dst_heaptype)
+        : Base(Opcode::Br_on_cast_fail), labelidx(labelidx), src_nullable(src_nullable), dst_nullable(dst_nullable), src_heaptype(src_heaptype), dst_heaptype(dst_heaptype) {}
+    index_t labelidx;
+    bool src_nullable;
+    bool dst_nullable;
+    int32_t src_heaptype;
+    int32_t dst_heaptype;
+};
+using Call_ref = OneIndex<Opcode::Call_ref>;
+// heaptype: negative = abstract heap type (e.g. -16=func, -17=extern), non-negative = type index
+struct Ref_test : public Base {
+    Ref_test() : Base(Opcode::Ref_test), heaptype(0) {}
+    Ref_test(int32_t heaptype) : Base(Opcode::Ref_test), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_test_null : public Base {
+    Ref_test_null() : Base(Opcode::Ref_test_null), heaptype(0) {}
+    Ref_test_null(int32_t heaptype) : Base(Opcode::Ref_test_null), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_cast : public Base {
+    Ref_cast() : Base(Opcode::Ref_cast), heaptype(0) {}
+    Ref_cast(int32_t heaptype) : Base(Opcode::Ref_cast), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_cast_null : public Base {
+    Ref_cast_null() : Base(Opcode::Ref_cast_null), heaptype(0) {}
+    Ref_cast_null(int32_t heaptype) : Base(Opcode::Ref_cast_null), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+using Ref_i31 = Atomic<Opcode::Ref_i31>;
+using I31_get_s = Atomic<Opcode::I31_get_s>;
+using I31_get_u = Atomic<Opcode::I31_get_u>;
+using Any_convert_extern = Atomic<Opcode::Any_convert_extern>;
+using Extern_convert_any = Atomic<Opcode::Extern_convert_any>;
+
+// GC Struct operations
+using Struct_new = OneIndex<Opcode::Struct_new>;
+using Struct_new_default = OneIndex<Opcode::Struct_new_default>;
+struct Struct_get : public Base {
+    Struct_get() : Base(Opcode::Struct_get), typeidx(0), fieldidx(0) {}
+    Struct_get(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_get_s : public Base {
+    Struct_get_s() : Base(Opcode::Struct_get_s), typeidx(0), fieldidx(0) {}
+    Struct_get_s(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get_s), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_get_u : public Base {
+    Struct_get_u() : Base(Opcode::Struct_get_u), typeidx(0), fieldidx(0) {}
+    Struct_get_u(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get_u), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_set : public Base {
+    Struct_set() : Base(Opcode::Struct_set), typeidx(0), fieldidx(0) {}
+    Struct_set(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_set), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+// GC Array operations
+using Array_new = OneIndex<Opcode::Array_new>;
+using Array_new_default = OneIndex<Opcode::Array_new_default>;
+struct Array_new_fixed : public Base {
+    Array_new_fixed() : Base(Opcode::Array_new_fixed), typeidx(0), n(0) {}
+    Array_new_fixed(index_t typeidx, u32_t n) : Base(Opcode::Array_new_fixed), typeidx(typeidx), n(n) {}
+    index_t typeidx;
+    u32_t n;
+};
+struct Array_new_data : public Base {
+    Array_new_data() : Base(Opcode::Array_new_data), typeidx(0), dataidx(0) {}
+    Array_new_data(index_t typeidx, index_t dataidx) : Base(Opcode::Array_new_data), typeidx(typeidx), dataidx(dataidx) {}
+    index_t typeidx;
+    index_t dataidx;
+};
+struct Array_new_elem : public Base {
+    Array_new_elem() : Base(Opcode::Array_new_elem), typeidx(0), elemidx(0) {}
+    Array_new_elem(index_t typeidx, index_t elemidx) : Base(Opcode::Array_new_elem), typeidx(typeidx), elemidx(elemidx) {}
+    index_t typeidx;
+    index_t elemidx;
+};
+using Array_get = OneIndex<Opcode::Array_get>;
+using Array_get_s = OneIndex<Opcode::Array_get_s>;
+using Array_get_u = OneIndex<Opcode::Array_get_u>;
+using Array_set = OneIndex<Opcode::Array_set>;
+using Array_len = Atomic<Opcode::Array_len>;
+struct Array_fill : public Base {
+    Array_fill() : Base(Opcode::Array_fill), typeidx(0) {}
+    Array_fill(index_t typeidx) : Base(Opcode::Array_fill), typeidx(typeidx) {}
+    index_t typeidx;
+};
+struct Array_copy : public Base {
+    Array_copy() : Base(Opcode::Array_copy), dst_typeidx(0), src_typeidx(0) {}
+    Array_copy(index_t dst, index_t src) : Base(Opcode::Array_copy), dst_typeidx(dst), src_typeidx(src) {}
+    index_t dst_typeidx;
+    index_t src_typeidx;
+};
+struct Array_init_data : public Base {
+    Array_init_data() : Base(Opcode::Array_init_data), typeidx(0), dataidx(0) {}
+    Array_init_data(index_t typeidx, index_t dataidx) : Base(Opcode::Array_init_data), typeidx(typeidx), dataidx(dataidx) {}
+    index_t typeidx;
+    index_t dataidx;
+};
+struct Array_init_elem : public Base {
+    Array_init_elem() : Base(Opcode::Array_init_elem), typeidx(0), elemidx(0) {}
+    Array_init_elem(index_t typeidx, index_t elemidx) : Base(Opcode::Array_init_elem), typeidx(typeidx), elemidx(elemidx) {}
+    index_t typeidx;
+    index_t elemidx;
+};
 
 // Parametric instructions
 using Drop = Atomic<Opcode::Drop>;
@@ -329,12 +479,56 @@ using WasmInstr = std::variant<
     Instr::Br_if,
     Instr::Br_table,
     Instr::Return,
+    Instr::Throw,
+    Instr::Throw_ref,
+    Instr::Try_table,
     Instr::Call,
     Instr::Call_indirect,
+    Instr::Return_call,
+    Instr::Return_call_indirect,
+    Instr::Return_call_ref,
     // Reference
     Instr::Ref_null,
     Instr::Ref_is_null,
     Instr::Ref_func,
+    Instr::Ref_eq,
+    Instr::Ref_as_non_null,
+    Instr::Br_on_null,
+    Instr::Br_on_non_null,
+    Instr::Br_on_cast,
+    Instr::Br_on_cast_fail,
+    Instr::Call_ref,
+    Instr::Ref_test,
+    Instr::Ref_test_null,
+    Instr::Ref_cast,
+    Instr::Ref_cast_null,
+    Instr::Ref_i31,
+    Instr::I31_get_s,
+    Instr::I31_get_u,
+    Instr::Any_convert_extern,
+    Instr::Extern_convert_any,
+    // GC Struct
+    Instr::Struct_new,
+    Instr::Struct_new_default,
+    Instr::Struct_get,
+    Instr::Struct_get_s,
+    Instr::Struct_get_u,
+    Instr::Struct_set,
+    // GC Array
+    Instr::Array_new,
+    Instr::Array_new_default,
+    Instr::Array_new_fixed,
+    Instr::Array_new_data,
+    Instr::Array_new_elem,
+    Instr::Array_get,
+    Instr::Array_get_s,
+    Instr::Array_get_u,
+    Instr::Array_set,
+    Instr::Array_len,
+    Instr::Array_fill,
+    Instr::Array_copy,
+    Instr::Array_init_data,
+    Instr::Array_init_elem,
     // Parametric
     Instr::Drop,
     Instr::Select,

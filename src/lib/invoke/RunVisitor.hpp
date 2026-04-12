@@ -15,6 +15,9 @@ struct RunVisitor {
     // Control
     void operator()(Instr::Unreachable&);
     void operator()(Instr::Nop&);
+    void operator()(Instr::Throw&);
+    void operator()(Instr::Throw_ref&);
+    void operator()(Instr::Try_table&);
     void operator()(Instr::Block&);
     void operator()(Instr::Loop&);
     void operator()(Instr::If&);
@@ -26,10 +29,51 @@ struct RunVisitor {
     void operator()(Instr::Return&);
     void operator()(Instr::Call&);
     void operator()(Instr::Call_indirect&);
+    void operator()(Instr::Call_ref&);
+    void operator()(Instr::Return_call&);
+    void operator()(Instr::Return_call_indirect&);
+    void operator()(Instr::Return_call_ref&);
     // Reference
     void operator()(Instr::Ref_null&);
     void operator()(Instr::Ref_is_null&);
     void operator()(Instr::Ref_func&);
+    void operator()(Instr::Ref_eq&);
+    void operator()(Instr::Ref_as_non_null&);
+    void operator()(Instr::Br_on_null&);
+    void operator()(Instr::Br_on_non_null&);
+    void operator()(Instr::Br_on_cast&);
+    void operator()(Instr::Br_on_cast_fail&);
+    void operator()(Instr::Ref_test&);
+    void operator()(Instr::Ref_test_null&);
+    void operator()(Instr::Ref_cast&);
+    void operator()(Instr::Ref_cast_null&);
+    void operator()(Instr::Ref_i31&);
+    void operator()(Instr::I31_get_s&);
+    void operator()(Instr::I31_get_u&);
+    void operator()(Instr::Any_convert_extern&);
+    void operator()(Instr::Extern_convert_any&);
+    // GC Struct
+    void operator()(Instr::Struct_new&);
+    void operator()(Instr::Struct_new_default&);
+    void operator()(Instr::Struct_get&);
+    void operator()(Instr::Struct_get_s&);
+    void operator()(Instr::Struct_get_u&);
+    void operator()(Instr::Struct_set&);
+    // GC Array
+    void operator()(Instr::Array_new&);
+    void operator()(Instr::Array_new_default&);
+    void operator()(Instr::Array_new_fixed&);
+    void operator()(Instr::Array_new_data&);
+    void operator()(Instr::Array_new_elem&);
+    void operator()(Instr::Array_get&);
+    void operator()(Instr::Array_get_s&);
+    void operator()(Instr::Array_get_u&);
+    void operator()(Instr::Array_set&);
+    void operator()(Instr::Array_len&);
+    void operator()(Instr::Array_fill&);
+    void operator()(Instr::Array_copy&);
+    void operator()(Instr::Array_init_data&);
+    void operator()(Instr::Array_init_elem&);
     // Parametric
     void operator()(Instr::Drop&);
     void operator()(Instr::Select&);

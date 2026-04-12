@@ -29,7 +29,25 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::Else, "else")
     AtomicInstr(WasmVM::Instr::End, "end")
     AtomicInstr(WasmVM::Instr::Return, "return")
+    AtomicInstr(WasmVM::Instr::Throw_ref, "throw_ref")
     AtomicInstr(WasmVM::Instr::Ref_is_null, "ref.is_null")
+    AtomicInstr(WasmVM::Instr::Ref_eq, "ref.eq")
+    AtomicInstr(WasmVM::Instr::Ref_as_non_null, "ref.as_non_null")
+    AtomicInstr(WasmVM::Instr::Ref_i31, "ref.i31")
+    AtomicInstr(WasmVM::Instr::I31_get_s, "i31.get_s")
+    AtomicInstr(WasmVM::Instr::I31_get_u, "i31.get_u")
+    AtomicInstr(WasmVM::Instr::Any_convert_extern, "any.convert_extern")
+    AtomicInstr(WasmVM::Instr::Extern_convert_any, "extern.convert_any")
+    AtomicInstr(WasmVM::Instr::Array_len, "array.len")
+
+    OneIndexInstr(WasmVM::Instr::Struct_new, "struct.new")
+    OneIndexInstr(WasmVM::Instr::Struct_new_default, "struct.new_default")
+    OneIndexInstr(WasmVM::Instr::Array_new, "array.new")
+    OneIndexInstr(WasmVM::Instr::Array_new_default, "array.new_default")
+    OneIndexInstr(WasmVM::Instr::Array_get, "array.get")
+    OneIndexInstr(WasmVM::Instr::Array_get_s, "array.get_s")
+    OneIndexInstr(WasmVM::Instr::Array_get_u, "array.get_u")
+    OneIndexInstr(WasmVM::Instr::Array_set, "array.set")
     AtomicInstr(WasmVM::Instr::Drop, "drop")
     AtomicInstr(WasmVM::Instr::I32_eqz, "i32.eqz")
     AtomicInstr(WasmVM::Instr::I32_eq, "i32.eq")
@@ -168,9 +186,15 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_s, "i64.trunc_sat_f64_s")
     AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_u, "i64.trunc_sat_f64_u")
 
+    OneIndexInstr(WasmVM::Instr::Throw, "throw")
     OneIndexInstr(WasmVM::Instr::Call, "call")
+    OneIndexInstr(WasmVM::Instr::Call_ref, "call_ref")
+    OneIndexInstr(WasmVM::Instr::Return_call, "return_call")
+    OneIndexInstr(WasmVM::Instr::Return_call_ref, "return_call_ref")
     OneIndexInstr(WasmVM::Instr::Br, "br")
     OneIndexInstr(WasmVM::Instr::Br_if, "br_if")
+    OneIndexInstr(WasmVM::Instr::Br_on_null, "br_on_null")
+    OneIndexInstr(WasmVM::Instr::Br_on_non_null, "br_on_non_null")
     OneIndexInstr(WasmVM::Instr::Ref_func, "ref.func")
     OneIndexInstr(WasmVM::Instr::Local_get, "local.get")
     OneIndexInstr(WasmVM::Instr::Local_set, "local.set")
@@ -212,6 +236,29 @@ struct InstrVisitor {
     MemoryInstr(WasmVM::Instr::I64_store16, "i64.store16")
     MemoryInstr(WasmVM::Instr::I64_store32, "i64.store32")
 
+    std::ostream& operator()(const WasmVM::Instr::Try_table& instr){
+        stream << "try_table";
+        if(instr.type){
+            stream << " (type " << instr.type.value() << ")";
+        }
+        for(const WasmVM::Instr::TryCatchEntry& ce : instr.catches){
+            switch(ce.kind){
+                case WasmVM::Instr::TryCatchEntry::Catch:
+                    stream << " (catch " << ce.tag_idx << " " << ce.label_idx << ")";
+                break;
+                case WasmVM::Instr::TryCatchEntry::CatchRef:
+                    stream << " (catch_ref " << ce.tag_idx << " " << ce.label_idx << ")";
+                break;
+                case WasmVM::Instr::TryCatchEntry::CatchAll:
+                    stream << " (catch_all " << ce.label_idx << ")";
+                break;
+                case WasmVM::Instr::TryCatchEntry::CatchAllRef:
+                    stream << " (catch_all_ref " << ce.label_idx << ")";
+                break;
+            }
+        }
+        return stream;
+    }
     std::ostream& operator()(const WasmVM::Instr::Block& instr){
         stream << "block";
         if(instr.type){
@@ -243,6 +290,9 @@ struct InstrVisitor {
     std::ostream& operator()(const WasmVM::Instr::Call_indirect& instr){
         return stream << "call_indirect " << instr.tableidx << " " << instr.typeidx;
     }
+    std::ostream& operator()(const WasmVM::Instr::Return_call_indirect& instr){
+        return stream << "return_call_indirect " << instr.tableidx << " " << instr.typeidx;
+    }
     std::ostream& operator()(const WasmVM::Instr::Ref_null& instr){
         stream << "ref.null ";
         switch(instr.heaptype){
@@ -253,6 +303,57 @@ struct InstrVisitor {
             default:
                 return stream;
         }
+    }
+    std::ostream& operator()(const WasmVM::Instr::Ref_test& instr){
+        return stream << "ref.test " << instr.heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Ref_test_null& instr){
+        return stream << "ref.test null " << instr.heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Ref_cast& instr){
+        return stream << "ref.cast " << instr.heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Ref_cast_null& instr){
+        return stream << "ref.cast null " << instr.heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Br_on_cast& instr){
+        return stream << "br_on_cast " << instr.labelidx << " " << instr.src_heaptype << " " << instr.dst_heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Br_on_cast_fail& instr){
+        return stream << "br_on_cast_fail " << instr.labelidx << " " << instr.src_heaptype << " " << instr.dst_heaptype;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Struct_get& instr){
+        return stream << "struct.get " << instr.typeidx << " " << instr.fieldidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Struct_get_s& instr){
+        return stream << "struct.get_s " << instr.typeidx << " " << instr.fieldidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Struct_get_u& instr){
+        return stream << "struct.get_u " << instr.typeidx << " " << instr.fieldidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Struct_set& instr){
+        return stream << "struct.set " << instr.typeidx << " " << instr.fieldidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_new_fixed& instr){
+        return stream << "array.new_fixed " << instr.typeidx << " " << instr.n;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_new_data& instr){
+        return stream << "array.new_data " << instr.typeidx << " " << instr.dataidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_new_elem& instr){
+        return stream << "array.new_elem " << instr.typeidx << " " << instr.elemidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_fill& instr){
+        return stream << "array.fill " << instr.typeidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_copy& instr){
+        return stream << "array.copy " << instr.dst_typeidx << " " << instr.src_typeidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_init_data& instr){
+        return stream << "array.init_data " << instr.typeidx << " " << instr.dataidx;
+    }
+    std::ostream& operator()(const WasmVM::Instr::Array_init_elem& instr){
+        return stream << "array.init_elem " << instr.typeidx << " " << instr.elemidx;
     }
     std::ostream& operator()(const WasmVM::Instr::Select& instr){
         stream << "select";

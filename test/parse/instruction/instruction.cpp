@@ -101,6 +101,169 @@ Suite instruction {
         Expect(std::get<Instr::Ref_func>(instrs[3]).index == 0);
         Expect(std::holds_alternative<Instr::Ref_func>(instrs[4]));
         Expect(std::get<Instr::Ref_func>(instrs[4]).index == 1);
+        Expect(std::holds_alternative<Instr::Ref_eq>(instrs[5]));
+        Expect(std::holds_alternative<Instr::Ref_as_non_null>(instrs[6]));
+        Expect(std::holds_alternative<Instr::Ref_i31>(instrs[7]));
+        Expect(std::holds_alternative<Instr::I31_get_s>(instrs[8]));
+        Expect(std::holds_alternative<Instr::I31_get_u>(instrs[9]));
+        // ref.test (ref func) → Ref_test(-16)
+        Expect(std::holds_alternative<Instr::Ref_test>(instrs[10]));
+        Expect(std::get<Instr::Ref_test>(instrs[10]).heaptype == -16);
+        // ref.test (ref null extern) → Ref_test_null(-17)
+        Expect(std::holds_alternative<Instr::Ref_test_null>(instrs[11]));
+        Expect(std::get<Instr::Ref_test_null>(instrs[11]).heaptype == -17);
+        // ref.cast (ref func) → Ref_cast(-16)
+        Expect(std::holds_alternative<Instr::Ref_cast>(instrs[12]));
+        Expect(std::get<Instr::Ref_cast>(instrs[12]).heaptype == -16);
+        // ref.cast (ref null extern) → Ref_cast_null(-17)
+        Expect(std::holds_alternative<Instr::Ref_cast_null>(instrs[13]));
+        Expect(std::get<Instr::Ref_cast_null>(instrs[13]).heaptype == -17);
+        Expect(std::holds_alternative<Instr::Any_convert_extern>(instrs[14]));
+        Expect(std::holds_alternative<Instr::Extern_convert_any>(instrs[15]));
+    })
+    Test("typed_ref", {
+        ParseFile(test_module, "typed_ref.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // call_ref 0
+        Expect(std::holds_alternative<Instr::Call_ref>(instrs[0]));
+        Expect(std::get<Instr::Call_ref>(instrs[0]).index == 0);
+        // return_call_ref 0
+        Expect(std::holds_alternative<Instr::Return_call_ref>(instrs[1]));
+        Expect(std::get<Instr::Return_call_ref>(instrs[1]).index == 0);
+        // ref.null func; br_on_null 0
+        Expect(std::holds_alternative<Instr::Br_on_null>(instrs[3]));
+        Expect(std::get<Instr::Br_on_null>(instrs[3]).index == 0);
+        // ref.null func; br_on_non_null 0
+        Expect(std::holds_alternative<Instr::Br_on_non_null>(instrs[5]));
+        Expect(std::get<Instr::Br_on_non_null>(instrs[5]).index == 0);
+        // br_on_cast 0 (ref null func) (ref func)
+        Expect(std::holds_alternative<Instr::Br_on_cast>(instrs[7]));
+        Expect(std::get<Instr::Br_on_cast>(instrs[7]).labelidx == 0);
+        Expect(std::get<Instr::Br_on_cast>(instrs[7]).src_nullable == true);
+        Expect(std::get<Instr::Br_on_cast>(instrs[7]).dst_nullable == false);
+        Expect(std::get<Instr::Br_on_cast>(instrs[7]).src_heaptype == -16);
+        Expect(std::get<Instr::Br_on_cast>(instrs[7]).dst_heaptype == -16);
+        // br_on_cast_fail 0 (ref null func) (ref func)
+        Expect(std::holds_alternative<Instr::Br_on_cast_fail>(instrs[10]));
+        Expect(std::get<Instr::Br_on_cast_fail>(instrs[10]).labelidx == 0);
+        Expect(std::get<Instr::Br_on_cast_fail>(instrs[10]).src_nullable == true);
+        Expect(std::get<Instr::Br_on_cast_fail>(instrs[10]).dst_nullable == false);
+    })
+    Test("tail_call", {
+        ParseFile(test_module, "tail_call.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // return_call 0
+        Expect(std::holds_alternative<Instr::Return_call>(instrs[0]));
+        Expect(std::get<Instr::Return_call>(instrs[0]).index == 0);
+        // return_call_indirect (type 0) — tableidx=0, typeidx=0
+        Expect(std::holds_alternative<Instr::Return_call_indirect>(instrs[1]));
+        Expect(std::get<Instr::Return_call_indirect>(instrs[1]).tableidx == 0);
+        Expect(std::get<Instr::Return_call_indirect>(instrs[1]).typeidx == 0);
+        // return_call_indirect 1 (type 0) — tableidx=1, typeidx=0
+        Expect(std::holds_alternative<Instr::Return_call_indirect>(instrs[2]));
+        Expect(std::get<Instr::Return_call_indirect>(instrs[2]).tableidx == 1);
+        Expect(std::get<Instr::Return_call_indirect>(instrs[2]).typeidx == 0);
+    })
+    Test("exception", {
+        ParseFile(test_module, "exception.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // throw_ref
+        Expect(std::holds_alternative<Instr::Throw_ref>(instrs[0]));
+        // throw $t0 (tag 0)
+        Expect(std::holds_alternative<Instr::Throw>(instrs[1]));
+        Expect(std::get<Instr::Throw>(instrs[1]).index == 0);
+        // try_table (catch $t0 0) nop end
+        Expect(std::holds_alternative<Instr::Try_table>(instrs[2]));
+        Expect(std::get<Instr::Try_table>(instrs[2]).catches.size() == 1);
+        Expect(std::get<Instr::Try_table>(instrs[2]).catches[0].kind == Instr::TryCatchEntry::Catch);
+        Expect(std::get<Instr::Try_table>(instrs[2]).catches[0].tag_idx == 0);
+        Expect(std::get<Instr::Try_table>(instrs[2]).catches[0].label_idx == 0);
+        Expect(std::holds_alternative<Instr::Nop>(instrs[3]));
+        Expect(std::holds_alternative<Instr::End>(instrs[4]));
+        // try_table (catch_ref $t0 0) (catch_all 0) nop end
+        Expect(std::holds_alternative<Instr::Try_table>(instrs[5]));
+        Expect(std::get<Instr::Try_table>(instrs[5]).catches.size() == 2);
+        Expect(std::get<Instr::Try_table>(instrs[5]).catches[0].kind == Instr::TryCatchEntry::CatchRef);
+        Expect(std::get<Instr::Try_table>(instrs[5]).catches[1].kind == Instr::TryCatchEntry::CatchAll);
+        Expect(std::holds_alternative<Instr::End>(instrs[7]));
+        // try_table (catch_all_ref 0) nop end
+        Expect(std::holds_alternative<Instr::Try_table>(instrs[8]));
+        Expect(std::get<Instr::Try_table>(instrs[8]).catches.size() == 1);
+        Expect(std::get<Instr::Try_table>(instrs[8]).catches[0].kind == Instr::TryCatchEntry::CatchAllRef);
+    })
+    Test("gc_struct", {
+        ParseFile(test_module, "gc_struct.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // struct.new 0
+        Expect(std::holds_alternative<Instr::Struct_new>(instrs[0]));
+        Expect(std::get<Instr::Struct_new>(instrs[0]).index == 0);
+        // struct.new_default 1
+        Expect(std::holds_alternative<Instr::Struct_new_default>(instrs[1]));
+        Expect(std::get<Instr::Struct_new_default>(instrs[1]).index == 1);
+        // struct.get 2 3
+        Expect(std::holds_alternative<Instr::Struct_get>(instrs[2]));
+        Expect(std::get<Instr::Struct_get>(instrs[2]).typeidx == 2);
+        Expect(std::get<Instr::Struct_get>(instrs[2]).fieldidx == 3);
+        // struct.get_s 2 3
+        Expect(std::holds_alternative<Instr::Struct_get_s>(instrs[3]));
+        Expect(std::get<Instr::Struct_get_s>(instrs[3]).typeidx == 2);
+        Expect(std::get<Instr::Struct_get_s>(instrs[3]).fieldidx == 3);
+        // struct.get_u 2 3
+        Expect(std::holds_alternative<Instr::Struct_get_u>(instrs[4]));
+        Expect(std::get<Instr::Struct_get_u>(instrs[4]).typeidx == 2);
+        Expect(std::get<Instr::Struct_get_u>(instrs[4]).fieldidx == 3);
+        // struct.set 2 3
+        Expect(std::holds_alternative<Instr::Struct_set>(instrs[5]));
+        Expect(std::get<Instr::Struct_set>(instrs[5]).typeidx == 2);
+        Expect(std::get<Instr::Struct_set>(instrs[5]).fieldidx == 3);
+    })
+    Test("gc_array", {
+        ParseFile(test_module, "gc_array.wat");
+        std::vector<WasmInstr>& instrs = test_module.funcs[0].body;
+        // array.new 0
+        Expect(std::holds_alternative<Instr::Array_new>(instrs[0]));
+        Expect(std::get<Instr::Array_new>(instrs[0]).index == 0);
+        // array.new_default 1
+        Expect(std::holds_alternative<Instr::Array_new_default>(instrs[1]));
+        Expect(std::get<Instr::Array_new_default>(instrs[1]).index == 1);
+        // array.new_fixed 2 5
+        Expect(std::holds_alternative<Instr::Array_new_fixed>(instrs[2]));
+        Expect(std::get<Instr::Array_new_fixed>(instrs[2]).typeidx == 2);
+        Expect(std::get<Instr::Array_new_fixed>(instrs[2]).n == 5);
+        // array.new_data 3 0
+        Expect(std::holds_alternative<Instr::Array_new_data>(instrs[3]));
+        Expect(std::get<Instr::Array_new_data>(instrs[3]).typeidx == 3);
+        Expect(std::get<Instr::Array_new_data>(instrs[3]).dataidx == 0);
+        // array.new_elem 4 0
+        Expect(std::holds_alternative<Instr::Array_new_elem>(instrs[4]));
+        Expect(std::get<Instr::Array_new_elem>(instrs[4]).typeidx == 4);
+        Expect(std::get<Instr::Array_new_elem>(instrs[4]).elemidx == 0);
+        // array.get/get_s/get_u/set 5
+        Expect(std::holds_alternative<Instr::Array_get>(instrs[5]));
+        Expect(std::get<Instr::Array_get>(instrs[5]).index == 5);
+        Expect(std::holds_alternative<Instr::Array_get_s>(instrs[6]));
+        Expect(std::get<Instr::Array_get_s>(instrs[6]).index == 5);
+        Expect(std::holds_alternative<Instr::Array_get_u>(instrs[7]));
+        Expect(std::get<Instr::Array_get_u>(instrs[7]).index == 5);
+        Expect(std::holds_alternative<Instr::Array_set>(instrs[8]));
+        Expect(std::get<Instr::Array_set>(instrs[8]).index == 5);
+        // array.len
+        Expect(std::holds_alternative<Instr::Array_len>(instrs[9]));
+        // array.fill 6
+        Expect(std::holds_alternative<Instr::Array_fill>(instrs[10]));
+        Expect(std::get<Instr::Array_fill>(instrs[10]).typeidx == 6);
+        // array.copy 7 8
+        Expect(std::holds_alternative<Instr::Array_copy>(instrs[11]));
+        Expect(std::get<Instr::Array_copy>(instrs[11]).dst_typeidx == 7);
+        Expect(std::get<Instr::Array_copy>(instrs[11]).src_typeidx == 8);
+        // array.init_data 9 0
+        Expect(std::holds_alternative<Instr::Array_init_data>(instrs[12]));
+        Expect(std::get<Instr::Array_init_data>(instrs[12]).typeidx == 9);
+        Expect(std::get<Instr::Array_init_data>(instrs[12]).dataidx == 0);
+        // array.init_elem 9 0
+        Expect(std::holds_alternative<Instr::Array_init_elem>(instrs[13]));
+        Expect(std::get<Instr::Array_init_elem>(instrs[13]).typeidx == 9);
+        Expect(std::get<Instr::Array_init_elem>(instrs[13]).elemidx == 0);
     })
     Test("parametric", {
         ParseFile(test_module, "parametric.wat");

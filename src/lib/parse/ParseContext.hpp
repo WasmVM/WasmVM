@@ -40,6 +40,7 @@ private:
     std::map<std::string, index_t> local_map_;
     std::map<std::string, index_t> label_map_;
     IndexSpace func_map_, table_map_, mem_map_, global_map_;
+    std::map<std::string, index_t> tag_map_;
     // types_ stores (FuncType, param-id-map) pairs; module_.types is populated in parse()
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types_;
     index_t block_level_ = 0;
@@ -60,6 +61,7 @@ private:
     void parse_startsection();
     void parse_elemsection();
     void parse_datasection();
+    void parse_tagsection();
 
     // ── Type / structural sub-parsers ────────────────────────────────────────
     ValueType  parse_valtype();
@@ -97,6 +99,7 @@ private:
     index_t parse_dataidx();
     index_t parse_localidx();
     index_t parse_labelidx();
+    index_t parse_tagidx();
 
     // ── Numeric value parsers ────────────────────────────────────────────────
     i32_t parse_i32();
@@ -128,6 +131,9 @@ private:
     WasmInstr parse_tableinstr(const std::string& name);
     WasmInstr parse_memoryinstr(const std::string& name);
     WasmInstr parse_numericinstr(const std::string& name);
+    WasmInstr parse_gcinstr(const std::string& name);
+    // Parses (ref null? heaptype) and returns {nullable, heaptype-as-int32}.
+    std::pair<bool, int32_t> parse_reftype_annot();
     std::pair<offset_t, std::optional<align_t>> parse_memarg();
 
     // ── Post-processing (same logic as original post_process.cpp) ────────────

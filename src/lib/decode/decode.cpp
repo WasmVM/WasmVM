@@ -36,6 +36,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Table(module.tables);
     // Mems
     stream >> Decode::Memory(module.mems);
+    // Tags
+    stream >> Decode::Tag(module.tags);
     // Globals
     stream >> Decode::Global(module.globals);
     // Exports
