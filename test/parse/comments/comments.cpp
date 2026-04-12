@@ -3,58 +3,44 @@
 // license that can be found in the LICENSE file.
 
 #include <harness.hpp>
-#include <parse/WatLexer.h>
-#include <parse/ErrorListener.hpp>
+#include <parse/Tokenizer.hpp>
+#include <exception.hpp>
 
 #include <fstream>
+#include <sstream>
 
 using namespace WasmVM;
+using namespace WasmVM::Parse;
 using namespace Testing;
 
 Suite comments {
     Test("Line comments", {
         std::ifstream fin("line.wat");
-        antlr4::ANTLRInputStream input(fin);
-        WasmVM::WatLexer lexer(&input);
-        antlr4::CommonTokenStream stream(&lexer);
-        stream.fill();
-        std::vector<antlr4::Token*> tokens = stream.getTokens();
-        Expect(tokens[0]->getText() == "(");
-        Expect(tokens[1]->getText() == "module");
-        Expect(tokens[2]->getText() == ")");
-        Expect(tokens[3]->getText() == "(");
-        Expect(tokens[4]->getText() == "module");
-        Expect(tokens[5]->getText() == ")");
-        Expect(tokens[6]->getText() == "(");
-        Expect(tokens[7]->getText() == "module");
-        Expect(tokens[8]->getText() == ")");
-        Expect(tokens[9]->getText() == "<EOF>");
+        Tokenizer tok(fin);
+        // Three (module) blocks separated by line comments
+        for (int i = 0; i < 3; ++i) {
+            Expect(tok.peek().type == TokenType::LParen);  tok.consume();
+            Expect(tok.peek_keyword("module"));            tok.consume();
+            Expect(tok.peek().type == TokenType::RParen);  tok.consume();
+        }
+        Expect(tok.at_eof());
     })
 
     Category("Block comments", {
         Test("Regular", {
             std::ifstream fin("block.wat");
-            antlr4::ANTLRInputStream input(fin);
-            WasmVM::WatLexer lexer(&input);
-            antlr4::CommonTokenStream stream(&lexer);
-            stream.fill();
-            std::vector<antlr4::Token*> tokens = stream.getTokens();
-            Expect(tokens[0]->getText() == "(");
-            Expect(tokens[1]->getText() == "module");
-            Expect(tokens[2]->getText() == ")");
-            Expect(tokens[3]->getText() == "<EOF>");
+            Tokenizer tok(fin);
+            Expect(tok.peek().type == TokenType::LParen);  tok.consume();
+            Expect(tok.peek_keyword("module"));            tok.consume();
+            Expect(tok.peek().type == TokenType::RParen);  tok.consume();
+            Expect(tok.at_eof());
         })
         Test("Not close", {
             std::ifstream fin("not_close.wat");
-            antlr4::ANTLRInputStream input(fin);
-            WasmVM::WatLexer lexer(&input);
-            WasmVM::LexerErrorListener listener;
-            lexer.removeErrorListeners();
-            lexer.addErrorListener(&listener);
-            antlr4::CommonTokenStream stream(&lexer);
             bool exceptionThrown = false;
             try {
-                stream.fill();
+                Tokenizer tok(fin);
+                while (!tok.at_eof()) { tok.consume(); }
             } catch (const WasmVM::Exception::Parse&) {
                 exceptionThrown = true;
             }
@@ -64,26 +50,19 @@ Suite comments {
 
     Test("Nested comments", {
         std::ifstream fin("nested.wat");
-        antlr4::ANTLRInputStream input(fin);
-        WasmVM::WatLexer lexer(&input);
-        antlr4::CommonTokenStream stream(&lexer);
-        stream.fill();
-        std::vector<antlr4::Token*> tokens = stream.getTokens();
-        Expect(tokens[0]->getText() == "(");
-        Expect(tokens[1]->getText() == "module");
-        Expect(tokens[2]->getText() == ")");
-        Expect(tokens[3]->getText() == "(");
-        Expect(tokens[4]->getText() == "module");
-        Expect(tokens[5]->getText() == ")");
-        Expect(tokens[6]->getText() == "<EOF>");
+        Tokenizer tok(fin);
+        // Two (module) blocks with nested block comments inside/around them
+        for (int i = 0; i < 2; ++i) {
+            Expect(tok.peek().type == TokenType::LParen);  tok.consume();
+            Expect(tok.peek_keyword("module"));            tok.consume();
+            Expect(tok.peek().type == TokenType::RParen);  tok.consume();
+        }
+        Expect(tok.at_eof());
     })
 
     Test("Whitespace", {
-        antlr4::ANTLRInputStream input("  \n \t");
-        WasmVM::WatLexer lexer(&input);
-        antlr4::CommonTokenStream stream(&lexer);
-        stream.fill();
-        std::vector<antlr4::Token*> tokens = stream.getTokens();
-        Expect(tokens[0]->getText() == "<EOF>");
+        std::istringstream input("  \n \t");
+        Tokenizer tok(input);
+        Expect(tok.at_eof());
     })
 };

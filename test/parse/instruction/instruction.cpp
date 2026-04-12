@@ -5,6 +5,9 @@
 #include <harness.hpp>
 #include <WasmVM.hpp>
 #include <exception.hpp>
+#include <sstream>
+#include <vector>
+#include <string>
 
 using namespace WasmVM;
 using namespace Testing;
@@ -422,6 +425,40 @@ Suite instruction {
             Expect(std::holds_alternative<Instr::F64_convert_i64_u>(instrs[24]));
             Expect(std::holds_alternative<Instr::F64_promote_f32>(instrs[25]));
             Expect(std::holds_alternative<Instr::F64_reinterpret_i64>(instrs[26]));
+        })
+    })
+    Category("invalid", {
+        Test("unknown instruction", {
+            Throw(Exception::Parse, {
+                std::istringstream stream("(module (func i99.nonexistent))");
+                module_parse(stream);
+            });
+        })
+        Test("unknown instruction variants", {
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (func bad.instr))");
+                module_parse(ss);
+            });
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (func i32.bad))");
+                module_parse(ss);
+            });
+            ExpectThrows(Exception::Parse, {
+                std::istringstream ss("(module (func f64.bad_op))");
+                module_parse(ss);
+            });
+        })
+        Test("duplicate label", {
+            Throw(Exception::Parse, {
+                std::istringstream stream("(module (func (block $lbl (block $lbl end) end)))");
+                module_parse(stream);
+            });
+        })
+        Test("label not found", {
+            Throw(Exception::Parse, {
+                std::istringstream stream("(module (func (br $missing)))");
+                module_parse(stream);
+            });
         })
     })
     Test("folded", {
