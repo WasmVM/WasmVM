@@ -15,6 +15,7 @@ endmacro(add_host_module)
 # --- Begin ---
 
 add_host_module(testhost "Test host module")
+add_host_module(sysenv "POSIX-style system interface (sys_fs, sys_proc)")
 
 # ---  End  ---
 
