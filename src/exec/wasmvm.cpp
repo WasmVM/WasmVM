@@ -100,7 +100,8 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--no-parent", "Disable importing modules from module parent path", "-np"),
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
-        CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos)
+        CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos),
+        CommandParser::Optional("--args", "Arguments passed to host modules", (unsigned int)index_npos, "-a")
     },
         "wasmvm : WasmVM WebAssembly virtual machine"
     );
@@ -142,13 +143,19 @@ int main(int argc, char const *argv[]){
         Store store;
         std::map<std::filesystem::path, ModuleInst> moduleinsts;
 
-        // Host modules
-        #ifdef HOST_MODULES
-        host_modules_instanciate(moduleinsts, store);
-        #endif
-
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
+
+        // Host modules
+        #ifdef HOST_MODULES
+        wasmvm_args.clear();
+        wasmvm_args.push_back(main_module);
+        if (args["args"]) {
+            for (auto& a : std::get<std::vector<std::string>>(args["args"].value()))
+                wasmvm_args.push_back(a);
+        }
+        host_modules_instanciate(moduleinsts, store);
+        #endif
         ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent, run_validate);
 
         // Instanciate

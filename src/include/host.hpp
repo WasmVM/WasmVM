@@ -5,6 +5,8 @@
 #include <instances/Store.hpp>
 #include <map>
 #include <filesystem>
+#include <string>
+#include <vector>
 
 #if defined(WIN32)
   #if defined(HOST_API_DEF)
@@ -19,5 +21,6 @@
 using namespace WasmVM;
 
 LIBRARY_API void host_modules_instanciate(std::map<std::filesystem::path, ModuleInst>& moduleinsts, Store& store);
+LIBRARY_API extern std::vector<std::string> wasmvm_args;
 
 #endif
