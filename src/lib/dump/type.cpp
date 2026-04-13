@@ -68,7 +68,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const MemType& mem){
-    stream << "  (memory " << mem.min;
+    stream << "  (memory ";
+    if(mem.is64) stream << "i64 ";
+    stream << mem.min;
     if(mem.max.has_value()){
         stream << " " << mem.max.value();
     }

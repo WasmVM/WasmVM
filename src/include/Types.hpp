@@ -93,6 +93,7 @@ bool operator==(const FuncType&, const FuncType&);
 struct Limits {
     offset_t min;
     std::optional<offset_t> max;
+    bool is64 = false;  // true = memory64 (i64 address space)
 };
 
 struct TableType {

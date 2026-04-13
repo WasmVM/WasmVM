@@ -4,8 +4,9 @@
 
 // Module: sys_fs
 // Provides POSIX-style filesystem syscalls to WebAssembly modules.
-// All string arguments are passed as (ptr: i32, len: i32) pairs into wasm
-// linear memory.  On error, functions return -errno (negative i32 or i64).
+// String / buffer arguments are passed as (ptr, len) pairs into wasm linear
+// memory.  ptr/len may be i32 (wasm32) or i64 (wasm64) — get_ptr() handles
+// both.  On error, functions return -errno (negative i32 or i64).
 
 #include "sysenv.hpp"
 #include "sys_fs.hpp"
@@ -20,7 +21,7 @@
 
 // ---- Helper: write a struct stat into wasm memory --------------------------
 
-static void write_wasm_stat(Stack& stack, i32_t stat_buf, const struct stat& st) {
+static void write_wasm_stat(Stack& stack, i64_t stat_buf, const struct stat& st) {
     uint8_t buf[WASM_STAT_SIZE] = {};
     uint32_t dev   = (uint32_t)st.st_dev;
     uint32_t ino   = (uint32_t)st.st_ino;
@@ -30,7 +31,6 @@ static void write_wasm_stat(Stack& stack, i32_t stat_buf, const struct stat& st)
     uint32_t gid   = (uint32_t)st.st_gid;
     uint64_t size  = (uint64_t)st.st_size;
 
-    // Nanosecond timestamps (POSIX.1-2008).
 #if defined(__APPLE__)
     uint64_t atime_ns = (uint64_t)st.st_atimespec.tv_sec * 1000000000ULL + (uint64_t)st.st_atimespec.tv_nsec;
     uint64_t mtime_ns = (uint64_t)st.st_mtimespec.tv_sec * 1000000000ULL + (uint64_t)st.st_mtimespec.tv_nsec;
@@ -41,7 +41,6 @@ static void write_wasm_stat(Stack& stack, i32_t stat_buf, const struct stat& st)
     uint64_t ctime_ns = (uint64_t)st.st_ctim.tv_sec * 1000000000ULL + (uint64_t)st.st_ctim.tv_nsec;
 #endif
 
-    // Write fields at fixed offsets (little-endian on wasm targets).
     std::memcpy(buf +  0, &dev,      4);
     std::memcpy(buf +  4, &ino,      4);
     std::memcpy(buf +  8, &mode,     4);
@@ -57,13 +56,14 @@ static void write_wasm_stat(Stack& stack, i32_t stat_buf, const struct stat& st)
 }
 
 // ---- sys_fs host functions --------------------------------------------------
+// Each function uses get_ptr() to extract pointer/length locals so the same
+// body works for both wasm32 (i32 locals) and wasm64 (i64 locals).
 
-// open(path_ptr, path_len, flags, mode) -> i32
-// Returns a new wasm fd on success, or -errno on failure.
+// open(path_ptr, path_len, flags:i32, mode:i32) -> i32
 static std::vector<Value> fs_open(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
     i32_t flags    = std::get<i32_t>(frame.locals[2]);
     i32_t mode     = std::get<i32_t>(frame.locals[3]);
     try {
@@ -76,7 +76,7 @@ static std::vector<Value> fs_open(Stack& stack) {
     }
 }
 
-// close(fd) -> i32
+// close(fd:i32) -> i32
 static std::vector<Value> fs_close(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t fd = std::get<i32_t>(frame.locals[0]);
@@ -86,12 +86,12 @@ static std::vector<Value> fs_close(Stack& stack) {
     return {Value(i32_t(0))};
 }
 
-// read(fd, buf_ptr, buf_len) -> i32
+// read(fd:i32, buf_ptr, buf_len) -> i32
 static std::vector<Value> fs_read(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t fd      = std::get<i32_t>(frame.locals[0]);
-    i32_t buf_ptr = std::get<i32_t>(frame.locals[1]);
-    i32_t buf_len = std::get<i32_t>(frame.locals[2]);
+    i64_t buf_ptr = get_ptr(frame.locals[1]);
+    i64_t buf_len = get_ptr(frame.locals[2]);
     FdEntry* e = fd_table.get(fd);
     if(!e || e->is_dir) return {Value(i32_t(-EBADF))};
     try {
@@ -104,12 +104,12 @@ static std::vector<Value> fs_read(Stack& stack) {
     }
 }
 
-// write(fd, buf_ptr, buf_len) -> i32
+// write(fd:i32, buf_ptr, buf_len) -> i32
 static std::vector<Value> fs_write(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t fd      = std::get<i32_t>(frame.locals[0]);
-    i32_t buf_ptr = std::get<i32_t>(frame.locals[1]);
-    i32_t buf_len = std::get<i32_t>(frame.locals[2]);
+    i64_t buf_ptr = get_ptr(frame.locals[1]);
+    i64_t buf_len = get_ptr(frame.locals[2]);
     FdEntry* e = fd_table.get(fd);
     if(!e || e->is_dir) return {Value(i32_t(-EBADF))};
     try {
@@ -122,7 +122,7 @@ static std::vector<Value> fs_write(Stack& stack) {
     }
 }
 
-// lseek(fd, offset, whence) -> i64
+// lseek(fd:i32, offset:i64, whence:i32) -> i64
 static std::vector<Value> fs_lseek(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t fd     = std::get<i32_t>(frame.locals[0]);
@@ -138,9 +138,9 @@ static std::vector<Value> fs_lseek(Stack& stack) {
 // stat(path_ptr, path_len, stat_buf) -> i32
 static std::vector<Value> fs_stat(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
-    i32_t stat_buf = std::get<i32_t>(frame.locals[2]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
+    i64_t stat_buf = get_ptr(frame.locals[2]);
     try {
         std::string path = mem_string(stack, path_ptr, path_len);
         struct stat st;
@@ -152,11 +152,11 @@ static std::vector<Value> fs_stat(Stack& stack) {
     }
 }
 
-// fstat(fd, stat_buf) -> i32
+// fstat(fd:i32, stat_buf) -> i32
 static std::vector<Value> fs_fstat(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t fd       = std::get<i32_t>(frame.locals[0]);
-    i32_t stat_buf = std::get<i32_t>(frame.locals[1]);
+    i64_t stat_buf = get_ptr(frame.locals[1]);
     FdEntry* e = fd_table.get(fd);
     if(!e || e->is_dir) return {Value(i32_t(-EBADF))};
     try {
@@ -172,8 +172,8 @@ static std::vector<Value> fs_fstat(Stack& stack) {
 // unlink(path_ptr, path_len) -> i32
 static std::vector<Value> fs_unlink(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
     try {
         std::string path = mem_string(stack, path_ptr, path_len);
         if(::unlink(path.c_str()) != 0) return {Value(err_code())};
@@ -186,10 +186,10 @@ static std::vector<Value> fs_unlink(Stack& stack) {
 // rename(old_ptr, old_len, new_ptr, new_len) -> i32
 static std::vector<Value> fs_rename(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t old_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t old_len = std::get<i32_t>(frame.locals[1]);
-    i32_t new_ptr = std::get<i32_t>(frame.locals[2]);
-    i32_t new_len = std::get<i32_t>(frame.locals[3]);
+    i64_t old_ptr = get_ptr(frame.locals[0]);
+    i64_t old_len = get_ptr(frame.locals[1]);
+    i64_t new_ptr = get_ptr(frame.locals[2]);
+    i64_t new_len = get_ptr(frame.locals[3]);
     try {
         std::string old_path = mem_string(stack, old_ptr, old_len);
         std::string new_path = mem_string(stack, new_ptr, new_len);
@@ -200,11 +200,11 @@ static std::vector<Value> fs_rename(Stack& stack) {
     }
 }
 
-// mkdir(path_ptr, path_len, mode) -> i32
+// mkdir(path_ptr, path_len, mode:i32) -> i32
 static std::vector<Value> fs_mkdir(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
     i32_t mode     = std::get<i32_t>(frame.locals[2]);
     try {
         std::string path = mem_string(stack, path_ptr, path_len);
@@ -218,8 +218,8 @@ static std::vector<Value> fs_mkdir(Stack& stack) {
 // rmdir(path_ptr, path_len) -> i32
 static std::vector<Value> fs_rmdir(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
     try {
         std::string path = mem_string(stack, path_ptr, path_len);
         if(::rmdir(path.c_str()) != 0) return {Value(err_code())};
@@ -230,11 +230,10 @@ static std::vector<Value> fs_rmdir(Stack& stack) {
 }
 
 // getcwd(buf_ptr, buf_len) -> i32
-// Returns bytes written (including null terminator) or -errno.
 static std::vector<Value> fs_getcwd(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t buf_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t buf_len = std::get<i32_t>(frame.locals[1]);
+    i64_t buf_ptr = get_ptr(frame.locals[0]);
+    i64_t buf_len = get_ptr(frame.locals[1]);
     try {
         auto sp = mem_span(stack, buf_ptr, buf_len);
         if(::getcwd(reinterpret_cast<char*>(sp.data()), sp.size()) == nullptr) {
@@ -248,11 +247,10 @@ static std::vector<Value> fs_getcwd(Stack& stack) {
 }
 
 // opendir(path_ptr, path_len) -> i32
-// Returns a wasm dir-fd or -errno.
 static std::vector<Value> fs_opendir(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t path_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t path_len = std::get<i32_t>(frame.locals[1]);
+    i64_t path_ptr = get_ptr(frame.locals[0]);
+    i64_t path_len = get_ptr(frame.locals[1]);
     try {
         std::string path = mem_string(stack, path_ptr, path_len);
         DIR* dir = ::opendir(path.c_str());
@@ -263,20 +261,19 @@ static std::vector<Value> fs_opendir(Stack& stack) {
     }
 }
 
-// readdir(dir_fd, entry_ptr) -> i32
+// readdir(dir_fd:i32, entry_ptr) -> i32
 // Returns: 0 = entry written, 1 = end of directory, -errno = error.
-// Writes a wasm_dirent struct (260 bytes) at entry_ptr.
 static std::vector<Value> fs_readdir(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t dir_fd    = std::get<i32_t>(frame.locals[0]);
-    i32_t entry_ptr = std::get<i32_t>(frame.locals[1]);
+    i64_t entry_ptr = get_ptr(frame.locals[1]);
     FdEntry* e = fd_table.get(dir_fd);
     if(!e || !e->is_dir) return {Value(i32_t(-EBADF))};
     errno = 0;
     struct dirent* de = ::readdir(e->dir);
     if(de == nullptr) {
         if(errno != 0) return {Value(err_code())};
-        return {Value(i32_t(1))};  // end of directory
+        return {Value(i32_t(1))};
     }
     try {
         uint8_t buf[WASM_DIRENT_SIZE] = {};
@@ -293,7 +290,7 @@ static std::vector<Value> fs_readdir(Stack& stack) {
     }
 }
 
-// closedir(dir_fd) -> i32
+// closedir(dir_fd:i32) -> i32
 static std::vector<Value> fs_closedir(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t dir_fd = std::get<i32_t>(frame.locals[0]);
@@ -304,6 +301,10 @@ static std::vector<Value> fs_closedir(Stack& stack) {
 }
 
 // ---- Registration -----------------------------------------------------------
+// Each pointer-taking function is registered twice under the same name:
+//   - i32 variant for wasm32 callers
+//   - i64 variant for wasm64 callers
+// The type-aware import resolution in wasmvm.cpp picks the right one.
 
 void sys_fs_instanciate(
     std::map<std::filesystem::path, ModuleInst>& moduleinsts,
@@ -314,76 +315,112 @@ void sys_fs_instanciate(
     moduleinsts.emplace("sys_fs", ModuleInst());
     ModuleInst& m = moduleinsts["sys_fs"];
 
-    // open(path_ptr:i32, path_len:i32, flags:i32, mode:i32) -> i32
+    // open(path_ptr, path_len, flags:i32, mode:i32) -> i32
     reg_func(m, store, "open",
         {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_open);
+    reg_func(m, store, "open",
+        {ValueType::i64, ValueType::i64, ValueType::i32, ValueType::i32},
+        {ValueType::i32}, fs_open);
 
-    // close(fd:i32) -> i32
+    // close(fd:i32) -> i32  — fd is always i32; no i64 variant needed
     reg_func(m, store, "close",
         {ValueType::i32}, {ValueType::i32}, fs_close);
 
-    // read(fd:i32, buf_ptr:i32, buf_len:i32) -> i32
+    // read(fd:i32, buf_ptr, buf_len) -> i32
     reg_func(m, store, "read",
         {ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_read);
+    reg_func(m, store, "read",
+        {ValueType::i32, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_read);
 
-    // write(fd:i32, buf_ptr:i32, buf_len:i32) -> i32
+    // write(fd:i32, buf_ptr, buf_len) -> i32
     reg_func(m, store, "write",
         {ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_write);
+    reg_func(m, store, "write",
+        {ValueType::i32, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_write);
 
-    // lseek(fd:i32, offset:i64, whence:i32) -> i64
+    // lseek(fd:i32, offset:i64, whence:i32) -> i64  — no ptr args; one variant
     reg_func(m, store, "lseek",
         {ValueType::i32, ValueType::i64, ValueType::i32},
         {ValueType::i64}, fs_lseek);
 
-    // stat(path_ptr:i32, path_len:i32, stat_buf:i32) -> i32
+    // stat(path_ptr, path_len, stat_buf) -> i32
     reg_func(m, store, "stat",
         {ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_stat);
+    reg_func(m, store, "stat",
+        {ValueType::i64, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_stat);
 
-    // fstat(fd:i32, stat_buf:i32) -> i32
+    // fstat(fd:i32, stat_buf) -> i32
     reg_func(m, store, "fstat",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_fstat);
+    reg_func(m, store, "fstat",
+        {ValueType::i32, ValueType::i64},
+        {ValueType::i32}, fs_fstat);
 
-    // unlink(path_ptr:i32, path_len:i32) -> i32
+    // unlink(path_ptr, path_len) -> i32
     reg_func(m, store, "unlink",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_unlink);
+    reg_func(m, store, "unlink",
+        {ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_unlink);
 
-    // rename(old_ptr:i32, old_len:i32, new_ptr:i32, new_len:i32) -> i32
+    // rename(old_ptr, old_len, new_ptr, new_len) -> i32
     reg_func(m, store, "rename",
         {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_rename);
+    reg_func(m, store, "rename",
+        {ValueType::i64, ValueType::i64, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_rename);
 
-    // mkdir(path_ptr:i32, path_len:i32, mode:i32) -> i32
+    // mkdir(path_ptr, path_len, mode:i32) -> i32
     reg_func(m, store, "mkdir",
         {ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_mkdir);
+    reg_func(m, store, "mkdir",
+        {ValueType::i64, ValueType::i64, ValueType::i32},
+        {ValueType::i32}, fs_mkdir);
 
-    // rmdir(path_ptr:i32, path_len:i32) -> i32
+    // rmdir(path_ptr, path_len) -> i32
     reg_func(m, store, "rmdir",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_rmdir);
+    reg_func(m, store, "rmdir",
+        {ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_rmdir);
 
-    // getcwd(buf_ptr:i32, buf_len:i32) -> i32
+    // getcwd(buf_ptr, buf_len) -> i32
     reg_func(m, store, "getcwd",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_getcwd);
+    reg_func(m, store, "getcwd",
+        {ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_getcwd);
 
-    // opendir(path_ptr:i32, path_len:i32) -> i32
+    // opendir(path_ptr, path_len) -> i32
     reg_func(m, store, "opendir",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_opendir);
+    reg_func(m, store, "opendir",
+        {ValueType::i64, ValueType::i64},
+        {ValueType::i32}, fs_opendir);
 
-    // readdir(dir_fd:i32, entry_ptr:i32) -> i32
+    // readdir(dir_fd:i32, entry_ptr) -> i32
     reg_func(m, store, "readdir",
         {ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_readdir);
+    reg_func(m, store, "readdir",
+        {ValueType::i32, ValueType::i64},
+        {ValueType::i32}, fs_readdir);
 
-    // closedir(dir_fd:i32) -> i32
+    // closedir(dir_fd:i32) -> i32  — fd is always i32; no i64 variant needed
     reg_func(m, store, "closedir",
         {ValueType::i32},
         {ValueType::i32}, fs_closedir);

@@ -43,65 +43,54 @@ static std::vector<Value> proc_argv_len(Stack& stack) {
     return {Value(i32_t(wasmvm_args[(size_t)idx].size()))};
 }
 
-// argv(idx:i32, buf_ptr:i32, buf_len:i32) -> i32
-// Copies argument[idx] into the wasm buffer (without null terminator unless
-// buf_len is large enough).  Returns bytes copied or -errno.
+// argv(idx:i32, buf_ptr, buf_len) -> i32
 static std::vector<Value> proc_argv(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t idx     = std::get<i32_t>(frame.locals[0]);
-    i32_t buf_ptr = std::get<i32_t>(frame.locals[1]);
-    i32_t buf_len = std::get<i32_t>(frame.locals[2]);
+    i64_t buf_ptr = get_ptr(frame.locals[1]);
+    i64_t buf_len = get_ptr(frame.locals[2]);
     if(idx < 0 || (size_t)idx >= wasmvm_args.size()) {
         return {Value(i32_t(-EINVAL))};
     }
     const std::string& arg = wasmvm_args[(size_t)idx];
-    // Copy min(arg.size(), buf_len) bytes; null-terminate if room allows.
-    i32_t copy_len = std::min((i32_t)arg.size(), buf_len);
+    i64_t copy_len = std::min((i64_t)arg.size(), buf_len);
     try {
         mem_write(stack, buf_ptr, arg.data(), (size_t)copy_len);
-        // Write null terminator if there is room.
         if(copy_len < buf_len) {
             byte_t nul = std::byte{0};
             mem_write(stack, buf_ptr + copy_len, &nul, 1);
         }
-        return {Value(copy_len)};
+        return {Value(i32_t(copy_len))};
     } catch(...) {
         return {Value(i32_t(-EFAULT))};
     }
 }
 
-// getenv(name_ptr:i32, name_len:i32, buf_ptr:i32, buf_len:i32) -> i32
-// Looks up the named environment variable and copies its value into buf.
-// Returns the number of bytes written (not including null terminator) on
-// success, -ENOENT if the variable does not exist, or -ERANGE if buf_len
-// is too small to hold the value.
+// getenv(name_ptr, name_len, buf_ptr, buf_len) -> i32
 static std::vector<Value> proc_getenv(Stack& stack) {
     Frame& frame = stack.frames.top();
-    i32_t name_ptr = std::get<i32_t>(frame.locals[0]);
-    i32_t name_len = std::get<i32_t>(frame.locals[1]);
-    i32_t buf_ptr  = std::get<i32_t>(frame.locals[2]);
-    i32_t buf_len  = std::get<i32_t>(frame.locals[3]);
+    i64_t name_ptr = get_ptr(frame.locals[0]);
+    i64_t name_len = get_ptr(frame.locals[1]);
+    i64_t buf_ptr  = get_ptr(frame.locals[2]);
+    i64_t buf_len  = get_ptr(frame.locals[3]);
     try {
         std::string name = mem_string(stack, name_ptr, name_len);
         const char* val = std::getenv(name.c_str());
         if(val == nullptr) return {Value(i32_t(-ENOENT))};
         size_t val_len = std::strlen(val);
         if((size_t)buf_len < val_len + 1) return {Value(i32_t(-ERANGE))};
-        mem_write(stack, buf_ptr, val, val_len + 1);  // include null terminator
+        mem_write(stack, buf_ptr, val, val_len + 1);
         return {Value(i32_t(val_len))};
     } catch(...) {
         return {Value(i32_t(-EFAULT))};
     }
 }
 
-// clock_gettime(clk_id:i32, ts_ptr:i32) -> i32
-// Writes a 12-byte timespec struct {int64 tv_sec, int32 tv_nsec} at ts_ptr.
-// clk_id: 0=CLOCK_REALTIME, 1=CLOCK_MONOTONIC.
-// Returns 0 on success, -errno on failure.
+// clock_gettime(clk_id:i32, ts_ptr) -> i32
 static std::vector<Value> proc_clock_gettime(Stack& stack) {
     Frame& frame = stack.frames.top();
     i32_t clk_id = std::get<i32_t>(frame.locals[0]);
-    i32_t ts_ptr = std::get<i32_t>(frame.locals[1]);
+    i64_t ts_ptr = get_ptr(frame.locals[1]);
 
     clockid_t cid;
     switch(clk_id) {
@@ -149,18 +138,27 @@ void sys_proc_instanciate(
     reg_func(m, store, "argv_len",
         {ValueType::i32}, {ValueType::i32}, proc_argv_len);
 
-    // argv(idx:i32, buf_ptr:i32, buf_len:i32) -> i32
+    // argv(idx:i32, buf_ptr, buf_len) -> i32
     reg_func(m, store, "argv",
         {ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, proc_argv);
+    reg_func(m, store, "argv",
+        {ValueType::i32, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, proc_argv);
 
-    // getenv(name_ptr:i32, name_len:i32, buf_ptr:i32, buf_len:i32) -> i32
+    // getenv(name_ptr, name_len, buf_ptr, buf_len) -> i32
     reg_func(m, store, "getenv",
         {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
         {ValueType::i32}, proc_getenv);
+    reg_func(m, store, "getenv",
+        {ValueType::i64, ValueType::i64, ValueType::i64, ValueType::i64},
+        {ValueType::i32}, proc_getenv);
 
-    // clock_gettime(clk_id:i32, ts_ptr:i32) -> i32
+    // clock_gettime(clk_id:i32, ts_ptr) -> i32
     reg_func(m, store, "clock_gettime",
         {ValueType::i32, ValueType::i32},
+        {ValueType::i32}, proc_clock_gettime);
+    reg_func(m, store, "clock_gettime",
+        {ValueType::i32, ValueType::i64},
         {ValueType::i32}, proc_clock_gettime);
 }

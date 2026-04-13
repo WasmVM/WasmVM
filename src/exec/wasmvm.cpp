@@ -30,9 +30,17 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
         }
         ModuleInst& moduleinst = moduleinsts[import_path];
         WasmImport& import = node.module.imports[idx];
-        auto export_it = std::find_if(moduleinst.exports.begin(), moduleinst.exports.end(), [import](ExportInst& expo) {
-            return expo.name == import.name;
-        });
+        // For function imports, match by name AND type so that host modules can
+        // register same-name variants with different signatures (e.g. i32 vs i64
+        // pointer params for wasm32/wasm64 callers).
+        auto export_it = std::find_if(moduleinst.exports.begin(), moduleinst.exports.end(),
+            [&](ExportInst& expo) {
+                if(expo.name != import.name) return false;
+                if(expo.value.type != ExternVal::ExternType::Func) return true;
+                if(!std::holds_alternative<index_t>(import.desc)) return true;
+                return store.funcs[expo.value.addr].type ==
+                       node.module.types[std::get<index_t>(import.desc)];
+            });
         if(export_it == moduleinst.exports.end()){
             throw Exception::Exception(std::string("import '") + import.name + "' not found in module '" + import_path.filename().string() + "'");
         }

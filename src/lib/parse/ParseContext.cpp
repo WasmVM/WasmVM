@@ -222,7 +222,22 @@ Limits ParseContext::parse_limits() {
     return lim;
 }
 
-MemType ParseContext::parse_memtype() { return parse_limits(); }
+MemType ParseContext::parse_memtype() {
+    MemType mt;
+    // Optional index-type keyword: i32 (default) or i64 (memory64)
+    Token tok = tok_.peek();
+    if(tok.type == TokenType::Keyword && (tok.text == "i32" || tok.text == "i64")) {
+        tok_.consume();
+        mt.is64 = (tok.text == "i64");
+    }
+    mt.min = parse_u64();
+    if(tok_.peek().type == TokenType::Integer) {
+        mt.max = parse_u64();
+        if(mt.min > mt.max.value())
+            throw Exception::Parse("limit min cannot exceed max", tok_.location());
+    }
+    return mt;
+}
 
 TableType ParseContext::parse_tabletype() {
     TableType tt;

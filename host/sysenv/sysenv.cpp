@@ -61,23 +61,23 @@ static MemInst& get_mem0(Stack& stack) {
     return stack.store.mems[frame.module.memaddrs[0]];
 }
 
-std::span<byte_t> mem_span(Stack& stack, i32_t ptr, i32_t len) {
+std::span<byte_t> mem_span(Stack& stack, i64_t ptr, i64_t len) {
     MemInst& mem = get_mem0(stack);
-    size_t end = (size_t)(u32_t)ptr + (size_t)(u32_t)len;
+    size_t end = (size_t)ptr + (size_t)len;
     if(end > mem.data.size()) {
         throw std::out_of_range("sysenv: memory access out of bounds");
     }
-    return std::span<byte_t>(mem.data.data() + (u32_t)ptr, (size_t)(u32_t)len);
+    return std::span<byte_t>(mem.data.data() + (size_t)ptr, (size_t)len);
 }
 
-std::string mem_string(Stack& stack, i32_t ptr, i32_t len) {
+std::string mem_string(Stack& stack, i64_t ptr, i64_t len) {
     auto sp = mem_span(stack, ptr, len);
     return std::string(reinterpret_cast<const char*>(sp.data()), sp.size());
 }
 
-void mem_write(Stack& stack, i32_t ptr, const void* src, size_t len) {
+void mem_write(Stack& stack, i64_t ptr, const void* src, size_t len) {
     MemInst& mem = get_mem0(stack);
-    size_t end = (size_t)(u32_t)ptr + len;
+    size_t end = (size_t)ptr + len;
     if(end > mem.data.size()) {
         throw std::out_of_range("sysenv: memory write out of bounds");
     }

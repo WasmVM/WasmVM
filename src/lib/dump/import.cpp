@@ -29,7 +29,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmImport& import)
             stream << ")";
         },
         [&](WasmVM::MemType mem){
-            stream << " (memory " << mem.min;
+            stream << " (memory ";
+            if(mem.is64) stream << "i64 ";
+            stream << mem.min;
             if(mem.max){
                 stream << " " << mem.max.value();
             }

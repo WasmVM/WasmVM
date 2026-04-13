@@ -70,7 +70,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.size");
                     }
-                    state.push(ValueType::i32);
+                    state.push(context.mems[ins.index].is64 ? ValueType::i64 : ValueType::i32);
                 }break;
                 case Opcode::Table_size : {
                     const Instr::Table_size& ins = std::get<Instr::Table_size>(instr);
@@ -118,14 +118,15 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.push(context.globals[ins.index].type);
                 }break;
-                // [i32] -> [i32]
+                // [i32|i64] -> [i32|i64]  (depends on memory index type)
                 case Opcode::Memory_grow : {
                     const Instr::Memory_grow& ins = std::get<Instr::Memory_grow>(instr);
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.grow");
                     }
-                    state.pop(ValueType::i32);
-                    state.push(ValueType::i32);
+                    ValueType addr_t = context.mems[ins.index].is64 ? ValueType::i64 : ValueType::i32;
+                    state.pop(addr_t);
+                    state.push(addr_t);
                 }break;
                 case Opcode::I32_clz :
                 case Opcode::I32_ctz :

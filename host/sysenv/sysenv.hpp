@@ -53,16 +53,24 @@ extern FdTable fd_table;
 
 // ---- Linear-memory helpers --------------------------------------------------
 
+// Extract a memory address from a Value — accepts both i32 (zero-extended) and
+// i64, so the same host function body works for both wasm32 and wasm64 callers.
+inline i64_t get_ptr(const Value& v) {
+    if(std::holds_alternative<i32_t>(v))
+        return (i64_t)(u32_t)std::get<i32_t>(v);  // zero-extend i32
+    return std::get<i64_t>(v);
+}
+
 // Return a span over [ptr, ptr+len) in the wasm module's memory 0.
 // Throws std::out_of_range if the range is outside the current memory.
-std::span<byte_t> mem_span(Stack& stack, i32_t ptr, i32_t len);
+std::span<byte_t> mem_span(Stack& stack, i64_t ptr, i64_t len);
 
 // Copy [ptr, ptr+len) from wasm memory into a std::string.
-std::string mem_string(Stack& stack, i32_t ptr, i32_t len);
+std::string mem_string(Stack& stack, i64_t ptr, i64_t len);
 
 // Write 'len' bytes from 'src' into wasm memory starting at 'ptr'.
 // Throws std::out_of_range if the range is outside the current memory.
-void mem_write(Stack& stack, i32_t ptr, const void* src, size_t len);
+void mem_write(Stack& stack, i64_t ptr, const void* src, size_t len);
 
 // Map the current OS errno to a negative i32 result code.
 inline i32_t err_code() { return -(i32_t)errno; }
