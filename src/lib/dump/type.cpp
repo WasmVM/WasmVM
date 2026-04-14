@@ -26,6 +26,12 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
         case ValueType::externref:
             stream << "externref";
         break;
+        case ValueType::i31ref:
+            stream << "i31ref";
+        break;
+        case ValueType::exnref:
+            stream << "exnref";
+        break;
     }
     return stream;
 }

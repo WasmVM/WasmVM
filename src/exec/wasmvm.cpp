@@ -159,7 +159,8 @@ int main(int argc, char const *argv[]){
         wasmvm_args.clear();
         wasmvm_args.push_back(main_module);
         if (args["args"]) {
-            for (auto& a : std::get<std::vector<std::string>>(args["args"].value()))
+            const auto& extra_args = std::get<std::vector<std::string>>(args["args"].value());
+            for (auto& a : extra_args)
                 wasmvm_args.push_back(a);
         }
         host_modules_instanciate(moduleinsts, store);

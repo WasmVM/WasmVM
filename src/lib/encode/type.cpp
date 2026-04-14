@@ -98,6 +98,12 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::ValueType>(Wasm
         case ValueType::externref :
             *this << (byte_t) 0x6f;
         break;
+        case ValueType::i31ref :
+            *this << (byte_t) 0x6c;
+        break;
+        case ValueType::exnref :
+            *this << (byte_t) 0x69;
+        break;
     }
     return *this;
 }
