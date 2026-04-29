@@ -71,14 +71,16 @@ void RunVisitor::operator()(Instr::Try_table& instr){
     new_label.pc->continuation = label.pc->current;
     int level = 0;
     while(new_label.pc->continuation < func.body.size()){
-        std::visit(overloaded {
-            [&](Instr::Block&){ level += 1; },
-            [&](Instr::Loop&){ level += 1; },
-            [&](Instr::If&){ level += 1; },
-            [&](Instr::Try_table&){ level += 1; },
-            [&](Instr::End&){ level -= 1; },
-            [&](auto&){}
-        }, func.body[new_label.pc->continuation]);
+        switch(func.body[new_label.pc->continuation].opcode) {
+            case Opcode::Block:
+            case Opcode::Loop:
+            case Opcode::If:
+            case Opcode::Try_table:
+                level += 1; break;
+            case Opcode::End:
+                level -= 1; break;
+            default: break;
+        }
         if(level >= 0){
             new_label.pc->continuation += 1;
         }else{

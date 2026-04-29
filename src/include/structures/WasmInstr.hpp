@@ -466,259 +466,131 @@ using I64_trunc_sat_f64_u = Atomic<Opcode::I64_trunc_sat_f64_u>;
 
 }
 
-using WasmInstr = std::variant<
-    // Control
-    Instr::Unreachable,
-    Instr::Nop,
-    Instr::Block,
-    Instr::Loop,
-    Instr::If,
-    Instr::Else,
-    Instr::End,
-    Instr::Br,
-    Instr::Br_if,
-    Instr::Br_table,
-    Instr::Return,
-    Instr::Throw,
-    Instr::Throw_ref,
-    Instr::Try_table,
-    Instr::Call,
-    Instr::Call_indirect,
-    Instr::Return_call,
-    Instr::Return_call_indirect,
-    Instr::Return_call_ref,
-    // Reference
-    Instr::Ref_null,
-    Instr::Ref_is_null,
-    Instr::Ref_func,
-    Instr::Ref_eq,
-    Instr::Ref_as_non_null,
-    Instr::Br_on_null,
-    Instr::Br_on_non_null,
-    Instr::Br_on_cast,
-    Instr::Br_on_cast_fail,
-    Instr::Call_ref,
-    Instr::Ref_test,
-    Instr::Ref_test_null,
-    Instr::Ref_cast,
-    Instr::Ref_cast_null,
-    Instr::Ref_i31,
-    Instr::I31_get_s,
-    Instr::I31_get_u,
-    Instr::Any_convert_extern,
-    Instr::Extern_convert_any,
-    // GC Struct
-    Instr::Struct_new,
-    Instr::Struct_new_default,
-    Instr::Struct_get,
-    Instr::Struct_get_s,
-    Instr::Struct_get_u,
-    Instr::Struct_set,
-    // GC Array
-    Instr::Array_new,
-    Instr::Array_new_default,
-    Instr::Array_new_fixed,
-    Instr::Array_new_data,
-    Instr::Array_new_elem,
-    Instr::Array_get,
-    Instr::Array_get_s,
-    Instr::Array_get_u,
-    Instr::Array_set,
-    Instr::Array_len,
-    Instr::Array_fill,
-    Instr::Array_copy,
-    Instr::Array_init_data,
-    Instr::Array_init_elem,
-    // Parametric
-    Instr::Drop,
-    Instr::Select,
-    // Variable
-    Instr::Local_get,
-    Instr::Local_set,
-    Instr::Local_tee,
-    Instr::Global_get,
-    Instr::Global_set,
-    // Table
-    Instr::Table_get,
-    Instr::Table_set,
-    Instr::Table_size,
-    Instr::Table_grow,
-    Instr::Table_fill,
-    Instr::Table_copy,
-    Instr::Table_init,
-    Instr::Elem_drop,
-    // Memory
-    Instr::I32_load,
-    Instr::I64_load,
-    Instr::F32_load,
-    Instr::F64_load,
-    Instr::I32_load8_s,
-    Instr::I32_load8_u,
-    Instr::I32_load16_s,
-    Instr::I32_load16_u,
-    Instr::I64_load8_s,
-    Instr::I64_load8_u,
-    Instr::I64_load16_s,
-    Instr::I64_load16_u,
-    Instr::I64_load32_s,
-    Instr::I64_load32_u,
-    Instr::I32_store,
-    Instr::I64_store,
-    Instr::F32_store,
-    Instr::F64_store,
-    Instr::I32_store8,
-    Instr::I32_store16,
-    Instr::I64_store8,
-    Instr::I64_store16,
-    Instr::I64_store32,
-    Instr::Memory_size,
-    Instr::Memory_grow,
-    Instr::Memory_fill,
-    Instr::Memory_init,
-    Instr::Data_drop,
-    Instr::Memory_copy,
-    // Numeric
-    Instr::I32_const,
-    Instr::I64_const,
-    Instr::F32_const,
-    Instr::F64_const,
-    Instr::I32_eqz,
-    Instr::I32_eq,
-    Instr::I32_ne,
-    Instr::I32_lt_s,
-    Instr::I32_lt_u,
-    Instr::I32_gt_s,
-    Instr::I32_gt_u,
-    Instr::I32_le_s,
-    Instr::I32_le_u,
-    Instr::I32_ge_s,
-    Instr::I32_ge_u,
-    Instr::I64_eqz,
-    Instr::I64_eq,
-    Instr::I64_ne,
-    Instr::I64_lt_s,
-    Instr::I64_lt_u,
-    Instr::I64_gt_s,
-    Instr::I64_gt_u,
-    Instr::I64_le_s,
-    Instr::I64_le_u,
-    Instr::I64_ge_s,
-    Instr::I64_ge_u,
-    Instr::F32_eq,
-    Instr::F32_ne,
-    Instr::F32_lt,
-    Instr::F32_gt,
-    Instr::F32_le,
-    Instr::F32_ge,
-    Instr::F64_eq,
-    Instr::F64_ne,
-    Instr::F64_lt,
-    Instr::F64_gt,
-    Instr::F64_le,
-    Instr::F64_ge,
-    Instr::I32_clz,
-    Instr::I32_ctz,
-    Instr::I32_popcnt,
-    Instr::I32_add,
-    Instr::I32_sub,
-    Instr::I32_mul,
-    Instr::I32_div_s,
-    Instr::I32_div_u,
-    Instr::I32_rem_s,
-    Instr::I32_rem_u,
-    Instr::I32_and,
-    Instr::I32_or,
-    Instr::I32_xor,
-    Instr::I32_shl,
-    Instr::I32_shr_s,
-    Instr::I32_shr_u,
-    Instr::I32_rotl,
-    Instr::I32_rotr,
-    Instr::I64_clz,
-    Instr::I64_ctz,
-    Instr::I64_popcnt,
-    Instr::I64_add,
-    Instr::I64_sub,
-    Instr::I64_mul,
-    Instr::I64_div_s,
-    Instr::I64_div_u,
-    Instr::I64_rem_s,
-    Instr::I64_rem_u,
-    Instr::I64_and,
-    Instr::I64_or,
-    Instr::I64_xor,
-    Instr::I64_shl,
-    Instr::I64_shr_s,
-    Instr::I64_shr_u,
-    Instr::I64_rotl,
-    Instr::I64_rotr,
-    Instr::F32_abs,
-    Instr::F32_neg,
-    Instr::F32_ceil,
-    Instr::F32_floor,
-    Instr::F32_trunc,
-    Instr::F32_nearest,
-    Instr::F32_sqrt,
-    Instr::F32_add,
-    Instr::F32_sub,
-    Instr::F32_mul,
-    Instr::F32_div,
-    Instr::F32_min,
-    Instr::F32_max,
-    Instr::F32_copysign,
-    Instr::F64_abs,
-    Instr::F64_neg,
-    Instr::F64_ceil,
-    Instr::F64_floor,
-    Instr::F64_trunc,
-    Instr::F64_nearest,
-    Instr::F64_sqrt,
-    Instr::F64_add,
-    Instr::F64_sub,
-    Instr::F64_mul,
-    Instr::F64_div,
-    Instr::F64_min,
-    Instr::F64_max,
-    Instr::F64_copysign,
-    Instr::I32_wrap_i64,
-    Instr::I32_trunc_f32_s,
-    Instr::I32_trunc_f32_u,
-    Instr::I32_trunc_f64_s,
-    Instr::I32_trunc_f64_u,
-    Instr::I64_extend_i32_s,
-    Instr::I64_extend_i32_u,
-    Instr::I64_trunc_f32_s,
-    Instr::I64_trunc_f32_u,
-    Instr::I64_trunc_f64_s,
-    Instr::I64_trunc_f64_u,
-    Instr::F32_convert_i32_s,
-    Instr::F32_convert_i32_u,
-    Instr::F32_convert_i64_s,
-    Instr::F32_convert_i64_u,
-    Instr::F32_demote_f64,
-    Instr::F64_convert_i32_s,
-    Instr::F64_convert_i32_u,
-    Instr::F64_convert_i64_s,
-    Instr::F64_convert_i64_u,
-    Instr::F64_promote_f32,
-    Instr::I32_reinterpret_f32,
-    Instr::I64_reinterpret_f64,
-    Instr::F32_reinterpret_i32,
-    Instr::F64_reinterpret_i64,
-    Instr::I32_extend8_s,
-    Instr::I32_extend16_s,
-    Instr::I64_extend8_s,
-    Instr::I64_extend16_s,
-    Instr::I64_extend32_s,
-    Instr::I32_trunc_sat_f32_s,
-    Instr::I32_trunc_sat_f32_u,
-    Instr::I32_trunc_sat_f64_s,
-    Instr::I32_trunc_sat_f64_u,
-    Instr::I64_trunc_sat_f32_s,
-    Instr::I64_trunc_sat_f32_u,
-    Instr::I64_trunc_sat_f64_s,
-    Instr::I64_trunc_sat_f64_u
->;
+// WasmInstr: flat struct with opcode + 15-type immediate variant.
+// Reduces template instantiation from ~165 to 15 alternatives.
+struct WasmInstr {
+    Opcode::opcode_t opcode;
+
+    // Immediate operand shapes
+    struct NoImm    {};
+    struct OneIdx   { index_t index; };
+    struct TwoIdx   { index_t a, b; };
+    struct BlockType{ std::optional<index_t> type; };
+    struct MemArg   { index_t memidx; offset_t offset; align_t align; };
+    struct ConstI32 { i32_t value; };
+    struct ConstI64 { i64_t value; };
+    struct ConstF32 { f32_t value; };
+    struct ConstF64 { f64_t value; };
+    struct HeapRef  { RefType heaptype; };
+    struct HeapI32  { int32_t heaptype; };
+    struct CastOp   { index_t label; bool src_n, dst_n; int32_t src_ht, dst_ht; };
+    struct BrTab    { std::vector<index_t> indices; };
+    struct TryTab   { std::optional<index_t> type; std::vector<Instr::TryCatchEntry> catches; };
+    struct SelectV  { std::vector<ValueType> valtypes; };
+
+    using Imm = std::variant<
+        NoImm, OneIdx, TwoIdx, BlockType, MemArg,
+        ConstI32, ConstI64, ConstF32, ConstF64,
+        HeapRef, HeapI32, CastOp, BrTab, TryTab, SelectV
+    >;
+    Imm imm;
+
+    // Default constructor — opcode is set to End as a safe sentinel
+    WasmInstr() : opcode(Opcode::End), imm(NoImm{}) {}
+
+    // Convenience constructors from Instr::* types
+
+    // --- Atomic (NoImm) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::Atomic<OP>) : opcode(OP), imm(NoImm{}) {}
+
+    // --- OneIndex (OneIdx) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::OneIndex<OP> i) : opcode(OP), imm(OneIdx{i.index}) {}
+
+    // --- BlockInstr (BlockType) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::BlockInstr<OP> b) : opcode(OP), imm(BlockType{b.type}) {}
+
+    // --- MemoryInstr::Class (MemArg) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::MemoryInstr::Class<OP> m)
+        : opcode(OP), imm(MemArg{m.memidx, m.offset, m.align}) {}
+
+    // --- Control: special structs ---
+    WasmInstr(Instr::Br_table i)
+        : opcode(Opcode::Br_table), imm(BrTab{i.indices}) {}
+    WasmInstr(Instr::Try_table i)
+        : opcode(Opcode::Try_table), imm(TryTab{i.type, i.catches}) {}
+    WasmInstr(Instr::Call_indirect i)
+        : opcode(Opcode::Call_indirect), imm(TwoIdx{i.tableidx, i.typeidx}) {}
+    WasmInstr(Instr::Return_call_indirect i)
+        : opcode(Opcode::Return_call_indirect), imm(TwoIdx{i.tableidx, i.typeidx}) {}
+
+    // --- Reference: special structs ---
+    WasmInstr(Instr::Ref_null i)
+        : opcode(Opcode::Ref_null), imm(HeapRef{i.heaptype}) {}
+    WasmInstr(Instr::Br_on_cast i)
+        : opcode(Opcode::Br_on_cast), imm(CastOp{i.labelidx, i.src_nullable, i.dst_nullable, i.src_heaptype, i.dst_heaptype}) {}
+    WasmInstr(Instr::Br_on_cast_fail i)
+        : opcode(Opcode::Br_on_cast_fail), imm(CastOp{i.labelidx, i.src_nullable, i.dst_nullable, i.src_heaptype, i.dst_heaptype}) {}
+    WasmInstr(Instr::Ref_test i)
+        : opcode(Opcode::Ref_test), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_test_null i)
+        : opcode(Opcode::Ref_test_null), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_cast i)
+        : opcode(Opcode::Ref_cast), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_cast_null i)
+        : opcode(Opcode::Ref_cast_null), imm(HeapI32{i.heaptype}) {}
+
+    // --- GC Struct: two-index ---
+    WasmInstr(Instr::Struct_get i)
+        : opcode(Opcode::Struct_get), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_get_s i)
+        : opcode(Opcode::Struct_get_s), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_get_u i)
+        : opcode(Opcode::Struct_get_u), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_set i)
+        : opcode(Opcode::Struct_set), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+
+    // --- GC Array: two-index or special ---
+    WasmInstr(Instr::Array_new_fixed i)
+        : opcode(Opcode::Array_new_fixed), imm(TwoIdx{i.typeidx, i.n}) {}
+    WasmInstr(Instr::Array_new_data i)
+        : opcode(Opcode::Array_new_data), imm(TwoIdx{i.typeidx, i.dataidx}) {}
+    WasmInstr(Instr::Array_new_elem i)
+        : opcode(Opcode::Array_new_elem), imm(TwoIdx{i.typeidx, i.elemidx}) {}
+    WasmInstr(Instr::Array_fill i)
+        : opcode(Opcode::Array_fill), imm(OneIdx{i.typeidx}) {}
+    WasmInstr(Instr::Array_copy i)
+        : opcode(Opcode::Array_copy), imm(TwoIdx{i.dst_typeidx, i.src_typeidx}) {}
+    WasmInstr(Instr::Array_init_data i)
+        : opcode(Opcode::Array_init_data), imm(TwoIdx{i.typeidx, i.dataidx}) {}
+    WasmInstr(Instr::Array_init_elem i)
+        : opcode(Opcode::Array_init_elem), imm(TwoIdx{i.typeidx, i.elemidx}) {}
+
+    // --- Parametric ---
+    WasmInstr(Instr::Select i)
+        : opcode(Opcode::Select), imm(SelectV{i.valtypes}) {}
+
+    // --- Memory: two-index ---
+    WasmInstr(Instr::Memory_init i)
+        : opcode(Opcode::Memory_init), imm(TwoIdx{i.memidx, i.dataidx}) {}
+    WasmInstr(Instr::Memory_copy i)
+        : opcode(Opcode::Memory_copy), imm(TwoIdx{i.dstidx, i.srcidx}) {}
+
+    // --- Table: two-index ---
+    WasmInstr(Instr::Table_copy i)
+        : opcode(Opcode::Table_copy), imm(TwoIdx{i.dstidx, i.srcidx}) {}
+    WasmInstr(Instr::Table_init i)
+        : opcode(Opcode::Table_init), imm(TwoIdx{i.tableidx, i.elemidx}) {}
+
+    // --- Numeric: const ---
+    WasmInstr(Instr::I32_const i) : opcode(Opcode::I32_const), imm(ConstI32{i.value}) {}
+    WasmInstr(Instr::I64_const i) : opcode(Opcode::I64_const), imm(ConstI64{i.value}) {}
+    WasmInstr(Instr::F32_const i) : opcode(Opcode::F32_const), imm(ConstF32{i.value}) {}
+    WasmInstr(Instr::F64_const i) : opcode(Opcode::F64_const), imm(ConstF64{i.value}) {}
+};
 
 using ConstInstr = std::variant<
     Instr::Ref_null,

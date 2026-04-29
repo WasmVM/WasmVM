@@ -20,6 +20,14 @@ target_include_directories(WasmVM_textfmt
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}
 )
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_textfmt PRIVATE
+    <variant>
+    <string>
+    <vector>
+    <optional>
+    <unordered_map>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_binfmt OBJECT
     # encode
@@ -50,6 +58,11 @@ add_library(WasmVM_binfmt OBJECT
     decode/data.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_binfmt PRIVATE
+    <variant>
+    <vector>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_src OBJECT
     exception.cpp
@@ -70,10 +83,17 @@ add_library(WasmVM_validate OBJECT
     validate/import.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_validate PRIVATE
+    <variant>
+    <optional>
+    <vector>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_exec OBJECT
     instanciate.cpp
     invoke/invoke.cpp
+    invoke/dispatch.cpp
     invoke/control.cpp
     invoke/reference.cpp
     invoke/exception_instr.cpp
@@ -89,6 +109,14 @@ add_library(WasmVM_exec OBJECT
     invoke/numeric.cpp
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_exec PRIVATE
+    <variant>
+    <optional>
+    <vector>
+    <unordered_map>
+    <structures/WasmInstr.hpp>
+    <instances/Stack.hpp>
+)
 
 add_library(WasmVM_json OBJECT
     json/json.cpp
@@ -128,3 +156,10 @@ install(TARGETS WasmVM
     COMPONENT dll
     LIBRARY DESTINATION lib
 )
+
+# Strip debug symbols from installed shared library
+if(UNIX AND NOT APPLE)
+    install(CODE "execute_process(COMMAND strip --strip-unneeded \"\${CMAKE_INSTALL_PREFIX}/lib/libWasmVM.so\")")
+elseif(APPLE)
+    install(CODE "execute_process(COMMAND strip -x \"\${CMAKE_INSTALL_PREFIX}/lib/libWasmVM.dylib\")")
+endif()

@@ -70,7 +70,7 @@ std::vector<Value> Stack::run(){
                 throw Exception::no_end_of_func();
             }
             try {
-                std::visit(visitor, func.body[label.pc->current++]);
+                visitor.run(func.body[label.pc->current++]);
             } catch (WasmThrow& thrown) {
                 bool handled = false;
                 while(!frames.empty() && !handled){

@@ -43,21 +43,13 @@ void RunVisitor::operator()(Instr::Block& instr){
   new_label.pc->continuation = label.pc->current;
   int level = 0;
   while(new_label.pc->continuation < func.body.size()){
-    std::visit(overloaded {
-      [&](Instr::Block&){
-        level += 1;
-      },
-      [&](Instr::Loop&){
-        level += 1;
-      },
-      [&](Instr::If&){
-        level += 1;
-      },
-      [&](Instr::End&){
-        level -= 1;
-      },
-      [&](auto&){}
-    }, func.body[new_label.pc->continuation]);
+    switch(func.body[new_label.pc->continuation].opcode) {
+      case Opcode::Block: case Opcode::Loop: case Opcode::If: case Opcode::Try_table:
+        level += 1; break;
+      case Opcode::End:
+        level -= 1; break;
+      default: break;
+    }
     if(level >= 0){
       new_label.pc->continuation += 1;
     }else{
@@ -126,27 +118,19 @@ void RunVisitor::operator()(Instr::If& instr){
   new_label.pc->continuation = label.pc->current;
   int level = 0;
   while(new_label.pc->continuation < func.body.size()){
-    std::visit(overloaded {
-      [&](Instr::Block&){
-        level += 1;
-      },
-      [&](Instr::Loop&){
-        level += 1;
-      },
-      [&](Instr::If&){
-        level += 1;
-      },
-      [&](Instr::Else&){
+    switch(func.body[new_label.pc->continuation].opcode) {
+      case Opcode::Block: case Opcode::Loop: case Opcode::If: case Opcode::Try_table:
+        level += 1; break;
+      case Opcode::Else:
         if(goElse && (level == 0)){
           new_label.pc->current = new_label.pc->continuation + 1;
           goElse = false;
         }
-      },
-      [&](Instr::End&){
-        level -= 1;
-      },
-      [&](auto&){}
-    }, func.body[new_label.pc->continuation]);
+        break;
+      case Opcode::End:
+        level -= 1; break;
+      default: break;
+    }
     if(level >= 0){
       new_label.pc->continuation += 1;
     }else{

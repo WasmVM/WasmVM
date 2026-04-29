@@ -15,6 +15,27 @@ if(MSVC)
   add_compile_options(/bigobj)
 endif(MSVC)
 
+# LTO for Release builds
+include(CheckIPOSupported)
+check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_OUTPUT)
+if(LTO_SUPPORTED)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
+    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
+    message(STATUS "LTO enabled for Release builds")
+else()
+    message(STATUS "LTO not supported: ${LTO_OUTPUT}")
+endif()
+
+# Dead-section elimination (removes unused functions/data at link time)
+if(NOT MSVC)
+    add_compile_options(-ffunction-sections -fdata-sections)
+    if(APPLE)
+        add_link_options(-Wl,-dead_strip)
+    else()
+        add_link_options(-Wl,--gc-sections)
+    endif()
+endif()
+
 include_directories(${CMAKE_CURRENT_LIST_DIR}/src/include)
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 

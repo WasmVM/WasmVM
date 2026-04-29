@@ -2,6 +2,7 @@
 #define WASMVM_PP_INVOKE_RunVisitor_DEF
 
 #include <instances/Stack.hpp>
+#include <structures/WasmInstr.hpp>
 #include <optional>
 #include <vector>
 #include <exception.hpp>
@@ -11,6 +12,8 @@ using namespace WasmVM;
 struct RunVisitor {
     RunVisitor(Stack& stack) : stack(stack){};
     Stack& stack;
+
+    void run(WasmInstr& instr);
 
     // Control
     void operator()(Instr::Unreachable&);
