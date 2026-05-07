@@ -892,14 +892,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         ss << "label index " << m << "not found in br_table";
                         throw Exception::Exception(ss.str());
                     }
-                    size_t arity = state.ctrls[m].types().size();
+                    size_t arity = state.ctrls[state.ctrls.size() - 1 - m].types().size();
                     for(auto it = ins.indices.begin(); it != (ins.indices.end() - 1); it = std::next(it)){
                         if(*it >= state.ctrls.size()){
                             std::stringstream ss;
                             ss << "label index " << *it << "not found in br_table";
                             throw Exception::Exception(ss.str());
                         }
-                        std::vector<ValueType> label = state.ctrls[*it].types();
+                        std::vector<ValueType> label = state.ctrls[state.ctrls.size() - 1 - *it].types();
                         if(label.size() != arity){
                             std::stringstream ss;
                             ss << "label index " << *it << " has invalid type to br_table";
@@ -907,7 +907,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         }
                         state.push(state.pop(label));
                     }
-                    state.pop(state.ctrls[m].types());
+                    state.pop(state.ctrls[state.ctrls.size() - 1 - m].types());
                     state.unreachable();
                 }break;
                 case Opcode::Return :
