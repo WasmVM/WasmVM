@@ -108,8 +108,8 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--no-parent", "Disable importing modules from module parent path", "-np"),
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
-        CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos),
-        CommandParser::Optional("--args", "Arguments passed to host modules", (unsigned int)index_npos, "-a")
+        CommandParser::Fixed("args", "Arguments passed to main module", (unsigned int)index_npos),
+        CommandParser::Optional("--extra", "Path to find modules", (unsigned int)index_npos, "-e")
     },
         "wasmvm : WasmVM WebAssembly virtual machine"
     );
@@ -129,8 +129,8 @@ int main(int argc, char const *argv[]){
         bool check_parent = true;
         std::optional<std::filesystem::path> system_path;
         bool run_validate = true;
-        if(args["extra_path"]){
-            std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra_path"].value());
+        if(args["extra"]){
+            std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra"].value());
             for(std::string path : paths){
                 extra_paths.emplace_back(path);
             }
