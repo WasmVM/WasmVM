@@ -434,7 +434,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmInstr>(WasmInstr in
     ONE(Array_get,Array_get) ONE(Array_get_s,Array_get_s)
     ONE(Array_get_u,Array_get_u) ONE(Array_set,Array_set)
     ONE(Array_fill,Array_fill)
-    TWO(Call_indirect,Call_indirect,b,a) TWO(Return_call_indirect,Return_call_indirect,b,a)
+    TWO(Call_indirect,Call_indirect,a,b) TWO(Return_call_indirect,Return_call_indirect,a,b)
     TWO(Table_copy,Table_copy,a,b) TWO(Memory_copy,Memory_copy,a,b)
     TWO(Struct_get,Struct_get,a,b) TWO(Struct_get_s,Struct_get_s,a,b)
     TWO(Struct_get_u,Struct_get_u,a,b) TWO(Struct_set,Struct_set,a,b)

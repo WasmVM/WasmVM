@@ -488,7 +488,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
@@ -499,7 +499,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
@@ -574,8 +574,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
-                    if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-2");
+                    if(ins.align > 3){
+                        throw Exception::Exception("align should be 0-3");
                     }
                     state.pop(ValueType::i64);
                     state.pop(ValueType::i64, ValueType::i32);
@@ -608,7 +608,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64);
                     state.pop(ValueType::i64, ValueType::i32);
