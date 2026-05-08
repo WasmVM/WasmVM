@@ -4,9 +4,8 @@
 
 // Module: sys_fs
 // Provides POSIX-style filesystem syscalls to WebAssembly modules.
-// String / buffer arguments are passed as (ptr, len) pairs into wasm linear
-// memory.  ptr/len may be i32 (wasm32) or i64 (wasm64) — get_ptr() handles
-// both.  On error, functions return -errno (negative i32 or i64).
+// String / buffer arguments are passed as (ptr, len) i64 pairs into wasm linear
+// memory (wasm64 only).  On error, functions return -errno (negative i32).
 
 #include "sysenv.hpp"
 #include "sys_fs.hpp"
@@ -81,8 +80,7 @@ static void write_wasm_stat(Stack& stack, i64_t stat_buf, const stat_t& st) {
 }
 
 // ---- sys_fs host functions --------------------------------------------------
-// Each function uses get_ptr() to extract pointer/length locals so the same
-// body works for both wasm32 (i32 locals) and wasm64 (i64 locals).
+// Each function uses get_ptr() to extract pointer/length locals (wasm64: i64).
 
 // open(path_ptr, path_len, flags:i32, mode:i32) -> i32
 static std::vector<Value> fs_open(Stack& stack) {
@@ -341,10 +339,6 @@ static std::vector<Value> fs_closedir(Stack& stack) {
 }
 
 // ---- Registration -----------------------------------------------------------
-// Each pointer-taking function is registered twice under the same name:
-//   - i32 variant for wasm32 callers
-//   - i64 variant for wasm64 callers
-// The type-aware import resolution in wasmvm.cpp picks the right one.
 
 void sys_fs_instanciate(
     std::map<std::filesystem::path, ModuleInst>& moduleinsts,
@@ -355,112 +349,76 @@ void sys_fs_instanciate(
     moduleinsts.emplace("sys_fs", ModuleInst());
     ModuleInst& m = moduleinsts["sys_fs"];
 
-    // open(path_ptr, path_len, flags:i32, mode:i32) -> i32
-    reg_func(m, store, "open",
-        {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_open);
+    // open(path_ptr:i64, path_len:i64, flags:i32, mode:i32) -> i32
     reg_func(m, store, "open",
         {ValueType::i64, ValueType::i64, ValueType::i32, ValueType::i32},
         {ValueType::i32}, fs_open);
 
-    // close(fd:i32) -> i32  — fd is always i32; no i64 variant needed
+    // close(fd:i32) -> i32
     reg_func(m, store, "close",
         {ValueType::i32}, {ValueType::i32}, fs_close);
 
-    // read(fd:i32, buf_ptr, buf_len) -> i32
-    reg_func(m, store, "read",
-        {ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_read);
+    // read(fd:i32, buf_ptr:i64, buf_len:i64) -> i32
     reg_func(m, store, "read",
         {ValueType::i32, ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_read);
 
-    // write(fd:i32, buf_ptr, buf_len) -> i32
-    reg_func(m, store, "write",
-        {ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_write);
+    // write(fd:i32, buf_ptr:i64, buf_len:i64) -> i32
     reg_func(m, store, "write",
         {ValueType::i32, ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_write);
 
-    // lseek(fd:i32, offset:i64, whence:i32) -> i64  — no ptr args; one variant
+    // lseek(fd:i32, offset:i64, whence:i32) -> i64
     reg_func(m, store, "lseek",
         {ValueType::i32, ValueType::i64, ValueType::i32},
         {ValueType::i64}, fs_lseek);
 
-    // stat(path_ptr, path_len, stat_buf) -> i32
-    reg_func(m, store, "stat",
-        {ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_stat);
+    // stat(path_ptr:i64, path_len:i64, stat_buf:i64) -> i32
     reg_func(m, store, "stat",
         {ValueType::i64, ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_stat);
 
-    // fstat(fd:i32, stat_buf) -> i32
-    reg_func(m, store, "fstat",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_fstat);
+    // fstat(fd:i32, stat_buf:i64) -> i32
     reg_func(m, store, "fstat",
         {ValueType::i32, ValueType::i64},
         {ValueType::i32}, fs_fstat);
 
-    // unlink(path_ptr, path_len) -> i32
-    reg_func(m, store, "unlink",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_unlink);
+    // unlink(path_ptr:i64, path_len:i64) -> i32
     reg_func(m, store, "unlink",
         {ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_unlink);
 
-    // rename(old_ptr, old_len, new_ptr, new_len) -> i32
-    reg_func(m, store, "rename",
-        {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_rename);
+    // rename(old_ptr:i64, old_len:i64, new_ptr:i64, new_len:i64) -> i32
     reg_func(m, store, "rename",
         {ValueType::i64, ValueType::i64, ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_rename);
 
-    // mkdir(path_ptr, path_len, mode:i32) -> i32
-    reg_func(m, store, "mkdir",
-        {ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_mkdir);
+    // mkdir(path_ptr:i64, path_len:i64, mode:i32) -> i32
     reg_func(m, store, "mkdir",
         {ValueType::i64, ValueType::i64, ValueType::i32},
         {ValueType::i32}, fs_mkdir);
 
-    // rmdir(path_ptr, path_len) -> i32
-    reg_func(m, store, "rmdir",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_rmdir);
+    // rmdir(path_ptr:i64, path_len:i64) -> i32
     reg_func(m, store, "rmdir",
         {ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_rmdir);
 
-    // getcwd(buf_ptr, buf_len) -> i32
-    reg_func(m, store, "getcwd",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_getcwd);
+    // getcwd(buf_ptr:i64, buf_len:i64) -> i32
     reg_func(m, store, "getcwd",
         {ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_getcwd);
 
-    // opendir(path_ptr, path_len) -> i32
-    reg_func(m, store, "opendir",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_opendir);
+    // opendir(path_ptr:i64, path_len:i64) -> i32
     reg_func(m, store, "opendir",
         {ValueType::i64, ValueType::i64},
         {ValueType::i32}, fs_opendir);
 
-    // readdir(dir_fd:i32, entry_ptr) -> i32
-    reg_func(m, store, "readdir",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, fs_readdir);
+    // readdir(dir_fd:i32, entry_ptr:i64) -> i32
     reg_func(m, store, "readdir",
         {ValueType::i32, ValueType::i64},
         {ValueType::i32}, fs_readdir);
 
-    // closedir(dir_fd:i32) -> i32  — fd is always i32; no i64 variant needed
+    // closedir(dir_fd:i32) -> i32
     reg_func(m, store, "closedir",
         {ValueType::i32},
         {ValueType::i32}, fs_closedir);

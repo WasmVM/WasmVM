@@ -62,11 +62,8 @@ extern FdTable fd_table;
 
 // ---- Linear-memory helpers --------------------------------------------------
 
-// Extract a memory address from a Value — accepts both i32 (zero-extended) and
-// i64, so the same host function body works for both wasm32 and wasm64 callers.
+// Extract a memory address from a Value (wasm64: always i64).
 inline i64_t get_ptr(const Value& v) {
-    if(std::holds_alternative<i32_t>(v))
-        return (i64_t)(u32_t)std::get<i32_t>(v);  // zero-extend i32
     return std::get<i64_t>(v);
 }
 

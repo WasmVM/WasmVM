@@ -135,26 +135,17 @@ void sys_proc_instanciate(
     reg_func(m, store, "argv_len",
         {ValueType::i32}, {ValueType::i32}, proc_argv_len);
 
-    // argv(idx:i32, buf_ptr, buf_len) -> i32
-    reg_func(m, store, "argv",
-        {ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, proc_argv);
+    // argv(idx:i32, buf_ptr:i64, buf_len:i64) -> i32
     reg_func(m, store, "argv",
         {ValueType::i32, ValueType::i64, ValueType::i64},
         {ValueType::i32}, proc_argv);
 
-    // getenv(name_ptr, name_len, buf_ptr, buf_len) -> i32
-    reg_func(m, store, "getenv",
-        {ValueType::i32, ValueType::i32, ValueType::i32, ValueType::i32},
-        {ValueType::i32}, proc_getenv);
+    // getenv(name_ptr:i64, name_len:i64, buf_ptr:i64, buf_len:i64) -> i32
     reg_func(m, store, "getenv",
         {ValueType::i64, ValueType::i64, ValueType::i64, ValueType::i64},
         {ValueType::i32}, proc_getenv);
 
-    // clock_gettime(clk_id:i32, ts_ptr) -> i32
-    reg_func(m, store, "clock_gettime",
-        {ValueType::i32, ValueType::i32},
-        {ValueType::i32}, proc_clock_gettime);
+    // clock_gettime(clk_id:i32, ts_ptr:i64) -> i32
     reg_func(m, store, "clock_gettime",
         {ValueType::i32, ValueType::i64},
         {ValueType::i32}, proc_clock_gettime);

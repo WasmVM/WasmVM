@@ -80,7 +80,7 @@ void mem_write(Stack& stack, i64_t ptr, const void* src, size_t len) {
     if(end > mem.data.size()) {
         throw std::out_of_range("sysenv: memory write out of bounds");
     }
-    std::memcpy(mem.data.data() + (u32_t)ptr, src, len);
+    std::memcpy(mem.data.data() + (size_t)ptr, src, len);
 }
 
 // ---- reg_func helper --------------------------------------------------------
