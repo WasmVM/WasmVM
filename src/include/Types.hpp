@@ -10,6 +10,7 @@
 #include <cstddef>
 #include <functional>
 #include <memory>
+#include <type_traits>
 
 namespace WasmVM {
 
@@ -61,14 +62,14 @@ enum ValueType {
     i32, i64, f32, f64, funcref, externref, i31ref, exnref
 };
 
-static_assert(Value(std::in_place_type<i32_t>).index() == ValueType::i32);
-static_assert(Value(std::in_place_type<i64_t>).index() == ValueType::i64);
-static_assert(Value(std::in_place_type<f32_t>).index() == ValueType::f32);
-static_assert(Value(std::in_place_type<f64_t>).index() == ValueType::f64);
-static_assert(Value(std::in_place_type<funcref_t>).index() == ValueType::funcref);
-static_assert(Value(std::in_place_type<externref_t>).index() == ValueType::externref);
-static_assert(Value(std::in_place_type<i31ref_t>).index() == ValueType::i31ref);
-// Note: exnref_t index == ValueType::exnref (verified by variant order)
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i32, Value>, i32_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i64, Value>, i64_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f32, Value>, f32_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f64, Value>, f64_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::funcref, Value>, funcref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::externref, Value>, externref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i31ref, Value>, i31ref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::exnref, Value>, exnref_t>);
 
 // Full definition (after Value is defined above)
 struct WasmException {

@@ -10,33 +10,20 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-14, windows-latest]
         build_type: [Release]
-        c_compiler: [gcc, clang]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-            parallel: 6
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-            parallel: 6
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-            parallel: 6
-          - os: macos-14
-            c_compiler: clang
-            cpp_compiler: clang++
-            parallel: 4
-        exclude:
-          - os: macos-latest
-            c_compiler: gcc
-          - os: macos-14
-            c_compiler: gcc
+          - os: windows-latest
 
     steps:
     - uses: actions/checkout@v4
@@ -46,7 +33,8 @@ jobs:
       shell: bash
       run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
 
-    - name: Configure CMake
+    - name: Configure CMake (Unix)
+      if: runner.os != 'Windows'
       run: >
         cmake -B ${{ steps.strings.outputs.build-output-dir }}
         -DCMAKE_CXX_COMPILER=${{ matrix.cpp_compiler }}
@@ -54,8 +42,16 @@ jobs:
         -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
         -S ${{ github.workspace }}
 
+    - name: Configure CMake (Windows)
+      if: runner.os == 'Windows'
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
+        -DCONSOLE_COLOR=OFF
+        -S ${{ github.workspace }}
+
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} -j ${{matrix.parallel}}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
