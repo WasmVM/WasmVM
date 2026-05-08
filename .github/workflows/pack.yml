@@ -52,7 +52,7 @@ jobs:
           path: ${{ github.workspace }}/packages/*.deb
 
   macos-dev:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Configure CMake
@@ -74,7 +74,7 @@ jobs:
         name: macos-dev
         path: ${{ github.workspace }}/packages/*.pkg
   macos:
-    runs-on: macos-14
+    runs-on: macos-latest
     steps:
     - uses: actions/checkout@v4
     - name: Configure CMake
