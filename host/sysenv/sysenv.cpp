@@ -3,11 +3,11 @@
 // license that can be found in the LICENSE file.
 
 #include "sysenv.hpp"
+#include "compat.hpp"
 
 #include <instances/FuncInst.hpp>
 #include <stdexcept>
 #include <cstring>
-#include <unistd.h>
 
 // ---- FdTable ----------------------------------------------------------------
 
@@ -26,9 +26,9 @@ i32_t FdTable::alloc(int os_fd) {
     return wfd;
 }
 
-i32_t FdTable::alloc_dir(DIR* dir) {
+i32_t FdTable::alloc_dir(std::shared_ptr<DirIter> dir) {
     i32_t wfd = next_fd_++;
-    table_[wfd] = FdEntry{-1, true, dir};
+    table_[wfd] = FdEntry{-1, true, std::move(dir)};
     return wfd;
 }
 
@@ -42,12 +42,11 @@ void FdTable::release(i32_t fd) {
     auto it = table_.find(fd);
     if(it == table_.end()) return;
     FdEntry& e = it->second;
-    if(e.is_dir && e.dir) {
-        closedir(e.dir);
-    } else if(e.os_fd >= 3) {
+    if(!e.is_dir && e.os_fd >= 3) {
         // Never close the host's own stdin/stdout/stderr.
-        close(e.os_fd);
+        WasmVM::sysenv_compat::sys_close(e.os_fd);
     }
+    // Directory iterator handles release automatically via shared_ptr.
     table_.erase(it);
 }
 

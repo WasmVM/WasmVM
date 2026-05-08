@@ -16,16 +16,25 @@
 #include <string>
 #include <span>
 #include <cerrno>
-#include <dirent.h>
+#include <memory>
 
 using namespace WasmVM;
 
 // ---- FD Table ---------------------------------------------------------------
 
+// Cross-platform directory iterator state. std::filesystem::directory_iterator
+// is non-copyable but movable; wrapping it in a heap-allocated handle gives
+// FdEntry stable storage that copies/moves cleanly through unordered_map.
+struct DirIter {
+    std::filesystem::directory_iterator it;
+    std::filesystem::directory_iterator end{};
+    std::filesystem::path path;
+};
+
 struct FdEntry {
     int  os_fd;   // underlying OS file descriptor (-1 if dir-only)
     bool is_dir;
-    DIR* dir;     // non-null when entry represents an open directory
+    std::shared_ptr<DirIter> dir; // non-null when entry represents an open directory
 };
 
 class FdTable {
@@ -35,8 +44,8 @@ public:
     // Allocate a new wasm fd wrapping an OS file descriptor.
     i32_t alloc(int os_fd);
 
-    // Allocate a new wasm fd wrapping an open directory handle.
-    i32_t alloc_dir(DIR* dir);
+    // Allocate a new wasm fd wrapping an open directory iterator.
+    i32_t alloc_dir(std::shared_ptr<DirIter> dir);
 
     // Look up a wasm fd. Returns nullptr if not found.
     FdEntry* get(i32_t fd);

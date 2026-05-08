@@ -7,6 +7,7 @@
 
 #include "sysenv.hpp"
 #include "sys_proc.hpp"
+#include "compat.hpp"
 
 #include <host.hpp>       // wasmvm_args
 
@@ -14,7 +15,6 @@
 #include <cstring>
 #include <cerrno>
 #include <cstdint>
-#include <time.h>
 
 // ---- sys_proc host functions ------------------------------------------------
 
@@ -92,20 +92,17 @@ static std::vector<Value> proc_clock_gettime(Stack& stack) {
     i32_t clk_id = std::get<i32_t>(frame.locals[0]);
     i64_t ts_ptr = get_ptr(frame.locals[1]);
 
-    clockid_t cid;
+    bool monotonic;
     switch(clk_id) {
-        case WASM_CLOCK_REALTIME:  cid = CLOCK_REALTIME;  break;
-        case WASM_CLOCK_MONOTONIC: cid = CLOCK_MONOTONIC; break;
+        case WASM_CLOCK_REALTIME:  monotonic = false; break;
+        case WASM_CLOCK_MONOTONIC: monotonic = true;  break;
         default: return {Value(i32_t(-EINVAL))};
     }
 
-    struct timespec ts;
-    if(clock_gettime(cid, &ts) != 0) return {Value(err_code())};
+    auto [sec, nsec] = WasmVM::sysenv_compat::clock_now_ns(monotonic);
 
     try {
         uint8_t buf[WASM_TIMESPEC_SIZE];
-        int64_t sec  = (int64_t)ts.tv_sec;
-        int32_t nsec = (int32_t)ts.tv_nsec;
         std::memcpy(buf + 0, &sec,  8);
         std::memcpy(buf + 8, &nsec, 4);
         mem_write(stack, ts_ptr, buf, WASM_TIMESPEC_SIZE);
