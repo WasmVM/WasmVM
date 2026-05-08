@@ -28,7 +28,9 @@ Suite comments {
 
     Category("Block comments", {
         Test("Regular", {
-            std::ifstream fin("block.wat");
+            // Open in binary so MSVC text-mode doesn't truncate at the
+            // 0x1A (Ctrl+Z) byte that this fixture contains intentionally.
+            std::ifstream fin("block.wat", std::ios::binary);
             Tokenizer tok(fin);
             Expect(tok.peek().type == TokenType::LParen);  tok.consume();
             Expect(tok.peek_keyword("module"));            tok.consume();
