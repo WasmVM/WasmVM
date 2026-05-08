@@ -10,6 +10,7 @@ WasmVM documentation
    structure
    instance
    instructions
+   Host modules <host>
    notes
 
 * :ref:`search`

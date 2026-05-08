@@ -9,7 +9,7 @@ wasmvm
 Synopsis
 --------
 
-wasmvm [-h | --help] [-v | --version] [-ns | --no-system] [-np | --no-parent] [-f | --force] main_module extra_path...
+wasmvm [-h | --help] [-v | --version] [-ns | --no-system] [-np | --no-parent] [-f | --force] [-a | --args ...] main_module extra_path...
 
 Description
 -----------
@@ -45,3 +45,8 @@ Options
 
 --force, -f
     Skip validation and directly execute applicaion.
+
+--args, -a
+    Forward zero or more arguments to the running module. They are exposed to
+    the wasm program through the ``sys_proc`` host module (``argc``, ``argv``)
+    along with the main module path as argument 0.

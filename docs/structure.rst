@@ -15,6 +15,11 @@ Data structures of WasmVM objects for general use.
 
     .. cpp:member:: std::vector<MemType> mems
 
+    .. cpp:member:: std::vector<index_t> tags
+
+        Tag section: each entry is a type index identifying the
+        signature of an exception tag.
+
     .. cpp:member:: std::vector<WasmGlobal> globals
 
     .. cpp:member:: std::vector<WasmExport> exports
@@ -135,9 +140,51 @@ Data structures of WasmVM objects for general use.
     Instr::Return, \
     Instr::Call, \
     Instr::Call_indirect, \
+    Instr::Return_call, \
+    Instr::Return_call_indirect, \
+    Instr::Return_call_ref, \
+    Instr::Call_ref, \
+    Instr::Throw, \
+    Instr::Throw_ref, \
+    Instr::Try_table, \
     Instr::Ref_null, \
     Instr::Ref_is_null, \
     Instr::Ref_func, \
+    Instr::Ref_eq, \
+    Instr::Ref_as_non_null, \
+    Instr::Br_on_null, \
+    Instr::Br_on_non_null, \
+    Instr::Ref_test, \
+    Instr::Ref_test_null, \
+    Instr::Ref_cast, \
+    Instr::Ref_cast_null, \
+    Instr::Br_on_cast, \
+    Instr::Br_on_cast_fail, \
+    Instr::Ref_i31, \
+    Instr::I31_get_s, \
+    Instr::I31_get_u, \
+    Instr::Any_convert_extern, \
+    Instr::Extern_convert_any, \
+    Instr::Struct_new, \
+    Instr::Struct_new_default, \
+    Instr::Struct_get, \
+    Instr::Struct_get_s, \
+    Instr::Struct_get_u, \
+    Instr::Struct_set, \
+    Instr::Array_new, \
+    Instr::Array_new_default, \
+    Instr::Array_new_fixed, \
+    Instr::Array_new_data, \
+    Instr::Array_new_elem, \
+    Instr::Array_get, \
+    Instr::Array_get_s, \
+    Instr::Array_get_u, \
+    Instr::Array_set, \
+    Instr::Array_len, \
+    Instr::Array_fill, \
+    Instr::Array_copy, \
+    Instr::Array_init_data, \
+    Instr::Array_init_elem, \
     Instr::Drop, \
     Instr::Select, \
     Instr::Local_get, \
@@ -285,25 +332,25 @@ Data structures of WasmVM objects for general use.
     Instr::F64_max, \
     Instr::F64_copysign, \
     Instr::I32_wrap_i64, \
-    Instr::I32_trunc_s_f32, \
-    Instr::I32_trunc_u_f32, \
-    Instr::I32_trunc_s_f64, \
-    Instr::I32_trunc_u_f64, \
-    Instr::I64_extend_s_i32, \
-    Instr::I64_extend_u_i32, \
-    Instr::I64_trunc_s_f32, \
-    Instr::I64_trunc_u_f32, \
-    Instr::I64_trunc_s_f64, \
-    Instr::I64_trunc_u_f64, \
-    Instr::F32_convert_s_i32, \
-    Instr::F32_convert_u_i32, \
-    Instr::F32_convert_s_i64, \
-    Instr::F32_convert_u_i64, \
+    Instr::I32_trunc_f32_s, \
+    Instr::I32_trunc_f32_u, \
+    Instr::I32_trunc_f64_s, \
+    Instr::I32_trunc_f64_u, \
+    Instr::I64_extend_i32_s, \
+    Instr::I64_extend_i32_u, \
+    Instr::I64_trunc_f32_s, \
+    Instr::I64_trunc_f32_u, \
+    Instr::I64_trunc_f64_s, \
+    Instr::I64_trunc_f64_u, \
+    Instr::F32_convert_i32_s, \
+    Instr::F32_convert_i32_u, \
+    Instr::F32_convert_i64_s, \
+    Instr::F32_convert_i64_u, \
     Instr::F32_demote_f64, \
-    Instr::F64_convert_s_i32, \
-    Instr::F64_convert_u_i32, \
-    Instr::F64_convert_s_i64, \
-    Instr::F64_convert_u_i64, \
+    Instr::F64_convert_i32_s, \
+    Instr::F64_convert_i32_u, \
+    Instr::F64_convert_i64_s, \
+    Instr::F64_convert_i64_u, \
     Instr::F64_promote_f32, \
     Instr::I32_reinterpret_f32, \
     Instr::I64_reinterpret_f64, \
