@@ -30,9 +30,17 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
         }
         ModuleInst& moduleinst = moduleinsts[import_path];
         WasmImport& import = node.module.imports[idx];
-        auto export_it = std::find_if(moduleinst.exports.begin(), moduleinst.exports.end(), [import](ExportInst& expo) {
-            return expo.name == import.name;
-        });
+        // For function imports, match by name AND type so that host modules can
+        // register same-name variants with different signatures (e.g. i32 vs i64
+        // pointer params for wasm32/wasm64 callers).
+        auto export_it = std::find_if(moduleinst.exports.begin(), moduleinst.exports.end(),
+            [&](ExportInst& expo) {
+                if(expo.name != import.name) return false;
+                if(expo.value.type != ExternVal::ExternType::Func) return true;
+                if(!std::holds_alternative<index_t>(import.desc)) return true;
+                return store.funcs[expo.value.addr].type ==
+                       node.module.types[std::get<index_t>(import.desc)];
+            });
         if(export_it == moduleinst.exports.end()){
             throw Exception::Exception(std::string("import '") + import.name + "' not found in module '" + import_path.filename().string() + "'");
         }
@@ -100,7 +108,8 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--no-parent", "Disable importing modules from module parent path", "-np"),
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
-        CommandParser::Fixed("extra_path", "Path to find modules", (unsigned int)index_npos)
+        CommandParser::Fixed("args", "Arguments passed to main module", (unsigned int)index_npos),
+        CommandParser::Optional("--extra", "Path to find modules", (unsigned int)index_npos, "-e")
     },
         "wasmvm : WasmVM WebAssembly virtual machine"
     );
@@ -110,7 +119,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM version " VERSION << std::endl;
+        std::cerr << "WasmVM version " WASMVM_VERSION << std::endl;
         return 0;
     }
 
@@ -120,8 +129,8 @@ int main(int argc, char const *argv[]){
         bool check_parent = true;
         std::optional<std::filesystem::path> system_path;
         bool run_validate = true;
-        if(args["extra_path"]){
-            std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra_path"].value());
+        if(args["extra"]){
+            std::vector<std::string> paths = std::get<std::vector<std::string>>(args["extra"].value());
             for(std::string path : paths){
                 extra_paths.emplace_back(path);
             }
@@ -142,13 +151,20 @@ int main(int argc, char const *argv[]){
         Store store;
         std::map<std::filesystem::path, ModuleInst> moduleinsts;
 
-        // Host modules
-        #ifdef HOST_MODULES
-        host_modules_instanciate(moduleinsts, store);
-        #endif
-
         // Get module queue
         std::string main_module = std::get<std::string>(args["main_module"].value());
+
+        // Host modules
+        #ifdef HOST_MODULES
+        wasmvm_args.clear();
+        wasmvm_args.push_back(main_module);
+        if (args["args"]) {
+            auto extra_args = std::get<std::vector<std::string>>(args["args"].value());
+            for (auto& a : extra_args)
+                wasmvm_args.push_back(std::move(a));
+        }
+        host_modules_instanciate(moduleinsts, store);
+        #endif
         ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent, run_validate);
 
         // Instanciate

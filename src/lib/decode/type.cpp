@@ -143,11 +143,20 @@ template<> Stream& Decode::operator>> <RefType>(Stream& stream, RefType& type){
 
 template<> Stream& Decode::operator>> <Limits>(Stream& stream, Limits& limit){
     limit.max.reset();
+    limit.is64 = false;
     switch(stream.get<byte_t>()){
         case byte_t {0x00}:
             return stream >> limit.min;
         break;
         case byte_t {0x01}:
+            return stream >> limit.min >> limit.max.emplace();
+        break;
+        case byte_t {0x04}:
+            limit.is64 = true;
+            return stream >> limit.min;
+        break;
+        case byte_t {0x05}:
+            limit.is64 = true;
             return stream >> limit.min >> limit.max.emplace();
         break;
         default:

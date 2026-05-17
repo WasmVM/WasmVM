@@ -88,6 +88,13 @@ protected:
     std::vector<MemType>& mems;
 };
 
+struct Tag : public Section {
+    Tag(std::vector<index_t>& tags) : Section((byte_t)0x0D), tags(tags){}
+protected:
+    Stream& read(Stream& stream) override;
+    std::vector<index_t>& tags;
+};
+
 struct Global : public Section {
     Global(std::vector<WasmGlobal>& globals) : Section((byte_t)0x06), globals(globals){}
 protected:

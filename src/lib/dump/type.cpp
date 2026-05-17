@@ -26,6 +26,12 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
         case ValueType::externref:
             stream << "externref";
         break;
+        case ValueType::i31ref:
+            stream << "i31ref";
+        break;
+        case ValueType::exnref:
+            stream << "exnref";
+        break;
     }
     return stream;
 }
@@ -68,7 +74,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const MemType& mem){
-    stream << "  (memory " << mem.min;
+    stream << "  (memory ";
+    if(mem.is64) stream << "i64 ";
+    stream << mem.min;
     if(mem.max.has_value()){
         stream << " " << mem.max.value();
     }

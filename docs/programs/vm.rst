@@ -9,7 +9,7 @@ wasmvm
 Synopsis
 --------
 
-wasmvm [-h | --help] [-v | --version] [-ns | --no-system] [-np | --no-parent] [-f | --force] main_module extra_path...
+wasmvm [-h | --help] [-v | --version] [-ns | --no-system] [-np | --no-parent] [-f | --force] [-e | --extra]... [--] main_module [args...]
 
 Description
 -----------
@@ -25,8 +25,10 @@ Arguments
 main_module
     The main WebAssembly modules in binary format, with ``.wasm`` file extension normally.
 
-extra_path...
-    Zero or more additional paths to find referenced WebAssembly modules. 
+args...
+    Zero or more arguments forwarded to the running module. They are exposed to
+    the wasm program through the ``sys_proc`` host module (``argc``, ``argv``)
+    along with the main module path as argument 0.
 
 Options
 ^^^^^^^
@@ -45,3 +47,11 @@ Options
 
 --force, -f
     Skip validation and directly execute applicaion.
+
+--extra, -e
+    Add a path to search for referenced WebAssembly modules. May be specified
+    multiple times.
+
+\--
+    End of options. All arguments after ``--`` are treated as positional,
+    allowing ``main_module`` or ``args`` values that begin with ``-``.

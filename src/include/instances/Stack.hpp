@@ -29,9 +29,16 @@ struct Label {
         size_t& continuation;
     };
 
+    struct CatchEntry {
+        enum Kind { Catch = 0, CatchRef = 1, CatchAll = 2, CatchAllRef = 3 } kind;
+        index_t tag_addr;   // resolved tag address (only valid for Catch/CatchRef)
+        index_t label_idx;  // branch target label index
+    };
+
     size_t arity;
     std::optional<Counters> pc;
     Values values;
+    std::vector<CatchEntry> catches; // non-empty for try_table labels
 };
 
 struct Frame {

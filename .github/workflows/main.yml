@@ -6,37 +6,26 @@ on:
     branches: [ "master" ]
 
 jobs:
+  # Ubuntu + macOS run on every push and PR.
   build:
     runs-on: ${{ matrix.os }}
 
     strategy:
-      fail-fast: true
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, macos-14, windows-latest]
-        build_type: [Release]
-        c_compiler: [gcc, clang]
         include:
           - os: ubuntu-latest
             c_compiler: gcc
             cpp_compiler: g++
-            parallel: 6
+            build_type: Release
           - os: ubuntu-latest
             c_compiler: clang
             cpp_compiler: clang++
-            parallel: 6
+            build_type: Release
           - os: macos-latest
             c_compiler: clang
             cpp_compiler: clang++
-            parallel: 6
-          - os: macos-14
-            c_compiler: clang
-            cpp_compiler: clang++
-            parallel: 4
-        exclude:
-          - os: macos-latest
-            c_compiler: gcc
-          - os: macos-14
-            c_compiler: gcc
+            build_type: Release
 
     steps:
     - uses: actions/checkout@v4
@@ -55,8 +44,35 @@ jobs:
         -S ${{ github.workspace }}
 
     - name: Build
-      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} -j ${{matrix.parallel}}
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config ${{ matrix.build_type }} --parallel
 
-    # - name: Test
-    #   working-directory: ${{ steps.strings.outputs.build-output-dir }}
-    #   run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
+
+  # Windows runs only on pull requests.
+  build-windows:
+    if: github.event_name == 'pull_request'
+    runs-on: windows-latest
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set reusable strings
+      id: strings
+      shell: bash
+      run: echo "build-output-dir=${{ github.workspace }}/build" >> "$GITHUB_OUTPUT"
+
+    - name: Configure CMake
+      run: >
+        cmake -B ${{ steps.strings.outputs.build-output-dir }}
+        -DCMAKE_BUILD_TYPE=Release
+        -DCONSOLE_COLOR=OFF
+        -S ${{ github.workspace }}
+
+    - name: Build
+      run: cmake --build ${{ steps.strings.outputs.build-output-dir }} --config Release --parallel
+
+    - name: Test
+      working-directory: ${{ steps.strings.outputs.build-output-dir }}
+      run: ctest --output-on-failure --build-config Release

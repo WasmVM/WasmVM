@@ -6,6 +6,7 @@ Instructions
    
    Numeric instructions <instr/numeric>
    Reference instructions <instr/reference>
+   GC instructions <instr/gc>
    Parametric instructions <instr/parametric>
    Variable instructions <instr/variable>
    Table instructions <instr/table>
@@ -15,7 +16,7 @@ Instructions
 Definitions & Templates
 -----------------------
 
-.. cpp:type:: WasmVM::Opcode::opcode_t = int16_t
+.. cpp:type:: WasmVM::Opcode::opcode_t = uint16_t
 
 .. cpp:enum:: WasmVM::Opcode::Opcode : opcode_t
 

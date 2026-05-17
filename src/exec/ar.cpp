@@ -124,7 +124,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM archiver version " VERSION << std::endl;
+        std::cerr << "WasmVM archiver version " WASMVM_VERSION << std::endl;
         return 0;
     }
 

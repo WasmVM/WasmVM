@@ -16,6 +16,7 @@ struct ModuleInst {
     std::vector<index_t> globaladdrs;
     std::vector<index_t> elemaddrs;
     std::vector<index_t> dataaddrs;
+    std::vector<index_t> tagaddrs;
     std::vector<ExportInst> exports; 
 
     void reset();

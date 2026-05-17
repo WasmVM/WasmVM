@@ -2,8 +2,17 @@
 #define WASMVM_PP_INVOKE_EXCEPTION_DEF
 
 #include <exception.hpp>
+#include <Types.hpp>
+#include <memory>
 
 namespace WasmVM {
+
+// C++ exception used for Wasm exception propagation
+struct WasmThrow {
+    std::shared_ptr<WasmException> exn;
+    WasmThrow(std::shared_ptr<WasmException> e) : exn(std::move(e)) {}
+};
+
 namespace Exception {
     struct invalid_argument : public Exception {
         invalid_argument();
@@ -37,6 +46,12 @@ namespace Exception {
     };
     struct length_too_long : public Exception {
         length_too_long();
+    };
+    struct cast_failure : public Exception {
+        cast_failure();
+    };
+    struct null_reference : public Exception {
+        null_reference();
     };
 }
 }

@@ -353,155 +353,77 @@ bool std::equal_to<WasmVM::Linker::ExternEntry>::operator()(const WasmVM::Linker
 }
 
 void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
-    std::visit(overloaded {
-        [](auto&){},
-        [&](Instr::Call& ins){
-            update_index(ins.index, func)
-        },
-        [&](Instr::Block& ins){
-            if(ins.type){
-                ins.type = module_entry.types[ins.type.value()];
-            }
-        },
-        [&](Instr::Loop& ins){
-            if(ins.type){
-                ins.type = module_entry.types[ins.type.value()];
-            }
-        },
-        [&](Instr::If& ins){
-            if(ins.type){
-                ins.type = module_entry.types[ins.type.value()];
-            }
-        },
-        [&](Instr::Call_indirect& ins){
-            ins.typeidx = module_entry.types[ins.typeidx];
-            update_index(ins.tableidx, table)
-        },
-        [&](Instr::Ref_func& ins){
-            update_index(ins.index, func)
-        },
-        [&](Instr::Global_get& ins){
-            update_index(ins.index, global)
-        },
-        [&](Instr::Global_set& ins){
-            update_index(ins.index, global)
-        },
-        [&](Instr::Table_get& ins){
-            update_index(ins.index, table)
-        },
-        [&](Instr::Table_set& ins){
-            update_index(ins.index, table)
-        },
-        [&](Instr::Table_size& ins){
-            update_index(ins.index, table)
-        },
-        [&](Instr::Table_grow& ins){
-            update_index(ins.index, table)
-        },
-        [&](Instr::Table_fill& ins){
-            update_index(ins.index, table)
-        },
-        [&](Instr::Table_copy& ins){
-            update_index(ins.dstidx, table)
-            update_index(ins.srcidx, table)
-        },
-        [&](Instr::Table_init& ins){
-            update_index(ins.tableidx, table)
-            ins.elemidx = module_entry.elems[ins.elemidx];
-        },
-        [&](Instr::Elem_drop& ins){
-            ins.index = module_entry.elems[ins.index];
-        },
-        [&](Instr::I32_load& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::F32_load& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::F64_load& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_load8_s& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_load8_u& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_load16_s& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_load16_u& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load8_s& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load8_u& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load16_s& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load16_u& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load32_s& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_load32_u& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_store& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_store& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::F32_store& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::F64_store& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_store8& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I32_store16& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_store8& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_store16& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::I64_store32& ins){
-            update_index(ins.memidx, mem)
-        },
-        [&](Instr::Memory_size& ins){
-            update_index(ins.index, mem)
-        },
-        [&](Instr::Memory_grow& ins){
-            update_index(ins.index, mem)
-        },
-        [&](Instr::Memory_fill& ins){
-            update_index(ins.index, mem)
-        },
-        [&](Instr::Memory_copy& ins){
-            update_index(ins.dstidx, mem)
-            update_index(ins.srcidx, mem)
-        },
-        [&](Instr::Memory_init& ins){
-            update_index(ins.memidx, mem)
-            ins.dataidx = module_entry.datas[ins.dataidx];
-        },
-        [&](Instr::Data_drop& ins){
-            ins.index = module_entry.datas[ins.index];
-        }
-    }, instr);
+    switch(instr.opcode) {
+        case Opcode::Call: case Opcode::Ref_func: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            update_index(o.index, func)
+        } break;
+        case Opcode::Block: case Opcode::Loop: case Opcode::If: {
+            auto& blk = std::get<WasmInstr::BlockType>(instr.imm);
+            if(blk.type){ blk.type = module_entry.types[blk.type.value()]; }
+        } break;
+        case Opcode::Call_indirect: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            tw.b = module_entry.types[tw.b]; // b = typeidx
+            update_index(tw.a, table)         // a = tableidx
+        } break;
+        case Opcode::Global_get: case Opcode::Global_set: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            update_index(o.index, global)
+        } break;
+        case Opcode::Table_get: case Opcode::Table_set:
+        case Opcode::Table_size: case Opcode::Table_grow: case Opcode::Table_fill: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            update_index(o.index, table)
+        } break;
+        case Opcode::Table_copy: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            update_index(tw.a, table) // a = dstidx
+            update_index(tw.b, table) // b = srcidx
+        } break;
+        case Opcode::Table_init: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            update_index(tw.a, table)                              // a = tableidx
+            tw.b = module_entry.elems[tw.b];                       // b = elemidx
+        } break;
+        case Opcode::Elem_drop: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            o.index = module_entry.elems[o.index];
+        } break;
+        case Opcode::I32_load: case Opcode::I64_load:
+        case Opcode::F32_load: case Opcode::F64_load:
+        case Opcode::I32_load8_s: case Opcode::I32_load8_u:
+        case Opcode::I32_load16_s: case Opcode::I32_load16_u:
+        case Opcode::I64_load8_s: case Opcode::I64_load8_u:
+        case Opcode::I64_load16_s: case Opcode::I64_load16_u:
+        case Opcode::I64_load32_s: case Opcode::I64_load32_u:
+        case Opcode::I32_store: case Opcode::I64_store:
+        case Opcode::F32_store: case Opcode::F64_store:
+        case Opcode::I32_store8: case Opcode::I32_store16:
+        case Opcode::I64_store8: case Opcode::I64_store16: case Opcode::I64_store32: {
+            auto& m = std::get<WasmInstr::MemArg>(instr.imm);
+            update_index(m.memidx, mem)
+        } break;
+        case Opcode::Memory_size: case Opcode::Memory_grow: case Opcode::Memory_fill: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            update_index(o.index, mem)
+        } break;
+        case Opcode::Memory_copy: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            update_index(tw.a, mem) // a = dstidx
+            update_index(tw.b, mem) // b = srcidx
+        } break;
+        case Opcode::Memory_init: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            update_index(tw.a, mem)                                // a = memidx
+            tw.b = module_entry.datas[tw.b];                       // b = dataidx
+        } break;
+        case Opcode::Data_drop: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            o.index = module_entry.datas[o.index];
+        } break;
+        default: break;
+    }
 }
 
 void Linker::instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry){

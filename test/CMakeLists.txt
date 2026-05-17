@@ -7,4 +7,4 @@ include_directories(${CMAKE_CURRENT_LIST_DIR}/harness)
 add_subdirectory(harness)
 
 # testsuite
-add_subdirectory(suite)
+add_subdirectory(parse)

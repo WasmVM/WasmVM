@@ -45,18 +45,17 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     std::stringstream msg;
     size_t instridx = 1;
     for(const WasmInstr& instr : func.body){
-        Opcode::opcode_t opcode = std::visit(overloaded {[](auto& ins){return ins.opcode;}}, instr);
         try{
-            switch(opcode){
+            switch(instr.opcode){
                 // [] -> []
                 case Opcode::Elem_drop : {
-                    const Instr::Elem_drop& ins = std::get<Instr::Elem_drop>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.elems.size()){
                         throw Exception::Exception("elem index not found in elem.drop");
                     }
                 }break;
                 case Opcode::Data_drop : {
-                    const Instr::Data_drop& ins = std::get<Instr::Data_drop>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.datas.size()){
                         throw Exception::Exception("data index not found in data.drop");
                     }
@@ -66,14 +65,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 case Opcode::Memory_size : {
-                    const Instr::Memory_size& ins = std::get<Instr::Memory_size>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.size");
                     }
-                    state.push(ValueType::i32);
+                    state.push(context.mems[ins.index].is64 ? ValueType::i64 : ValueType::i32);
                 }break;
                 case Opcode::Table_size : {
-                    const Instr::Table_size& ins = std::get<Instr::Table_size>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.size");
                     }
@@ -93,7 +92,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 break;
                 // [] -> [funcref]
                 case Opcode::Ref_func : {
-                    const Instr::Ref_func& ins = std::get<Instr::Ref_func>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.funcs.size()){
                         throw Exception::Exception("func index not found in ref.func");
                     }
@@ -101,31 +100,32 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [] -> [t]
                 case Opcode::Ref_null : {
-                    const Instr::Ref_null& ins = std::get<Instr::Ref_null>(instr);
+                    const auto& ins = std::get<WasmInstr::HeapRef>(instr.imm);
                     state.push((ValueType)ins.heaptype);
                 }break;
                 case Opcode::Local_get : {
-                    const Instr::Local_get& ins = std::get<Instr::Local_get>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= state.locals.size()){
                         throw Exception::Exception("local index not found in local.get");
                     }
                     state.push(state.locals[ins.index]);
                 }break;
                 case Opcode::Global_get : {
-                    const Instr::Global_get& ins = std::get<Instr::Global_get>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.get");
                     }
                     state.push(context.globals[ins.index].type);
                 }break;
-                // [i32] -> [i32]
+                // [i32|i64] -> [i32|i64]  (depends on memory index type)
                 case Opcode::Memory_grow : {
-                    const Instr::Memory_grow& ins = std::get<Instr::Memory_grow>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.grow");
                     }
-                    state.pop(ValueType::i32);
-                    state.push(ValueType::i32);
+                    ValueType addr_t = context.mems[ins.index].is64 ? ValueType::i64 : ValueType::i32;
+                    state.pop(addr_t);
+                    state.push(addr_t);
                 }break;
                 case Opcode::I32_clz :
                 case Opcode::I32_ctz :
@@ -137,21 +137,21 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [i32] -> [i64]
-                case Opcode::I64_extend_s_i32 :
-                case Opcode::I64_extend_u_i32 :
+                case Opcode::I64_extend_i32_s :
+                case Opcode::I64_extend_i32_u :
                     state.pop(ValueType::i32);
                     state.push(ValueType::i64);
                 break;
                 // [i32] -> [f32]
-                case Opcode::F32_convert_s_i32 :
-                case Opcode::F32_convert_u_i32 :
+                case Opcode::F32_convert_i32_s :
+                case Opcode::F32_convert_i32_u :
                 case Opcode::F32_reinterpret_i32 :
                     state.pop(ValueType::i32);
                     state.push(ValueType::f32);
                 break;
                 // [i32] -> [f64]
-                case Opcode::F64_convert_s_i32 :
-                case Opcode::F64_convert_u_i32 :
+                case Opcode::F64_convert_i32_s :
+                case Opcode::F64_convert_i32_u :
                     state.pop(ValueType::i32);
                     state.push(ValueType::f64);
                 break;
@@ -172,14 +172,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [i64] -> [f32]
-                case Opcode::F32_convert_s_i64 :
-                case Opcode::F32_convert_u_i64 :
+                case Opcode::F32_convert_i64_s :
+                case Opcode::F32_convert_i64_u :
                     state.pop(ValueType::i64);
                     state.push(ValueType::f32);
                 break;
                 // [i64] -> [f64]
-                case Opcode::F64_convert_s_i64 :
-                case Opcode::F64_convert_u_i64 :
+                case Opcode::F64_convert_i64_s :
+                case Opcode::F64_convert_i64_u :
                 case Opcode::F64_reinterpret_i64 :
                     state.pop(ValueType::i64);
                     state.push(ValueType::f64);
@@ -196,8 +196,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::f32);
                 break;
                 // [f32] -> [i32]
-                case Opcode::I32_trunc_s_f32 :
-                case Opcode::I32_trunc_u_f32 :
+                case Opcode::I32_trunc_f32_s :
+                case Opcode::I32_trunc_f32_u :
                 case Opcode::I32_trunc_sat_f32_s :
                 case Opcode::I32_trunc_sat_f32_u :
                 case Opcode::I32_reinterpret_f32 :
@@ -205,8 +205,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 break;
                 // [f32] -> [i64]
-                case Opcode::I64_trunc_s_f32 :
-                case Opcode::I64_trunc_u_f32 :
+                case Opcode::I64_trunc_f32_s :
+                case Opcode::I64_trunc_f32_u :
                 case Opcode::I64_trunc_sat_f32_s :
                 case Opcode::I64_trunc_sat_f32_u :
                     state.pop(ValueType::f32);
@@ -229,16 +229,16 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::f64);
                 break;
                 // [f64] -> [i32]
-                case Opcode::I32_trunc_s_f64 :
-                case Opcode::I32_trunc_u_f64 :
+                case Opcode::I32_trunc_f64_s :
+                case Opcode::I32_trunc_f64_u :
                 case Opcode::I32_trunc_sat_f64_s :
                 case Opcode::I32_trunc_sat_f64_u :
                     state.pop(ValueType::f64);
                     state.push(ValueType::i32);
                 break;
                 // [f64] -> [i64]
-                case Opcode::I64_trunc_s_f64 :
-                case Opcode::I64_trunc_u_f64 :
+                case Opcode::I64_trunc_f64_s :
+                case Opcode::I64_trunc_f64_u :
                 case Opcode::I64_trunc_sat_f64_s :
                 case Opcode::I64_trunc_sat_f64_u :
                 case Opcode::I64_reinterpret_f64 :
@@ -363,7 +363,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 break;
                 // [i32] -> [t]
                 case Opcode::Table_get : {
-                    const Instr::Table_get& ins = std::get<Instr::Table_get>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.get");
                     }
@@ -373,7 +373,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32|i64] -> [t]
                 case Opcode::I32_load : {
-                    const Instr::I32_load& ins = std::get<Instr::I32_load>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -384,7 +384,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load8_s : {
-                    const Instr::I32_load8_s& ins = std::get<Instr::I32_load8_s>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -395,7 +395,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load8_u : {
-                    const Instr::I32_load8_u& ins = std::get<Instr::I32_load8_u>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -406,7 +406,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load16_s : {
-                    const Instr::I32_load16_s& ins = std::get<Instr::I32_load16_s>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -417,7 +417,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I32_load16_u : {
-                    const Instr::I32_load16_u& ins = std::get<Instr::I32_load16_u>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -428,7 +428,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i32);
                 }break;
                 case Opcode::I64_load : {
-                    const Instr::I64_load& ins = std::get<Instr::I64_load>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -439,7 +439,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load8_s : {
-                    const Instr::I64_load8_s& ins = std::get<Instr::I64_load8_s>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -450,7 +450,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load8_u : {
-                    const Instr::I64_load8_u& ins = std::get<Instr::I64_load8_u>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -461,7 +461,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load16_s : {
-                    const Instr::I64_load16_s& ins = std::get<Instr::I64_load16_s>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -472,7 +472,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load16_u : {
-                    const Instr::I64_load16_u& ins = std::get<Instr::I64_load16_u>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -483,29 +483,29 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load32_s : {
-                    const Instr::I64_load32_s& ins = std::get<Instr::I64_load32_s>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::I64_load32_u : {
-                    const Instr::I64_load32_u& ins = std::get<Instr::I64_load32_u>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
                     state.push(ValueType::i64);
                 }break;
                 case Opcode::F32_load : {
-                    const Instr::F32_load& ins = std::get<Instr::F32_load>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -516,7 +516,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ValueType::f32);
                 }break;
                 case Opcode::F64_load : {
-                    const Instr::F64_load& ins = std::get<Instr::F64_load>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -528,7 +528,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32 t] -> []
                 case Opcode::Table_set : {
-                    const Instr::Table_set& ins = std::get<Instr::Table_set>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.set");
                     }
@@ -537,7 +537,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32|i64 t] -> []
                 case Opcode::I32_store : {
-                    const Instr::I32_store& ins = std::get<Instr::I32_store>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -548,7 +548,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I32_store8 : {
-                    const Instr::I32_store8& ins = std::get<Instr::I32_store8>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -559,7 +559,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I32_store16 : {
-                    const Instr::I32_store16& ins = std::get<Instr::I32_store16>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -570,18 +570,18 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store : {
-                    const Instr::I64_store& ins = std::get<Instr::I64_store>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
-                    if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-2");
+                    if(ins.align > 3){
+                        throw Exception::Exception("align should be 0-3");
                     }
                     state.pop(ValueType::i64);
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store8 : {
-                    const Instr::I64_store8& ins = std::get<Instr::I64_store8>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -592,7 +592,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store16 : {
-                    const Instr::I64_store16& ins = std::get<Instr::I64_store16>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -603,18 +603,18 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::I64_store32 : {
-                    const Instr::I64_store32& ins = std::get<Instr::I64_store32>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
                     if(ins.align > 2){
-                        throw Exception::Exception("align should be 0-1");
+                        throw Exception::Exception("align should be 0-2");
                     }
                     state.pop(ValueType::i64);
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::F32_store : {
-                    const Instr::F32_store& ins = std::get<Instr::F32_store>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -625,7 +625,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::F64_store : {
-                    const Instr::F64_store& ins = std::get<Instr::F64_store>(instr);
+                    const auto& ins = std::get<WasmInstr::MemArg>(instr.imm);
                     if(ins.memidx >= context.mems.size()){
                         throw Exception::Exception("memory index not found");
                     }
@@ -640,14 +640,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop<State::StackValue>();
                 break;
                 case Opcode::Local_set : {
-                    const Instr::Local_set& ins = std::get<Instr::Local_set>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= state.locals.size()){
                         throw Exception::Exception("local index not found in local.set");
                     }
                     state.pop(state.locals[ins.index]);
                 }break;
                 case Opcode::Global_set : {
-                    const Instr::Global_set& ins = std::get<Instr::Global_set>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.globals.size()){
                         throw Exception::Exception("global index not found in global.set");
                     }
@@ -671,7 +671,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 break;
                 // [t] -> [t]
                 case Opcode::Local_tee : {
-                    const Instr::Local_tee& ins = std::get<Instr::Local_tee>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= state.locals.size()){
                         throw Exception::Exception("local index not found in local.tee");
                     }
@@ -679,7 +679,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [t i32] -> [i32]
                 case Opcode::Table_grow : {
-                    const Instr::Table_grow& ins = std::get<Instr::Table_grow>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.grow");
                     }
@@ -690,7 +690,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 // [t* i32] -> [t*]
                 case Opcode::Br_if : {
                     state.pop(ValueType::i32);
-                    const Instr::Br_if& ins = std::get<Instr::Br_if>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= state.ctrls.size()){
                         throw Exception::Exception("label index not found in br_if");
                     }
@@ -700,34 +700,34 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32 i32 i32] -> []
                 case Opcode::Table_copy : {
-                    const Instr::Table_copy& ins = std::get<Instr::Table_copy>(instr);
-                    if(ins.dstidx >= context.tables.size()){
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if(ins.a >= context.tables.size()){
                         throw Exception::Exception("table destination index not found in table.copy");
                     }
-                    if(ins.srcidx >= context.tables.size()){
+                    if(ins.b >= context.tables.size()){
                         throw Exception::Exception("table source index not found in table.copy");
                     }
-                    if(context.tables[ins.dstidx].reftype != context.tables[ins.srcidx].reftype){
+                    if(context.tables[ins.a].reftype != context.tables[ins.b].reftype){
                         throw Exception::Exception("table types not match in table.copy");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
                 }break;
                 case Opcode::Table_init : {
-                    const Instr::Table_init& ins = std::get<Instr::Table_init>(instr);
-                    if(ins.tableidx >= context.tables.size()){
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if(ins.a >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.init");
                     }
-                    if(ins.elemidx >= context.elems.size()){
+                    if(ins.b >= context.elems.size()){
                         throw Exception::Exception("elem index not found in table.init");
                     }
-                    if(context.tables[ins.tableidx].reftype != context.elems[ins.elemidx].type){
+                    if(context.tables[ins.a].reftype != context.elems[ins.b].type){
                         throw Exception::Exception("table & elem types not match in table.init");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
                 }break;
                 // [i32|i64 i32 i32|i64] -> []
                 case Opcode::Memory_fill : {
-                    const Instr::Memory_fill& ins = std::get<Instr::Memory_fill>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.fill");
                     }
@@ -737,11 +737,11 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32|i64 i32|i64 i32|i64] -> []
                 case Opcode::Memory_copy : {
-                    const Instr::Memory_copy& ins = std::get<Instr::Memory_copy>(instr);
-                    if(ins.dstidx >= context.mems.size()){
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if(ins.a >= context.mems.size()){
                         throw Exception::Exception("memory destination index not found in memory.copy");
                     }
-                    if(ins.srcidx >= context.mems.size()){
+                    if(ins.b >= context.mems.size()){
                         throw Exception::Exception("memory source index not found in memory.copy");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
@@ -749,11 +749,11 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i64, ValueType::i32);
                 }break;
                 case Opcode::Memory_init : {
-                    const Instr::Memory_init& ins = std::get<Instr::Memory_init>(instr);
-                    if(ins.memidx >= context.mems.size()){
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if(ins.a >= context.mems.size()){
                         throw Exception::Exception("memory index not found in memory.init");
                     }
-                    if(ins.dataidx >= context.datas.size()){
+                    if(ins.b >= context.datas.size()){
                         throw Exception::Exception("data index not found in memory.init");
                     }
                     state.pop(ValueType::i64, ValueType::i32);
@@ -762,7 +762,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [i32 t i32] -> []
                 case Opcode::Table_fill : {
-                    const Instr::Table_fill& ins = std::get<Instr::Table_fill>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.tables.size()){
                         throw Exception::Exception("table index not found in table.fill");
                     }
@@ -771,7 +771,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [t t i32] -> [t]
                 case Opcode::Select : {
-                    const Instr::Select& ins = std::get<Instr::Select>(instr);
+                    const auto& ins = std::get<WasmInstr::SelectV>(instr.imm);
                     state.pop(ValueType::i32);
                     if(ins.valtypes.empty()){
                         State::StackValue op1 = state.pop<State::StackValue>();
@@ -798,7 +798,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [t1*] -> [t2*]
                 case Opcode::Block : {
-                    const Instr::Block& ins = std::get<Instr::Block>(instr);
+                    const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
                         if(ins.type.value() >= context.types.size()){
@@ -811,7 +811,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(type.params);
                 }break;
                 case Opcode::Loop : {
-                    const Instr::Loop& ins = std::get<Instr::Loop>(instr);
+                    const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
                         if(ins.type.value() >= context.types.size()){
@@ -832,7 +832,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(ctrl.type.params);
                 }break;
                 case Opcode::Call : {
-                    const Instr::Call& ins = std::get<Instr::Call>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= context.funcs.size()){
                         throw Exception::Exception("function index not found for call");
                     }
@@ -841,17 +841,17 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(type.results);
                 }break;
                 case Opcode::Call_indirect : {
-                    const Instr::Call_indirect& ins = std::get<Instr::Call_indirect>(instr);
-                    if(ins.tableidx >= context.tables.size()){
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if(ins.a >= context.tables.size()){
                         throw Exception::Exception("table index not found for call_indirect");
                     }
-                    if(context.tables[ins.tableidx].reftype != RefType::funcref){
+                    if(context.tables[ins.a].reftype != RefType::funcref){
                         throw Exception::Exception("table type should be funcref for call_indirect");
                     }
-                    if(ins.typeidx >= context.types.size()){
+                    if(ins.b >= context.types.size()){
                         throw Exception::Exception("type index not found for call_indirect");
                     }
-                    FuncType type = context.types[ins.typeidx];
+                    FuncType type = context.types[ins.b];
                     state.pop(ValueType::i32);
                     state.pop(type.params);
                     state.push(type.results);
@@ -859,7 +859,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 // [t1* i32] -> [t2*]
                 case Opcode::If : {
                     state.pop(ValueType::i32);
-                    const Instr::If& ins = std::get<Instr::If>(instr);
+                    const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
                         if(ins.type.value() >= context.types.size()){
@@ -876,7 +876,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.unreachable();
                 break;
                 case Opcode::Br : {
-                    const Instr::Br& ins = std::get<Instr::Br>(instr);
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     if(ins.index >= state.ctrls.size()){
                         throw Exception::Exception("label index not found in br");
                     }
@@ -885,21 +885,21 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 case Opcode::Br_table : {
                     state.pop(ValueType::i32);
-                    const Instr::Br_table& ins = std::get<Instr::Br_table>(instr);
+                    const auto& ins = std::get<WasmInstr::BrTab>(instr.imm);
                     index_t m = ins.indices.back();
                     if(m >= state.ctrls.size()){
                         std::stringstream ss;
                         ss << "label index " << m << "not found in br_table";
                         throw Exception::Exception(ss.str());
                     }
-                    size_t arity = state.ctrls[m].types().size();
+                    size_t arity = state.ctrls[state.ctrls.size() - 1 - m].types().size();
                     for(auto it = ins.indices.begin(); it != (ins.indices.end() - 1); it = std::next(it)){
                         if(*it >= state.ctrls.size()){
                             std::stringstream ss;
                             ss << "label index " << *it << "not found in br_table";
                             throw Exception::Exception(ss.str());
                         }
-                        std::vector<ValueType> label = state.ctrls[*it].types();
+                        std::vector<ValueType> label = state.ctrls[state.ctrls.size() - 1 - *it].types();
                         if(label.size() != arity){
                             std::stringstream ss;
                             ss << "label index " << *it << " has invalid type to br_table";
@@ -907,7 +907,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         }
                         state.push(state.pop(label));
                     }
-                    state.pop(state.ctrls[m].types());
+                    state.pop(state.ctrls[state.ctrls.size() - 1 - m].types());
                     state.unreachable();
                 }break;
                 case Opcode::Return :

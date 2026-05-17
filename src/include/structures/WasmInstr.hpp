@@ -48,12 +48,33 @@ struct Br_table : public Base {
     std::vector<index_t> indices;
 };
 using Return = Atomic<Opcode::Return>;
+using Throw = OneIndex<Opcode::Throw>;
+using Throw_ref = Atomic<Opcode::Throw_ref>;
+// try_table catch entry (unresolved, module-level tagidx)
+struct TryCatchEntry {
+    enum Kind { Catch = 0, CatchRef = 1, CatchAll = 2, CatchAllRef = 3 } kind;
+    index_t tag_idx;    // only for Catch/CatchRef
+    index_t label_idx;
+};
+struct Try_table : public Base {
+    Try_table() : Base(Opcode::Try_table) {}
+    std::optional<index_t> type;
+    std::vector<TryCatchEntry> catches;
+};
 struct Call_indirect : public Base {
     Call_indirect() : Base(Opcode::Call_indirect) {}
     Call_indirect(index_t tableidx, index_t typeidx) : Base(Opcode::Call_indirect), tableidx(tableidx), typeidx(typeidx) {}
     index_t tableidx;
     index_t typeidx;
 };
+using Return_call = OneIndex<Opcode::Return_call>;
+struct Return_call_indirect : public Base {
+    Return_call_indirect() : Base(Opcode::Return_call_indirect), tableidx(0), typeidx(0) {}
+    Return_call_indirect(index_t tableidx, index_t typeidx) : Base(Opcode::Return_call_indirect), tableidx(tableidx), typeidx(typeidx) {}
+    index_t tableidx;
+    index_t typeidx;
+};
+using Return_call_ref = OneIndex<Opcode::Return_call_ref>;
 
 // Reference instructions
 struct Ref_null : public Base {
@@ -63,6 +84,135 @@ struct Ref_null : public Base {
 };
 using Ref_is_null = Atomic<Opcode::Ref_is_null>;
 using Ref_func = OneIndex<Opcode::Ref_func>;
+using Ref_eq = Atomic<Opcode::Ref_eq>;
+using Ref_as_non_null = Atomic<Opcode::Ref_as_non_null>;
+using Br_on_null = OneIndex<Opcode::Br_on_null>;
+using Br_on_non_null = OneIndex<Opcode::Br_on_non_null>;
+// castop: flags (bit0=src nullable, bit1=dst nullable), two heaptypes
+struct Br_on_cast : public Base {
+    Br_on_cast() : Base(Opcode::Br_on_cast), labelidx(0), src_nullable(false), dst_nullable(false), src_heaptype(0), dst_heaptype(0) {}
+    Br_on_cast(index_t labelidx, bool src_nullable, bool dst_nullable, int32_t src_heaptype, int32_t dst_heaptype)
+        : Base(Opcode::Br_on_cast), labelidx(labelidx), src_nullable(src_nullable), dst_nullable(dst_nullable), src_heaptype(src_heaptype), dst_heaptype(dst_heaptype) {}
+    index_t labelidx;
+    bool src_nullable;
+    bool dst_nullable;
+    int32_t src_heaptype;
+    int32_t dst_heaptype;
+};
+struct Br_on_cast_fail : public Base {
+    Br_on_cast_fail() : Base(Opcode::Br_on_cast_fail), labelidx(0), src_nullable(false), dst_nullable(false), src_heaptype(0), dst_heaptype(0) {}
+    Br_on_cast_fail(index_t labelidx, bool src_nullable, bool dst_nullable, int32_t src_heaptype, int32_t dst_heaptype)
+        : Base(Opcode::Br_on_cast_fail), labelidx(labelidx), src_nullable(src_nullable), dst_nullable(dst_nullable), src_heaptype(src_heaptype), dst_heaptype(dst_heaptype) {}
+    index_t labelidx;
+    bool src_nullable;
+    bool dst_nullable;
+    int32_t src_heaptype;
+    int32_t dst_heaptype;
+};
+using Call_ref = OneIndex<Opcode::Call_ref>;
+// heaptype: negative = abstract heap type (e.g. -16=func, -17=extern), non-negative = type index
+struct Ref_test : public Base {
+    Ref_test() : Base(Opcode::Ref_test), heaptype(0) {}
+    Ref_test(int32_t heaptype) : Base(Opcode::Ref_test), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_test_null : public Base {
+    Ref_test_null() : Base(Opcode::Ref_test_null), heaptype(0) {}
+    Ref_test_null(int32_t heaptype) : Base(Opcode::Ref_test_null), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_cast : public Base {
+    Ref_cast() : Base(Opcode::Ref_cast), heaptype(0) {}
+    Ref_cast(int32_t heaptype) : Base(Opcode::Ref_cast), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+struct Ref_cast_null : public Base {
+    Ref_cast_null() : Base(Opcode::Ref_cast_null), heaptype(0) {}
+    Ref_cast_null(int32_t heaptype) : Base(Opcode::Ref_cast_null), heaptype(heaptype) {}
+    int32_t heaptype;
+};
+using Ref_i31 = Atomic<Opcode::Ref_i31>;
+using I31_get_s = Atomic<Opcode::I31_get_s>;
+using I31_get_u = Atomic<Opcode::I31_get_u>;
+using Any_convert_extern = Atomic<Opcode::Any_convert_extern>;
+using Extern_convert_any = Atomic<Opcode::Extern_convert_any>;
+
+// GC Struct operations
+using Struct_new = OneIndex<Opcode::Struct_new>;
+using Struct_new_default = OneIndex<Opcode::Struct_new_default>;
+struct Struct_get : public Base {
+    Struct_get() : Base(Opcode::Struct_get), typeidx(0), fieldidx(0) {}
+    Struct_get(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_get_s : public Base {
+    Struct_get_s() : Base(Opcode::Struct_get_s), typeidx(0), fieldidx(0) {}
+    Struct_get_s(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get_s), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_get_u : public Base {
+    Struct_get_u() : Base(Opcode::Struct_get_u), typeidx(0), fieldidx(0) {}
+    Struct_get_u(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_get_u), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+struct Struct_set : public Base {
+    Struct_set() : Base(Opcode::Struct_set), typeidx(0), fieldidx(0) {}
+    Struct_set(index_t typeidx, index_t fieldidx) : Base(Opcode::Struct_set), typeidx(typeidx), fieldidx(fieldidx) {}
+    index_t typeidx;
+    index_t fieldidx;
+};
+// GC Array operations
+using Array_new = OneIndex<Opcode::Array_new>;
+using Array_new_default = OneIndex<Opcode::Array_new_default>;
+struct Array_new_fixed : public Base {
+    Array_new_fixed() : Base(Opcode::Array_new_fixed), typeidx(0), n(0) {}
+    Array_new_fixed(index_t typeidx, u32_t n) : Base(Opcode::Array_new_fixed), typeidx(typeidx), n(n) {}
+    index_t typeidx;
+    u32_t n;
+};
+struct Array_new_data : public Base {
+    Array_new_data() : Base(Opcode::Array_new_data), typeidx(0), dataidx(0) {}
+    Array_new_data(index_t typeidx, index_t dataidx) : Base(Opcode::Array_new_data), typeidx(typeidx), dataidx(dataidx) {}
+    index_t typeidx;
+    index_t dataidx;
+};
+struct Array_new_elem : public Base {
+    Array_new_elem() : Base(Opcode::Array_new_elem), typeidx(0), elemidx(0) {}
+    Array_new_elem(index_t typeidx, index_t elemidx) : Base(Opcode::Array_new_elem), typeidx(typeidx), elemidx(elemidx) {}
+    index_t typeidx;
+    index_t elemidx;
+};
+using Array_get = OneIndex<Opcode::Array_get>;
+using Array_get_s = OneIndex<Opcode::Array_get_s>;
+using Array_get_u = OneIndex<Opcode::Array_get_u>;
+using Array_set = OneIndex<Opcode::Array_set>;
+using Array_len = Atomic<Opcode::Array_len>;
+struct Array_fill : public Base {
+    Array_fill() : Base(Opcode::Array_fill), typeidx(0) {}
+    Array_fill(index_t typeidx) : Base(Opcode::Array_fill), typeidx(typeidx) {}
+    index_t typeidx;
+};
+struct Array_copy : public Base {
+    Array_copy() : Base(Opcode::Array_copy), dst_typeidx(0), src_typeidx(0) {}
+    Array_copy(index_t dst, index_t src) : Base(Opcode::Array_copy), dst_typeidx(dst), src_typeidx(src) {}
+    index_t dst_typeidx;
+    index_t src_typeidx;
+};
+struct Array_init_data : public Base {
+    Array_init_data() : Base(Opcode::Array_init_data), typeidx(0), dataidx(0) {}
+    Array_init_data(index_t typeidx, index_t dataidx) : Base(Opcode::Array_init_data), typeidx(typeidx), dataidx(dataidx) {}
+    index_t typeidx;
+    index_t dataidx;
+};
+struct Array_init_elem : public Base {
+    Array_init_elem() : Base(Opcode::Array_init_elem), typeidx(0), elemidx(0) {}
+    Array_init_elem(index_t typeidx, index_t elemidx) : Base(Opcode::Array_init_elem), typeidx(typeidx), elemidx(elemidx) {}
+    index_t typeidx;
+    index_t elemidx;
+};
 
 // Parametric instructions
 using Drop = Atomic<Opcode::Drop>;
@@ -276,25 +426,25 @@ using F64_min = Atomic<Opcode::F64_min>;
 using F64_max = Atomic<Opcode::F64_max>;
 using F64_copysign = Atomic<Opcode::F64_copysign>;
 using I32_wrap_i64 = Atomic<Opcode::I32_wrap_i64>;
-using I32_trunc_s_f32 = Atomic<Opcode::I32_trunc_s_f32>;
-using I32_trunc_u_f32 = Atomic<Opcode::I32_trunc_u_f32>;
-using I32_trunc_s_f64 = Atomic<Opcode::I32_trunc_s_f64>;
-using I32_trunc_u_f64 = Atomic<Opcode::I32_trunc_u_f64>;
-using I64_extend_s_i32 = Atomic<Opcode::I64_extend_s_i32>;
-using I64_extend_u_i32 = Atomic<Opcode::I64_extend_u_i32>;
-using I64_trunc_s_f32 = Atomic<Opcode::I64_trunc_s_f32>;
-using I64_trunc_u_f32 = Atomic<Opcode::I64_trunc_u_f32>;
-using I64_trunc_s_f64 = Atomic<Opcode::I64_trunc_s_f64>;
-using I64_trunc_u_f64 = Atomic<Opcode::I64_trunc_u_f64>;
-using F32_convert_s_i32 = Atomic<Opcode::F32_convert_s_i32>;
-using F32_convert_u_i32 = Atomic<Opcode::F32_convert_u_i32>;
-using F32_convert_s_i64 = Atomic<Opcode::F32_convert_s_i64>;
-using F32_convert_u_i64 = Atomic<Opcode::F32_convert_u_i64>;
+using I32_trunc_f32_s = Atomic<Opcode::I32_trunc_f32_s>;
+using I32_trunc_f32_u = Atomic<Opcode::I32_trunc_f32_u>;
+using I32_trunc_f64_s = Atomic<Opcode::I32_trunc_f64_s>;
+using I32_trunc_f64_u = Atomic<Opcode::I32_trunc_f64_u>;
+using I64_extend_i32_s = Atomic<Opcode::I64_extend_i32_s>;
+using I64_extend_i32_u = Atomic<Opcode::I64_extend_i32_u>;
+using I64_trunc_f32_s = Atomic<Opcode::I64_trunc_f32_s>;
+using I64_trunc_f32_u = Atomic<Opcode::I64_trunc_f32_u>;
+using I64_trunc_f64_s = Atomic<Opcode::I64_trunc_f64_s>;
+using I64_trunc_f64_u = Atomic<Opcode::I64_trunc_f64_u>;
+using F32_convert_i32_s = Atomic<Opcode::F32_convert_i32_s>;
+using F32_convert_i32_u = Atomic<Opcode::F32_convert_i32_u>;
+using F32_convert_i64_s = Atomic<Opcode::F32_convert_i64_s>;
+using F32_convert_i64_u = Atomic<Opcode::F32_convert_i64_u>;
 using F32_demote_f64 = Atomic<Opcode::F32_demote_f64>;
-using F64_convert_s_i32 = Atomic<Opcode::F64_convert_s_i32>;
-using F64_convert_u_i32 = Atomic<Opcode::F64_convert_u_i32>;
-using F64_convert_s_i64 = Atomic<Opcode::F64_convert_s_i64>;
-using F64_convert_u_i64 = Atomic<Opcode::F64_convert_u_i64>;
+using F64_convert_i32_s = Atomic<Opcode::F64_convert_i32_s>;
+using F64_convert_i32_u = Atomic<Opcode::F64_convert_i32_u>;
+using F64_convert_i64_s = Atomic<Opcode::F64_convert_i64_s>;
+using F64_convert_i64_u = Atomic<Opcode::F64_convert_i64_u>;
 using F64_promote_f32 = Atomic<Opcode::F64_promote_f32>;
 using I32_reinterpret_f32 = Atomic<Opcode::I32_reinterpret_f32>;
 using I64_reinterpret_f64 = Atomic<Opcode::I64_reinterpret_f64>;
@@ -316,215 +466,131 @@ using I64_trunc_sat_f64_u = Atomic<Opcode::I64_trunc_sat_f64_u>;
 
 }
 
-using WasmInstr = std::variant<
-    // Control
-    Instr::Unreachable,
-    Instr::Nop,
-    Instr::Block,
-    Instr::Loop,
-    Instr::If,
-    Instr::Else,
-    Instr::End,
-    Instr::Br,
-    Instr::Br_if,
-    Instr::Br_table,
-    Instr::Return,
-    Instr::Call,
-    Instr::Call_indirect,
-    // Reference
-    Instr::Ref_null,
-    Instr::Ref_is_null,
-    Instr::Ref_func,
-    // Parametric
-    Instr::Drop,
-    Instr::Select,
-    // Variable
-    Instr::Local_get,
-    Instr::Local_set,
-    Instr::Local_tee,
-    Instr::Global_get,
-    Instr::Global_set,
-    // Table
-    Instr::Table_get,
-    Instr::Table_set,
-    Instr::Table_size,
-    Instr::Table_grow,
-    Instr::Table_fill,
-    Instr::Table_copy,
-    Instr::Table_init,
-    Instr::Elem_drop,
-    // Memory
-    Instr::I32_load,
-    Instr::I64_load,
-    Instr::F32_load,
-    Instr::F64_load,
-    Instr::I32_load8_s,
-    Instr::I32_load8_u,
-    Instr::I32_load16_s,
-    Instr::I32_load16_u,
-    Instr::I64_load8_s,
-    Instr::I64_load8_u,
-    Instr::I64_load16_s,
-    Instr::I64_load16_u,
-    Instr::I64_load32_s,
-    Instr::I64_load32_u,
-    Instr::I32_store,
-    Instr::I64_store,
-    Instr::F32_store,
-    Instr::F64_store,
-    Instr::I32_store8,
-    Instr::I32_store16,
-    Instr::I64_store8,
-    Instr::I64_store16,
-    Instr::I64_store32,
-    Instr::Memory_size,
-    Instr::Memory_grow,
-    Instr::Memory_fill,
-    Instr::Memory_init,
-    Instr::Data_drop,
-    Instr::Memory_copy,
-    // Numeric
-    Instr::I32_const,
-    Instr::I64_const,
-    Instr::F32_const,
-    Instr::F64_const,
-    Instr::I32_eqz,
-    Instr::I32_eq,
-    Instr::I32_ne,
-    Instr::I32_lt_s,
-    Instr::I32_lt_u,
-    Instr::I32_gt_s,
-    Instr::I32_gt_u,
-    Instr::I32_le_s,
-    Instr::I32_le_u,
-    Instr::I32_ge_s,
-    Instr::I32_ge_u,
-    Instr::I64_eqz,
-    Instr::I64_eq,
-    Instr::I64_ne,
-    Instr::I64_lt_s,
-    Instr::I64_lt_u,
-    Instr::I64_gt_s,
-    Instr::I64_gt_u,
-    Instr::I64_le_s,
-    Instr::I64_le_u,
-    Instr::I64_ge_s,
-    Instr::I64_ge_u,
-    Instr::F32_eq,
-    Instr::F32_ne,
-    Instr::F32_lt,
-    Instr::F32_gt,
-    Instr::F32_le,
-    Instr::F32_ge,
-    Instr::F64_eq,
-    Instr::F64_ne,
-    Instr::F64_lt,
-    Instr::F64_gt,
-    Instr::F64_le,
-    Instr::F64_ge,
-    Instr::I32_clz,
-    Instr::I32_ctz,
-    Instr::I32_popcnt,
-    Instr::I32_add,
-    Instr::I32_sub,
-    Instr::I32_mul,
-    Instr::I32_div_s,
-    Instr::I32_div_u,
-    Instr::I32_rem_s,
-    Instr::I32_rem_u,
-    Instr::I32_and,
-    Instr::I32_or,
-    Instr::I32_xor,
-    Instr::I32_shl,
-    Instr::I32_shr_s,
-    Instr::I32_shr_u,
-    Instr::I32_rotl,
-    Instr::I32_rotr,
-    Instr::I64_clz,
-    Instr::I64_ctz,
-    Instr::I64_popcnt,
-    Instr::I64_add,
-    Instr::I64_sub,
-    Instr::I64_mul,
-    Instr::I64_div_s,
-    Instr::I64_div_u,
-    Instr::I64_rem_s,
-    Instr::I64_rem_u,
-    Instr::I64_and,
-    Instr::I64_or,
-    Instr::I64_xor,
-    Instr::I64_shl,
-    Instr::I64_shr_s,
-    Instr::I64_shr_u,
-    Instr::I64_rotl,
-    Instr::I64_rotr,
-    Instr::F32_abs,
-    Instr::F32_neg,
-    Instr::F32_ceil,
-    Instr::F32_floor,
-    Instr::F32_trunc,
-    Instr::F32_nearest,
-    Instr::F32_sqrt,
-    Instr::F32_add,
-    Instr::F32_sub,
-    Instr::F32_mul,
-    Instr::F32_div,
-    Instr::F32_min,
-    Instr::F32_max,
-    Instr::F32_copysign,
-    Instr::F64_abs,
-    Instr::F64_neg,
-    Instr::F64_ceil,
-    Instr::F64_floor,
-    Instr::F64_trunc,
-    Instr::F64_nearest,
-    Instr::F64_sqrt,
-    Instr::F64_add,
-    Instr::F64_sub,
-    Instr::F64_mul,
-    Instr::F64_div,
-    Instr::F64_min,
-    Instr::F64_max,
-    Instr::F64_copysign,
-    Instr::I32_wrap_i64,
-    Instr::I32_trunc_s_f32,
-    Instr::I32_trunc_u_f32,
-    Instr::I32_trunc_s_f64,
-    Instr::I32_trunc_u_f64,
-    Instr::I64_extend_s_i32,
-    Instr::I64_extend_u_i32,
-    Instr::I64_trunc_s_f32,
-    Instr::I64_trunc_u_f32,
-    Instr::I64_trunc_s_f64,
-    Instr::I64_trunc_u_f64,
-    Instr::F32_convert_s_i32,
-    Instr::F32_convert_u_i32,
-    Instr::F32_convert_s_i64,
-    Instr::F32_convert_u_i64,
-    Instr::F32_demote_f64,
-    Instr::F64_convert_s_i32,
-    Instr::F64_convert_u_i32,
-    Instr::F64_convert_s_i64,
-    Instr::F64_convert_u_i64,
-    Instr::F64_promote_f32,
-    Instr::I32_reinterpret_f32,
-    Instr::I64_reinterpret_f64,
-    Instr::F32_reinterpret_i32,
-    Instr::F64_reinterpret_i64,
-    Instr::I32_extend8_s,
-    Instr::I32_extend16_s,
-    Instr::I64_extend8_s,
-    Instr::I64_extend16_s,
-    Instr::I64_extend32_s,
-    Instr::I32_trunc_sat_f32_s,
-    Instr::I32_trunc_sat_f32_u,
-    Instr::I32_trunc_sat_f64_s,
-    Instr::I32_trunc_sat_f64_u,
-    Instr::I64_trunc_sat_f32_s,
-    Instr::I64_trunc_sat_f32_u,
-    Instr::I64_trunc_sat_f64_s,
-    Instr::I64_trunc_sat_f64_u
->;
+// WasmInstr: flat struct with opcode + 15-type immediate variant.
+// Reduces template instantiation from ~165 to 15 alternatives.
+struct WasmInstr {
+    Opcode::opcode_t opcode;
+
+    // Immediate operand shapes
+    struct NoImm    {};
+    struct OneIdx   { index_t index; };
+    struct TwoIdx   { index_t a, b; };
+    struct BlockType{ std::optional<index_t> type; };
+    struct MemArg   { index_t memidx; offset_t offset; align_t align; };
+    struct ConstI32 { i32_t value; };
+    struct ConstI64 { i64_t value; };
+    struct ConstF32 { f32_t value; };
+    struct ConstF64 { f64_t value; };
+    struct HeapRef  { RefType heaptype; };
+    struct HeapI32  { int32_t heaptype; };
+    struct CastOp   { index_t label; bool src_n, dst_n; int32_t src_ht, dst_ht; };
+    struct BrTab    { std::vector<index_t> indices; };
+    struct TryTab   { std::optional<index_t> type; std::vector<Instr::TryCatchEntry> catches; };
+    struct SelectV  { std::vector<ValueType> valtypes; };
+
+    using Imm = std::variant<
+        NoImm, OneIdx, TwoIdx, BlockType, MemArg,
+        ConstI32, ConstI64, ConstF32, ConstF64,
+        HeapRef, HeapI32, CastOp, BrTab, TryTab, SelectV
+    >;
+    Imm imm;
+
+    // Default constructor — opcode is set to End as a safe sentinel
+    WasmInstr() : opcode(Opcode::End), imm(NoImm{}) {}
+
+    // Convenience constructors from Instr::* types
+
+    // --- Atomic (NoImm) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::Atomic<OP>) : opcode(OP), imm(NoImm{}) {}
+
+    // --- OneIndex (OneIdx) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::OneIndex<OP> i) : opcode(OP), imm(OneIdx{i.index}) {}
+
+    // --- BlockInstr (BlockType) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::BlockInstr<OP> b) : opcode(OP), imm(BlockType{b.type}) {}
+
+    // --- MemoryInstr::Class (MemArg) ---
+    template<Opcode::Opcode OP>
+    WasmInstr(Instr::MemoryInstr::Class<OP> m)
+        : opcode(OP), imm(MemArg{m.memidx, m.offset, m.align}) {}
+
+    // --- Control: special structs ---
+    WasmInstr(Instr::Br_table i)
+        : opcode(Opcode::Br_table), imm(BrTab{i.indices}) {}
+    WasmInstr(Instr::Try_table i)
+        : opcode(Opcode::Try_table), imm(TryTab{i.type, i.catches}) {}
+    WasmInstr(Instr::Call_indirect i)
+        : opcode(Opcode::Call_indirect), imm(TwoIdx{i.tableidx, i.typeidx}) {}
+    WasmInstr(Instr::Return_call_indirect i)
+        : opcode(Opcode::Return_call_indirect), imm(TwoIdx{i.tableidx, i.typeidx}) {}
+
+    // --- Reference: special structs ---
+    WasmInstr(Instr::Ref_null i)
+        : opcode(Opcode::Ref_null), imm(HeapRef{i.heaptype}) {}
+    WasmInstr(Instr::Br_on_cast i)
+        : opcode(Opcode::Br_on_cast), imm(CastOp{i.labelidx, i.src_nullable, i.dst_nullable, i.src_heaptype, i.dst_heaptype}) {}
+    WasmInstr(Instr::Br_on_cast_fail i)
+        : opcode(Opcode::Br_on_cast_fail), imm(CastOp{i.labelidx, i.src_nullable, i.dst_nullable, i.src_heaptype, i.dst_heaptype}) {}
+    WasmInstr(Instr::Ref_test i)
+        : opcode(Opcode::Ref_test), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_test_null i)
+        : opcode(Opcode::Ref_test_null), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_cast i)
+        : opcode(Opcode::Ref_cast), imm(HeapI32{i.heaptype}) {}
+    WasmInstr(Instr::Ref_cast_null i)
+        : opcode(Opcode::Ref_cast_null), imm(HeapI32{i.heaptype}) {}
+
+    // --- GC Struct: two-index ---
+    WasmInstr(Instr::Struct_get i)
+        : opcode(Opcode::Struct_get), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_get_s i)
+        : opcode(Opcode::Struct_get_s), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_get_u i)
+        : opcode(Opcode::Struct_get_u), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+    WasmInstr(Instr::Struct_set i)
+        : opcode(Opcode::Struct_set), imm(TwoIdx{i.typeidx, i.fieldidx}) {}
+
+    // --- GC Array: two-index or special ---
+    WasmInstr(Instr::Array_new_fixed i)
+        : opcode(Opcode::Array_new_fixed), imm(TwoIdx{i.typeidx, i.n}) {}
+    WasmInstr(Instr::Array_new_data i)
+        : opcode(Opcode::Array_new_data), imm(TwoIdx{i.typeidx, i.dataidx}) {}
+    WasmInstr(Instr::Array_new_elem i)
+        : opcode(Opcode::Array_new_elem), imm(TwoIdx{i.typeidx, i.elemidx}) {}
+    WasmInstr(Instr::Array_fill i)
+        : opcode(Opcode::Array_fill), imm(OneIdx{i.typeidx}) {}
+    WasmInstr(Instr::Array_copy i)
+        : opcode(Opcode::Array_copy), imm(TwoIdx{i.dst_typeidx, i.src_typeidx}) {}
+    WasmInstr(Instr::Array_init_data i)
+        : opcode(Opcode::Array_init_data), imm(TwoIdx{i.typeidx, i.dataidx}) {}
+    WasmInstr(Instr::Array_init_elem i)
+        : opcode(Opcode::Array_init_elem), imm(TwoIdx{i.typeidx, i.elemidx}) {}
+
+    // --- Parametric ---
+    WasmInstr(Instr::Select i)
+        : opcode(Opcode::Select), imm(SelectV{i.valtypes}) {}
+
+    // --- Memory: two-index ---
+    WasmInstr(Instr::Memory_init i)
+        : opcode(Opcode::Memory_init), imm(TwoIdx{i.memidx, i.dataidx}) {}
+    WasmInstr(Instr::Memory_copy i)
+        : opcode(Opcode::Memory_copy), imm(TwoIdx{i.dstidx, i.srcidx}) {}
+
+    // --- Table: two-index ---
+    WasmInstr(Instr::Table_copy i)
+        : opcode(Opcode::Table_copy), imm(TwoIdx{i.dstidx, i.srcidx}) {}
+    WasmInstr(Instr::Table_init i)
+        : opcode(Opcode::Table_init), imm(TwoIdx{i.tableidx, i.elemidx}) {}
+
+    // --- Numeric: const ---
+    WasmInstr(Instr::I32_const i) : opcode(Opcode::I32_const), imm(ConstI32{i.value}) {}
+    WasmInstr(Instr::I64_const i) : opcode(Opcode::I64_const), imm(ConstI64{i.value}) {}
+    WasmInstr(Instr::F32_const i) : opcode(Opcode::F32_const), imm(ConstF32{i.value}) {}
+    WasmInstr(Instr::F64_const i) : opcode(Opcode::F64_const), imm(ConstF64{i.value}) {}
+};
 
 using ConstInstr = std::variant<
     Instr::Ref_null,

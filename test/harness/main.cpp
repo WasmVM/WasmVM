@@ -40,6 +40,7 @@ struct Runner {
             test.func(test.passed);
             std::cout.rdbuf(coutbuf);
         }catch(...){
+            std::cout.rdbuf(coutbuf);
             std::cout << COLOR_Fault " uncaught exception" << std::endl;
             failed += 1;
             return;

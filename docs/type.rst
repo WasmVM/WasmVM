@@ -147,6 +147,11 @@ Object types
 
         **[Optional]** Maximum value
 
+    .. cpp:member:: bool is64 = false
+
+        **[ext]** When ``true``, the memory or table uses a 64-bit address
+        space (``memory64`` proposal). Defaults to ``false`` (32-bit).
+
 .. cpp:struct:: WasmVM::FuncType
 
     Declarational type (signature) of function
@@ -167,7 +172,7 @@ Object types
 
     Declarational type (signature) of table
 
-    .. cpp:member:: Limits Limits
+    .. cpp:member:: Limits limits
 
         Limits of table
 

@@ -1,38 +1,10 @@
 add_library(WasmVM_textfmt OBJECT
     # parse
     parse/parse.cpp
-    parse/Token.cpp
-    parse/nodes/Module.cpp
-    parse/nodes/Type.cpp
-    parse/nodes/FuncType.cpp
-    parse/nodes/ValueType.cpp
-    parse/nodes/Import.cpp
-    parse/nodes/TableType.cpp
-    parse/nodes/MemType.cpp
-    parse/nodes/GlobalType.cpp
-    parse/nodes/Func.cpp
-    parse/nodes/Table.cpp
-    parse/nodes/Memory.cpp
-    parse/nodes/Elem.cpp
-    parse/nodes/Data.cpp
-    parse/nodes/TypeUse.cpp
-    parse/nodes/Global.cpp
-    parse/nodes/Export.cpp
-    parse/nodes/Start.cpp
-    parse/nodes/instruction.cpp
-    parse/nodes/instruction/numeric.cpp
-    parse/nodes/instruction/i32.cpp
-    parse/nodes/instruction/i64.cpp
-    parse/nodes/instruction/f32.cpp
-    parse/nodes/instruction/f64.cpp
-    parse/nodes/instruction/const.cpp
-    parse/nodes/instruction/control.cpp
-    parse/nodes/instruction/reference.cpp
-    parse/nodes/instruction/parametric.cpp
-    parse/nodes/instruction/variable.cpp
-    parse/nodes/instruction/table.cpp
-    parse/nodes/instruction/memory.cpp
-    parse/nodes/post_process.cpp
+    parse/Tokenizer.cpp
+    parse/ParseContext.cpp
+    parse/instr_parse.cpp
+    parse/post_process.cpp
     # dump
     dump/dump.cpp
     dump/type.cpp
@@ -44,7 +16,18 @@ add_library(WasmVM_textfmt OBJECT
     dump/data.cpp
     dump/global.cpp
 )
+target_include_directories(WasmVM_textfmt
+    PUBLIC ${CMAKE_CURRENT_LIST_DIR}
+)
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_textfmt PRIVATE
+    <variant>
+    <string>
+    <vector>
+    <optional>
+    <unordered_map>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_binfmt OBJECT
     # encode
@@ -67,6 +50,7 @@ add_library(WasmVM_binfmt OBJECT
     decode/global.cpp
     decode/func.cpp
     decode/memory.cpp
+    decode/tag.cpp
     decode/instr.cpp
     decode/export.cpp
     decode/start.cpp
@@ -74,6 +58,11 @@ add_library(WasmVM_binfmt OBJECT
     decode/data.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_binfmt PRIVATE
+    <variant>
+    <vector>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_src OBJECT
     exception.cpp
@@ -94,12 +83,21 @@ add_library(WasmVM_validate OBJECT
     validate/import.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_validate PRIVATE
+    <variant>
+    <optional>
+    <vector>
+    <structures/WasmInstr.hpp>
+)
 
 add_library(WasmVM_exec OBJECT
     instanciate.cpp
     invoke/invoke.cpp
+    invoke/dispatch.cpp
     invoke/control.cpp
     invoke/reference.cpp
+    invoke/exception_instr.cpp
+    invoke/gc.cpp
     invoke/parametric.cpp
     invoke/variable.cpp
     invoke/table.cpp
@@ -111,6 +109,14 @@ add_library(WasmVM_exec OBJECT
     invoke/numeric.cpp
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
+target_precompile_headers(WasmVM_exec PRIVATE
+    <variant>
+    <optional>
+    <vector>
+    <unordered_map>
+    <structures/WasmInstr.hpp>
+    <instances/Stack.hpp>
+)
 
 add_library(WasmVM_json OBJECT
     json/json.cpp
@@ -125,6 +131,7 @@ add_library(WasmVM SHARED
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
+target_link_libraries(WasmVM)
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
 if(DEV_BUILD)
@@ -136,6 +143,7 @@ add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_exec>
     $<TARGET_OBJECTS:WasmVM_json>
 )
+target_link_libraries(WasmVM_static)
 set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
 
 install(TARGETS WasmVM_static 
@@ -148,3 +156,10 @@ install(TARGETS WasmVM
     COMPONENT dll
     LIBRARY DESTINATION lib
 )
+
+# Strip debug symbols from installed shared library
+if(UNIX AND NOT APPLE)
+    install(CODE "execute_process(COMMAND strip --strip-unneeded \"\${CMAKE_INSTALL_PREFIX}/lib/libWasmVM.so\")")
+elseif(APPLE)
+    install(CODE "execute_process(COMMAND strip -x \"\${CMAKE_INSTALL_PREFIX}/lib/libWasmVM.dylib\")")
+endif()

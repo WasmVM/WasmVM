@@ -5,6 +5,7 @@
 #include <instances/Stack.hpp>
 #include "exception.hpp"
 #include "RunVisitor.hpp"
+#include <instances/TagInst.hpp>
 
 using namespace WasmVM;
 
@@ -40,6 +41,12 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
                 case ValueType::externref :
                     frame.locals.emplace_back((externref_t)nullptr);
                 break;
+                case ValueType::i31ref :
+                    frame.locals.emplace_back(i31ref_t());
+                break;
+                case ValueType::exnref :
+                    frame.locals.emplace_back(exnref_t());
+                break;
             }
         }
         Label::Counters& pc = label.pc.emplace();
@@ -62,7 +69,59 @@ std::vector<Value> Stack::run(){
             if(label.pc->current >= func.body.size()){
                 throw Exception::no_end_of_func();
             }
-            std::visit(visitor, func.body[label.pc->current++]);
+            try {
+                visitor.run(func.body[label.pc->current++]);
+            } catch (WasmThrow& thrown) {
+                bool handled = false;
+                while(!frames.empty() && !handled){
+                    Frame& f = frames.top();
+                    while(!f.labels.empty() && !handled){
+                        Label& lbl = f.labels.top();
+                        for(auto& ce : lbl.catches){
+                            bool matches = false;
+                            if(ce.kind == Label::CatchEntry::CatchAll || ce.kind == Label::CatchEntry::CatchAllRef){
+                                matches = true;
+                            } else if(ce.tag_addr == thrown.exn->tag_addr){
+                                matches = true;
+                            }
+                            if(matches){
+                                // Push catch values onto try_table label
+                                if(ce.kind == Label::CatchEntry::Catch){
+                                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
+                                } else if(ce.kind == Label::CatchEntry::CatchRef){
+                                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
+                                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
+                                } else if(ce.kind == Label::CatchEntry::CatchAllRef){
+                                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
+                                }
+                                // Execute br(label_idx) from try_table label position
+                                std::vector<Value> values = lbl.values.get();
+                                for(index_t i = ce.label_idx; i > 0; --i){
+                                    f.labels.pop();
+                                }
+                                Label& target = f.labels.top();
+                                if(target.arity > 0){
+                                    target.values.insert(std::vector<Value>(values.end() - target.arity, values.end()));
+                                }
+                                if(target.pc){
+                                    target.pc->current = target.pc->continuation;
+                                }
+                                handled = true;
+                                break;
+                            }
+                        }
+                        if(!handled){
+                            f.labels.pop();
+                        }
+                    }
+                    if(!handled){
+                        frames.pop();
+                    }
+                }
+                if(!handled){
+                    throw Exception::Exception("unhandled WebAssembly exception");
+                }
+            }
         }else{
             hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
             auto results = func(*this);
@@ -110,3 +169,7 @@ invalid_value::invalid_value() :
     Exception("invalid value") {}
 length_too_long::length_too_long() :
     Exception("length too long") {}
+cast_failure::cast_failure() :
+    Exception("cast failure") {}
+null_reference::null_reference() :
+    Exception("null reference") {}

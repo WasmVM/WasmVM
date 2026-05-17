@@ -98,6 +98,12 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::ValueType>(Wasm
         case ValueType::externref :
             *this << (byte_t) 0x6f;
         break;
+        case ValueType::i31ref :
+            *this << (byte_t) 0x6c;
+        break;
+        case ValueType::exnref :
+            *this << (byte_t) 0x69;
+        break;
     }
     return *this;
 }
@@ -112,11 +118,14 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::RefType>(WasmVM
 }
 
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Limits>(WasmVM::Limits limit){
-    if(limit.max){
-        return *this << (byte_t)0x01 << (u64_t)limit.min << (u64_t)limit.max.value();
-    }else{
-        return *this << (byte_t)0x00 << (u64_t)limit.min;
-    }
+    byte_t flag;
+    if(limit.is64)
+        flag = limit.max ? (byte_t)0x05 : (byte_t)0x04;
+    else
+        flag = limit.max ? (byte_t)0x01 : (byte_t)0x00;
+    *this << flag << (u64_t)limit.min;
+    if(limit.max) *this << (u64_t)limit.max.value();
+    return *this;
 }
 
 Section::Stream& Section::Stream::operator<<(std::stringstream& buffer){

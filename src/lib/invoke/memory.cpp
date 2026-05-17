@@ -159,22 +159,34 @@ void RunVisitor::operator()(Instr::Memory_size& instr){
   Label& label = frame.labels.top();
   index_t addr = frame.module.memaddrs[instr.index];
   MemInst& mem = stack.store.mems[addr];
-  label.values.emplace<i32_t>(mem.data.size() / page_size);
+  u64_t pages = mem.data.size() / page_size;
+  if(mem.type.is64)
+    label.values.emplace<i64_t>((i64_t)pages);
+  else
+    label.values.emplace<i32_t>((i32_t)pages);
 }
 void RunVisitor::operator()(Instr::Memory_grow& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
   index_t addr = frame.module.memaddrs[instr.index];
   MemInst& mem = stack.store.mems[addr];
+  u64_t old_pages = mem.data.size() / page_size;
   u64_t val = get_base(label);
-  u64_t len = (mem.data.size() / page_size) + val;
-  if((len > (1ULL << 48ULL)) || (mem.type.max && (len > mem.type.max.value()))) {
-    label.values.emplace<i32_t>(-1);
+  u64_t new_pages = old_pages + val;
+  if((new_pages > (1ULL << 48ULL)) || (mem.type.max && (new_pages > mem.type.max.value()))) {
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
     return;
   }
-  mem.data.resize(len * page_size, (byte_t)0x00);
-  mem.type.min = len;
-  label.values.emplace<i32_t>(len);
+  mem.data.resize(new_pages * page_size, (byte_t)0x00);
+  mem.type.min = new_pages;
+  // Return the OLD page count (per spec)
+  if(mem.type.is64)
+    label.values.emplace<i64_t>((i64_t)old_pages);
+  else
+    label.values.emplace<i32_t>((i32_t)old_pages);
 }
 void RunVisitor::operator()(Instr::Memory_fill& instr){
   Frame& frame = stack.frames.top();

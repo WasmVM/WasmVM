@@ -47,3 +47,57 @@ Control instructions
     .. cpp:member:: index_t typeidx
 
 .. cpp:enumerator:: WasmVM::Opcode::Call_indirect = 0x11
+
+Tail-call instructions
+----------------------
+
+.. cpp:type:: WasmVM::Instr::Return_call = WasmVM::Instr::OneIndex<WasmVM::Opcode::Return_call>
+.. cpp:enumerator:: WasmVM::Opcode::Return_call = 0x12
+
+.. cpp:struct:: WasmVM::Instr::Return_call_indirect : public Base
+
+    .. cpp:function:: Return_call_indirect(index_t tableidx, index_t typeidx)
+    .. cpp:member:: index_t tableidx
+    .. cpp:member:: index_t typeidx
+
+.. cpp:enumerator:: WasmVM::Opcode::Return_call_indirect = 0x13
+
+.. cpp:type:: WasmVM::Instr::Return_call_ref = WasmVM::Instr::OneIndex<WasmVM::Opcode::Return_call_ref>
+.. cpp:enumerator:: WasmVM::Opcode::Return_call_ref = 0x15
+
+.. cpp:type:: WasmVM::Instr::Call_ref = WasmVM::Instr::OneIndex<WasmVM::Opcode::Call_ref>
+.. cpp:enumerator:: WasmVM::Opcode::Call_ref = 0x14
+
+Exception handling instructions
+-------------------------------
+
+.. cpp:type:: WasmVM::Instr::Throw = WasmVM::Instr::OneIndex<WasmVM::Opcode::Throw>
+.. cpp:enumerator:: WasmVM::Opcode::Throw = 0x08
+
+.. cpp:type:: WasmVM::Instr::Throw_ref = WasmVM::Instr::Atomic<WasmVM::Opcode::Throw_ref>
+.. cpp:enumerator:: WasmVM::Opcode::Throw_ref = 0x0A
+
+.. cpp:struct:: WasmVM::Instr::TryCatchEntry
+
+    A single ``catch`` clause inside a :cpp:struct:`Try_table`.
+
+    .. cpp:enum:: Kind
+
+        .. cpp:enumerator:: Catch = 0
+        .. cpp:enumerator:: CatchRef = 1
+        .. cpp:enumerator:: CatchAll = 2
+        .. cpp:enumerator:: CatchAllRef = 3
+
+    .. cpp:member:: Kind kind
+    .. cpp:member:: index_t tag_idx
+
+        Tag index. Only used for ``Catch`` and ``CatchRef``.
+
+    .. cpp:member:: index_t label_idx
+
+.. cpp:struct:: WasmVM::Instr::Try_table : public Base
+
+    .. cpp:member:: std::optional<index_t> type
+    .. cpp:member:: std::vector<TryCatchEntry> catches
+
+.. cpp:enumerator:: WasmVM::Opcode::Try_table = 0x1F

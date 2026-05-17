@@ -1,0 +1,31 @@
+(module
+    (func 
+        f64.const 3.14
+        f64.abs
+        f64.neg
+        f64.ceil
+        f64.floor
+        f64.trunc
+        f64.nearest
+        f64.sqrt
+        f64.add
+        f64.sub
+        f64.mul
+        f64.div
+        f64.min
+        f64.max
+        f64.copysign
+        f64.eq
+        f64.ne
+        f64.lt
+        f64.gt
+        f64.le
+        f64.ge
+        f64.convert_i32_s
+        f64.convert_i32_u
+        f64.convert_i64_s
+        f64.convert_i64_u
+        f64.promote_f32
+        f64.reinterpret_i64
+    )
+)

@@ -32,6 +32,20 @@ mkdir build && cd build && cmake ..
 make -j4
 ```
 
+## Run Unittests
+
+1. Run CMake
+
+```shell
+mkdir build && cd build && cmake ..
+```
+
+2. Run Make with the test target
+
+```shell
+make test
+```
+
 ## Generate HTML documents
 
 1. Run CMake

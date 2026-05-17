@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <cstddef>
 #include <functional>
+#include <memory>
+#include <type_traits>
 
 namespace WasmVM {
 
@@ -34,12 +36,46 @@ constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
 
+// Forward declaration for exnref_t
+struct WasmException;
+
+struct exnref_t {
+    std::shared_ptr<WasmException> value; // nullptr = null exnref
+    constexpr exnref_t() : value() {}
+    explicit exnref_t(std::shared_ptr<WasmException> e) : value(std::move(e)) {}
+    bool has_value() const { return value != nullptr; }
+};
+
+struct i31ref_t { // stores 31-bit value; nullopt = null i31ref
+    std::optional<uint32_t> value;
+    constexpr i31ref_t() : value(std::nullopt) {}
+    constexpr explicit i31ref_t(uint32_t v) : value(v) {}
+    constexpr bool has_value() const { return value.has_value(); }
+    constexpr uint32_t operator*() const { return *value; }
+};
+
 constexpr u64_t page_size = 65536;
 
-using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>;
+using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>;
 
 enum ValueType : u8_t {
     i32 = 0x7f, i64 = 0x7e, f32 = 0x7d, f64 = 0x7c, funcref = 0x70, externref = 0x6f
+};
+
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i32, Value>, i32_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i64, Value>, i64_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f32, Value>, f32_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f64, Value>, f64_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::funcref, Value>, funcref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::externref, Value>, externref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i31ref, Value>, i31ref_t>);
+static_assert(std::is_same_v<std::variant_alternative_t<ValueType::exnref, Value>, exnref_t>);
+
+// Full definition (after Value is defined above)
+struct WasmException {
+    index_t tag_addr;
+    std::vector<Value> values;
+    WasmException(index_t addr, std::vector<Value> vals) : tag_addr(addr), values(std::move(vals)) {}
 };
 
 enum class RefType {
@@ -58,6 +94,7 @@ bool operator==(const FuncType&, const FuncType&);
 struct Limits {
     offset_t min;
     std::optional<offset_t> max;
+    bool is64 = false;  // true = memory64 (i64 address space)
 };
 
 struct TableType {

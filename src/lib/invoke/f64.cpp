@@ -245,16 +245,16 @@ void RunVisitor::operator()(Instr::F64_reinterpret_i64&){
     i64_t value = get_op<i64_t>(stack);
     put_op(stack, *reinterpret_cast<f64_t*>(&value));
 }
-void RunVisitor::operator()(Instr::F64_convert_s_i32&){
+void RunVisitor::operator()(Instr::F64_convert_i32_s&){
     put_op(stack, (f64_t)get_op<i32_t>(stack));
 }
-void RunVisitor::operator()(Instr::F64_convert_u_i32&){
+void RunVisitor::operator()(Instr::F64_convert_i32_u&){
     put_op(stack, (f64_t)(u64_t)get_op<i32_t>(stack));
 }
-void RunVisitor::operator()(Instr::F64_convert_s_i64&){
+void RunVisitor::operator()(Instr::F64_convert_i64_s&){
     put_op(stack, (f64_t)get_op<i64_t>(stack));
 }
-void RunVisitor::operator()(Instr::F64_convert_u_i64&){
+void RunVisitor::operator()(Instr::F64_convert_i64_u&){
     put_op(stack, (f64_t)(u64_t)get_op<i64_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_promote_f32&){

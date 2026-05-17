@@ -85,7 +85,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "WasmVM linker version " VERSION << std::endl;
+        std::cerr << "WasmVM linker version " WASMVM_VERSION << std::endl;
         return 0;
     }
 

@@ -2,7 +2,11 @@
 
 #define HOST_API_DEF
 
+#include <string>
+#include <vector>
 #include <host.hpp>
+
+LIBRARY_API std::vector<std::string> wasmvm_args;
 
 #define MOD_instanciate(MOD_NAME) MOD_NAME##_instanciate(moduleinsts, store); \
 

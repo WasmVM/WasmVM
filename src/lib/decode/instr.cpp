@@ -13,29 +13,40 @@ using namespace Decode;
 
 using BlockType = std::optional<index_t>;
 
+// WasmInstr is now a struct, so use assignment via its conversion constructors.
 #define AtomicInstr(I) \
     case Opcode::I : \
-        instr.emplace<Instr::I>(); \
+        instr = Instr::I{}; \
     break;
 
 #define OneIndexInstr(I) \
     case Opcode::I : \
-        instr.emplace<Instr::I>(stream.get<index_t>()); \
+        instr = Instr::I(stream.get<index_t>()); \
     break;
 
 #define MemoryInstr(I) \
     case Opcode::I :{ \
         u32_t align = stream.get<u32_t>(); \
         if(align >= 0x40){ \
-            instr.emplace<Instr::I>(stream.get<u32_t>(), stream.get<u32_t>(), align - 0x40); \
+            instr = Instr::I(stream.get<u32_t>(), stream.get<u32_t>(), align - 0x40); \
         }else{ \
-            instr.emplace<Instr::I>(0, stream.get<u32_t>(), align); \
+            instr = Instr::I(0, stream.get<u32_t>(), align); \
         } \
     }break;
 
+// ConstInstr is still a std::variant — keep emplace-based macros for it.
+#define AtomicInstrC(I) \
+    case Opcode::I : \
+        instr.emplace<Instr::I>(); \
+    break;
+#define OneIndexInstrC(I) \
+    case Opcode::I : \
+        instr.emplace<Instr::I>(stream.get<index_t>()); \
+    break;
+
 template<> Opcode::opcode_t Stream::get<Opcode::opcode_t>(){
     Opcode::opcode_t opcode = (Opcode::opcode_t) get<byte_t>();
-    if(opcode == 0xfc){
+    if(opcode == 0xfc || opcode == 0xfb){
         opcode = (opcode << 8) | (Opcode::opcode_t) get<byte_t>();
     }
     return opcode;
@@ -76,7 +87,16 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         AtomicInstr(Else)
         AtomicInstr(End)
         AtomicInstr(Return)
+        AtomicInstr(Throw_ref)
         AtomicInstr(Ref_is_null)
+        AtomicInstr(Ref_eq)
+        AtomicInstr(Ref_as_non_null)
+        AtomicInstr(Ref_i31)
+        AtomicInstr(I31_get_s)
+        AtomicInstr(I31_get_u)
+        AtomicInstr(Any_convert_extern)
+        AtomicInstr(Extern_convert_any)
+        AtomicInstr(Array_len)
         AtomicInstr(Drop)
         AtomicInstr(Select)
         AtomicInstr(I32_eqz)
@@ -178,25 +198,25 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         AtomicInstr(F64_max)
         AtomicInstr(F64_copysign)
         AtomicInstr(I32_wrap_i64)
-        AtomicInstr(I32_trunc_s_f32)
-        AtomicInstr(I32_trunc_u_f32)
-        AtomicInstr(I32_trunc_s_f64)
-        AtomicInstr(I32_trunc_u_f64)
-        AtomicInstr(I64_extend_s_i32)
-        AtomicInstr(I64_extend_u_i32)
-        AtomicInstr(I64_trunc_s_f32)
-        AtomicInstr(I64_trunc_u_f32)
-        AtomicInstr(I64_trunc_s_f64)
-        AtomicInstr(I64_trunc_u_f64)
-        AtomicInstr(F32_convert_s_i32)
-        AtomicInstr(F32_convert_u_i32)
-        AtomicInstr(F32_convert_s_i64)
-        AtomicInstr(F32_convert_u_i64)
+        AtomicInstr(I32_trunc_f32_s)
+        AtomicInstr(I32_trunc_f32_u)
+        AtomicInstr(I32_trunc_f64_s)
+        AtomicInstr(I32_trunc_f64_u)
+        AtomicInstr(I64_extend_i32_s)
+        AtomicInstr(I64_extend_i32_u)
+        AtomicInstr(I64_trunc_f32_s)
+        AtomicInstr(I64_trunc_f32_u)
+        AtomicInstr(I64_trunc_f64_s)
+        AtomicInstr(I64_trunc_f64_u)
+        AtomicInstr(F32_convert_i32_s)
+        AtomicInstr(F32_convert_i32_u)
+        AtomicInstr(F32_convert_i64_s)
+        AtomicInstr(F32_convert_i64_u)
         AtomicInstr(F32_demote_f64)
-        AtomicInstr(F64_convert_s_i32)
-        AtomicInstr(F64_convert_u_i32)
-        AtomicInstr(F64_convert_s_i64)
-        AtomicInstr(F64_convert_u_i64)
+        AtomicInstr(F64_convert_i32_s)
+        AtomicInstr(F64_convert_i32_u)
+        AtomicInstr(F64_convert_i64_s)
+        AtomicInstr(F64_convert_i64_u)
         AtomicInstr(F64_promote_f32)
         AtomicInstr(I32_reinterpret_f32)
         AtomicInstr(I64_reinterpret_f64)
@@ -216,8 +236,22 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         AtomicInstr(I64_trunc_sat_f64_s)
         AtomicInstr(I64_trunc_sat_f64_u)
         OneIndexInstr(Call)
+        OneIndexInstr(Call_ref)
+        OneIndexInstr(Throw)
+        OneIndexInstr(Struct_new)
+        OneIndexInstr(Struct_new_default)
+        OneIndexInstr(Array_new)
+        OneIndexInstr(Array_new_default)
+        OneIndexInstr(Array_get)
+        OneIndexInstr(Array_get_s)
+        OneIndexInstr(Array_get_u)
+        OneIndexInstr(Array_set)
+        OneIndexInstr(Return_call)
+        OneIndexInstr(Return_call_ref)
         OneIndexInstr(Br)
         OneIndexInstr(Br_if)
+        OneIndexInstr(Br_on_null)
+        OneIndexInstr(Br_on_non_null)
         OneIndexInstr(Ref_func)
         OneIndexInstr(Local_get)
         OneIndexInstr(Local_set)
@@ -258,55 +292,145 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
         MemoryInstr(I64_store16)
         MemoryInstr(I64_store32)
         case Opcode::Block :
-            instr.emplace<Instr::Block>(stream.get<BlockType>());
+            instr = Instr::Block(stream.get<BlockType>());
         break;
         case Opcode::Loop :
-            instr.emplace<Instr::Loop>(stream.get<BlockType>());
+            instr = Instr::Loop(stream.get<BlockType>());
         break;
         case Opcode::If :
-            instr.emplace<Instr::If>(stream.get<BlockType>());
+            instr = Instr::If(stream.get<BlockType>());
         break;
+        case Opcode::Try_table : {
+            Instr::Try_table try_table;
+            try_table.type = stream.get<BlockType>();
+            u32_t catch_count = stream.get<u32_t>();
+            for(u32_t i = 0; i < catch_count; ++i){
+                Instr::TryCatchEntry& entry = try_table.catches.emplace_back();
+                u8_t kind = (u8_t)stream.get<byte_t>();
+                entry.kind = (Instr::TryCatchEntry::Kind)kind;
+                if(kind == 0 || kind == 1){
+                    entry.tag_idx = stream.get<index_t>();
+                }
+                entry.label_idx = stream.get<index_t>();
+            }
+            instr = try_table;
+        }break;
         case Opcode::Br_table : {
-            Instr::Br_table& br_table = instr.emplace<Instr::Br_table>();
+            Instr::Br_table br_table;
             stream >> br_table.indices;
             stream >> br_table.indices.emplace_back();
+            instr = br_table;
         }break;
         case Opcode::Call_indirect : {
             index_t typeidx = stream.get<index_t>();
-            instr.emplace<Instr::Call_indirect>(stream.get<index_t>(), typeidx);
+            instr = Instr::Call_indirect(stream.get<index_t>(), typeidx);
+        }break;
+        case Opcode::Return_call_indirect : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Return_call_indirect(stream.get<index_t>(), typeidx);
         }break;
         case Opcode::Ref_null :
-            instr.emplace<Instr::Ref_null>(stream.get<RefType>());
+            instr = Instr::Ref_null(stream.get<RefType>());
         break;
+        case Opcode::Ref_test :
+            instr = Instr::Ref_test((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_test_null :
+            instr = Instr::Ref_test_null((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_cast :
+            instr = Instr::Ref_cast((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Ref_cast_null :
+            instr = Instr::Ref_cast_null((int32_t)stream.get<i64_t>());
+        break;
+        case Opcode::Br_on_cast : {
+            u8_t flags = (u8_t)stream.get<byte_t>();
+            index_t labelidx = stream.get<index_t>();
+            int32_t ht1 = (int32_t)stream.get<i64_t>();
+            int32_t ht2 = (int32_t)stream.get<i64_t>();
+            instr = Instr::Br_on_cast(labelidx, (flags & 1) != 0, (flags & 2) != 0, ht1, ht2);
+        }break;
+        case Opcode::Br_on_cast_fail : {
+            u8_t flags = (u8_t)stream.get<byte_t>();
+            index_t labelidx = stream.get<index_t>();
+            int32_t ht1 = (int32_t)stream.get<i64_t>();
+            int32_t ht2 = (int32_t)stream.get<i64_t>();
+            instr = Instr::Br_on_cast_fail(labelidx, (flags & 1) != 0, (flags & 2) != 0, ht1, ht2);
+        }break;
+        case Opcode::Struct_get : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Struct_get(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_get_s : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Struct_get_s(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_get_u : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Struct_get_u(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Struct_set : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Struct_set(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_new_fixed : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Array_new_fixed(typeidx, stream.get<u32_t>());
+        }break;
+        case Opcode::Array_new_data : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Array_new_data(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_new_elem : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Array_new_elem(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_fill :
+            instr = Instr::Array_fill(stream.get<index_t>());
+        break;
+        case Opcode::Array_copy : {
+            index_t dst = stream.get<index_t>();
+            instr = Instr::Array_copy(dst, stream.get<index_t>());
+        }break;
+        case Opcode::Array_init_data : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Array_init_data(typeidx, stream.get<index_t>());
+        }break;
+        case Opcode::Array_init_elem : {
+            index_t typeidx = stream.get<index_t>();
+            instr = Instr::Array_init_elem(typeidx, stream.get<index_t>());
+        }break;
         case Opcode::Select_t : {
-            Instr::Select& ins = instr.emplace<Instr::Select>();
+            Instr::Select ins;
             stream >> ins.valtypes;
+            instr = ins;
         }break;
-        case Opcode::Table_copy : {
-            instr.emplace<Instr::Table_copy>(stream.get<index_t>(), stream.get<index_t>());
-        }break;
+        case Opcode::Table_copy :
+            instr = Instr::Table_copy(stream.get<index_t>(), stream.get<index_t>());
+        break;
         case Opcode::Table_init : {
             index_t elemidx = stream.get<index_t>();
-            instr.emplace<Instr::Table_init>(stream.get<index_t>(), elemidx);
+            instr = Instr::Table_init(stream.get<index_t>(), elemidx);
         }break;
-        case Opcode::Memory_copy : {
-            instr.emplace<Instr::Memory_copy>(stream.get<index_t>(), stream.get<index_t>());
-        }break;
+        case Opcode::Memory_copy :
+            instr = Instr::Memory_copy(stream.get<index_t>(), stream.get<index_t>());
+        break;
         case Opcode::Memory_init : {
             index_t dataidx = stream.get<index_t>();
-            instr.emplace<Instr::Memory_init>(stream.get<index_t>(), dataidx);
+            instr = Instr::Memory_init(stream.get<index_t>(), dataidx);
         }break;
         case Opcode::I32_const :
-            instr.emplace<Instr::I32_const>(stream.get<i32_t>());
+            instr = Instr::I32_const(stream.get<i32_t>());
         break;
         case Opcode::I64_const :
-            instr.emplace<Instr::I64_const>(stream.get<i64_t>());
+            instr = Instr::I64_const(stream.get<i64_t>());
         break;
         case Opcode::F32_const :
-            instr.emplace<Instr::F32_const>(stream.get<f32_t>());
+            instr = Instr::F32_const(stream.get<f32_t>());
         break;
         case Opcode::F64_const :
-            instr.emplace<Instr::F64_const>(stream.get<f64_t>());
+            instr = Instr::F64_const(stream.get<f64_t>());
         break;
         default:
             throw Exception::unknown_instruction(stream.location());
@@ -316,8 +440,8 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
 
 template<> Stream& Decode::operator>> <ConstInstr>(Stream& stream, ConstInstr& instr){
     switch(stream.get<Opcode::opcode_t>()){
-        OneIndexInstr(Ref_func)
-        OneIndexInstr(Global_get)
+        OneIndexInstrC(Ref_func)
+        OneIndexInstrC(Global_get)
         case Opcode::Ref_null :
             instr.emplace<Instr::Ref_null>(stream.get<RefType>());
         break;
@@ -345,4 +469,6 @@ template<> Stream& Decode::operator>> <ConstInstr>(Stream& stream, ConstInstr& i
 #undef AtomicInstr
 #undef OneIndexInstr
 #undef MemoryInstr
+#undef AtomicInstrC
+#undef OneIndexInstrC
 
