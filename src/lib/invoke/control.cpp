@@ -247,8 +247,18 @@ void RunVisitor::operator()(Instr::Br_table& instr){
 void RunVisitor::operator()(Instr::Return&){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
+  // Return is `br L_outermost` per the Wasm spec: it returns from the
+  // enclosing function regardless of how deeply nested in blocks/ifs/loops
+  // the instruction is. The result arity must come from the function's
+  // return type, not the innermost label's arity (which is 0 for plain
+  // blocks/ifs without an explicit block-type).
+  FuncInst& funcinst = stack.store.funcs[frame.funcaddr];
+  size_t arity = funcinst.type.results.size();
   std::vector<Value> values = label.values.get();
-  std::vector<Value> results(values.end() - label.arity, values.end());
+  std::vector<Value> results;
+  if(arity > 0){
+    results.assign(values.end() - arity, values.end());
+  }
   stack.frames.pop();
   if(stack.frames.empty()){
     stack.results = results;
