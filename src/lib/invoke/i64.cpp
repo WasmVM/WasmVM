@@ -16,48 +16,52 @@ using namespace WasmVM;
 void RunVisitor::operator()(Instr::I64_const& instr){
     stack.frames.top().labels.top().values.emplace(Value(instr.value));
 }
+// All i64 comparison ops yield an i32 boolean per the Wasm spec
+// (the result type for ieqz/ieq/ine/ilt/igt/ile/ige is i32, regardless
+// of operand width). The previous cast to (i64_t) corrupted the stack
+// type for any consumer expecting i32 (notably `if` and `br_if`).
 void RunVisitor::operator()(Instr::I64_eqz&){
-    put_op(stack, (i64_t)(get_op<i64_t>(stack) == 0));
+    put_op(stack, (i32_t)(get_op<i64_t>(stack) == 0));
 }
 void RunVisitor::operator()(Instr::I64_eq&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first == ops.second));
+    put_op(stack, (i32_t)(ops.first == ops.second));
 }
 void RunVisitor::operator()(Instr::I64_ne&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first != ops.second));
+    put_op(stack, (i32_t)(ops.first != ops.second));
 }
 void RunVisitor::operator()(Instr::I64_lt_s&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first < ops.second));
+    put_op(stack, (i32_t)(ops.first < ops.second));
 }
 void RunVisitor::operator()(Instr::I64_lt_u&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)((u64_t)ops.first < (u64_t)ops.second));
+    put_op(stack, (i32_t)((u64_t)ops.first < (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_gt_s&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first > ops.second));
+    put_op(stack, (i32_t)(ops.first > ops.second));
 }
 void RunVisitor::operator()(Instr::I64_gt_u&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)((u64_t)ops.first > (u64_t)ops.second));
+    put_op(stack, (i32_t)((u64_t)ops.first > (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_le_s&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first <= ops.second));
+    put_op(stack, (i32_t)(ops.first <= ops.second));
 }
 void RunVisitor::operator()(Instr::I64_le_u&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)((u64_t)ops.first <= (u64_t)ops.second));
+    put_op(stack, (i32_t)((u64_t)ops.first <= (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_ge_s&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)(ops.first >= ops.second));
+    put_op(stack, (i32_t)(ops.first >= ops.second));
 }
 void RunVisitor::operator()(Instr::I64_ge_u&){
     auto ops = get_ops<i64_t>(stack);
-    put_op(stack, (i64_t)((u64_t)ops.first >= (u64_t)ops.second));
+    put_op(stack, (i32_t)((u64_t)ops.first >= (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_clz&){
     put_op(stack, (i64_t)std::countl_zero((u64_t)get_op<i64_t>(stack)));
