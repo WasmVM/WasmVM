@@ -148,7 +148,18 @@ int main(int argc, char const *argv[]){
         std::string mode = std::get<std::string>(args["mode"].value());
         if(mode == "create" || mode == "c"){
             /** Create **/
-            CreateConfig config(std::filesystem::path(std::get<std::string>(args["config"].value())), prefix.string());
+            // --config is optional; build it from the JSON only when the
+            // user provided one. Otherwise start with an empty path map +
+            // the prefix from --prefix.
+            std::map<std::filesystem::path, std::filesystem::path> paths;
+            std::filesystem::path effective_prefix = prefix;
+            if(args["config"]){
+                CreateConfig config(
+                    std::filesystem::path(std::get<std::string>(args["config"].value())),
+                    prefix.string());
+                paths = std::move(config.paths);
+                effective_prefix = config.prefix;
+            }
             if(args["module_files"]){
                 std::vector<std::string> module_files = std::get<std::vector<std::string>>(args["module_files"].value());
                 for(std::string module_file : module_files){
@@ -158,16 +169,16 @@ int main(int argc, char const *argv[]){
                         continue;
                     }
                     std::filesystem::path file_path = std::filesystem::canonical(parsed.first);
-                    if(config.paths.contains(file_path)){
+                    if(paths.contains(file_path)){
                         Exception::Warning(std::string("multiple definitions found for file ") + parsed.first.string());
                     }
-                    config.paths[file_path] = parsed.second.value_or(std::filesystem::relative(file_path));
+                    paths[file_path] = parsed.second.value_or(std::filesystem::relative(file_path));
                 }
             }
-            if(config.paths.empty()){
+            if(paths.empty()){
                 throw Exception::Exception("no module files");
             }
-            archive.create(config.paths, config.prefix);
+            archive.create(paths, effective_prefix);
         }else if(mode == "extract" || mode == "x"){
             /** Extract **/
             if(!args["module_files"]){
