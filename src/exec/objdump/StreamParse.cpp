@@ -97,10 +97,19 @@ Objdump::Stream& Objdump::operator>><Objdump::Section>(Stream& stream, Objdump::
 
 // typesection::functype::valuetype
 template<>
-Objdump::Stream& Objdump::operator>><ValueType>(Stream& stream, ValueType& valuetype){
+Objdump::Stream& Objdump::operator>><Objdump::ValueType>(Stream& stream, Objdump::ValueType& valuetype){
     Objdump::Bytes value(1);
     stream >> value;
-    valuetype = (ValueType)value[0];
+    valuetype = (Objdump::ValueType)value[0];
+
+    return stream;
+}
+
+template<>
+Objdump::Stream& Objdump::operator>><WasmVM::ValueType>(Stream& stream, WasmVM::ValueType& valuetype){
+    Objdump::Bytes value(1);
+    stream >> value;
+    valuetype = (WasmVM::ValueType)value[0];
 
     return stream;
 }
@@ -172,11 +181,11 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
         }
         case 1: { 
             TableType table;
-            ValueType ref;
+            Objdump::ValueType ref_raw;
             Limits lim;
             Objdump::Bytes maxflag(1);
 
-            stream >> ref;
+            stream >> ref_raw;
             stream >> maxflag;
 
             bool hasMax = (maxflag[0] == byte_t{0b1});
@@ -188,7 +197,7 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
                 lim.max = max;
             }
 
-            table.reftype = (RefType)ref;
+            table.reftype = (RefType)Objdump::to_wasm_valtype(ref_raw);
             table.limits = lim;
             import.desc = table;
             
@@ -215,7 +224,9 @@ Objdump::Stream& Objdump::operator>><WasmImport>(Stream& stream, WasmImport& imp
             GlobalType global;
             Objdump::Bytes mut(1);
 
-            stream >> global.type;
+            Objdump::ValueType raw_type;
+            stream >> raw_type;
+            global.type = Objdump::to_wasm_valtype(raw_type);
             stream >> mut;
 
             if((int)mut[0] == 0x00){
@@ -269,11 +280,11 @@ Objdump::Stream& Objdump::operator>><Objdump::FunctionSection>(Stream& stream, O
 // table
 template<>
 Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, TableType& tt){
-    ValueType et;
+    Objdump::ValueType et_raw;
     Limits lim;
     Objdump::Bytes maxflag(1);
 
-    stream >> et;
+    stream >> et_raw;
     stream >> maxflag;
 
     bool hasMax = (maxflag[0] == byte_t{0b1});
@@ -286,7 +297,7 @@ Objdump::Stream& Objdump::operator>><TableType>(Stream& stream, TableType& tt){
     }
 
     tt.limits = lim;
-    tt.reftype = (RefType)et;
+    tt.reftype = (RefType)Objdump::to_wasm_valtype(et_raw);
 
     return stream;
 }

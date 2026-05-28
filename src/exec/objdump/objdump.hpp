@@ -7,6 +7,36 @@
 namespace WasmVM {
 namespace Objdump {
 
+enum ValueType : u8_t {
+    i32 = 0x7f, i64 = 0x7e, f32 = 0x7d, f64 = 0x7c, funcref = 0x70, externref = 0x6f
+};
+
+// Convert internal WasmVM::ValueType to Objdump raw byte ValueType
+inline ValueType to_objdump_valtype(::WasmVM::ValueType vt){
+    switch(vt){
+        case ::WasmVM::ValueType::i32: return ValueType::i32;
+        case ::WasmVM::ValueType::i64: return ValueType::i64;
+        case ::WasmVM::ValueType::f32: return ValueType::f32;
+        case ::WasmVM::ValueType::f64: return ValueType::f64;
+        case ::WasmVM::ValueType::funcref: return ValueType::funcref;
+        case ::WasmVM::ValueType::externref: return ValueType::externref;
+        default: return ValueType::i32;
+    }
+}
+
+// Convert raw Objdump::ValueType (byte codes) to WasmVM::ValueType (internal enum)
+inline ::WasmVM::ValueType to_wasm_valtype(ValueType vt){
+    switch(vt){
+        case ValueType::i32: return ::WasmVM::ValueType::i32;
+        case ValueType::i64: return ::WasmVM::ValueType::i64;
+        case ValueType::f32: return ::WasmVM::ValueType::f32;
+        case ValueType::f64: return ::WasmVM::ValueType::f64;
+        case ValueType::funcref: return ::WasmVM::ValueType::funcref;
+        case ValueType::externref: return ::WasmVM::ValueType::externref;
+        default: return ::WasmVM::ValueType::i32;
+    }
+}
+
 struct Bytes : public std::vector<byte_t> {
     Bytes() : std::vector<byte_t>() {}
     Bytes(size_t size) : std::vector<byte_t>(size) {}
@@ -99,6 +129,12 @@ struct GlobalSection : public Section {
     GlobalSection(Stream& stream) : Section(stream) {}
     std::vector<WasmGlobal> globals;
     std::vector<Bytes> raw_globals;         // Store raw bytes for each global
+};
+
+struct ExportSection : public Section {
+    ExportSection(Stream& stream) : Section(stream) {}
+    std::vector<WasmGlobal> exports;
+    std::vector<Bytes> raw_exports;         // Store raw bytes for each export
 };
 
 template <typename T>

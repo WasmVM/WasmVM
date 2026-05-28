@@ -55,24 +55,24 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::Bytes& bytes){
     return os;
 }
 
-std::ostream& Objdump::operator<<(std::ostream& os, ValueType& value){
+std::ostream& Objdump::operator<<(std::ostream& os, Objdump::ValueType& value){
     switch (value) {
-        case ValueType::i32:
+        case Objdump::ValueType::i32:
             os << "i32";
         break;
-        case ValueType::i64: 
+        case Objdump::ValueType::i64: 
             os << "i64";
         break;
-        case ValueType::f32:
+        case Objdump::ValueType::f32:
             os << "f32";
         break;
-        case ValueType::f64:
+        case Objdump::ValueType::f64:
             os << "f64";
         break;
-        case ValueType::funcref:
+        case Objdump::ValueType::funcref:
             os << "funcref";
         break;
-        case ValueType::externref: 
+        case Objdump::ValueType::externref: 
             os << "externref";
         break;
         default: 
@@ -116,14 +116,16 @@ std::ostream& Objdump::operator<<(std::ostream& os, Objdump::TypeSection& sectio
         // Params
         dumper.print_address(os, ++address);
         os << std::setfill('0') << std::setw(2) << functype.params.size() << "  ; num params" << std::endl;
-        for(ValueType param : functype.params){
+        for(WasmVM::ValueType wasm_param : functype.params){
+            Objdump::ValueType param = Objdump::to_objdump_valtype(wasm_param);
             dumper.print_address(os, ++address);
             os << (int)param << "  ; " << param << std::endl;
         }
         // Results
         dumper.print_address(os, ++address);
         os << std::setfill('0') << std::setw(2) << functype.results.size() << "  ; num results" << std::endl;
-        for(ValueType result : functype.results){
+        for(WasmVM::ValueType wasm_result : functype.results){
+            Objdump::ValueType result = Objdump::to_objdump_valtype(wasm_result);
             dumper.print_address(os, ++address);
             os << (int)result << "  ; " << result << std::endl;
         }

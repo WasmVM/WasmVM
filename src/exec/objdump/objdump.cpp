@@ -34,7 +34,7 @@ int main(int argc, char const *argv[]){
     });
     // version
     if(args["version"]){
-        std::cerr << "Wasm dump version " VERSION << std::endl;
+        std::cerr << "Wasm dump version " WASMVM_VERSION << std::endl;
         return 0;
     }
     // input file
@@ -118,6 +118,13 @@ int main(int argc, char const *argv[]){
             stream >> global;
             if(!parse_only) std::cout << global;
         }
+
+        // if(stream.peek_section(stream) == 0x07){
+        //     if(!parse_only) std::cout << ";; export section" << std::endl;
+        //     ExportSection global(stream);
+        //     stream >> global;
+        //     if(!parse_only) std::cout << global;
+        // }
 
         if(parse_only){
             std::cerr << "Parse complete: sections parsed successfully" << std::endl;

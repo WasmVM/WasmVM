@@ -58,8 +58,8 @@ constexpr u64_t page_size = 65536;
 
 using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>;
 
-enum ValueType : u8_t {
-    i32 = 0x7f, i64 = 0x7e, f32 = 0x7d, f64 = 0x7c, funcref = 0x70, externref = 0x6f
+enum ValueType {
+    i32, i64, f32, f64, funcref, externref, i31ref, exnref
 };
 
 static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i32, Value>, i32_t>);
