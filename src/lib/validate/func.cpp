@@ -856,6 +856,17 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(type.params);
                     state.push(type.results);
                 }break;
+                // call_ref: pop funcref + type's params, push type's results.
+                case Opcode::Call_ref : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if(ins.index >= context.types.size()){
+                        throw Exception::Exception("type index not found for call_ref");
+                    }
+                    FuncType type = context.types[ins.index];
+                    state.pop(ValueType::funcref);
+                    state.pop(type.params);
+                    state.push(type.results);
+                }break;
                 // [t1* i32] -> [t2*]
                 case Opcode::If : {
                     state.pop(ValueType::i32);
