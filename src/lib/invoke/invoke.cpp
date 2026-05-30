@@ -12,8 +12,16 @@ using namespace WasmVM;
 void Stack::invoke(index_t funcaddr, std::vector<Value> args){
     // Check func type
     FuncInst& funcinst = store.funcs[funcaddr];
-    // Frame
-    Frame& frame = frames.emplace(funcinst.module, funcaddr);
+    // Frame. A host function (e.g. sys_fs.write) carries no linear memory of
+    // its own — a syscall reads/writes its *caller's* memory — so its frame
+    // borrows the caller's module instance. WebAssembly functions use their
+    // own module as usual. The very first call has no caller; host entry
+    // points don't touch wasm memory, so funcinst.module is fine there.
+    const bool is_host = !std::holds_alternative<WasmFunc>(funcinst.body);
+    ModuleInst& frame_module = (is_host && !frames.empty())
+                                   ? frames.top().module
+                                   : funcinst.module;
+    Frame& frame = frames.emplace(frame_module, funcaddr);
     frame.locals.insert(frame.locals.end(), args.begin(), args.end());
     // Label
     Label& label = frame.labels.emplace();
