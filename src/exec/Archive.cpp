@@ -43,8 +43,13 @@ void Archive::create(std::map<std::filesystem::path, std::filesystem::path> modu
     // Open file
     std::ofstream output(path, std::ios::binary | std::ios::out);
 
-    // Write megic & version
-    output.write(magic, sizeof(magic));
+    // Write magic & version. `magic` is declared char[5] with a trailing
+    // '\0' for C-string convenience; the on-disk header is 4 magic bytes
+    // (matching check_magic_version's `stream.read(..., 4)`) followed by
+    // 4 version bytes. Writing sizeof(magic)=5 would shift every later
+    // field by one byte and `extract`/`list` would fail to recognize the
+    // archive.
+    output.write(magic, 4);
     output.write(version, sizeof(version));
 
     // Write paths section
