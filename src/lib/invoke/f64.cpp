@@ -128,7 +128,7 @@ void RunVisitor::operator()(Instr::F64_add&){
         put_op(stack, (classifies.first == FP_NAN) ? ops.first : ops.second);
     }else if(classifies.first == FP_INFINITE || classifies.second == FP_INFINITE){
         if(classifies.first == FP_INFINITE && classifies.second == FP_INFINITE){
-            put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? ops.first : std::nanf(""));
+            put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? ops.first : std::nan(""));
         }else{
             put_op(stack, (classifies.first == FP_INFINITE) ? ops.first : ops.second);
         }
@@ -149,7 +149,7 @@ void RunVisitor::operator()(Instr::F64_sub&){
         put_op(stack, (classifies.first == FP_NAN) ? ops.first : ops.second);
     }else if(classifies.first == FP_INFINITE || classifies.second == FP_INFINITE){
         if(classifies.first == FP_INFINITE && classifies.second == FP_INFINITE){
-            put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? std::nanf("") : ops.first);
+            put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? std::nan("") : ops.first);
         }else{
             put_op(stack, (classifies.first == FP_INFINITE) ? ops.first : -ops.second);
         }
@@ -187,14 +187,14 @@ void RunVisitor::operator()(Instr::F64_div&){
         put_op(stack, (classifies.first == FP_NAN) ? ops.first : ops.second);
     }else if(classifies.first == FP_INFINITE || classifies.second == FP_INFINITE){
         if(classifies.first == FP_INFINITE && classifies.second == FP_INFINITE){
-            put_op(stack, std::nanf(""));
+            put_op(stack, std::nan(""));
         }else{
             f64_t result = (classifies.first == FP_INFINITE) ? std::numeric_limits<f64_t>::infinity() : 0.0;
             put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? result : -result);
         }
     }else if(classifies.first == FP_ZERO || classifies.second == FP_ZERO){
         if(classifies.first == FP_ZERO && classifies.second == FP_ZERO){
-            put_op(stack, std::nanf(""));
+            put_op(stack, std::nan(""));
         }else{
             f64_t result = (classifies.first == FP_ZERO) ? 0.0 : std::numeric_limits<f64_t>::infinity();
             put_op(stack, (std::signbit(ops.first) == std::signbit(ops.second)) ? result : -result);
