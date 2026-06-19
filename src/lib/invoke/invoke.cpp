@@ -181,3 +181,5 @@ cast_failure::cast_failure() :
     Exception("cast failure") {}
 null_reference::null_reference() :
     Exception("null reference") {}
+invalid_conversion_to_integer::invalid_conversion_to_integer() :
+    Exception("invalid conversion to integer") {}

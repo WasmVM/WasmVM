@@ -197,15 +197,37 @@ void RunVisitor::operator()(Instr::I32_trunc_sat_f64_u&){
 void RunVisitor::operator()(Instr::I32_wrap_i64&){
     put_op(stack, (i32_t)get_op<i64_t>(stack));
 }
+// Non-saturating float-to-integer truncation traps (rather than saturating)
+// when the operand is NaN, infinite, or truncates outside the target range.
+// The range bounds reflect truncation toward zero: e.g. for signed i32 the
+// valid open interval is (-2^31 - 1, 2^31), so 2147483647.9 is in range but
+// 2147483648.0 traps. NaN and infinities fail every comparison below, so they
+// fall through to the trap automatically.
 void RunVisitor::operator()(Instr::I32_trunc_f32_s&){
-    put_op(stack, (i32_t)get_op<f32_t>(stack));
+    f32_t value = get_op<f32_t>(stack);
+    if(!(value > -2147483649.0 && value < 2147483648.0)){ // (-2^31 - 1, 2^31)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i32_t)value);
 }
 void RunVisitor::operator()(Instr::I32_trunc_f32_u&){
-    put_op(stack, (i32_t)(u32_t)get_op<f32_t>(stack));
+    f32_t value = get_op<f32_t>(stack);
+    if(!(value > -1.0 && value < 4294967296.0)){ // (-1, 2^32)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i32_t)(u32_t)value);
 }
 void RunVisitor::operator()(Instr::I32_trunc_f64_s&){
-    put_op(stack, (i32_t)get_op<f64_t>(stack));
+    f64_t value = get_op<f64_t>(stack);
+    if(!(value > -2147483649.0 && value < 2147483648.0)){ // (-2^31 - 1, 2^31)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i32_t)value);
 }
 void RunVisitor::operator()(Instr::I32_trunc_f64_u&){
-    put_op(stack, (i32_t)(u64_t)get_op<f64_t>(stack));
+    f64_t value = get_op<f64_t>(stack);
+    if(!(value > -1.0 && value < 4294967296.0)){ // (-1, 2^32)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i32_t)(u64_t)value);
 }

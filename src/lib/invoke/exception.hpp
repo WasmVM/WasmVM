@@ -53,6 +53,9 @@ namespace Exception {
     struct null_reference : public Exception {
         null_reference();
     };
+    struct invalid_conversion_to_integer : public Exception {
+        invalid_conversion_to_integer();
+    };
 }
 }
 

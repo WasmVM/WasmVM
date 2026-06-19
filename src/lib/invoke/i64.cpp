@@ -138,17 +138,39 @@ void RunVisitor::operator()(Instr::I64_extend_i32_s&){
 void RunVisitor::operator()(Instr::I64_extend_i32_u&){
     put_op(stack, (i64_t)(u32_t)get_op<i32_t>(stack));
 }
+// Non-saturating float-to-integer truncation traps (rather than saturating)
+// when the operand is NaN, infinite, or truncates outside the target range.
+// At i64 scale the f64 spacing around the bounds exceeds 1, so the signed low
+// bound is the exactly-representable -2^63 (the next-lower f64 is already out
+// of range); the high bound 2^63 is excluded. NaN and infinities fail every
+// comparison below, so they fall through to the trap automatically.
 void RunVisitor::operator()(Instr::I64_trunc_f32_s&){
-    put_op(stack, (i64_t)get_op<f32_t>(stack));
+    f32_t value = get_op<f32_t>(stack);
+    if(!(value >= -9223372036854775808.0 && value < 9223372036854775808.0)){ // [-2^63, 2^63)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i64_t)value);
 }
 void RunVisitor::operator()(Instr::I64_trunc_f32_u&){
-    put_op(stack, (i64_t)(u32_t)get_op<f32_t>(stack));
+    f32_t value = get_op<f32_t>(stack);
+    if(!(value > -1.0 && value < 18446744073709551616.0)){ // (-1, 2^64)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i64_t)(u64_t)value);
 }
 void RunVisitor::operator()(Instr::I64_trunc_f64_s&){
-    put_op(stack, (i64_t)get_op<f64_t>(stack));
+    f64_t value = get_op<f64_t>(stack);
+    if(!(value >= -9223372036854775808.0 && value < 9223372036854775808.0)){ // [-2^63, 2^63)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i64_t)value);
 }
 void RunVisitor::operator()(Instr::I64_trunc_f64_u&){
-    put_op(stack, (i64_t)(u64_t)get_op<f64_t>(stack));
+    f64_t value = get_op<f64_t>(stack);
+    if(!(value > -1.0 && value < 18446744073709551616.0)){ // (-1, 2^64)
+        throw Exception::invalid_conversion_to_integer();
+    }
+    put_op(stack, (i64_t)(u64_t)value);
 }
 void RunVisitor::operator()(Instr::I64_reinterpret_f64&){
     f64_t value = get_op<f64_t>(stack);
