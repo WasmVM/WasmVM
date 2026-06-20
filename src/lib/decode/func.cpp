@@ -20,7 +20,15 @@ Stream& Decode::Code::read(Stream& stream){
             code_end += stream.location();
             // Locals
             for(u32_t local_count = stream.get<u32_t>(); local_count > 0; --local_count){
-                func.locals.insert(func.locals.end(), stream.get<u32_t>(), stream.get<ValueType>());
+                // Read the run length and value type as separate, ordered
+                // statements. The evaluation order of function arguments is
+                // unspecified in C++, so passing both stream.get<>() calls
+                // directly to insert() reads them in an ABI-dependent order and
+                // desyncs the stream on some targets (e.g. x86-64), corrupting
+                // every function that declares locals.
+                u32_t count = stream.get<u32_t>();
+                ValueType type = stream.get<ValueType>();
+                func.locals.insert(func.locals.end(), count, type);
             }
             while(stream.location() < code_end){
                 stream >> func.body.emplace_back();
