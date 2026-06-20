@@ -1,9 +1,18 @@
+# On Windows the WasmVM DLL exports no data symbols, so executables that touch
+# header-inline statics fail to link against it. Link the static library there;
+# elsewhere link the shared library as before.
+if(WIN32)
+    set(WASMVM_LINK_LIB WasmVM_static)
+else()
+    set(WASMVM_LINK_LIB WasmVM)
+endif()
+
 add_executable(wasmvm-as
     as.cpp
     CommandParser.cpp
 )
 target_link_libraries(wasmvm-as
-    WasmVM
+    ${WASMVM_LINK_LIB}
 )
 
 add_executable(wasmvm-ld
@@ -13,7 +22,7 @@ add_executable(wasmvm-ld
     Archive.cpp
 )
 target_link_libraries(wasmvm-ld
-    WasmVM
+    ${WASMVM_LINK_LIB}
 )
 
 add_executable(readwasm
@@ -21,7 +30,7 @@ add_executable(readwasm
     CommandParser.cpp
 )
 target_link_libraries(readwasm
-    WasmVM
+    ${WASMVM_LINK_LIB}
 )
 
 add_executable(wasmvm-ar
@@ -30,7 +39,7 @@ add_executable(wasmvm-ar
     Archive.cpp
 )
 target_link_libraries(wasmvm-ar
-    WasmVM
+    ${WASMVM_LINK_LIB}
 )
 
 add_executable(wasmvm
@@ -39,7 +48,7 @@ add_executable(wasmvm
     ModuleQueue.cpp
 )
 target_link_libraries(wasmvm
-    WasmVM
+    ${WASMVM_LINK_LIB}
 )
 if(BUILD_HOST_MODULES)
 target_link_libraries(wasmvm
