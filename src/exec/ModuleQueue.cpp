@@ -38,7 +38,7 @@ ModuleQueue::ModuleQueue(
     std::function<void(std::filesystem::path)> find_deps = [&](std::filesystem::path file_path){
         Node node;
         node.file_path = file_path;
-        std::ifstream istream(file_path);
+        std::ifstream istream(file_path, std::ios::binary | std::ios::in);
         node.module = module_decode(istream);
         if(validate){
             std::optional<Exception::Exception> err = module_validate(node.module);
