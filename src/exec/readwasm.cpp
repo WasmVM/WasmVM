@@ -58,8 +58,9 @@ int main(int argc, char const *argv[]){
     }
 
     try {
-        // Decode
-        std::ifstream input_file(input_path);
+        // Decode (binary: a wasm module is a byte stream; text mode would
+        // mangle 0x0d/0x1a bytes on Windows)
+        std::ifstream input_file(input_path, std::ios::binary | std::ios::in);
         WasmModule decoded_module = module_decode(input_file);
         input_file.close();
 

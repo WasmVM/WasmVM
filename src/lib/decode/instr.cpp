@@ -28,7 +28,12 @@ using BlockType = std::optional<index_t>;
     case Opcode::I :{ \
         u32_t align = stream.get<u32_t>(); \
         if(align >= 0x40){ \
-            instr = Instr::I(stream.get<u32_t>(), stream.get<u32_t>(), align - 0x40); \
+            /* Read memidx then offset in order: argument evaluation order is \
+               unspecified in C++, so two inline get<>() calls would swap them \
+               on some ABIs (e.g. x86-64). */ \
+            u32_t memidx = stream.get<u32_t>(); \
+            u32_t offset = stream.get<u32_t>(); \
+            instr = Instr::I(memidx, offset, align - 0x40); \
         }else{ \
             instr = Instr::I(0, stream.get<u32_t>(), align); \
         } \
@@ -406,16 +411,24 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
             stream >> ins.valtypes;
             instr = ins;
         }break;
-        case Opcode::Table_copy :
-            instr = Instr::Table_copy(stream.get<index_t>(), stream.get<index_t>());
-        break;
+        case Opcode::Table_copy : {
+            // Read both indices in order (unspecified argument evaluation order
+            // would swap them on some ABIs, e.g. x86-64).
+            index_t dstidx = stream.get<index_t>();
+            index_t srcidx = stream.get<index_t>();
+            instr = Instr::Table_copy(dstidx, srcidx);
+        }break;
         case Opcode::Table_init : {
             index_t elemidx = stream.get<index_t>();
             instr = Instr::Table_init(stream.get<index_t>(), elemidx);
         }break;
-        case Opcode::Memory_copy :
-            instr = Instr::Memory_copy(stream.get<index_t>(), stream.get<index_t>());
-        break;
+        case Opcode::Memory_copy : {
+            // Read both indices in order (unspecified argument evaluation order
+            // would swap them on some ABIs, e.g. x86-64).
+            index_t dstidx = stream.get<index_t>();
+            index_t srcidx = stream.get<index_t>();
+            instr = Instr::Memory_copy(dstidx, srcidx);
+        }break;
         case Opcode::Memory_init : {
             index_t dataidx = stream.get<index_t>();
             instr = Instr::Memory_init(stream.get<index_t>(), dataidx);
