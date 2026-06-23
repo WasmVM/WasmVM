@@ -20,6 +20,9 @@ target_include_directories(WasmVM_textfmt
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}
 )
 set_property(TARGET WasmVM_textfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+# PCH is disabled on MSVC: its marker symbols pollute the auto-generated
+# exports.def (CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS) and break the DLL link.
+if(NOT MSVC)
 target_precompile_headers(WasmVM_textfmt PRIVATE
     <variant>
     <string>
@@ -28,6 +31,7 @@ target_precompile_headers(WasmVM_textfmt PRIVATE
     <unordered_map>
     <structures/WasmInstr.hpp>
 )
+endif()
 
 add_library(WasmVM_binfmt OBJECT
     # encode
@@ -58,11 +62,13 @@ add_library(WasmVM_binfmt OBJECT
     decode/data.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
+if(NOT MSVC)
 target_precompile_headers(WasmVM_binfmt PRIVATE
     <variant>
     <vector>
     <structures/WasmInstr.hpp>
 )
+endif()
 
 add_library(WasmVM_src OBJECT
     exception.cpp
@@ -83,12 +89,14 @@ add_library(WasmVM_validate OBJECT
     validate/import.cpp
 )
 set_property(TARGET WasmVM_validate PROPERTY POSITION_INDEPENDENT_CODE 1)
+if(NOT MSVC)
 target_precompile_headers(WasmVM_validate PRIVATE
     <variant>
     <optional>
     <vector>
     <structures/WasmInstr.hpp>
 )
+endif()
 
 add_library(WasmVM_exec OBJECT
     instanciate.cpp
@@ -109,6 +117,7 @@ add_library(WasmVM_exec OBJECT
     invoke/numeric.cpp
 )
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
+if(NOT MSVC)
 target_precompile_headers(WasmVM_exec PRIVATE
     <variant>
     <optional>
@@ -117,6 +126,7 @@ target_precompile_headers(WasmVM_exec PRIVATE
     <structures/WasmInstr.hpp>
     <instances/Stack.hpp>
 )
+endif()
 
 add_library(WasmVM_json OBJECT
     json/json.cpp
@@ -134,7 +144,11 @@ add_library(WasmVM SHARED
 target_link_libraries(WasmVM)
 set_property(TARGET WasmVM PROPERTY POSITION_INDEPENDENT_CODE 1)
 
-if(DEV_BUILD)
+# Build the static library when requested (DEV_BUILD) and always on Windows,
+# where the executables must link it: the WasmVM DLL exports no data symbols
+# (no __declspec(dllimport) in the headers), so MSVC can't resolve header-inline
+# references to DLL-resident statics. Linking the static lib avoids that.
+if(DEV_BUILD OR WIN32)
 add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_textfmt>
     $<TARGET_OBJECTS:WasmVM_binfmt>
@@ -144,13 +158,22 @@ add_library(WasmVM_static STATIC
     $<TARGET_OBJECTS:WasmVM_json>
 )
 target_link_libraries(WasmVM_static)
-set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
+# On Windows a SHARED library's import lib and a STATIC library both use the
+# ".lib" extension, so sharing OUTPUT_NAME "WasmVM" collides. Give the static
+# library a distinct name there; keep "WasmVM" everywhere else.
+if(WIN32)
+    set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM_static)
+else()
+    set_property(TARGET WasmVM_static PROPERTY OUTPUT_NAME WasmVM)
+endif()
 
-install(TARGETS WasmVM_static 
+if(DEV_BUILD)
+install(TARGETS WasmVM_static
     COMPONENT library
     ARCHIVE DESTINATION lib
 )
 endif(DEV_BUILD)
+endif()
 
 install(TARGETS WasmVM
     COMPONENT dll

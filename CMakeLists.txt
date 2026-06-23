@@ -13,15 +13,25 @@ set(CMAKE_CXX_STANDARD_REQUIRED 20)
 
 if(MSVC)
   add_compile_options(/bigobj)
+  # MSVC DLLs export nothing without explicit __declspec(dllexport)/.def files,
+  # so no import library is generated and dependents fail to link. Auto-export
+  # all symbols so every SHARED library produces a usable import .lib.
+  set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif(MSVC)
 
-# LTO for Release builds
+# LTO for Release builds.
+# Note: MSVC's LTCG (/GL) is incompatible with CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS
+# (above) -- the intermediate LTCG object files carry no readable symbol table,
+# so the auto-generated exports.def comes out empty and the DLL exports nothing.
+# Skip LTO on MSVC; Release still gets /O2.
 include(CheckIPOSupported)
 check_ipo_supported(RESULT LTO_SUPPORTED OUTPUT LTO_OUTPUT)
-if(LTO_SUPPORTED)
+if(LTO_SUPPORTED AND NOT MSVC)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
     set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
     message(STATUS "LTO enabled for Release builds")
+elseif(MSVC)
+    message(STATUS "LTO disabled on MSVC (incompatible with auto-exported DLL symbols)")
 else()
     message(STATUS "LTO not supported: ${LTO_OUTPUT}")
 endif()
