@@ -27,11 +27,11 @@ jobs:
       url: ${{ steps.deployment.outputs.page_url }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
-    container:
-        image: wasmvm/wasmvm:amd64
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+      - name: Install dependencies
+        run: sudo apt-get update && sudo apt-get install -y python3-sphinx ninja-build
       - name: Setup Pages
         uses: actions/configure-pages@v5
       - run: mkdir -p build && cd build && cmake -G Ninja -D CMAKE_BUILD_TYPE=Release .. && ninja docs
