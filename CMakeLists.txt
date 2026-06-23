@@ -69,7 +69,6 @@ if(BUILD_HOST_MODULES)
   add_compile_definitions(HOST_MODULES)
 endif(BUILD_HOST_MODULES)
 
-add_subdirectory(external)
 add_subdirectory(src)
 
 set(BUILD_DOCS ON CACHE BOOL "Build documentation")

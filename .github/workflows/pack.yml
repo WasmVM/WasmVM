@@ -8,6 +8,7 @@ on:
 jobs:
   ubuntu:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Configure CMake
@@ -30,6 +31,7 @@ jobs:
           path: ${{ github.workspace }}/packages/*.deb
   ubuntu-dev:
     runs-on: ubuntu-latest
+    timeout-minutes: 45
     steps:
       - uses: actions/checkout@v4
       - name: Configure CMake
@@ -53,6 +55,7 @@ jobs:
 
   macos-dev:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@v4
     - name: Configure CMake
@@ -75,6 +78,7 @@ jobs:
         path: ${{ github.workspace }}/packages/*.pkg
   macos:
     runs-on: macos-latest
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@v4
     - name: Configure CMake
@@ -98,6 +102,7 @@ jobs:
 
   windows-dev:
     runs-on: windows-latest
+    timeout-minutes: 45
     steps:
     - uses: actions/checkout@v4
     - name: Install NSIS
@@ -123,6 +128,7 @@ jobs:
 
   release:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     needs: [ubuntu, ubuntu-dev, macos, macos-dev, windows-dev]
     permissions:
       contents: write 

@@ -1,14 +1,21 @@
-name: CMake
+name: Build & test
 
 on:
   push:
+    branches: [ "master" ]
   pull_request:
     branches: [ "master" ]
 
+# Cancel an in-progress run when a newer commit is pushed to the same ref,
+# so feature-branch updates and superseded PR runs don't pile up.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  # Ubuntu + macOS run on every push and PR.
   build:
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 30
 
     strategy:
       fail-fast: false
@@ -48,12 +55,13 @@ jobs:
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --output-on-failure --build-config ${{ matrix.build_type }}
+      run: ctest --output-on-failure --build-config ${{ matrix.build_type }} --timeout 60
 
-  # Windows runs only on pull requests.
+  # Windows runs on both master pushes and pull requests, so a Windows-specific
+  # fix is validated again after it lands on master.
   build-windows:
-    if: github.event_name == 'pull_request'
     runs-on: windows-latest
+    timeout-minutes: 30
 
     steps:
     - uses: actions/checkout@v4
@@ -75,4 +83,4 @@ jobs:
 
     - name: Test
       working-directory: ${{ steps.strings.outputs.build-output-dir }}
-      run: ctest --output-on-failure --build-config Release
+      run: ctest --output-on-failure --build-config Release --timeout 60
