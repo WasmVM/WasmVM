@@ -188,36 +188,21 @@ CommandParser::CommandParser(int argc, const char* argv[],
                 ++argi;
                 process_option(opt_name, inline_val, argi);
             } else {
-                // Short option cluster: -abc, -oVALUE, -o=VALUE
-                // Process characters left to right. A flag (number==0) is consumed
-                // and the next character starts a new option. A value-taking option
-                // eats the rest of the string (with optional leading '=') or the
-                // next argv.
-                ++argi;
-                for(size_t i = 1; i < arg.size(); ){
-                    std::string short_opt = std::string("-") + arg[i];
-                    std::string resolved = aliases.contains(short_opt) ? aliases[short_opt]
-                                         : optmap.contains(short_opt) ? short_opt : "";
-                    if(resolved.empty()){
-                        std::cerr << COLOR_Error ": unknown option '" << short_opt << "'" << std::endl;
-                        help(program, desc, options);
-                        std::exit(-1);
-                    }
-                    ++i;
-                    if(optmap[resolved].number == 0){
-                        args[resolved].emplace<std::monostate>();
-                    } else {
-                        // Rest of the cluster string is the inline value (strip leading '=')
-                        std::string rest = arg.substr(i);
-                        if(!rest.empty() && rest[0] == '='){
-                            rest = rest.substr(1);
-                        }
-                        auto inline_val = rest.empty() ? std::optional<std::string>{}
-                                                       : std::make_optional(rest);
-                        process_option(resolved, inline_val, argi);
-                        break; // rest of cluster was consumed as value
-                    }
+                // Short option: matched as a whole token so multi-character
+                // aliases like "-ns" work (no getopt-style "-abc" clustering).
+                // A value-taking option consumes the next argv, matching the
+                // documented "-o <file>" form.
+                std::string opt_name = arg;
+                if(aliases.contains(opt_name)){
+                    opt_name = aliases[opt_name];
                 }
+                if(!optmap.contains(opt_name)){
+                    std::cerr << COLOR_Error ": unknown option '" << arg << "'" << std::endl;
+                    help(program, desc, options);
+                    std::exit(-1);
+                }
+                ++argi;
+                process_option(opt_name, std::nullopt, argi);
             }
             continue;
         }
