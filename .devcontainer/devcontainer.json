@@ -1,5 +1,0 @@
-{
-	"name": "WasmVM",
-	"dockerFile": "../docker/Dockerfile.test",
-	"runArgs": ["--cap-add=SYS_PTRACE"]
-}
