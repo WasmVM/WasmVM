@@ -122,7 +122,7 @@ int main(int argc, char const *argv[]){
             }
         }
         // Start
-        if(args["export"]){
+        if(args["start"]){
             if(decoded_module.start){
                 std::cout << "  (start " << decoded_module.start.value() << ")" << std::endl;
             }

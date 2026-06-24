@@ -141,7 +141,7 @@ int main(int argc, char const *argv[]){
         if(args["no-parent"]){
             check_parent = false;
         }
-        if(!args["no-sysyem"]){
+        if(!args["no-system"]){
             system_path = DEFAULT_MODULE_PATH;
         }
         if(args["force"]){
