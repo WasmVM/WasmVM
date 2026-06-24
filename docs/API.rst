@@ -28,6 +28,10 @@ Exception
     .. cpp:function:: Decode(std::string msg, size_t location)
     .. cpp:member:: size_t location
 
+.. cpp:struct:: WasmVM::Exception::unexpected_eof : public Exception
+
+    .. cpp:function:: unexpected_eof()
+
 .. cpp:struct:: WasmVM::Exception::Warning
 
     .. cpp:function:: Warning(std::string msg)

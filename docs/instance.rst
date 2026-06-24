@@ -8,16 +8,49 @@ Stack
 
     .. cpp:function:: Stack(Store& store)
     .. cpp:function:: void invoke(index_t funcaddr, std::vector<Value> args)
+    .. cpp:function:: std::vector<Value> run()
+    .. cpp:member:: Store& store
+    .. cpp:member:: std::stack<Frame> frames
+    .. cpp:member:: std::vector<Value> results
+
+.. cpp:struct:: WasmVM::Frame
+
+    Per-call activation frame pushed onto :cpp:member:`Stack::frames`.
+
+    .. cpp:function:: Frame(ModuleInst& module, index_t funcaddr)
     .. cpp:member:: std::stack<Label> labels
     .. cpp:member:: std::vector<Value> locals
     .. cpp:member:: ModuleInst& module
     .. cpp:member:: index_t funcaddr
 
 .. cpp:struct:: WasmVM::Label
-    
+
     .. cpp:member:: size_t arity
     .. cpp:member:: std::optional<Counters> pc
     .. cpp:member:: Values values
+    .. cpp:member:: std::vector<CatchEntry> catches
+
+        Non-empty for ``try_table`` labels (exception-handling proposal).
+
+.. cpp:struct:: WasmVM::Label::CatchEntry
+
+    A single catch clause of a ``try_table`` label.
+
+    .. cpp:enum:: Kind
+
+        .. cpp:enumerator:: Catch
+        .. cpp:enumerator:: CatchRef
+        .. cpp:enumerator:: CatchAll
+        .. cpp:enumerator:: CatchAllRef
+
+    .. cpp:member:: Kind kind
+    .. cpp:member:: index_t tag_addr
+
+        Resolved tag address (only valid for ``Catch`` / ``CatchRef``).
+
+    .. cpp:member:: index_t label_idx
+
+        Branch target label index.
 
 .. cpp:struct:: WasmVM::Label::Values : public std::stack<Value>
 
@@ -40,6 +73,7 @@ Store
     .. cpp:member:: std::vector<GlobalInst> globals
     .. cpp:member:: std::vector<ElemInst> elems
     .. cpp:member:: std::vector<DataInst> datas
+    .. cpp:member:: std::vector<TagInst> tags
 
 Instances
 ---------
@@ -55,6 +89,7 @@ Instances
     .. cpp:member:: std::vector<index_t> globaladdrs
     .. cpp:member:: std::vector<index_t> elemaddrs
     .. cpp:member:: std::vector<index_t> dataaddrs
+    .. cpp:member:: std::vector<index_t> tagaddrs
     .. cpp:member:: std::vector<ExportInst> exports
 
     .. cpp:function:: void reset()

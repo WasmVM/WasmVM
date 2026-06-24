@@ -10,7 +10,7 @@
 
 * CMake >= 3.16
 
-* C compiler with C11 standard
+* A C/C++ compiler supporting C11 and C++20
 
 ## Notice
  

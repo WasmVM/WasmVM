@@ -6,18 +6,17 @@ interface to wasm modules. It is split into two sub-modules — ``sys_fs`` for
 filesystem operations and ``sys_proc`` for process / environment access — both
 registered automatically by ``wasmvm`` unless ``--no-system`` is supplied.
 
-Each function below is registered with both an ``i32`` (wasm32) and an ``i64``
-(wasm64) variant for every pointer / length parameter. The matching variant is
-selected at link time from the importing module's declared parameter types, so
-the same host can serve both wasm32 and wasm64 callers.
+WasmVM targets the 64-bit memory model (wasm64), so every function below is
+registered with ``i64`` pointer and length parameters. Other scalar arguments
+(``fd``, ``flags``, ``mode``, ``whence``, ``clk_id`` …) remain ``i32``.
 
 Pointer / length convention
 ---------------------------
 
-For functions that take buffers, parameter pairs named ``ptr`` and ``len``
-refer to a contiguous range in memory 0 of the calling module. Negative ``i32``
-return values are POSIX-style errors: the magnitude equals the host's
-``errno`` after the failed syscall.
+For functions that take buffers, parameter pairs named ``ptr`` and ``len`` are
+``i64`` and refer to a contiguous range in memory 0 of the calling module.
+Negative ``i32`` return values are POSIX-style errors: the magnitude equals the
+host's ``errno`` after the failed syscall.
 
 sys_fs
 ------
@@ -29,7 +28,7 @@ Filesystem operations.
     :widths: 18 32 50
 
     * - Function
-      - Signature (wasm32 form)
+      - Signature
       - Description
     * - ``open``
       - ``(path_ptr, path_len, flags:i32, mode:i32) -> i32``
@@ -66,21 +65,18 @@ Filesystem operations.
       - Remove an empty directory.
     * - ``getcwd``
       - ``(buf_ptr, buf_len) -> i32``
-      - Write the current working directory into ``buf``; returns length.
+      - Write the current working directory into ``buf``; returns the length
+        written, including the terminating null byte.
     * - ``opendir``
       - ``(path_ptr, path_len) -> i32``
       - Open a directory iterator; returns a directory fd.
     * - ``readdir``
       - ``(dir_fd:i32, entry_ptr) -> i32``
-      - Read the next entry; returns ``0`` at end-of-directory.
+      - Read the next entry into ``entry_ptr``; returns ``0`` when an entry was
+        written, ``1`` at end-of-directory, or a negative error.
     * - ``closedir``
       - ``(dir_fd:i32) -> i32``
       - Close a directory iterator.
-
-The ``i64`` variants accept ``i64`` for every ``ptr`` and ``len`` argument
-(``mode``, ``flags``, ``whence`` and ``fd`` remain ``i32``); for example
-``open`` is also registered as ``(i64, i64, i32, i32) -> i32`` for wasm64
-callers.
 
 sys_proc
 --------
@@ -92,7 +88,7 @@ Process and environment access.
     :widths: 22 30 48
 
     * - Function
-      - Signature (wasm32 form)
+      - Signature
       - Description
     * - ``exit``
       - ``(code:i32) -> ()``

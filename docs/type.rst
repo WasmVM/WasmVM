@@ -111,8 +111,16 @@ Enumerations
         Denote funcref_t value
     
     .. cpp:enumerator:: externref
-        
+
         Denote externref_t value
+
+    .. cpp:enumerator:: i31ref
+
+        Denote i31ref_t value (GC proposal)
+
+    .. cpp:enumerator:: exnref
+
+        Denote exnref_t value (exception-handling proposal)
 
 .. cpp:enum:: WasmVM::RefType
 
@@ -127,7 +135,7 @@ Enumerations
 Object types
 ------------
 
-.. cpp:type:: WasmVM::Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t>
+.. cpp:type:: WasmVM::Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>
 
     General type of value
 

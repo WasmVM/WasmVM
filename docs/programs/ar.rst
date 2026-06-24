@@ -83,7 +83,7 @@ Options
     List mode:
         Extra prefix applied to archived module path while listing.
 
---config, -f
+--config, -c
     Create mode:
         Path of JSON configuration file.
 
