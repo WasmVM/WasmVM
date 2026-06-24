@@ -21,7 +21,7 @@ Table instructions
 .. cpp:enumerator:: WasmVM::Opcode::Elem_drop = 0xFC0D
 
 .. cpp:type:: WasmVM::Instr::Table_grow = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_grow>
-.. cpp:enumerator:: WasmVM::Opcode::Table_grow = 0xFC0E
+.. cpp:enumerator:: WasmVM::Opcode::Table_grow = 0xFC0F
 
 .. cpp:struct:: WasmVM::Instr::Table_copy : public Base
 
@@ -31,7 +31,7 @@ Table instructions
 
     .. cpp:member:: index_t srcidx = 0
 
-.. cpp:enumerator:: WasmVM::Opcode::Table_copy = 0xFC0F
+.. cpp:enumerator:: WasmVM::Opcode::Table_copy = 0xFC0E
 
 .. cpp:type:: WasmVM::Instr::Table_size = WasmVM::Instr::OneIndex<WasmVM::Opcode::Table_size>
 .. cpp:enumerator:: WasmVM::Opcode::Table_size = 0xFC10
