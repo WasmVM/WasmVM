@@ -13,9 +13,18 @@ macro(add_test_suite suite_name)
     COMMAND ${CMAKE_CURRENT_BINARY_DIR}/test_${suite_name}
     WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/${suite_name}
   )
-  set_property(TEST suite_${suite_name} PROPERTY 
+  set_property(TEST suite_${suite_name} PROPERTY
     ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
   )
+  # On Windows the loader searches the executable's own directory for
+  # WasmVM.dll, not src/lib. Copy the DLL next to the test binary so the
+  # suite can launch instead of blocking on a missing-DLL dialog.
+  if(WIN32)
+    add_custom_command(TARGET suite_${suite_name}_target POST_BUILD
+      COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        $<TARGET_FILE:WasmVM> $<TARGET_FILE_DIR:suite_${suite_name}_target>
+    )
+  endif()
 endmacro(add_test_suite)
 
 include_directories(
