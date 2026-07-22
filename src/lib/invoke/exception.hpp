@@ -56,6 +56,14 @@ namespace Exception {
     struct invalid_conversion_to_integer : public Exception {
         invalid_conversion_to_integer();
     };
+    // i{32,64}.{div,rem}_{s,u} with a zero divisor.
+    struct integer_divide_by_zero : public Exception {
+        integer_divide_by_zero();
+    };
+    // i{32,64}.div_s of INT_MIN by -1, whose quotient is not representable.
+    struct integer_overflow : public Exception {
+        integer_overflow();
+    };
 }
 }
 

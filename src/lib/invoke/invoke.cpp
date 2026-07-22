@@ -183,3 +183,7 @@ null_reference::null_reference() :
     Exception("null reference") {}
 invalid_conversion_to_integer::invalid_conversion_to_integer() :
     Exception("invalid conversion to integer") {}
+integer_divide_by_zero::integer_divide_by_zero() :
+    Exception("integer divide by zero") {}
+integer_overflow::integer_overflow() :
+    Exception("integer overflow") {}

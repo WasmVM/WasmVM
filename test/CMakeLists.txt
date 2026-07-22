@@ -9,3 +9,4 @@ add_subdirectory(harness)
 # testsuite
 add_subdirectory(parse)
 add_subdirectory(exec)
+add_subdirectory(invoke)
