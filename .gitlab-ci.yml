@@ -49,11 +49,9 @@ build:
   extends: .cmake_build
   parallel:
     matrix:
-      - TOOLCHAIN: gcc
-        CC: gcc
+      - CC: gcc
         CXX: g++
-      - TOOLCHAIN: clang
-        CC: clang
+      - CC: clang
         CXX: clang++
 
 # Catches Sphinx errors; does not publish. To serve on GitLab Pages, rename
