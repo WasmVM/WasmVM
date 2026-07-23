@@ -1,0 +1,82 @@
+# CI for WasmVM on GitLab.
+#
+# Mirrors the build+test matrix of .github/workflows/main.yml (gcc and clang,
+# Release, ctest). The instance runners are untagged with run_untagged=true,
+# so no `tags:` key is needed here.
+
+workflow:
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    - if: $CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS
+      when: never
+    - if: $CI_COMMIT_BRANCH
+
+stages:
+  - build
+  - docs
+
+variables:
+  GIT_DEPTH: "50"
+  # Console colours emit ANSI escapes that are not valid XML, which corrupts
+  # the ctest JUnit report GitLab parses for the MR test widget.
+  CMAKE_OPTS: >-
+    -G Ninja
+    -D CMAKE_BUILD_TYPE=Release
+    -D CONSOLE_COLOR=OFF
+    -D BUILD_DOCS=OFF
+
+.cmake_build:
+  stage: build
+  image: ubuntu:22.04
+  interruptible: true
+  timeout: 30m
+  before_script:
+    - apt-get update -qq
+    - >-
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+      gcc g++ clang cmake ninja-build binutils git
+  script:
+    - cmake -S . -B build $CMAKE_OPTS -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX
+    - cmake --build build --parallel
+    - ctest --test-dir build --output-on-failure --output-junit ctest-report.xml
+  artifacts:
+    when: always
+    expire_in: 1 week
+    reports:
+      junit: build/ctest-report.xml
+
+build:
+  extends: .cmake_build
+  parallel:
+    matrix:
+      - CC: gcc
+        CXX: g++
+      - CC: clang
+        CXX: clang++
+
+# Catches Sphinx errors; does not publish. To serve on GitLab Pages, rename
+# this job to `pages`, move the html to `public/`, and artifact that path.
+docs:
+  stage: docs
+  image: ubuntu:22.04
+  interruptible: true
+  timeout: 15m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [docs/**/*]
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      changes: [docs/**/*]
+  before_script:
+    - apt-get update -qq
+    # gcc/g++ are needed even here: project() enables C/CXX, so configure fails
+    # without a compiler even though `docs` is a custom target.
+    - >-
+      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
+      gcc g++ cmake ninja-build git python3-sphinx
+  script:
+    - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
+    - cmake --build build --target docs
+  artifacts:
+    expire_in: 1 week
+    paths:
+      - build/docs/html
