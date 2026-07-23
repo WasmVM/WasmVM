@@ -12,6 +12,7 @@ build*/
 
 .vscode
 .devcontainer
+.claude/
 docker/
 packages/
 .antlr/
