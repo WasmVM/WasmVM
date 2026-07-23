@@ -84,20 +84,42 @@ void RunVisitor::operator()(Instr::I64_mul&){
     auto ops = get_ops<i64_t>(stack);
     put_op(stack, ops.first * ops.second);
 }
+// Traps rather than C++ UB -- see the matching note in i32.cpp.
 void RunVisitor::operator()(Instr::I64_div_s&){
     auto ops = get_ops<i64_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
+    // INT64_MIN / -1 is +2^63, one past the top of the signed range.
+    if((ops.first == std::numeric_limits<i64_t>::min()) && (ops.second == -1)){
+        throw Exception::integer_overflow();
+    }
     put_op(stack, ops.first / ops.second);
 }
 void RunVisitor::operator()(Instr::I64_div_u&){
     auto ops = get_ops<i64_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
     put_op(stack, (i64_t)((u64_t)ops.first / (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_rem_s&){
     auto ops = get_ops<i64_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
+    // INT64_MIN % -1 is 0 and does not trap, but must not go through C++ `%`.
+    if((ops.first == std::numeric_limits<i64_t>::min()) && (ops.second == -1)){
+        put_op(stack, (i64_t)0);
+        return;
+    }
     put_op(stack, ops.first % ops.second);
 }
 void RunVisitor::operator()(Instr::I64_rem_u&){
     auto ops = get_ops<i64_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
     put_op(stack, (i64_t)((u64_t)ops.first % (u64_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I64_and&){

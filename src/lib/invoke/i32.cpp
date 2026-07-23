@@ -80,20 +80,47 @@ void RunVisitor::operator()(Instr::I32_mul&){
     auto ops = get_ops<i32_t>(stack);
     put_op(stack, ops.first * ops.second);
 }
+// The integer division opcodes trap instead of reaching C++ `/` and `%` with
+// operands those are not defined for. Both guarded cases are *undefined
+// behavior* in C++, not merely wrong answers: on x86-64 `idiv` raises #DE, so
+// the host process dies of SIGFPE and takes the embedder down with it. The
+// spec makes them wasm traps, which an embedder can catch.
 void RunVisitor::operator()(Instr::I32_div_s&){
     auto ops = get_ops<i32_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
+    // INT32_MIN / -1 is +2^31, one past the top of the signed range.
+    if((ops.first == std::numeric_limits<i32_t>::min()) && (ops.second == -1)){
+        throw Exception::integer_overflow();
+    }
     put_op(stack, ops.first / ops.second);
 }
 void RunVisitor::operator()(Instr::I32_div_u&){
     auto ops = get_ops<i32_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
     put_op(stack, (i32_t)((u32_t)ops.first / (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_rem_s&){
     auto ops = get_ops<i32_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
+    // INT32_MIN % -1 is 0 and does *not* trap, unlike div_s -- but evaluating
+    // it through C++ `%` is the same UB as the division, so answer directly.
+    if((ops.first == std::numeric_limits<i32_t>::min()) && (ops.second == -1)){
+        put_op(stack, (i32_t)0);
+        return;
+    }
     put_op(stack, ops.first % ops.second);
 }
 void RunVisitor::operator()(Instr::I32_rem_u&){
     auto ops = get_ops<i32_t>(stack);
+    if(ops.second == 0){
+        throw Exception::integer_divide_by_zero();
+    }
     put_op(stack, (i32_t)((u32_t)ops.first % (u32_t)ops.second));
 }
 void RunVisitor::operator()(Instr::I32_and&){
