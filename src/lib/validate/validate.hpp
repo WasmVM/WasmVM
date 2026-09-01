@@ -24,6 +24,7 @@ struct Validator {
         std::vector<TableType> tables;
         std::vector<MemType> mems;
         std::vector<GlobalType> globals;
+        std::vector<FuncType> tags;
         const std::vector<WasmElem>& elems;
         const std::vector<WasmData>& datas;
     };

@@ -148,6 +148,7 @@ ValueType ParseContext::parse_valtype() {
     else if (t.text == "f64")      return ValueType(ValueType::f64);
     else if (t.text == "funcref")  return ValueType(ValueType::funcref);
     else if (t.text == "externref") return ValueType(ValueType::externref);
+    else if (t.text == "exnref")   return ValueType(ValueType::exnref);
     throw Exception::Parse("unknown valtype '" + t.text + "'", {t.line, t.column});
 }
 
@@ -187,7 +188,8 @@ std::pair<std::string, std::vector<ValueType>> ParseContext::parse_param() {
         while (tok_.peek().type == TokenType::Keyword &&
                (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
                 tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-                tok_.peek().text == "funcref" || tok_.peek().text == "externref")) {
+                tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
+                tok_.peek().text == "exnref")) {
             result.second.push_back(parse_valtype());
         }
     }
@@ -202,7 +204,8 @@ std::vector<ValueType> ParseContext::parse_result() {
     while (tok_.peek().type == TokenType::Keyword &&
            (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
             tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-            tok_.peek().text == "funcref" || tok_.peek().text == "externref")) {
+            tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
+            tok_.peek().text == "exnref")) {
         results.push_back(parse_valtype());
     }
     tok_.expect(TokenType::RParen);
