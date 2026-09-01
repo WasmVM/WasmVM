@@ -59,6 +59,10 @@ void ParseContext::post_process() {
                     auto& blk = std::get<WasmInstr::BlockType>(instr.imm);
                     if (blk.type && typemap.contains(blk.type.value())) blk.type = typemap[blk.type.value()];
                 } break;
+                case Opcode::Try_table: {
+                    auto& tt = std::get<WasmInstr::TryTab>(instr.imm);
+                    if (tt.type && typemap.contains(tt.type.value())) tt.type = typemap[tt.type.value()];
+                } break;
                 case Opcode::Call_indirect: {
                     auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
                     if (typemap.contains(tw.b)) tw.b = typemap[tw.b]; // b = typeidx
@@ -165,5 +169,9 @@ void ParseContext::post_process() {
     for (WasmImport& imp : module_.imports) {
         if (std::holds_alternative<index_t>(imp.desc) && typemap.contains(std::get<index_t>(imp.desc)))
             imp.desc = typemap[std::get<index_t>(imp.desc)];
+    }
+    // tags
+    for (index_t& tag : module_.tags) {
+        if (typemap.contains(tag)) tag = typemap[tag];
     }
 }

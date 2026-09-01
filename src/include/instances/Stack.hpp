@@ -3,6 +3,7 @@
 
 #include <Types.hpp>
 #include <structures/WasmFunc.hpp>
+#include <atomic>
 #include <stack>
 #include <variant>
 #include <functional>
@@ -50,10 +51,19 @@ struct Frame {
 };
 
 struct Stack {
-    Stack(Store& store) : store(store){}
+    /// \param interrupt Optional external interrupt flag, owned by the embedder
+    ///   and typically set from another thread. When it reads true, run() throws
+    ///   Exception::interrupted at the top of the interpreter loop; the guest
+    ///   cannot catch it (try_table/catch_all only handles wasm-level throws).
+    ///   A Stack whose run() was interrupted is abandoned — there is no resume.
+    ///   Note: the flag is polled between instructions, so a host function
+    ///   (hostfunc_t) is never interrupted mid-call; long-running host functions
+    ///   may poll stack.interrupt themselves.
+    Stack(Store& store, const std::atomic<bool>* interrupt = nullptr) : store(store), interrupt(interrupt){}
     void invoke(index_t funcaddr, std::vector<Value> args);
     std::vector<Value> run();
     Store& store;
+    const std::atomic<bool>* interrupt;
     std::stack<Frame> frames;
     std::vector<Value> results;
 };

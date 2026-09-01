@@ -99,6 +99,9 @@ template<> State::CtrlFrame State::pop<State::CtrlFrame>(){
             case Opcode::If :
                 msg += "if result";
             break;
+            case Opcode::Try_table :
+                msg += "try_table result";
+            break;
         }
         throw Exception::Exception(msg);
     }

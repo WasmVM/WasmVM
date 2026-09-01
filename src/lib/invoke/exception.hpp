@@ -23,6 +23,12 @@ namespace Exception {
     struct unreachable : public Exception {
         unreachable();
     };
+    // Stack::run() observed the embedder's interrupt flag; the Stack is
+    // abandoned afterwards. Deliberately not a WasmThrow, so guest
+    // try_table/catch_all can never swallow it.
+    struct interrupted : public Exception {
+        interrupted();
+    };
     struct no_end_of_func : public Exception {
         no_end_of_func();
     };

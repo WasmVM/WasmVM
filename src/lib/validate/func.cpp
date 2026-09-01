@@ -882,6 +882,55 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.push(Opcode::If, type);
                     state.push(type.params);
                 }break;
+                // [t1*] -> [t2*]
+                case Opcode::Try_table : {
+                    const auto& ins = std::get<WasmInstr::TryTab>(instr.imm);
+                    FuncType type;
+                    if(ins.type){
+                        if(ins.type.value() >= context.types.size()){
+                            throw Exception::Exception("type index not found for try_table type");
+                        }
+                        type = context.types[ins.type.value()];
+                    }
+                    state.pop(type.params);
+                    state.push(Opcode::Try_table, type);
+                    // Catch label indices are branch targets from within the body:
+                    // 0 is the try_table's own label (parser and runtime agree on
+                    // this), so validate them with the try_table frame pushed.
+                    for(const Instr::TryCatchEntry& entry : ins.catches){
+                        if(entry.label_idx >= state.ctrls.size()){
+                            throw Exception::Exception("label index not found in try_table catch");
+                        }
+                        std::vector<ValueType> expect;
+                        if((entry.kind == Instr::TryCatchEntry::Catch) || (entry.kind == Instr::TryCatchEntry::CatchRef)){
+                            if(entry.tag_idx >= context.tags.size()){
+                                throw Exception::Exception("tag index not found in try_table catch");
+                            }
+                            expect = context.tags[entry.tag_idx].params;
+                        }
+                        if((entry.kind == Instr::TryCatchEntry::CatchRef) || (entry.kind == Instr::TryCatchEntry::CatchAllRef)){
+                            expect.emplace_back(ValueType::exnref);
+                        }
+                        if(state.ctrls[state.ctrls.size() - 1 - entry.label_idx].types() != expect){
+                            throw Exception::Exception("catch label type not match in try_table");
+                        }
+                    }
+                    state.push(type.params);
+                }break;
+                // [t*] -> []
+                case Opcode::Throw : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if(ins.index >= context.tags.size()){
+                        throw Exception::Exception("tag index not found in throw");
+                    }
+                    state.pop(context.tags[ins.index].params);
+                    state.unreachable();
+                }break;
+                // [exnref] -> []
+                case Opcode::Throw_ref :
+                    state.pop(ValueType::exnref);
+                    state.unreachable();
+                break;
                 // unreachable
                 case Opcode::Unreachable :
                     state.unreachable();

@@ -75,6 +75,15 @@ Suite type {
         Expect(param_f32_result_i64.results.size() == 1);
         Expect(param_f32_result_i64.results[0] == ValueType::i64);
     })
+    Test("exnref", {
+        std::stringstream stream("(module (type (func (param exnref) (result exnref))))");
+        WasmModule test_module = module_parse(stream);
+        FuncType exn_type = test_module.types[0];
+        Expect(exn_type.params.size() == 1);
+        Expect(exn_type.params[0] == ValueType::exnref);
+        Expect(exn_type.results.size() == 1);
+        Expect(exn_type.results[0] == ValueType::exnref);
+    })
     Test("with id", {
         std::stringstream stream("(type $ty1 (func))");
         module_parse(stream);

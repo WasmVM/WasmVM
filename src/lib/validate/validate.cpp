@@ -181,4 +181,20 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
     for(const WasmGlobal& global : module.globals){
         context.globals.emplace_back(global.type);
     }
+    // tags
+    idx = 0;
+    for(index_t typeidx : module.tags){
+        if(typeidx >= module.types.size()){
+            std::stringstream ss;
+            ss << "tag [" << idx << "]: type index " << typeidx << " not exist";
+            throw Exception::Exception(ss.str());
+        }
+        if(!module.types[typeidx].results.empty()){
+            std::stringstream ss;
+            ss << "tag [" << idx << "]: tag type should have no result";
+            throw Exception::Exception(ss.str());
+        }
+        context.tags.emplace_back(module.types[typeidx]);
+        idx += 1;
+    }
 }
