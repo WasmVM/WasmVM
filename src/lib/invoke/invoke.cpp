@@ -66,6 +66,9 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
 std::vector<Value> Stack::run(){
     RunVisitor visitor(*this);
     while(!frames.empty()){
+        if((interrupt != nullptr) && interrupt->load(std::memory_order_relaxed)){
+            throw Exception::interrupted();
+        }
         Frame& frame = frames.top();
         Label& label = frame.labels.top();
         FuncInst& funcinst = store.funcs[frame.funcaddr];
@@ -161,6 +164,8 @@ invalid_results::invalid_results() :
     Exception("invalid results") {}
 unreachable::unreachable() :
     Exception("unreachable") {}
+interrupted::interrupted() :
+    Exception("interrupted") {}
 no_end_of_func::no_end_of_func() :
     Exception("function reach end without 'end' instruction") {}
 func_not_exist::func_not_exist() :
