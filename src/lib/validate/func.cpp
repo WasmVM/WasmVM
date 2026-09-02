@@ -892,11 +892,9 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         }
                         type = context.types[ins.type.value()];
                     }
-                    state.pop(type.params);
-                    state.push(Opcode::Try_table, type);
-                    // Catch label indices are branch targets from within the body:
-                    // 0 is the try_table's own label (parser and runtime agree on
-                    // this), so validate them with the try_table frame pushed.
+                    // Per spec, catch label indices are resolved in the context
+                    // enclosing the try_table (its own label is not referable),
+                    // so validate them before pushing the try_table frame.
                     for(const Instr::TryCatchEntry& entry : ins.catches){
                         if(entry.label_idx >= state.ctrls.size()){
                             throw Exception::Exception("label index not found in try_table catch");
@@ -915,6 +913,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                             throw Exception::Exception("catch label type not match in try_table");
                         }
                     }
+                    state.pop(type.params);
+                    state.push(Opcode::Try_table, type);
                     state.push(type.params);
                 }break;
                 // [t*] -> []

@@ -105,9 +105,12 @@ std::vector<Value> Stack::run(){
                                 } else if(ce.kind == Label::CatchEntry::CatchAllRef){
                                     lbl.values.emplace(Value(exnref_t(thrown.exn)));
                                 }
-                                // Execute br(label_idx) from try_table label position
+                                // Branch to the catch target. Per spec, label_idx
+                                // is relative to the context enclosing the
+                                // try_table, so its own label pops first and then
+                                // label_idx more.
                                 std::vector<Value> values = lbl.values.get();
-                                for(index_t i = ce.label_idx; i > 0; --i){
+                                for(index_t i = ce.label_idx + 1; i > 0; --i){
                                     f.labels.pop();
                                 }
                                 Label& target = f.labels.top();

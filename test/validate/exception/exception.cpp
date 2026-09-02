@@ -12,10 +12,10 @@
 // The "accepts" cases below pin the fix; the "rejects" cases pin the new
 // checks so they cannot silently degrade back into no-ops.
 //
-// Note on catch label indices: in this codebase they are branch targets
-// from within the try_table body — label 0 is the try_table's own label.
-// The parser resolves symbolic labels that way and the runtime unwinder
-// branches that way, so the validator follows the same convention.
+// Note on catch label indices: per spec they are resolved in the context
+// ENCLOSING the try_table — label 0 is the innermost enclosing block, and
+// the try_table's own label is not referable. Parser, validator and the
+// runtime unwinder all follow this convention (issue #4).
 
 #include <harness.hpp>
 #include <WasmVM.hpp>
@@ -49,20 +49,22 @@ Suite validate_exception {
         Test("no catches", {
             Expect(!validate("(module (func try_table nop end))"));
         })
-        Test("catch_all targeting its own void label", {
+        Test("catch_all targeting the enclosing void label", {
             Expect(!validate("(module (func try_table (catch_all 0) nop end))"));
         })
-        Test("catch targeting a label matching the tag params", {
+        Test("catch targeting an enclosing label matching the tag params", {
+            // Symbolic label: $h must resolve to index 0 (the block, not the
+            // try_table itself).
             Expect(!validate(with_tag(
-                "try_table (result i32) (catch $t0 0) i32.const 7 end drop")));
+                "block $h (result i32) try_table (catch $t0 $h) nop end i32.const 7 end drop")));
         })
         Test("catch_ref targeting a label with tag params plus exnref", {
             Expect(!validate(with_tag(
-                "try_table (result i32 exnref) (catch_ref $t0 0) unreachable end drop drop")));
+                "block (result i32 exnref) try_table (catch_ref $t0 0) nop end unreachable end drop drop")));
         })
         Test("catch_all_ref targeting a label with exnref", {
             Expect(!validate(
-                "(module (func try_table (result exnref) (catch_all_ref 0) unreachable end drop))"));
+                "(module (func block (result exnref) try_table (catch_all_ref 0) nop end unreachable end drop))"));
         })
         Test("frame balance: try_table around a loop", {
             // The exact shape that the missing control frame used to break.
@@ -72,6 +74,15 @@ Suite validate_exception {
     Category("try_table rejects", {
         Test("catch label index out of range", {
             Expect(validate("(module (func try_table (catch_all 5) nop end))").has_value());
+        })
+        Test("catch label index does not count the try_table itself", {
+            // In a bare func the enclosing context has exactly one label
+            // (the function's), so index 1 — which the pre-spec convention
+            // would have accepted as the function label — is out of range.
+            Expect(validate("(module (func try_table (catch_all 1) nop end))").has_value());
+        })
+        Test("catch cannot target the try_table's own label", {
+            Expect(validate("(module (func try_table $l (catch_all $l) nop end))").has_value());
         })
         Test("catch tag index out of range", {
             Expect(validate("(module (func try_table (catch 3 0) nop end))").has_value());

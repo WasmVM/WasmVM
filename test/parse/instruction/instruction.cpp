@@ -206,6 +206,15 @@ Suite instruction {
         Expect(instrs[8].opcode == Opcode::Try_table);
         Expect(as_try(instrs[8]).catches.size() == 1);
         Expect(as_try(instrs[8]).catches[0].kind == Instr::TryCatchEntry::CatchAllRef);
+        // block $h try_table (catch_all $h) nop end end
+        // Per spec (issue #4), $h resolves in the context enclosing the
+        // try_table: the block is index 0, not 1.
+        Expect(instrs[11].opcode == Opcode::Block);
+        Expect(instrs[12].opcode == Opcode::Try_table);
+        Expect(as_try(instrs[12]).catches.size() == 1);
+        Expect(as_try(instrs[12]).catches[0].kind == Instr::TryCatchEntry::CatchAll);
+        Expect(as_try(instrs[12]).catches[0].label_idx == 0);
+        Expect(instrs[15].opcode == Opcode::End);
     })
     Test("gc_struct", {
         ParseFile(test_module, "gc_struct.wat");

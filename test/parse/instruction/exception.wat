@@ -13,5 +13,10 @@
         try_table (catch_all_ref 0)
             nop
         end
+        block $h
+            try_table (catch_all $h)
+                nop
+            end
+        end
     )
 )
