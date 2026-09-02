@@ -114,6 +114,9 @@ template<> Stream& Decode::operator>> <ValueType>(Stream& stream, ValueType& typ
         case byte_t {0x6f}:
             type = ValueType::externref;
         break;
+        case byte_t {0x69}:
+            type = ValueType::exnref;
+        break;
         default:
             throw Exception::invalid_valuetype(stream.location());
     }

@@ -21,6 +21,15 @@ static WasmModule roundtrip(const std::string& src) {
     return module_parse(in2);
 }
 
+// Text -> binary -> module: what wasmvm-as writes must be readable again.
+static WasmModule binary_roundtrip(const std::string& src) {
+    std::istringstream in(src);
+    WasmModule m1 = module_parse(in);
+    std::stringstream bin(std::ios::in | std::ios::out | std::ios::binary);
+    module_encode(m1, bin);
+    return module_decode(bin);
+}
+
 Suite roundtrip_suite {
     Test("empty module", {
         WasmModule m = roundtrip("(module)");
@@ -44,6 +53,28 @@ Suite roundtrip_suite {
             "  (type (func (param i32)))"
             ")");
         AssertEq(m.types.size(), 1U);
+    })
+    // exnref (0x69): the encoder already emitted it, the decoder used to
+    // reject it as an invalid valtype (issue #3).
+    Test("exnref function type survives binary roundtrip", {
+        WasmModule m = binary_roundtrip("(module (type (func (param exnref) (result exnref))))");
+        AssertEq(m.types.size(), 1U);
+        AssertEq(m.types[0].params.size(), 1U);
+        Expect(m.types[0].params[0] == ValueType::exnref);
+        AssertEq(m.types[0].results.size(), 1U);
+        Expect(m.types[0].results[0] == ValueType::exnref);
+    })
+    Test("exnref local survives binary roundtrip", {
+        WasmModule m = binary_roundtrip("(module (func (local exnref)))");
+        AssertEq(m.funcs.size(), 1U);
+        AssertEq(m.funcs[0].locals.size(), 1U);
+        Expect(m.funcs[0].locals[0] == ValueType::exnref);
+    })
+    Test("exnref local survives text roundtrip", {
+        WasmModule m = roundtrip("(module (func (local exnref)))");
+        AssertEq(m.funcs.size(), 1U);
+        AssertEq(m.funcs[0].locals.size(), 1U);
+        Expect(m.funcs[0].locals[0] == ValueType::exnref);
     })
     Test("memory limits", {
         WasmModule m = roundtrip("(module (memory 2 8))");
