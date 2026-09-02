@@ -32,6 +32,34 @@ Exception
 
     .. cpp:function:: unexpected_eof()
 
+.. cpp:struct:: WasmVM::Exception::interrupted : public Exception
+
+    Thrown by ``Stack::run()`` when the embedder's interrupt flag reads true.
+    Not a wasm-level exception: the guest's ``try_table``/``catch_all`` cannot
+    swallow it.
+
+    .. cpp:function:: interrupted()
+
+.. cpp:struct:: WasmVM::Exception::Trap : public Exception
+
+    Base of every WebAssembly trap escaping ``Stack::run()``: the guest hit a
+    condition the spec defines as trapping (``unreachable``, integer divide by
+    zero, out-of-bounds memory or table access, indirect call type mismatch,
+    null reference, failed cast, ...). The concrete trap types are private to
+    WasmVM; catch this base.
+
+    .. cpp:function:: Trap(std::string msg)
+
+.. cpp:struct:: WasmVM::Exception::Uncaught : public Exception
+
+    A wasm ``throw`` no ``try_table`` in the guest caught, escaping
+    ``Stack::run()``. Not a ``Trap``.
+
+    .. cpp:function:: Uncaught(std::shared_ptr<WasmException> exn)
+    .. cpp:member:: std::shared_ptr<WasmException> exn
+
+        The thrown exception: its tag address and payload values.
+
 .. cpp:struct:: WasmVM::Exception::Warning
 
     .. cpp:function:: Warning(std::string msg)

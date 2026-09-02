@@ -27,6 +27,7 @@ include_directories(
 add_invoke_suite(numeric)
 add_invoke_suite(interrupt)
 add_invoke_suite(exception)
+add_invoke_suite(traps)
 # Outer backstop for the interrupt suite's infinite-loop fixtures: a broken
 # interrupt gate must read as a red test, not hang the whole test run.
 set_property(TEST invoke_interrupt PROPERTY TIMEOUT 20)

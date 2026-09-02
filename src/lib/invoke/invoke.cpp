@@ -133,7 +133,7 @@ std::vector<Value> Stack::run(){
                     }
                 }
                 if(!handled){
-                    throw Exception::Exception("unhandled WebAssembly exception");
+                    throw Exception::Uncaught(thrown.exn);
                 }
             }
         }else{
@@ -166,9 +166,7 @@ invalid_argument::invalid_argument() :
 invalid_results::invalid_results() : 
     Exception("invalid results") {}
 unreachable::unreachable() :
-    Exception("unreachable") {}
-interrupted::interrupted() :
-    Exception("interrupted") {}
+    Trap("unreachable") {}
 no_end_of_func::no_end_of_func() :
     Exception("function reach end without 'end' instruction") {}
 func_not_exist::func_not_exist() :
@@ -176,22 +174,24 @@ func_not_exist::func_not_exist() :
 invalid_label::invalid_label() :
     Exception("invalid label") {}
 invalid_elem_index::invalid_elem_index() :
-    Exception("invalid index of element") {}
+    Trap("invalid index of element") {}
 invalid_reference::invalid_reference() :
     Exception("invalid reference") {}
+uninitialized_element::uninitialized_element() :
+    Trap("uninitialized element") {}
 function_type_unmatch::function_type_unmatch() :
-    Exception("function type unmatch") {}
+    Trap("function type unmatch") {}
 invalid_value::invalid_value() :
     Exception("invalid value") {}
 length_too_long::length_too_long() :
-    Exception("length too long") {}
+    Trap("length too long") {}
 cast_failure::cast_failure() :
-    Exception("cast failure") {}
+    Trap("cast failure") {}
 null_reference::null_reference() :
-    Exception("null reference") {}
+    Trap("null reference") {}
 invalid_conversion_to_integer::invalid_conversion_to_integer() :
-    Exception("invalid conversion to integer") {}
+    Trap("invalid conversion to integer") {}
 integer_divide_by_zero::integer_divide_by_zero() :
-    Exception("integer divide by zero") {}
+    Trap("integer divide by zero") {}
 integer_overflow::integer_overflow() :
-    Exception("integer overflow") {}
+    Trap("integer overflow") {}

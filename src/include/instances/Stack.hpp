@@ -61,6 +61,12 @@ struct Stack {
     ///   may poll stack.interrupt themselves.
     Stack(Store& store, const std::atomic<bool>* interrupt = nullptr) : store(store), interrupt(interrupt){}
     void invoke(index_t funcaddr, std::vector<Value> args);
+    /// Runs until the frame stack is empty and returns the results.
+    /// Throws (all declared in the public <exception.hpp>):
+    ///   Exception::Trap        the guest trapped (catch the base class);
+    ///   Exception::Uncaught    a wasm `throw` no guest try_table caught;
+    ///   Exception::interrupted the embedder's interrupt flag was set.
+    /// Anything else escaping is a WasmVM invariant violation.
     std::vector<Value> run();
     Store& store;
     const std::atomic<bool>* interrupt;
