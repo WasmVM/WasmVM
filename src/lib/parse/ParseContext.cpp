@@ -534,7 +534,8 @@ std::pair<std::string, std::vector<ValueType>> ParseContext::parse_local() {
         while (tok_.peek().type == TokenType::Keyword &&
                (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
                 tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-                tok_.peek().text == "funcref" || tok_.peek().text == "externref")) {
+                tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
+                tok_.peek().text == "exnref")) {
             result.second.push_back(parse_valtype());
         }
     }
