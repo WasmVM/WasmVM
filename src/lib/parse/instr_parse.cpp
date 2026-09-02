@@ -88,7 +88,13 @@ std::vector<WasmInstr> ParseContext::parse_blockinstr(const std::string& kw) {
                 entry.tag_idx = parse_tagidx();
             else
                 entry.tag_idx = 0;
+            // Per spec, catch label indices are resolved in the context
+            // enclosing the try_table; its own label (registered one level up)
+            // is not referable. Symbolic ids therefore resolve one level
+            // shallower; numeric indices pass through unchanged.
+            block_level_ -= 1;
             entry.label_idx = parse_labelidx();
+            block_level_ += 1;
             tok_.expect(TokenType::RParen);
             tt.catches.push_back(entry);
         }
