@@ -312,7 +312,7 @@ void RunVisitor::operator()(Instr::Return_call_indirect& instr){
     }
     funcref_t funcref = std::get<funcref_t>(table.elems[operant]);
     if(!funcref.has_value()){
-        throw Exception::invalid_reference();
+        throw Exception::uninitialized_element();
     }
     index_t funcaddr = funcref.value();
     FuncType& type = stack.store.funcs[funcaddr].type;
@@ -372,7 +372,7 @@ void RunVisitor::operator()(Instr::Call_indirect& instr){
   }
   funcref_t funcref = std::get<funcref_t>(table.elems[operant]);
   if(!funcref.has_value()){
-    throw Exception::invalid_reference();
+    throw Exception::uninitialized_element();
   }
   index_t funcaddr = funcref.value();
   FuncType& type = stack.store.funcs[funcaddr].type;

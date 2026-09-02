@@ -10,3 +10,9 @@ std::optional<std::function<void(std::string)>> Exception::Warning::handler = st
 
 Exception::unexpected_eof::unexpected_eof() :
     Exception(std::string("unexpected EOF")) {}
+
+Exception::interrupted::interrupted() :
+    Exception("interrupted") {}
+
+Exception::Uncaught::Uncaught(std::shared_ptr<WasmException> exn) :
+    Exception("unhandled WebAssembly exception"), exn(std::move(exn)) {}
