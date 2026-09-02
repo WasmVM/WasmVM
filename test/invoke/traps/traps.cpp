@@ -160,6 +160,48 @@ Suite traps {
             }
         })
     })
+    Category("out-of-bounds table access is Exception::Trap", {
+        // table.get / table.set index a vector with an i32 off the stack; an
+        // unchecked index is a segfault, not a trap. The index is unsigned per
+        // spec, so a negative value must trap rather than wrap into the table.
+        Test("table.get: index equal to the table size", {
+            ExpectEq((int)escape_of(
+                "(module (table 1 funcref) (func (export \"f\") (result funcref) "
+                "i32.const 1 table.get 0))"),
+                (int)escape_trap);
+        })
+        Test("table.get: negative index", {
+            ExpectEq((int)escape_of(
+                "(module (table 1 funcref) (func (export \"f\") (result funcref) "
+                "i32.const -1 table.get 0))"),
+                (int)escape_trap);
+        })
+        Test("table.get: in-bounds index does not trap", {
+            ExpectEq((int)escape_of(
+                "(module (table 1 funcref) (func (export \"f\") (result funcref) "
+                "i32.const 0 table.get 0))"),
+                (int)escape_none);
+        })
+        Test("table.set: index equal to the table size", {
+            ExpectEq((int)escape_of(
+                "(module (table 1 funcref) (func (export \"f\") "
+                "i32.const 1 ref.null func table.set 0))"),
+                (int)escape_trap);
+        })
+        Test("table.set: negative index", {
+            ExpectEq((int)escape_of(
+                "(module (table 1 funcref) (func (export \"f\") "
+                "i32.const -1 ref.null func table.set 0))"),
+                (int)escape_trap);
+        })
+        Test("table.set: in-bounds index writes the element", {
+            std::vector<Value> r = run(
+                "(module (table 1 funcref) (func (export \"f\") (result i32) "
+                "i32.const 0 ref.null func table.set 0 i32.const 0 table.get 0 ref.is_null))");
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)1);
+        })
+    })
     Category("uncaught wasm throw is Exception::Uncaught", {
         Test("escapes as Uncaught, not as a Trap", {
             ExpectEq((int)escape_of(

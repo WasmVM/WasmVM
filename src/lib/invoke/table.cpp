@@ -25,11 +25,16 @@ void RunVisitor::operator()(Instr::Table_get& instr){
   index_t addr = frame.module.tableaddrs[instr.index];
   i32_t idx = std::get<i32_t>(label.values.top());
   label.values.pop();
+  TableInst& table = stack.store.tables[addr];
+  // Compare as unsigned so a negative i32 index also traps.
+  if((u32_t)idx >= table.elems.size()){
+    throw Exception::length_too_long();
+  }
   std::visit(overloaded {
     [&](auto& ref){
       label.values.emplace(ref);
     }
-  }, stack.store.tables[addr].elems[idx]);
+  }, table.elems[idx]);
 }
 void RunVisitor::operator()(Instr::Table_set& instr){
   Frame& frame = stack.frames.top();
@@ -39,7 +44,12 @@ void RunVisitor::operator()(Instr::Table_set& instr){
   label.values.pop();
   i32_t idx = std::get<i32_t>(label.values.top());
   label.values.pop();
-  stack.store.tables[addr].elems[idx] = ref;
+  TableInst& table = stack.store.tables[addr];
+  // Compare as unsigned so a negative i32 index also traps.
+  if((u32_t)idx >= table.elems.size()){
+    throw Exception::length_too_long();
+  }
+  table.elems[idx] = ref;
 }
 void RunVisitor::operator()(Instr::Table_size& instr){
   Frame& frame = stack.frames.top();
