@@ -135,17 +135,18 @@ void RunVisitor::operator()(Instr::I32_xor&){
     auto ops = get_ops<i32_t>(stack);
     put_op(stack, (i32_t)((u32_t)ops.first ^ (u32_t)ops.second));
 }
+// Shift counts are taken modulo 32 (spec ishl / ishr); C++ leaves a count >= width undefined.
 void RunVisitor::operator()(Instr::I32_shl&){
     auto ops = get_ops<i32_t>(stack);
-    put_op(stack, (i32_t)((u32_t)ops.first << (u32_t)ops.second));
+    put_op(stack, (i32_t)((u32_t)ops.first << ((u32_t)ops.second & 31)));
 }
 void RunVisitor::operator()(Instr::I32_shr_s&){
     auto ops = get_ops<i32_t>(stack);
-    put_op(stack, ops.first >> ops.second);
+    put_op(stack, ops.first >> ((u32_t)ops.second & 31));
 }
 void RunVisitor::operator()(Instr::I32_shr_u&){
     auto ops = get_ops<i32_t>(stack);
-    put_op(stack, (i32_t)((u32_t)ops.first >> (u32_t)ops.second));
+    put_op(stack, (i32_t)((u32_t)ops.first >> ((u32_t)ops.second & 31)));
 }
 void RunVisitor::operator()(Instr::I32_rotl&){
     auto ops = get_ops<i32_t>(stack);
