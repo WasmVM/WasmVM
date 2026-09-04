@@ -5,6 +5,7 @@
 #include <structures/WasmInstr.hpp>
 #include <Util.hpp>
 #include <type_traits>
+#include <cstring>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
 
@@ -212,10 +213,14 @@ void RunVisitor::operator()(Instr::Memory_copy& instr){
   u64_t count = get_base(label);
   u64_t src_idx = get_base(label);
   u64_t dst_idx = get_base(label);
-  if(((src_idx + count) > src_mem.data.size()) || ((dst_idx + count) > src_mem.data.size())){
+  if(((src_idx + count) > src_mem.data.size()) || ((dst_idx + count) > dst_mem.data.size())){
     throw Exception::length_too_long();
   }
-  std::copy_n(src_mem.data.begin() + src_idx, count, dst_mem.data.begin() + dst_idx);
+  // The spec copies backwards when the destination lies past the source, so
+  // an overlapping copy within one memory must behave like memmove.
+  if(count > 0){
+    std::memmove(dst_mem.data.data() + dst_idx, src_mem.data.data() + src_idx, count);
+  }
 }
 void RunVisitor::operator()(Instr::Memory_init& instr){
   Frame& frame = stack.frames.top();
