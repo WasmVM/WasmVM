@@ -19,6 +19,7 @@
 #include <instances/Stack.hpp>
 #include <invoke/exception.hpp>
 
+#include <cmath>
 #include <cstdint>
 #include <limits>
 #include <list>
@@ -140,6 +141,69 @@ Suite numeric {
             std::vector<Value> r = run(binop("i64", "div_s", i64_min, "2"));
             AssertEq(r.size(), (size_t)1);
             ExpectEq(std::get<i64_t>(r[0]), (i64_t)(std::numeric_limits<int64_t>::min() / 2));
+        })
+    })
+
+    Category("float min/max propagate NaN", {
+        // fmin / fmax: if either operand is a NaN, the result is a NaN. The
+        // NaN branch used to pick the *other* operand, so min(nan, 1) was 1.
+        // (`+nan` rather than `nan`: the tokenizer only recognises the
+        // literal after a sign.)
+        Test("f32.min with NaN on the left", {
+            std::vector<Value> r = run(binop("f32", "min", "+nan", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f32_t>(r[0])));
+        })
+        Test("f32.min with NaN on the right", {
+            std::vector<Value> r = run(binop("f32", "min", "1.0", "+nan"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f32_t>(r[0])));
+        })
+        Test("f32.max with NaN on the left", {
+            std::vector<Value> r = run(binop("f32", "max", "+nan", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f32_t>(r[0])));
+        })
+        Test("f32.max with NaN on the right", {
+            std::vector<Value> r = run(binop("f32", "max", "1.0", "+nan"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f32_t>(r[0])));
+        })
+        Test("f64.min with NaN on the left", {
+            std::vector<Value> r = run(binop("f64", "min", "+nan", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f64_t>(r[0])));
+        })
+        Test("f64.min with NaN on the right", {
+            std::vector<Value> r = run(binop("f64", "min", "1.0", "+nan"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f64_t>(r[0])));
+        })
+        Test("f64.max with NaN on the left", {
+            std::vector<Value> r = run(binop("f64", "max", "+nan", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f64_t>(r[0])));
+        })
+        Test("f64.max with NaN on the right", {
+            std::vector<Value> r = run(binop("f64", "max", "1.0", "+nan"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::isnan(std::get<f64_t>(r[0])));
+        })
+        // Controls: the non-NaN branches are untouched.
+        Test("f64.min of ordinary values", {
+            std::vector<Value> r = run(binop("f64", "min", "2.0", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)1.0);
+        })
+        Test("f64.max of ordinary values", {
+            std::vector<Value> r = run(binop("f64", "max", "2.0", "1.0"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)2.0);
+        })
+        Test("f32.min of -0 and +0 is -0", {
+            std::vector<Value> r = run(binop("f32", "min", "0.0", "-0.0"));
+            AssertEq(r.size(), (size_t)1);
+            Expect(std::signbit(std::get<f32_t>(r[0])));
         })
     })
 };
