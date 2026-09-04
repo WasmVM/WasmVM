@@ -208,7 +208,7 @@ void RunVisitor::operator()(Instr::F32_min&){
     auto ops = get_ops<f32_t>(stack);
     std::pair<int, int> classifies {std::fpclassify(ops.first), std::fpclassify(ops.second)};
     if(classifies.first == FP_NAN || classifies.second == FP_NAN){
-        put_op(stack, (classifies.first == FP_NAN) ? ops.second : ops.first);
+        put_op(stack, (classifies.first == FP_NAN) ? ops.first : ops.second);
     }else if(classifies.first == FP_INFINITE || classifies.second == FP_INFINITE){
         if(classifies.first == FP_INFINITE){
             put_op(stack, std::signbit(ops.first) ? ops.first : ops.second);
@@ -225,7 +225,7 @@ void RunVisitor::operator()(Instr::F32_max&){
     auto ops = get_ops<f32_t>(stack);
     std::pair<int, int> classifies {std::fpclassify(ops.first), std::fpclassify(ops.second)};
     if(classifies.first == FP_NAN || classifies.second == FP_NAN){
-        put_op(stack, (classifies.first == FP_NAN) ? ops.second : ops.first);
+        put_op(stack, (classifies.first == FP_NAN) ? ops.first : ops.second);
     }else if(classifies.first == FP_INFINITE || classifies.second == FP_INFINITE){
         if(classifies.first == FP_INFINITE){
             put_op(stack, std::signbit(ops.first) ? ops.second : ops.first);
