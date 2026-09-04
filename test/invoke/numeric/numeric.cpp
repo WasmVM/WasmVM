@@ -206,4 +206,76 @@ Suite numeric {
             Expect(std::signbit(std::get<f32_t>(r[0])));
         })
     })
+
+    Category("shift counts are taken modulo the width", {
+        // ishl / ishr_u / ishr_s: "Let k be i2 modulo N". A count of N is a
+        // shift by 0, N+1 by 1, and -1 (all bits set) by N-1. Handing the raw
+        // count to C++ `<<` / `>>` is undefined for counts >= N.
+        Test("i32.shl by 32 is a shift by 0", {
+            std::vector<Value> r = run(binop("i32", "shl", "1", "32"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)1);
+        })
+        Test("i32.shl by 33 is a shift by 1", {
+            std::vector<Value> r = run(binop("i32", "shl", "1", "33"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)2);
+        })
+        Test("i32.shr_u by 32 is a shift by 0", {
+            std::vector<Value> r = run(binop("i32", "shr_u", "-1", "32"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)-1);
+        })
+        Test("i32.shr_s by 32 is a shift by 0", {
+            std::vector<Value> r = run(binop("i32", "shr_s", "-8", "32"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)-8);
+        })
+        Test("i32.shr_s by -1 is a shift by 31", {
+            std::vector<Value> r = run(binop("i32", "shr_s", i32_min, "-1"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)-1);
+        })
+        Test("i64.shl by 64 is a shift by 0", {
+            std::vector<Value> r = run(binop("i64", "shl", "1", "64"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), (i64_t)1);
+        })
+        Test("i64.shl by 65 is a shift by 1", {
+            std::vector<Value> r = run(binop("i64", "shl", "1", "65"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), (i64_t)2);
+        })
+        Test("i64.shr_u by 64 is a shift by 0", {
+            std::vector<Value> r = run(binop("i64", "shr_u", "-1", "64"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), (i64_t)-1);
+        })
+        Test("i64.shr_s by 64 is a shift by 0", {
+            std::vector<Value> r = run(binop("i64", "shr_s", "-8", "64"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), (i64_t)-8);
+        })
+        Test("i64.shr_s by -1 is a shift by 63", {
+            std::vector<Value> r = run(binop("i64", "shr_s", i64_min, "-1"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), (i64_t)-1);
+        })
+        // Controls: in-range counts are unchanged.
+        Test("i32.shl by 4", {
+            std::vector<Value> r = run(binop("i32", "shl", "3", "4"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)48);
+        })
+        Test("i32.shr_s keeps the sign", {
+            std::vector<Value> r = run(binop("i32", "shr_s", "-16", "2"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)-4);
+        })
+        Test("i32.shr_u does not keep the sign", {
+            std::vector<Value> r = run(binop("i32", "shr_u", "-16", "28"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)15);
+        })
+    })
 };
