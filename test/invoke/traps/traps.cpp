@@ -97,6 +97,10 @@ const std::string call_indirect_prefix =
 const std::string call_indirect_body =
     "(func (export \"f\") (result i32) i32.const 0 call_indirect (type 0))";
 
+// memory.copy fixture: memory 0 is one page, memory 1 is two.
+const std::string two_memories =
+    "(module (memory 1) (memory 2) (func (export \"f\") ";
+
 } // namespace
 
 Suite traps {
@@ -200,6 +204,52 @@ Suite traps {
                 "i32.const 0 ref.null func table.set 0 i32.const 0 table.get 0 ref.is_null))");
             AssertEq(r.size(), (size_t)1);
             ExpectEq(std::get<i32_t>(r[0]), (i32_t)1);
+        })
+    })
+    Category("memory.copy bounds and overlap", {
+        // Memory 0 is one page, memory 1 is two. memory.copy takes the
+        // destination index first, so `memory.copy 0 1` copies from the big
+        // memory into the small one. Each index must be checked against its
+        // own memory; a destination checked against the source size would
+        // let this write past the end of memory 0's backing vector.
+        Test("destination out of bounds of a smaller destination memory", {
+            ExpectEq((int)escape_of(two_memories +
+                "i32.const 65530 i32.const 0 i32.const 100 memory.copy 0 1))"),
+                (int)escape_trap);
+        })
+        Test("source out of bounds of a smaller source memory", {
+            ExpectEq((int)escape_of(two_memories +
+                "i32.const 0 i32.const 65530 i32.const 100 memory.copy 1 0))"),
+                (int)escape_trap);
+        })
+        Test("in-bounds cross-memory copy moves the bytes", {
+            std::vector<Value> r = run(two_memories + "(result i32) "
+                "i32.const 100000 i32.const 0x04030201 i32.store 1 "
+                "i32.const 65530 i32.const 100000 i32.const 4 memory.copy 0 1 "
+                "i32.const 65530 i32.load 0))");
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)0x04030201);
+        })
+        // The spec copies backwards when the destination is past the source,
+        // so an overlapping copy in one memory has memmove semantics. A
+        // forward byte loop would smear the first byte over the range.
+        Test("overlapping copy with destination past the source", {
+            std::vector<Value> r = run(
+                "(module (memory 1) (func (export \"f\") (result i32) "
+                "i32.const 0 i32.const 0x04030201 i32.store "
+                "i32.const 1 i32.const 0 i32.const 4 memory.copy "
+                "i32.const 1 i32.load))");
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)0x04030201);
+        })
+        Test("overlapping copy with destination before the source", {
+            std::vector<Value> r = run(
+                "(module (memory 1) (func (export \"f\") (result i32) "
+                "i32.const 1 i32.const 0x04030201 i32.store "
+                "i32.const 0 i32.const 1 i32.const 4 memory.copy "
+                "i32.const 0 i32.load))");
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)0x04030201);
         })
     })
     Category("uncaught wasm throw is Exception::Uncaught", {
