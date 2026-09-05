@@ -116,7 +116,14 @@ Suite validate_exception {
     })
     Category("tag section", {
         Test("rejects a tag whose type index does not exist", {
-            Expect(validate("(module (tag))").has_value());
+            // This used to be spelled `(module (tag))`, which only had a
+            // missing type index because an omitted typeuse fell back to
+            // index 0 (issue #15). It now names the missing index outright,
+            // which is what the case was always meant to check.
+            Expect(validate("(module (tag (type 0)))").has_value());
+        })
+        Test("accepts a tag with no typeuse, which is the empty type", {
+            Expect(!validate("(module (tag))").has_value());
         })
         Test("rejects a tag whose type has results", {
             Expect(validate("(module (type (func (result i32))) (tag (type 0)))").has_value());
