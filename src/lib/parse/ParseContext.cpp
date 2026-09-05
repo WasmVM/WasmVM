@@ -344,8 +344,19 @@ u32_t ParseContext::parse_u32() {
 u64_t ParseContext::parse_u64() {
     return (u64_t)std::stoull(removeUnderscore(tok_.expect(TokenType::Integer).text), nullptr, 0);
 }
+// A float literal may reach us as an Integer token: the tokenizer marks a
+// literal with no '.', exponent or 'p' as an Integer, but `f64.const 2` and
+// `f64.const 0x10` are floats to the spec. std::stof / std::stod read both
+// forms, hex included.
+Token ParseContext::expect_float_literal() {
+    if (tok_.peek().type == TokenType::Integer) {
+        return tok_.consume();
+    }
+    return tok_.expect(TokenType::Float, "float literal");
+}
+
 f32_t ParseContext::parse_f32() {
-    std::string text = removeUnderscore(tok_.expect(TokenType::Float).text);
+    std::string text = removeUnderscore(expect_float_literal().text);
     if (text.find("nan:0x") != std::string::npos) {
         size_t pos = text.find("nan:0x");
         return (f32_t)std::nanf(text.substr(pos + 4).c_str());
@@ -353,7 +364,7 @@ f32_t ParseContext::parse_f32() {
     return (f32_t)std::stof(text);
 }
 f64_t ParseContext::parse_f64() {
-    std::string text = removeUnderscore(tok_.expect(TokenType::Float).text);
+    std::string text = removeUnderscore(expect_float_literal().text);
     if (text.find("nan:0x") != std::string::npos) {
         size_t pos = text.find("nan:0x");
         return (f64_t)std::nan(text.substr(pos + 4).c_str());

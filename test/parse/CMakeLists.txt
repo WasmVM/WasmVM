@@ -34,6 +34,7 @@ include_directories(
 
 # Add tests under here
 add_test_suite(comments)
+add_test_suite(literal)
 add_test_suite(module)
 add_test_suite(type)
 add_test_suite(import)

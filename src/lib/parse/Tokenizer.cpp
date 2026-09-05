@@ -33,6 +33,25 @@ static bool is_keyword_char(char c) {
     }
 }
 
+// True when an unsigned bare word at `pos` is a float literal rather than a
+// keyword: exactly "inf" or "nan", or "nan:0x" followed by hex digits. The
+// tail check keeps a longer keyword that merely starts with those letters
+// from being scanned as a number.
+static bool word_is_float_literal(const std::string& src, size_t pos) {
+    auto keyword_continues = [&](size_t at) {
+        return at < src.size() && is_keyword_char(src[at]);
+    };
+    if (src.compare(pos, 3, "inf") == 0) {
+        return !keyword_continues(pos + 3);
+    }
+    if (src.compare(pos, 3, "nan") == 0) {
+        if (!keyword_continues(pos + 3)) return true;
+        return (src.compare(pos + 3, 3, ":0x") == 0)
+            && (pos + 6 < src.size()) && is_hexdigit(src[pos + 6]);
+    }
+    return false;
+}
+
 // True when a sign character (+/-) is followed by something that makes a number.
 static bool sign_starts_number(const std::string& src, size_t pos) {
     // pos points to the char AFTER the sign
@@ -221,6 +240,13 @@ Token Tokenizer::scan_next() {
 
     // Unsigned number
     if (is_digit(c)) {
+        return scan_number(start_line, start_col);
+    }
+
+    // Unsigned inf / nan / nan:0x..., which scan_number already knows how to
+    // read; without this they fall through to scan_keyword and never reach a
+    // float literal parser.
+    if (word_is_float_literal(source_, pos_)) {
         return scan_number(start_line, start_col);
     }
 

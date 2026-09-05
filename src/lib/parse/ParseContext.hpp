@@ -105,6 +105,7 @@ private:
     i64_t parse_i64();
     u32_t parse_u32();
     u64_t parse_u64();
+    Token expect_float_literal();
     f32_t parse_f32();
     f64_t parse_f64();
     // Converts a raw quoted string token to bytes (handles all escape sequences).
