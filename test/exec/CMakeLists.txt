@@ -1,8 +1,10 @@
 # Tests for the CLI executables' shared helpers (compiled from src/exec).
+# Extra sources from src/exec are passed per suite, since each suite needs a
+# different helper compiled in.
 macro(add_exec_test_suite suite_name)
   add_executable(exec_suite_${suite_name}_target
     ${suite_name}/${suite_name}.cpp
-    ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp
+    ${ARGN}
   )
   target_include_directories(exec_suite_${suite_name}_target PRIVATE
     ${PROJECT_SOURCE_DIR}/src/exec
@@ -23,4 +25,5 @@ macro(add_exec_test_suite suite_name)
   )
 endmacro(add_exec_test_suite)
 
-add_exec_test_suite(commandparser)
+add_exec_test_suite(commandparser ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp)
+add_exec_test_suite(linker ${PROJECT_SOURCE_DIR}/src/exec/Linker.cpp)
