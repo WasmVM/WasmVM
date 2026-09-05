@@ -256,6 +256,60 @@ Suite roundtrip_suite {
         Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
         Expect(!module_validate(m).has_value());
     })
+    // An omitted typeuse is the empty type. It used to fall back to type
+    // index 0, which is a real index, so a bare (tag) silently adopted
+    // whatever type happened to sit there (issue #15).
+    Test("a bare tag gets the empty type, not type 0", {
+        WasmModule m = binary_roundtrip(
+            "(module (type (func (param i32))) (tag))");
+        AssertEq(m.tags.size(), 1U);
+        Assert(m.tags[0] < m.types.size());
+        Expect(m.types[m.tags[0]].params.empty());
+        Expect(m.types[m.tags[0]].results.empty());
+    })
+    Test("a bare imported tag gets the empty type too", {
+        WasmModule m = binary_roundtrip(
+            "(module (type (func (param i32))) (import \"env\" \"t\" (tag)))");
+        AssertEq(m.imports.size(), 1U);
+        Assert(std::holds_alternative<TagType>(m.imports[0].desc));
+        index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
+        Assert(typeidx < m.types.size());
+        Expect(m.types[typeidx].params.empty());
+        Expect(m.types[typeidx].results.empty());
+    })
+    Test("a bare tag works in a module that declares no types at all", {
+        WasmModule m = binary_roundtrip("(module (tag))");
+        AssertEq(m.tags.size(), 1U);
+        Assert(m.tags[0] < m.types.size());
+        Expect(m.types[m.tags[0]].params.empty());
+        Expect(!module_validate(m).has_value());
+    })
+    Test("throwing a bare tag needs nothing on the stack", {
+        // The same source used to fail with "empty validate value stack",
+        // because the tag had taken the declared (param i32) type.
+        std::istringstream in(
+            "(module (type (func (param i32))) (tag) "
+            "(func (export \"f\") throw 0))");
+        WasmModule m = module_parse(in);
+        Expect(!module_validate(m).has_value());
+    })
+    Test("a catch on a bare tag sends nothing to its label", {
+        // With the tag correctly empty, a label expecting an i32 no longer
+        // matches. Before the fix the tag carried an i32 and this passed.
+        std::istringstream in(
+            "(module (type (func (param i32))) (tag) "
+            "(func (export \"f\") (result i32) "
+            "block $h (result i32) try_table (catch 0 $h) "
+            "i32.const 7 throw 0 end unreachable end))");
+        bool refused = false;
+        try {
+            WasmModule m = module_parse(in);
+            refused = module_validate(m).has_value();
+        } catch (Exception::Exception&) {
+            refused = true;
+        }
+        Expect(refused);
+    })
     Test("exporting a tag index that does exist is accepted", {
         std::istringstream in("(module (func) (tag) (export \"t\" (tag 0)))");
         WasmModule m = module_parse(in);

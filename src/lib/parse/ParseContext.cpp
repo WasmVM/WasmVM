@@ -670,7 +670,7 @@ void ParseContext::parse_importsection() {
             tag_map_.id_map[id] = tag_map_.records.size();
         }
         tag_map_.records.emplace_back(IndexSpace::Type::Import);
-        import.desc = TagType{is_typeuse_start() ? parse_typeuse() : (index_t)0};
+        import.desc = TagType{parse_typeuse()};
     } else {
         throw Exception::Parse("unknown import desc '" + kw.text + "'", {kw.line, kw.column});
     }
@@ -1038,10 +1038,11 @@ void ParseContext::parse_tagsection() {
         tag_map_.id_map[id] = tag_map_.records.size();
     }
     tag_map_.records.emplace_back(IndexSpace::Type::Normal);
-    // typeuse: (type N) or inline params
-    index_t typeidx = 0;
-    if (is_typeuse_start())
-        typeidx = parse_typeuse();
+    // typeuse: (type N) or inline params. An omitted typeuse is the empty
+    // type, not type index 0, and parse_typeuse creates that placeholder
+    // itself when no (type N) is given; the later dedup folds it into an
+    // existing () -> () if the module already has one.
+    index_t typeidx = parse_typeuse();
     module_.tags.push_back(typeidx);
     tok_.expect(TokenType::RParen);
 }
