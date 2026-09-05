@@ -446,9 +446,9 @@ index_t ParseContext::parse_localidx() {
 index_t ParseContext::parse_tagidx() {
     if (tok_.peek().type == TokenType::Id) {
         Token t = tok_.consume();
-        if (!tag_map_.contains(t.text))
+        if (!tag_map_.id_map.contains(t.text))
             throw Exception::Parse("tag id '" + t.text + "' not found", {t.line, t.column});
-        return tag_map_[t.text];
+        return tag_map_.id_map[t.text];
     }
     return (index_t)parse_u32();
 }
@@ -497,7 +497,7 @@ std::string ParseContext::parse_exportabbr() {
 
 std::pair<WasmExport::DescType, index_t> ParseContext::parse_exportdesc() {
     tok_.expect(TokenType::LParen);
-    Token kw = tok_.expect(TokenType::Keyword, "func/table/memory/global");
+    Token kw = tok_.expect(TokenType::Keyword, "func/table/memory/global/tag");
     index_t idx = 0;
     WasmExport::DescType desc;
     if (kw.text == "func") {
@@ -512,6 +512,9 @@ std::pair<WasmExport::DescType, index_t> ParseContext::parse_exportdesc() {
     } else if (kw.text == "global") {
         desc = WasmExport::DescType::global;
         idx = parse_globalidx();
+    } else if (kw.text == "tag") {
+        desc = WasmExport::DescType::tag;
+        idx = parse_tagidx();
     } else {
         throw Exception::Parse("unknown export desc '" + kw.text + "'", {kw.line, kw.column});
     }
@@ -608,7 +611,7 @@ void ParseContext::parse_importsection() {
     std::string name = parse_string_to_bytes(tok_.expect(TokenType::String).text);
     // importdesc
     tok_.expect(TokenType::LParen);
-    Token kw = tok_.expect(TokenType::Keyword, "func/table/memory/global");
+    Token kw = tok_.expect(TokenType::Keyword, "func/table/memory/global/tag");
     WasmImport& import = module_.imports.emplace_back();
     import.module = mod; import.name = name;
     if (kw.text == "func") {
@@ -648,6 +651,15 @@ void ParseContext::parse_importsection() {
         }
         global_map_.records.emplace_back(IndexSpace::Type::Import);
         import.desc = parse_globaltype();
+    } else if (kw.text == "tag") {
+        if (tok_.peek().type == TokenType::Id) {
+            std::string id = tok_.consume().text;
+            if (tag_map_.id_map.contains(id))
+                throw Exception::Parse("duplicated tag id '" + id + "'", tok_.location());
+            tag_map_.id_map[id] = tag_map_.records.size();
+        }
+        tag_map_.records.emplace_back(IndexSpace::Type::Import);
+        import.desc = TagType{is_typeuse_start() ? parse_typeuse() : (index_t)0};
     } else {
         throw Exception::Parse("unknown import desc '" + kw.text + "'", {kw.line, kw.column});
     }
@@ -1010,8 +1022,11 @@ void ParseContext::parse_tagsection() {
     // optional Id
     if (tok_.peek().type == TokenType::Id) {
         std::string id = tok_.consume().text;
-        tag_map_[id] = module_.tags.size();
+        if (tag_map_.id_map.contains(id))
+            throw Exception::Parse("duplicated tag id '" + id + "'", tok_.location());
+        tag_map_.id_map[id] = tag_map_.records.size();
     }
+    tag_map_.records.emplace_back(IndexSpace::Type::Normal);
     // typeuse: (type N) or inline params
     index_t typeidx = 0;
     if (is_typeuse_start())

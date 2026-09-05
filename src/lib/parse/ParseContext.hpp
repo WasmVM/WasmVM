@@ -39,8 +39,7 @@ private:
     std::map<std::string, index_t> data_map_;
     std::map<std::string, index_t> local_map_;
     std::map<std::string, index_t> label_map_;
-    IndexSpace func_map_, table_map_, mem_map_, global_map_;
-    std::map<std::string, index_t> tag_map_;
+    IndexSpace func_map_, table_map_, mem_map_, global_map_, tag_map_;
     // types_ stores (FuncType, param-id-map) pairs; module_.types is populated in parse()
     std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types_;
     index_t block_level_ = 0;

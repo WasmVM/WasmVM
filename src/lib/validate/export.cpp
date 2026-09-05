@@ -33,5 +33,10 @@ template<> void Validate::Validator::operator()<WasmExport>(const WasmExport& ex
                 throw Exception::Exception("global index not found");
             }
         break;
+        case WasmExport::DescType::tag :
+            if(export_.index >= context.tags.size()){
+                throw Exception::Exception("tag index not found");
+            }
+        break;
     }
 }

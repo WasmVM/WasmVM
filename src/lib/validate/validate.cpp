@@ -146,6 +146,19 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
                 }
                 context.funcs.emplace_back(module.types[index]);
             },
+            [&](const TagType& tag){
+                if(tag.typeidx >= module.types.size()){
+                    std::stringstream ss;
+                    ss << "import[" << idx << "]: type index " << tag.typeidx << " not exist";
+                    throw Exception::Exception(ss.str());
+                }
+                if(!module.types[tag.typeidx].results.empty()){
+                    std::stringstream ss;
+                    ss << "import[" << idx << "]: tag type should have no result";
+                    throw Exception::Exception(ss.str());
+                }
+                context.tags.emplace_back(module.types[tag.typeidx]);
+            },
             [&](const TableType& table){
                 context.tables.emplace_back(table);
             },

@@ -23,6 +23,9 @@ template<> Stream& Decode::operator>> <WasmExport>(Stream& stream, WasmExport& e
         case byte_t {0x03} :
             export_.desc = WasmExport::DescType::global;
         break;
+        case byte_t {0x04} :
+            export_.desc = WasmExport::DescType::tag;
+        break;
         default:
             throw Exception::invalid_export(stream.location());
     }

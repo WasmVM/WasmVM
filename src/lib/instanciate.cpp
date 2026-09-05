@@ -144,6 +144,15 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 }
                 moduleInst.globaladdrs.emplace_back(externval.addr);
             break;
+            case ExternVal::ExternType::Tag :
+                if(!std::holds_alternative<TagType>(import.desc)){
+                    throw Exception::Exception("import type not match external value");
+                }
+                if(externval.addr >= store.tags.size()){
+                    throw Exception::Exception("invalid external tag address");
+                }
+                moduleInst.tagaddrs.emplace_back(externval.addr);
+            break;
         }
     }
     // Types
@@ -269,6 +278,13 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 }
                 exportinst.value.type = ExternVal::ExternType::Global;
                 exportinst.value.addr = moduleInst.globaladdrs[export_.index];
+            break;
+            case WasmExport::DescType::tag :
+                if(moduleInst.tagaddrs[export_.index] >= store.tags.size()){
+                    throw Exception::Exception("exported tag not exist in store");
+                }
+                exportinst.value.type = ExternVal::ExternType::Tag;
+                exportinst.value.addr = moduleInst.tagaddrs[export_.index];
             break;
         }
     }

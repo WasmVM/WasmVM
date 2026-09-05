@@ -6,7 +6,9 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 
+#include <optional>
 #include <sstream>
+#include <variant>
 #include <string>
 
 using namespace WasmVM;
@@ -156,5 +158,71 @@ Suite roundtrip_suite {
         WasmModule m = binary_roundtrip("(module (func))");
         Expect(m.tags.empty());
         AssertEq(m.funcs.size(), 1U);
+    })
+    // Tag export / import descriptors, both 0x04 (issue #14).
+    Test("exported tag survives binary roundtrip", {
+        WasmModule m = binary_roundtrip(
+            "(module (tag $t (param i32)) (export \"t\" (tag $t)))");
+        AssertEq(m.exports.size(), 1U);
+        Expect(m.exports[0].name == "t");
+        Expect(m.exports[0].desc == WasmExport::DescType::tag);
+        ExpectEq(m.exports[0].index, 0U);
+        Expect(!module_validate(m).has_value());
+    })
+    Test("imported tag survives binary roundtrip", {
+        WasmModule m = binary_roundtrip(
+            "(module (import \"env\" \"t\" (tag (param i32))))");
+        AssertEq(m.imports.size(), 1U);
+        Expect(m.imports[0].module == "env");
+        Expect(m.imports[0].name == "t");
+        Assert(std::holds_alternative<TagType>(m.imports[0].desc));
+        index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
+        Assert(typeidx < m.types.size());
+        AssertEq(m.types[typeidx].params.size(), 1U);
+        Expect(m.types[typeidx].params[0] == ValueType::i32);
+        Expect(m.types[typeidx].results.empty());
+        // An imported tag is not an imported function, even though both
+        // descriptors carry a typeidx.
+        Expect(!std::holds_alternative<index_t>(m.imports[0].desc));
+    })
+    Test("an imported tag takes the low index even when declared later", {
+        // $own is written first but is module-defined, so the import still
+        // owns tag index 0 and `throw $own` must resolve to 1.
+        WasmModule m = binary_roundtrip(
+            "(module"
+            "  (tag $own (param i64))"
+            "  (import \"env\" \"t\" (tag $imported (param i32)))"
+            "  (export \"e1\" (tag $imported))"
+            "  (export \"e2\" (tag $own)))");
+        AssertEq(m.imports.size(), 1U);
+        AssertEq(m.tags.size(), 1U);
+        AssertEq(m.exports.size(), 2U);
+        ExpectEq(m.exports[0].index, 0U);
+        ExpectEq(m.exports[1].index, 1U);
+        // The module-defined tag keeps its own type, the i64 one.
+        AssertEq(m.types[m.tags[0]].params.size(), 1U);
+        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        Expect(!module_validate(m).has_value());
+    })
+    Test("a throw against an imported tag validates", {
+        WasmModule m = binary_roundtrip(
+            "(module (import \"env\" \"t\" (tag $t (param i32))) "
+            "(func (export \"f\") i32.const 7 throw $t))");
+        Expect(!module_validate(m).has_value());
+    })
+    Test("exporting a tag index that does not exist is rejected", {
+        // The (func) is load-bearing: a module with no types at all fails
+        // earlier, on the bare (tag) defaulting to type index 0, and this
+        // case would then pass for the wrong reason.
+        std::istringstream in("(module (func) (tag) (export \"t\" (tag 1)))");
+        WasmModule m = module_parse(in);
+        std::optional<Exception::Exception> err = module_validate(m);
+        Assert(err.has_value());
+        Expect(std::string(err->what()).find("tag index not found") != std::string::npos);
+    })
+    Test("exporting a tag index that does exist is accepted", {
+        std::istringstream in("(module (func) (tag) (export \"t\" (tag 0)))");
+        WasmModule m = module_parse(in);
+        Expect(!module_validate(m).has_value());
     })
 };
