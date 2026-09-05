@@ -54,11 +54,9 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     import_map[import.module][import.name] = import_counter.global++;
                 },
-                [&](TagType){
-                    // The linker has no tag index space yet (issue #13). Refusing
-                    // here is better than dropping the tag and emitting a module
-                    // whose throw names an index nothing defines.
-                    throw Exception::Exception("linking an imported tag is not supported");
+                [&](TagType& tagtype){
+                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                    import_map[import.module][import.name] = import_counter.tag++;
                 },
             }, import.desc);
             output.imports.emplace_back(import);
@@ -82,8 +80,9 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     module_entry.globals.emplace_back(entry);
                 },
-                [&](TagType){
-                    throw Exception::Exception("linking an imported tag is not supported");
+                [&](TagType& tagtype){
+                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                    module_entry.tags.emplace_back(entry);
                 },
             }, import.desc);
         }else{
@@ -101,8 +100,9 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     module_entry.globals.emplace_back(import);
                 },
-                [&](TagType){
-                    throw Exception::Exception("linking an imported tag is not supported");
+                [&](TagType& tagtype){
+                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                    module_entry.tags.emplace_back(import);
                 },
             }, import.desc);
         }
@@ -137,6 +137,15 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
         output.mems.emplace_back(mem);
     }
     
+    // Tags
+    for(index_t typeidx : module.tags){
+        module_entry.tags.emplace_back(IndexEntry {
+            .index = (index_t)output.tags.size(),
+            .kind = IndexEntry::Address
+        });
+        output.tags.emplace_back(module_entry.types[typeidx]);
+    }
+
     // Globals
     for(WasmGlobal& global : module.globals){
         module_entry.globals.emplace_back(IndexEntry {
@@ -219,6 +228,7 @@ WasmModule Linker::get(){
         resolve_imports(export_map, module_entry.tables);
         resolve_imports(export_map, module_entry.mems);
         resolve_imports(export_map, module_entry.globals);
+        resolve_imports(export_map, module_entry.tags);
     }
     // Trace exports
     for(index_t module_idx = 0; module_idx < modules.size(); ++module_idx){
@@ -226,6 +236,7 @@ WasmModule Linker::get(){
         trace_extern_entries(tables)
         trace_extern_entries(mems)
         trace_extern_entries(globals)
+        trace_extern_entries(tags)
     }
 
     /** Update indices **/
@@ -298,6 +309,9 @@ WasmModule Linker::get(){
                         case WasmExport::DescType::global :
                             update_index(export_.index, global)
                         break;
+                        case WasmExport::DescType::tag :
+                            update_index(export_.index, tag)
+                        break;
                     }
                     output.exports.emplace_back(export_);
                 }
@@ -343,8 +357,8 @@ void Linker::resolve_imports(std::unordered_map<std::string, std::unordered_map<
                         [&](GlobalType){
                             return import_counter.global++;
                         },
-                        [&](TagType) -> index_t {
-                            throw Exception::Exception("linking an imported tag is not supported");
+                        [&](TagType){
+                            return import_counter.tag++;
                         },
                     }, import.desc);
                     desc.emplace<IndexEntry>(IndexEntry {
@@ -385,6 +399,22 @@ void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
         case Opcode::Global_get: case Opcode::Global_set: {
             auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
             update_index(o.index, global)
+        } break;
+        case Opcode::Throw: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            update_index(o.index, tag)
+        } break;
+        case Opcode::Try_table: {
+            auto& tt = std::get<WasmInstr::TryTab>(instr.imm);
+            // The block type is a typeidx like Block/Loop/If, and the catch
+            // clauses name tags. Neither was remapped before.
+            if(tt.type){ tt.type = module_entry.types[tt.type.value()]; }
+            for(auto& entry : tt.catches){
+                if(entry.kind == Instr::TryCatchEntry::Catch
+                    || entry.kind == Instr::TryCatchEntry::CatchRef){
+                    update_index(entry.tag_idx, tag)
+                }
+            }
         } break;
         case Opcode::Table_get: case Opcode::Table_set:
         case Opcode::Table_size: case Opcode::Table_grow: case Opcode::Table_fill: {

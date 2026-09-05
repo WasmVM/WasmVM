@@ -51,6 +51,7 @@ private:
         std::vector<Descriptor> tables;
         std::vector<Descriptor> mems;
         std::vector<Descriptor> globals;
+        std::vector<Descriptor> tags;
         std::vector<index_t> elems;
         std::vector<index_t> datas;
         std::vector<WasmExport> exports;
@@ -64,6 +65,7 @@ private:
         index_t table = 0;
         index_t mem = 0;
         index_t global = 0;
+        index_t tag = 0;
     } import_counter;
 
     std::unordered_map<FuncType, index_t> type_map;
