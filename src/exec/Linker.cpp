@@ -54,6 +54,12 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     import_map[import.module][import.name] = import_counter.global++;
                 },
+                [&](TagType){
+                    // The linker has no tag index space yet (issue #13). Refusing
+                    // here is better than dropping the tag and emitting a module
+                    // whose throw names an index nothing defines.
+                    throw Exception::Exception("linking an imported tag is not supported");
+                },
             }, import.desc);
             output.imports.emplace_back(import);
         }
@@ -76,6 +82,9 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     module_entry.globals.emplace_back(entry);
                 },
+                [&](TagType){
+                    throw Exception::Exception("linking an imported tag is not supported");
+                },
             }, import.desc);
         }else{
             std::visit(overloaded {
@@ -91,6 +100,9 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 },
                 [&](GlobalType){
                     module_entry.globals.emplace_back(import);
+                },
+                [&](TagType){
+                    throw Exception::Exception("linking an imported tag is not supported");
                 },
             }, import.desc);
         }
@@ -330,6 +342,9 @@ void Linker::resolve_imports(std::unordered_map<std::string, std::unordered_map<
                         },
                         [&](GlobalType){
                             return import_counter.global++;
+                        },
+                        [&](TagType) -> index_t {
+                            throw Exception::Exception("linking an imported tag is not supported");
                         },
                     }, import.desc);
                     desc.emplace<IndexEntry>(IndexEntry {

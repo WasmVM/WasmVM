@@ -13,6 +13,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmImport& import)
         [&](index_t typeidx){
             stream << " (func (type " << typeidx << ") )";
         },
+        [&](WasmVM::TagType tag){
+            stream << " (tag (type " << tag.typeidx << ") )";
+        },
         [&](WasmVM::TableType table){
             stream << " (table " << table.limits.min;
             if(table.limits.max){

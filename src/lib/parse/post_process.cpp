@@ -48,6 +48,7 @@ void ParseContext::post_process() {
     std::unordered_map<index_t, index_t> tablemap   = reorder_map(table_map_);
     std::unordered_map<index_t, index_t> memorymap  = reorder_map(mem_map_);
     std::unordered_map<index_t, index_t> globalmap  = reorder_map(global_map_);
+    std::unordered_map<index_t, index_t> tagmap     = reorder_map(tag_map_);
 
     // funcs
     for (WasmFunc& func : module_.funcs) {
@@ -62,6 +63,13 @@ void ParseContext::post_process() {
                 case Opcode::Try_table: {
                     auto& tt = std::get<WasmInstr::TryTab>(instr.imm);
                     if (tt.type && typemap.contains(tt.type.value())) tt.type = typemap[tt.type.value()];
+                    for (auto& entry : tt.catches) {
+                        if (tagmap.contains(entry.tag_idx)) entry.tag_idx = tagmap[entry.tag_idx];
+                    }
+                } break;
+                case Opcode::Throw: {
+                    auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if (tagmap.contains(o.index)) o.index = tagmap[o.index];
                 } break;
                 case Opcode::Call_indirect: {
                     auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
@@ -163,12 +171,17 @@ void ParseContext::post_process() {
             case WasmExport::DescType::table:  if (tablemap.contains(exp.index))  exp.index = tablemap[exp.index];  break;
             case WasmExport::DescType::mem:    if (memorymap.contains(exp.index)) exp.index = memorymap[exp.index]; break;
             case WasmExport::DescType::global: if (globalmap.contains(exp.index)) exp.index = globalmap[exp.index]; break;
+            case WasmExport::DescType::tag: if (tagmap.contains(exp.index)) exp.index = tagmap[exp.index]; break;
         }
     }
     // imports
     for (WasmImport& imp : module_.imports) {
         if (std::holds_alternative<index_t>(imp.desc) && typemap.contains(std::get<index_t>(imp.desc)))
             imp.desc = typemap[std::get<index_t>(imp.desc)];
+        if (std::holds_alternative<TagType>(imp.desc)) {
+            index_t& typeidx = std::get<TagType>(imp.desc).typeidx;
+            if (typemap.contains(typeidx)) typeidx = typemap[typeidx];
+        }
     }
     // tags
     for (index_t& tag : module_.tags) {

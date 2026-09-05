@@ -112,8 +112,15 @@ struct GlobalType {
     ValueType type;
 };
 
+// A tag's descriptor is a typeidx, the same shape as a function's. It is a
+// distinct type so that an imported tag stays tellable apart from an imported
+// function in WasmImport::desc.
+struct TagType {
+    index_t typeidx;
+};
+
 struct ExternVal {
-    enum ExternType {Func, Mem, Table, Global} type;
+    enum ExternType {Func, Mem, Table, Global, Tag} type;
     index_t addr;
 };
 

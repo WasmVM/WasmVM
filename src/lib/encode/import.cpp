@@ -22,6 +22,10 @@ template<> Section::Stream& Section::Stream::operator<< <WasmImport>(WasmImport 
         },
         [&](GlobalType& globaltype){
             *this << (byte_t)0x03 << globaltype;
+        },
+        [&](TagType& tagtype){
+            // tagtype: attribute (0x00 = exception) + typeidx
+            *this << (byte_t)0x04 << (byte_t)0x00 << tagtype.typeidx;
         }
     }, import.desc);
     return *this;

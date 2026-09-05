@@ -21,6 +21,9 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmExport& export_
         case WasmExport::DescType::table :
             stream << " (table ";
         break;
+        case WasmExport::DescType::tag :
+            stream << " (tag ";
+        break;
     }
     stream << export_.index << ") )" << std::endl;
     return stream;

@@ -19,6 +19,10 @@ template<> Stream& Decode::operator>> <WasmImport>(Stream& stream, WasmImport& i
             return stream >> import.desc.emplace<MemType>();
         case byte_t {0x03}:
             return stream >> import.desc.emplace<GlobalType>();
+        case byte_t {0x04}:
+            // tagtype: attribute (0x00 = exception) + typeidx
+            stream.get<byte_t>();
+            return stream >> import.desc.emplace<TagType>().typeidx;
         default:
             throw Exception::invalid_import(stream.location());
     }

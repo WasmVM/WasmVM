@@ -12,7 +12,7 @@ struct WasmImport {
     std::string module;
     std::string name;
     std::variant<
-        index_t, TableType, MemType, GlobalType
+        index_t, TableType, MemType, GlobalType, TagType
     > desc;
 };
 
