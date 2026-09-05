@@ -147,45 +147,43 @@ Suite numeric {
     Category("float min/max propagate NaN", {
         // fmin / fmax: if either operand is a NaN, the result is a NaN. The
         // NaN branch used to pick the *other* operand, so min(nan, 1) was 1.
-        // (`+nan` rather than `nan`: the tokenizer only recognises the
-        // literal after a sign.)
         Test("f32.min with NaN on the left", {
-            std::vector<Value> r = run(binop("f32", "min", "+nan", "1.0"));
+            std::vector<Value> r = run(binop("f32", "min", "nan", "1.0"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f32_t>(r[0])));
         })
         Test("f32.min with NaN on the right", {
-            std::vector<Value> r = run(binop("f32", "min", "1.0", "+nan"));
+            std::vector<Value> r = run(binop("f32", "min", "1.0", "nan"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f32_t>(r[0])));
         })
         Test("f32.max with NaN on the left", {
-            std::vector<Value> r = run(binop("f32", "max", "+nan", "1.0"));
+            std::vector<Value> r = run(binop("f32", "max", "nan", "1.0"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f32_t>(r[0])));
         })
         Test("f32.max with NaN on the right", {
-            std::vector<Value> r = run(binop("f32", "max", "1.0", "+nan"));
+            std::vector<Value> r = run(binop("f32", "max", "1.0", "nan"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f32_t>(r[0])));
         })
         Test("f64.min with NaN on the left", {
-            std::vector<Value> r = run(binop("f64", "min", "+nan", "1.0"));
+            std::vector<Value> r = run(binop("f64", "min", "nan", "1.0"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f64_t>(r[0])));
         })
         Test("f64.min with NaN on the right", {
-            std::vector<Value> r = run(binop("f64", "min", "1.0", "+nan"));
+            std::vector<Value> r = run(binop("f64", "min", "1.0", "nan"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f64_t>(r[0])));
         })
         Test("f64.max with NaN on the left", {
-            std::vector<Value> r = run(binop("f64", "max", "+nan", "1.0"));
+            std::vector<Value> r = run(binop("f64", "max", "nan", "1.0"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f64_t>(r[0])));
         })
         Test("f64.max with NaN on the right", {
-            std::vector<Value> r = run(binop("f64", "max", "1.0", "+nan"));
+            std::vector<Value> r = run(binop("f64", "max", "1.0", "nan"));
             AssertEq(r.size(), (size_t)1);
             Expect(std::isnan(std::get<f64_t>(r[0])));
         })
