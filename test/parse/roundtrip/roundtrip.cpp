@@ -220,6 +220,42 @@ Suite roundtrip_suite {
         Assert(err.has_value());
         Expect(std::string(err->what()).find("tag index not found") != std::string::npos);
     })
+    // The WAT dumper printed no (tag ...) while keeping the throw that named
+    // one, so text round-tripping a tag-bearing module produced source that
+    // could not be assembled again (issue #12).
+    Test("tag survives the text roundtrip", {
+        WasmModule m = roundtrip("(module (tag (param i32)))");
+        AssertEq(m.tags.size(), 1U);
+        Assert(m.tags[0] < m.types.size());
+        AssertEq(m.types[m.tags[0]].params.size(), 1U);
+        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+    })
+    Test("a throwing module still validates after the text roundtrip", {
+        WasmModule m = roundtrip(
+            "(module (tag $oops (param i32)) "
+            "(func (export \"f\") (result i32) i32.const 7 throw $oops))");
+        AssertEq(m.tags.size(), 1U);
+        Expect(!module_validate(m).has_value());
+    })
+    Test("text roundtrip keeps the tag index space with an import present", {
+        // The import owns tag 0 and the module-defined tag owns 1. The dumper
+        // prints the first in the import loop and the second in the tag loop,
+        // so the two must not collide or swap.
+        WasmModule m = roundtrip(
+            "(module"
+            "  (tag $own (param i64))"
+            "  (import \"env\" \"t\" (tag $imported (param i32)))"
+            "  (export \"e1\" (tag $imported))"
+            "  (export \"e2\" (tag $own)))");
+        AssertEq(m.imports.size(), 1U);
+        AssertEq(m.tags.size(), 1U);
+        AssertEq(m.exports.size(), 2U);
+        ExpectEq(m.exports[0].index, 0U);
+        ExpectEq(m.exports[1].index, 1U);
+        AssertEq(m.types[m.tags[0]].params.size(), 1U);
+        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        Expect(!module_validate(m).has_value());
+    })
     Test("exporting a tag index that does exist is accepted", {
         std::istringstream in("(module (func) (tag) (export \"t\" (tag 0)))");
         WasmModule m = module_parse(in);

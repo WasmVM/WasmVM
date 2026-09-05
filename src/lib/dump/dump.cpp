@@ -29,6 +29,12 @@ std::ostream& WasmVM::module_dump(const WasmModule& module, std::ostream& stream
     for(const MemType& mem : module.mems){
         stream << mem;
     }
+    // Tags sit between the memories and the globals, matching the binary
+    // section order. Imported tags were already printed by the import loop
+    // above, so the module-defined ones keep their place in the index space.
+    for(index_t typeidx : module.tags){
+        stream << "  (tag (type " << typeidx << ") )" << std::endl;
+    }
     for(const WasmGlobal& global : module.globals){
         stream << global;
     }
