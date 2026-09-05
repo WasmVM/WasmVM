@@ -62,6 +62,10 @@ struct Memory : public Section {
     Memory(const std::vector<MemType>& mems);
 };
 
+struct Tag : public Section {
+    Tag(const std::vector<index_t>& tags);
+};
+
 struct Global : public Section {
     Global(const std::vector<WasmGlobal>& globals);
 };

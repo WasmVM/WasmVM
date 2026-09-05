@@ -121,4 +121,40 @@ Suite roundtrip_suite {
         AssertEq(m.elems.size(), 1U);
         Expect(m.elems[0].mode.type == WasmElem::ElemMode::Mode::passive);
     })
+    // The tag section (0x0d): the parser filled module.tags and the decoder
+    // could read the section, but the encoder never wrote one, so a module
+    // with a tag came back with no tags and its `throw` named an index the
+    // module did not define (issue #10).
+    Test("tag survives binary roundtrip", {
+        WasmModule m = binary_roundtrip("(module (tag (param i32)))");
+        AssertEq(m.tags.size(), 1U);
+        Assert(m.tags[0] < m.types.size());
+        AssertEq(m.types[m.tags[0]].params.size(), 1U);
+        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+        Expect(m.types[m.tags[0]].results.empty());
+    })
+    Test("several tags keep their order", {
+        WasmModule m = binary_roundtrip(
+            "(module (tag (param i32)) (tag) (tag (param i64)))");
+        AssertEq(m.tags.size(), 3U);
+        AssertEq(m.types[m.tags[0]].params.size(), 1U);
+        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+        Expect(m.types[m.tags[1]].params.empty());
+        AssertEq(m.types[m.tags[2]].params.size(), 1U);
+        Expect(m.types[m.tags[2]].params[0] == ValueType::i64);
+    })
+    Test("a module that throws still validates after a binary roundtrip", {
+        // The issue's reproduction: wasmvm-as wrote this module, and it
+        // could not be loaded back because the tag index had no tag.
+        WasmModule m = binary_roundtrip(
+            "(module (tag $oops (param i32)) "
+            "(func (export \"f\") (result i32) i32.const 7 throw $oops))");
+        AssertEq(m.tags.size(), 1U);
+        Expect(!module_validate(m).has_value());
+    })
+    Test("a module with no tag emits no tag section", {
+        WasmModule m = binary_roundtrip("(module (func))");
+        Expect(m.tags.empty());
+        AssertEq(m.funcs.size(), 1U);
+    })
 };
