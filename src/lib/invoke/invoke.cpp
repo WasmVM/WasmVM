@@ -153,7 +153,14 @@ std::vector<Value> Stack::run(){
 }
 
 std::vector<Value> Label::Values::get(){
-    return std::vector<Value>(c.begin(), c.end());
+    // Takes the values: the label is left empty. Every caller either pops the
+    // label straight after or is a branch that puts the results back itself,
+    // and a branch to depth 0 keeps the very label it read from -- copying
+    // there left the old values underneath the ones inserted back, so the
+    // operands came out duplicated.
+    std::vector<Value> values(c.begin(), c.end());
+    c.clear();
+    return values;
 }
 
 void Label::Values::insert(std::vector<Value> values){
