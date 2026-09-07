@@ -6,6 +6,7 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 
+#include <algorithm>
 #include <optional>
 #include <sstream>
 #include <variant>
@@ -314,5 +315,26 @@ Suite roundtrip_suite {
         std::istringstream in("(module (func) (tag) (export \"t\" (tag 0)))");
         WasmModule m = module_parse(in);
         Expect(!module_validate(m).has_value());
+    })
+    // memory.init carries memidx and dataidx, and the wire order (dataidx
+    // first) is the reverse of the flat order (a = memidx, b = dataidx).
+    // The flat-to-typed hop in the encoder swapped them a second time, so a
+    // module written by wasmvm-as named a memory that did not exist and
+    // could not be read back (issue #17).
+    Test("memory.init keeps its memidx and dataidx across a binary roundtrip", {
+        // Two data segments, one memory: a swap turns dataidx 1 into an
+        // out-of-range memidx, which validation rejects.
+        WasmModule m = binary_roundtrip(
+            "(module (memory 1) (data \"AAAA\") (data \"BBBB\")"
+            " (func (export \"f\") i32.const 0 i32.const 0 i32.const 4"
+            " memory.init 1))");
+        Expect(!module_validate(m).has_value());
+        AssertEq(m.funcs.size(), 1U);
+        auto found = std::find_if(m.funcs[0].body.begin(), m.funcs[0].body.end(),
+            [](const WasmInstr& i){ return i.opcode == Opcode::Memory_init; });
+        Assert(found != m.funcs[0].body.end());
+        auto& imm = std::get<WasmInstr::TwoIdx>(found->imm);
+        ExpectEq(imm.a, 0U); // memidx
+        ExpectEq(imm.b, 1U); // dataidx
     })
 };
