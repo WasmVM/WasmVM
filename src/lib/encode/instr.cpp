@@ -441,7 +441,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmInstr>(WasmInstr in
     TWO(Array_new_fixed,Array_new_fixed,a,b) TWO(Array_new_data,Array_new_data,a,b)
     TWO(Array_new_elem,Array_new_elem,a,b) TWO(Array_copy,Array_copy,a,b)
     TWO(Array_init_data,Array_init_data,a,b) TWO(Array_init_elem,Array_init_elem,a,b)
-    TWO(Memory_init,Memory_init,b,a) // Memory_init encodes dataidx then memidx
+    TWO(Memory_init,Memory_init,a,b) // flat a = memidx, b = dataidx; the wire order is swapped by operator<<
     case Opcode::Table_init: {
         auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
         Instr::Table_init t{tw.a, tw.b};
