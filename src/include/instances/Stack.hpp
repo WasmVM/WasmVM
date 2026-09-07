@@ -20,6 +20,7 @@ struct Label {
 
     struct Values : public std::stack<Value> {
         Values() : std::stack<Value>(){}
+        /// Takes every value, bottom first, and leaves the label empty.
         std::vector<Value> get();
         void insert(std::vector<Value>);
     };
