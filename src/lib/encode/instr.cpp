@@ -470,7 +470,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmInstr>(WasmInstr in
     case Opcode::Br_on_cast_fail: { auto& c=std::get<WasmInstr::CastOp>(instr.imm); Instr::Br_on_cast_fail t{c.label,c.src_n,c.dst_n,c.src_ht,c.dst_ht}; return *this<<t; }
     case Opcode::Br_table: { auto& bt=std::get<WasmInstr::BrTab>(instr.imm); Instr::Br_table t; t.indices=bt.indices; return *this<<t; }
     case Opcode::Try_table: { auto& tt=std::get<WasmInstr::TryTab>(instr.imm); Instr::Try_table t; t.type=tt.type; t.catches=tt.catches; return *this<<t; }
-    case Opcode::Select: { Instr::Select t; return *this<<t; }
+    case Opcode::Select: { auto& sv=std::get<WasmInstr::SelectV>(instr.imm); Instr::Select t; t.valtypes=sv.valtypes; return *this<<t; }
     ATOM(I32_eqz,I32_eqz) ATOM(I32_eq,I32_eq) ATOM(I32_ne,I32_ne)
     ATOM(I32_lt_s,I32_lt_s) ATOM(I32_lt_u,I32_lt_u) ATOM(I32_gt_s,I32_gt_s) ATOM(I32_gt_u,I32_gt_u)
     ATOM(I32_le_s,I32_le_s) ATOM(I32_le_u,I32_le_u) ATOM(I32_ge_s,I32_ge_s) ATOM(I32_ge_u,I32_ge_u)

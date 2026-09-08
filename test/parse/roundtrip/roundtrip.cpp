@@ -72,7 +72,6 @@ static const char* instruction_fixtures = "../instruction";
 static const std::vector<std::string> known_not_reading_back = { // sorted: set_difference below
     "gc_array.wat",   // #19: one-index GC ops written with the 0xfc prefix
     "gc_struct.wat",  // #19
-    "parametric.wat", // #18: typed select loses its valtypes
 };
 
 Suite roundtrip_suite {
@@ -378,6 +377,24 @@ Suite roundtrip_suite {
         auto& imm = std::get<WasmInstr::TwoIdx>(found->imm);
         ExpectEq(imm.a, 0U); // memidx
         ExpectEq(imm.b, 1U); // dataidx
+    })
+    // A typed select is the untyped one plus a valtype vector, and the
+    // flat-to-typed hop in the encoder built the typed form without copying
+    // that vector, so every `select (result t)` was written as a plain
+    // `select`. On a numeric type nothing shows; on a reference type the
+    // module that wasmvm-as wrote no longer validates (issue #18).
+    Test("a typed select keeps its valtypes across a binary roundtrip", {
+        WasmModule m = binary_roundtrip(
+            "(module (func (export \"f\") (param externref externref i32) (result externref)"
+            " local.get 0 local.get 1 local.get 2 select (result externref)))");
+        Expect(!module_validate(m).has_value());
+        AssertEq(m.funcs.size(), 1U);
+        auto found = std::find_if(m.funcs[0].body.begin(), m.funcs[0].body.end(),
+            [](const WasmInstr& i){ return i.opcode == Opcode::Select; });
+        Assert(found != m.funcs[0].body.end());
+        auto& valtypes = std::get<WasmInstr::SelectV>(found->imm).valtypes;
+        AssertEq(valtypes.size(), 1U);
+        Expect(valtypes[0] == ValueType::externref);
     })
     // The parse suite keeps one .wat per instruction family, and between them
     // they name very nearly every opcode. Reading them back out of the binary
