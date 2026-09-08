@@ -7,10 +7,15 @@
 #include <exception.hpp>
 
 #include <algorithm>
+#include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <iterator>
 #include <optional>
 #include <sstream>
-#include <variant>
 #include <string>
+#include <variant>
+#include <vector>
 
 using namespace WasmVM;
 using namespace Testing;
@@ -25,13 +30,50 @@ static WasmModule roundtrip(const std::string& src) {
 }
 
 // Text -> binary -> module: what wasmvm-as writes must be readable again.
+//
+// A module that validated before the roundtrip has to still validate after.
+// The encoder losing a section or scrambling an immediate does not fail at
+// the point it happens -- module_encode reports nothing and module_decode
+// reads the damaged bytes back quite happily. It surfaces one step further
+// on, as a module that no longer describes what it used to (issues #10, #14,
+// #17). The check is conditional because the helper is also used on sources
+// that do not validate in the first place, where "still invalid" says nothing.
 static WasmModule binary_roundtrip(const std::string& src) {
     std::istringstream in(src);
     WasmModule m1 = module_parse(in);
+    const bool valid_before = !module_validate(m1).has_value();
     std::stringstream bin(std::ios::in | std::ios::out | std::ios::binary);
     module_encode(m1, bin);
-    return module_decode(bin);
+    WasmModule m2 = module_decode(bin);
+    if (valid_before) {
+        if (std::optional<Exception::Exception> error = module_validate(m2)) {
+            throw Exception::Exception(
+                std::string("valid before the binary roundtrip, invalid after: ") + error->what());
+        }
+    }
+    return m2;
 }
+
+// The text of a module, as module_dump writes it.
+static std::string text_of(WasmModule& module) {
+    std::ostringstream out;
+    module_dump(module, out);
+    return out.str();
+}
+
+// Where the parse suite keeps one .wat per instruction family. Both suites run
+// with their own source directory as the working directory.
+static const char* instruction_fixtures = "../instruction";
+
+// Fixtures the encoder is known not to read back yet, each with the issue that
+// tracks it. The sweep below holds these to *failing*: when one of them starts
+// reading back, the test goes red and says which entry to remove, so a fix
+// cannot land without also retiring its exemption.
+static const std::vector<std::string> known_not_reading_back = { // sorted: set_difference below
+    "gc_array.wat",   // #19: one-index GC ops written with the 0xfc prefix
+    "gc_struct.wat",  // #19
+    "parametric.wat", // #18: typed select loses its valtypes
+};
 
 Suite roundtrip_suite {
     Test("empty module", {
@@ -336,5 +378,70 @@ Suite roundtrip_suite {
         auto& imm = std::get<WasmInstr::TwoIdx>(found->imm);
         ExpectEq(imm.a, 0U); // memidx
         ExpectEq(imm.b, 1U); // dataidx
+    })
+    // The parse suite keeps one .wat per instruction family, and between them
+    // they name very nearly every opcode. Reading them back out of the binary
+    // is the cheapest wide check there is on the encoder: three of the four
+    // encoder bugs found so far (#10, #14, #17) were one instruction or one
+    // section going quietly missing, and each of them was in a family this
+    // directory already covers.
+    //
+    // module_dump is the comparison, not module_validate: most of these
+    // fixtures are lists of opcodes with no regard for stack discipline, so
+    // they do not validate before the roundtrip either and validation has
+    // nothing to say about them. The text does -- it names every immediate,
+    // so an index that comes back swapped or a valtype that comes back empty
+    // is a different string.
+    Test("every instruction fixture reads back as what was written", {
+        std::vector<std::string> checked;
+        std::vector<std::string> differed;
+        for (const std::filesystem::directory_entry& entry :
+                 std::filesystem::directory_iterator(instruction_fixtures)) {
+            if (entry.path().extension() != ".wat") {
+                continue;
+            }
+            const std::string name = entry.path().filename().string();
+            checked.push_back(name);
+
+            std::ifstream source(entry.path());
+            WasmModule before = module_parse(source);
+            std::stringstream binary(std::ios::in | std::ios::out | std::ios::binary);
+            module_encode(before, binary);
+            WasmModule after = module_decode(binary);
+
+            if (text_of(before) != text_of(after)) {
+                differed.push_back(name);
+            }
+        }
+        std::sort(checked.begin(), checked.end());
+        std::sort(differed.begin(), differed.end());
+
+        // An empty or moved directory would make the loop above vacuous, and a
+        // check that quietly does not run reads exactly like a passing one.
+        Assert(!checked.empty());
+
+        // Every known entry must still be a real fixture, or it exempts nothing.
+        for (const std::string& name : known_not_reading_back) {
+            Assert(std::binary_search(checked.begin(), checked.end(), name));
+        }
+
+        std::vector<std::string> unexpected_failures;
+        std::set_difference(differed.begin(), differed.end(),
+                            known_not_reading_back.begin(), known_not_reading_back.end(),
+                            std::back_inserter(unexpected_failures));
+        std::vector<std::string> now_reading_back;
+        std::set_difference(known_not_reading_back.begin(), known_not_reading_back.end(),
+                            differed.begin(), differed.end(),
+                            std::back_inserter(now_reading_back));
+
+        for (const std::string& name : unexpected_failures) {
+            std::cout << "      " << name << " does not read back as written" << std::endl;
+        }
+        for (const std::string& name : now_reading_back) {
+            std::cout << "      " << name << " now reads back: remove it from known_not_reading_back"
+                      << std::endl;
+        }
+        ExpectEq(unexpected_failures.size(), 0U);
+        ExpectEq(now_reading_back.size(), 0U);
     })
 };
