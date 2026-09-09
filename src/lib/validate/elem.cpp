@@ -12,15 +12,19 @@
 using namespace WasmVM;
 
 template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
+    if(!elem.type.is_ref()){
+        throw Exception::Exception("elem element type should be a reference type");
+    }
     for(const ConstInstr& instr : elem.elemlist){
         std::visit(overloaded {
             [&](const Instr::Ref_null& ins){
-                if(ins.heaptype != heaptype_of(elem.type)){
+                // The null of any subtype of the segment's type will do.
+                if(!type_matches(reference_to(ins.heaptype, true), elem.type, context.types)){
                     throw Exception::Exception("reference type mismatch");
                 }
             },
             [&](const Instr::Ref_func& ins){
-                if(elem.type != ValueType::funcref){
+                if(!type_matches(ValueType(ValueType::funcref, false), elem.type, context.types)){
                     throw Exception::Exception("reference type mismatch");
                 }
                 if(ins.index >= context.funcs.size()){
@@ -32,7 +36,7 @@ template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
                     throw Exception::Exception("global index not found in global.get");
                 }
                 const GlobalType globaltype = context.globals[ins.index];
-                if(globaltype.type != elem.type){
+                if(!type_matches(globaltype.type, elem.type, context.types)){
                     throw Exception::Exception("global value type mismatch");
                 }
                 if(globaltype.mut != GlobalType::constant){

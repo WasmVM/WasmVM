@@ -9,13 +9,12 @@ Difference from Wasm spec
 * Multiple function results & block parameters/results
 * 64-bit memory address space (``memory64``) is supported alongside the
   32-bit default; per-memory selection is carried by :cpp:member:`Limits::is64`.
-* GC proposal, with one gap. Struct, array, ``sub`` and ``rec`` type
-  definitions and the typed reference value types ``(ref null? heaptype)``
-  are parsed, encoded, decoded, dumped, linked, validated and executed, and
-  everything a guest allocates is reclaimed. What is missing: a table or an
-  elem segment still holds only ``funcref`` or ``externref``
-  (:cpp:enum:`WasmVM::RefType`), so a table of concrete references cannot be
-  declared.
+* GC proposal. Struct, array, ``sub`` and ``rec`` type definitions and the
+  typed reference value types ``(ref null? heaptype)`` are parsed, encoded,
+  decoded, dumped, linked, validated and executed; everything a guest
+  allocates is reclaimed; and a table or an elem segment may hold any
+  reference type. A table's element type must be nullable, since every slot
+  starts null and the type carries no initialiser expression.
 
 What's new in 1.3
 -----------------
@@ -33,6 +32,14 @@ What's new in 1.3
 
 Unreleased
 ----------
+
+* A table's and an elem segment's element type is a
+  :cpp:struct:`WasmVM::ValueType` that has to be a reference, where it was a
+  two-valued ``RefType``. Any reference type may now be named, and the
+  instructions moving values through a table are checked against the
+  subtyping relation rather than equality. ``RefType`` and ``Ref`` are gone
+  from the interface; a table slot and an elem segment item hold a
+  :cpp:type:`WasmVM::Value`.
 
 * Everything a guest allocates is reclaimed, cycles included. Reference
   counting does the everyday work, and a cycle collector -- Bacon and Rajan's

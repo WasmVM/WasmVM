@@ -797,7 +797,10 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.b >= context.tables.size()){
                         throw Exception::Exception("table source index not found in table.copy");
                     }
-                    if(context.tables[ins.a].elemtype != context.tables[ins.b].elemtype){
+                    // Copying moves values, so the source's element type has
+                    // to fit the destination's.
+                    if(!type_matches(context.tables[ins.b].elemtype,
+                                     context.tables[ins.a].elemtype, context.types)){
                         throw Exception::Exception("table types not match in table.copy");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
@@ -810,7 +813,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.b >= context.elems.size()){
                         throw Exception::Exception("elem index not found in table.init");
                     }
-                    if(context.tables[ins.a].elemtype != context.elems[ins.b].type){
+                    if(!type_matches(context.elems[ins.b].type,
+                                     context.tables[ins.a].elemtype, context.types)){
                         throw Exception::Exception("table & elem types not match in table.init");
                     };
                     state.pop(std::vector<ValueType> {ValueType::i32, ValueType::i32, ValueType::i32});
@@ -929,7 +933,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.a >= context.tables.size()){
                         throw Exception::Exception("table index not found for call_indirect");
                     }
-                    if(context.tables[ins.a].elemtype != ValueType::funcref){
+                    if(!type_matches(context.tables[ins.a].elemtype,
+                                     ValueType(ValueType::funcref), context.types)){
                         throw Exception::Exception("table type should be funcref for call_indirect");
                     }
                     FuncType type = func_type_at(context, ins.b, "call_indirect");
@@ -1116,7 +1121,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.a >= context.tables.size()){
                         throw Exception::Exception("table index not found for return_call_indirect");
                     }
-                    if(context.tables[ins.a].elemtype != ValueType::funcref){
+                    if(!type_matches(context.tables[ins.a].elemtype,
+                                     ValueType(ValueType::funcref), context.types)){
                         throw Exception::Exception("table type should be funcref for return_call_indirect");
                     }
                     FuncType type = func_type_at(context, ins.b, "return_call_indirect");
@@ -1315,7 +1321,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("elem index not found for array.new_elem");
                     }
                     const ValueType& element = std::get<ValueType>(type.field.storage);
-                        if(element != context.elems[ins.b].type){
+                        if(!type_matches(context.elems[ins.b].type, element, context.types)){
                         throw Exception::Exception("array.new_elem element type does not match the elem segment");
                     }
                     state.pop(ValueType::i32);
@@ -1408,7 +1414,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                             throw Exception::Exception("elem index not found for array.init_elem");
                         }
                         const ValueType& element = std::get<ValueType>(type.field.storage);
-                        if(element != context.elems[ins.b].type){
+                        if(!type_matches(context.elems[ins.b].type, element, context.types)){
                             throw Exception::Exception("array.init_elem element type does not match the elem segment");
                         }
                     }
