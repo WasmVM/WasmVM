@@ -175,15 +175,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
     if(table.limits.max.has_value()){
         stream << " " << table.limits.max.value();
     }
-    switch(table.reftype){
-        case RefType::funcref :
-            stream << " funcref";
-        break;
-        case RefType::externref :
-            stream << " externref";
-        break;
-    }
-    stream << ")" << std::endl;
+    stream << " " << table.elemtype << ")" << std::endl;
     return stream;
 }
 

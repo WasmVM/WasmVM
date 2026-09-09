@@ -238,15 +238,6 @@ struct WasmException : public GcObject {
     WasmException(index_t addr, std::vector<Value> vals) : tag_addr(addr), values(std::move(vals)) {}
 };
 
-// The element type of a table or an elem segment. Still only the two legacy
-// reference types: tables holding a concrete reference are a further step.
-enum class RefType {
-    funcref = ValueType::funcref,
-    externref = ValueType::externref,
-};
-
-using Ref = std::variant<funcref_t, externref_t>;
-
 struct FuncType {
     std::vector<ValueType> params;
     std::vector<ValueType> results;
@@ -318,7 +309,9 @@ struct Limits {
 
 struct TableType {
     Limits limits;
-    RefType reftype;
+    // Any reference type. It was one of two, which meant a table of concrete
+    // references could not be declared at all.
+    ValueType elemtype = ValueType(ValueType::funcref);
 };
 
 using MemType = Limits;
@@ -337,20 +330,6 @@ struct GlobalType {
 struct TagType {
     index_t typeidx;
 };
-
-// A table's / elem segment's element type as a value type, and back. The two
-// legacy reference types are the nullable abstract forms, so the round trip is
-// exact for them and meaningless for anything else.
-constexpr ValueType valtype_of(RefType reftype){
-    return ValueType((ValueType::Kind)reftype);
-}
-constexpr bool is_legacy_reftype(const ValueType& type){
-    return type.nullable
-        && ((type.kind == ValueType::funcref) || (type.kind == ValueType::externref));
-}
-constexpr RefType reftype_of(const ValueType& type){
-    return (RefType)type.kind;
-}
 
 // Whether a runtime value could inhabit `type`, judged on representation
 // alone. A number type and a reference kind with one representation give an

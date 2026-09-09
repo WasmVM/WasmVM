@@ -136,7 +136,7 @@ private:
     // ── Elem / constexpr helpers ─────────────────────────────────────────────
     ConstInstr parse_constexpr();
     ConstInstr parse_elemexpr();
-    std::pair<RefType, std::vector<ConstInstr>> parse_elemlist();
+    std::pair<ValueType, std::vector<ConstInstr>> parse_elemlist();
 
     // ── Label ────────────────────────────────────────────────────────────────
     std::string parse_label();   // optionally consumes an Id, returns it or ""

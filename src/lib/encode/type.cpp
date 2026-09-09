@@ -167,10 +167,6 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::SubType>(WasmVM
     }, type.comp);
 }
 
-template<> Section::Stream& Section::Stream::operator<< <WasmVM::RefType>(WasmVM::RefType reftype){
-    return *this << (byte_t)((reftype == RefType::funcref) ? 0x70 : 0x6f);
-}
-
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Limits>(WasmVM::Limits limit){
     byte_t flag;
     if(limit.is64)

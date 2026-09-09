@@ -9,7 +9,7 @@ using namespace WasmVM;
 using namespace Encode;
 
 template<> Section::Stream& Section::Stream::operator<< <TableType>(TableType table){
-    return *this << table.reftype << table.limits;
+    return *this << table.elemtype << table.limits;
 }
 
 Encode::Table::Table(const std::vector<TableType>& tables) : Section((byte_t)0x04){

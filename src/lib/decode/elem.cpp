@@ -19,7 +19,7 @@ template<> Stream& Decode::operator>> <WasmElem>(Stream& stream, WasmElem& elem)
             stream >> elem.type >> elem.elemlist;
         }else{
             // 0x01, 0x03
-            elem.type = RefType::funcref;
+            elem.type = ValueType(ValueType::funcref);
             if(stream.get<byte_t>() != (byte_t)0x00){
                 throw Exception::invalid_elem(stream.location());
             }
@@ -32,7 +32,7 @@ template<> Stream& Decode::operator>> <WasmElem>(Stream& stream, WasmElem& elem)
         elem.mode.type = (prefix & 0x2) ? WasmElem::ElemMode::Mode::declarative : WasmElem::ElemMode::Mode::passive;
     }else{
         elem.mode.type = WasmElem::ElemMode::Mode::active;
-        elem.type = RefType::funcref;
+        elem.type = ValueType(ValueType::funcref);
         if(prefix & 0x2){
             stream >> elem.mode.tableidx.emplace() >> elem.mode.offset.emplace();
             if(prefix & 0x4){

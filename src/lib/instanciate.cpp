@@ -10,18 +10,11 @@
 
 using namespace WasmVM;
 
-static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, ModuleInst& moduleInst, Store& store){
+static void init_table(std::vector<Value>::iterator it, const WasmElem& elem, ModuleInst& moduleInst, Store& store){
     for(ConstInstr instr : elem.elemlist){
         std::visit(overloaded {
             [&](Instr::Ref_null& ins){
-                switch(elem.type){
-                    case RefType::funcref :
-                        it->emplace<funcref_t>(std::nullopt);
-                    break;
-                    case RefType::externref :
-                        it->emplace<externref_t>(nullptr);
-                    break;
-                }
+                *it = default_value(elem.type, moduleInst.types);
             },
             [&](Instr::Ref_func& ins){
                 index_t funcaddr = moduleInst.funcaddrs[ins.index];
@@ -36,17 +29,10 @@ static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, Modu
                     throw Exception::Exception("invalid global address in const global.get");
                 }
                 const GlobalInst& got = store.globals[globaladdr];
-                if(valtype_of(elem.type) != got.type){
+                if(elem.type != got.type){
                     throw Exception::Exception("global type not match in const global.get");
                 }
-                switch(elem.type){
-                    case RefType::funcref :
-                        it->emplace<funcref_t>(std::get<funcref_t>(got.value));
-                    break;
-                    case RefType::externref :
-                        it->emplace<externref_t>(std::get<externref_t>(got.value));
-                    break;
-                }
+                *it = got.value;
             },
             [](auto&){
                 throw Exception::Exception("invalid item in element segment");
@@ -178,16 +164,8 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         TableInst& tableinst = store.tables.emplace_back();
         moduleInst.tableaddrs.emplace_back(address);
         tableinst.type = module.tables[idx];
-        Ref initval;
-        switch(tableinst.type.reftype){
-            case RefType::funcref :
-                initval.emplace<funcref_t>(std::nullopt);
-            break;
-            case RefType::externref :
-                initval.emplace<externref_t>(nullptr);
-            break;
-        }
-        tableinst.elems.resize(tableinst.type.limits.min, initval);
+        tableinst.elems.resize(tableinst.type.limits.min,
+                               default_value(tableinst.type.elemtype, moduleInst.types));
     }
     // Memories
     for(size_t idx = 0; idx < module.mems.size(); ++idx){
@@ -309,7 +287,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 if((offset + elem.elemlist.size()) > table.elems.size()){
                     throw Exception::Exception("insufficient size while initialize table");
                 }
-                if(table.type.reftype != elem.type){
+                if(table.type.elemtype != elem.type){
                     throw Exception::Exception("elem type not match table type");
                 }
                 init_table(table.elems.begin() + offset, elem, moduleInst, store);

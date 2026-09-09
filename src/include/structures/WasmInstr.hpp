@@ -83,7 +83,6 @@ using Return_call_ref = OneIndex<Opcode::Return_call_ref>;
 struct Ref_null : public Base {
     Ref_null() : Base(Opcode::Ref_null), heaptype(heaptype_func) {}
     Ref_null(int32_t heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
-    Ref_null(RefType reftype) : Base(Opcode::Ref_null), heaptype(heaptype_of(valtype_of(reftype))) {}
     int32_t heaptype;
 };
 using Ref_is_null = Atomic<Opcode::Ref_is_null>;
@@ -485,7 +484,6 @@ struct WasmInstr {
     struct ConstI64 { i64_t value; };
     struct ConstF32 { f32_t value; };
     struct ConstF64 { f64_t value; };
-    struct HeapRef  { RefType heaptype; };
     struct HeapI32  { int32_t heaptype; };
     struct CastOp   { index_t label; bool src_n, dst_n; int32_t src_ht, dst_ht; };
     struct BrTab    { std::vector<index_t> indices; };
@@ -495,7 +493,7 @@ struct WasmInstr {
     using Imm = std::variant<
         NoImm, OneIdx, TwoIdx, BlockType, MemArg,
         ConstI32, ConstI64, ConstF32, ConstF64,
-        HeapRef, HeapI32, CastOp, BrTab, TryTab, SelectV
+        HeapI32, CastOp, BrTab, TryTab, SelectV
     >;
     Imm imm;
 
