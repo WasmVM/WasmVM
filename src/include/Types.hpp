@@ -293,6 +293,15 @@ bool comp_matches(index_t a, index_t b, const std::vector<SubType>& types);
 // declaration to be honest.
 bool comp_refines(index_t a, index_t b, const std::vector<SubType>& types);
 
+// The top of the hierarchy a reference type belongs to, as its nullable form:
+// anyref, funcref, externref or exnref. A cast can only be attempted from
+// there, since the hierarchies never mix.
+ValueType top_of(const ValueType& type, const std::vector<SubType>& types);
+// What `a` still admits once `b` is taken out of it. Only nullability is
+// subtracted: a cast to a nullable type accounts for null, so what is left
+// cannot be null.
+ValueType reference_diff(const ValueType& a, const ValueType& b);
+
 // The value a local, a global, a struct field or an array element of this type
 // starts as: zero for a number, and the null of the right representation for a
 // reference. `types` resolves a concrete reference to the shape it names.

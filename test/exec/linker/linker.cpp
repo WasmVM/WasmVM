@@ -153,8 +153,10 @@ Suite linker_suite {
         Test("a struct type and the heap type naming it shift together", {
             WasmModule m = link({
                 {"a.wasm", "(module (type (func (param i32))) (func (export \"fa\") (param i32)))"},
+                // The operand of a cast comes from the top of the target's
+                // hierarchy, so a struct test takes an anyref, not a funcref.
                 {"b.wasm", "(module (type $s (struct (field i32)))"
-                           " (func (export \"fb\") (param funcref) local.get 0 ref.test (ref $s) drop))"},
+                           " (func (export \"fb\") (param anyref) local.get 0 ref.test (ref $s) drop))"},
             });
             int32_t heaptype = -1;
             for (const WasmInstr& instr : m.funcs[1].body) {

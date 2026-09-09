@@ -351,4 +351,53 @@ Suite invoke_gc {
             ExpectEq(i32_at(r, 1), 1);
         })
     })
+    // A cast is how an abstract reference becomes a concrete one. Both ends
+    // matter: the validator has to refine the type so the field access is
+    // allowed at all, and the interpreter has to trap when the object is not
+    // what the cast claims.
+    Category("casts", {
+        Test("build, widen to anyref, cast back, read the field", {
+            std::vector<Value> r = run(body("(result i32)",
+                "(local $any anyref)"
+                " i32.const 7 i32.const 0 i64.const 0 struct.new $s local.set $any"
+                " local.get $any ref.cast (ref $s) struct.get $s $x"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 7);
+        })
+        Test("ref.test answers for the right type and the wrong one", {
+            std::vector<Value> r = run(body("(result i32 i32 i32)",
+                "(local $any anyref)"
+                " i32.const 3 array.new_default $a local.set $any"
+                " local.get $any ref.test (ref $a)"
+                " local.get $any ref.test (ref $s)"
+                " local.get $any ref.test (ref array)"));
+            AssertEq(r.size(), 3U);
+            ExpectEq(i32_at(r, 0), 1);
+            ExpectEq(i32_at(r, 1), 0);
+            ExpectEq(i32_at(r, 2), 1);
+        })
+        Test("a cast to the wrong type traps", {
+            Expect(traps("(result i32)",
+                "(local $any anyref)"
+                " i32.const 3 array.new_default $a local.set $any"
+                " local.get $any ref.cast (ref $s) struct.get $s $x"));
+        })
+        Test("a non-null cast of a null reference traps", {
+            Expect(traps("(result i32)",
+                "ref.null $s ref.cast (ref $s) struct.get $s $x"));
+        })
+        Test("br_on_cast branches on a match and falls through otherwise", {
+            // The array goes to the fall-through, the struct to the label.
+            const std::string code =
+                "(local $any anyref)"
+                " i32.const 3 array.new_default $a local.set $any"
+                " block $h (result (ref $s)) local.get $any"
+                "   br_on_cast $h (ref null any) (ref $s)"
+                "   drop i32.const 111 return end"
+                " struct.get $s $x";
+            std::vector<Value> r = run(body("(result i32)", code));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 111); // fell through: it was an array
+        })
+    })
 };

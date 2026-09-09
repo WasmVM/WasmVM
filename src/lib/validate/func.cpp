@@ -95,6 +95,15 @@ static const FuncType& func_type_at(const Validate::Validator::Context& context,
     return context.types[index].func();
 }
 
+// The reference type a cast instruction names, checked to exist.
+static ValueType cast_target(const Validate::Validator::Context& context, int32_t heaptype,
+                             bool nullable, const char* what){
+    if(!abstract_heaptype(heaptype) && ((index_t)heaptype >= context.types.size())){
+        throw Exception::Exception(std::string("type index not found for ") + what);
+    }
+    return reference_to(heaptype, nullable);
+}
+
 template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     // type
     assert(func.typeidx < context.types.size());
@@ -1017,6 +1026,58 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.pop(state.ctrls[state.ctrls.size() - 1 - m].types());
                     state.unreachable();
+                }break;
+                // ── casts ───────────────────────────────────────────────────
+                // A cast can only be attempted from the top of the hierarchy
+                // the target belongs to, since the hierarchies never mix.
+                // [(ref null top)] -> [i32]
+                case Opcode::Ref_test : case Opcode::Ref_test_null : {
+                    const auto& ins = std::get<WasmInstr::HeapI32>(instr.imm);
+                    bool nullable = (instr.opcode == Opcode::Ref_test_null);
+                    ValueType target = cast_target(context, ins.heaptype, nullable, "ref.test");
+                    state.pop(top_of(target, context.types));
+                    state.push(ValueType::i32);
+                }break;
+                // [(ref null top)] -> [rt]
+                case Opcode::Ref_cast : case Opcode::Ref_cast_null : {
+                    const auto& ins = std::get<WasmInstr::HeapI32>(instr.imm);
+                    bool nullable = (instr.opcode == Opcode::Ref_cast_null);
+                    ValueType target = cast_target(context, ins.heaptype, nullable, "ref.cast");
+                    state.pop(top_of(target, context.types));
+                    state.push(target);
+                }break;
+                // br_on_cast l rt1 rt2 sends rt2 to the label and leaves what
+                // rt1 still admits; br_on_cast_fail is the other way round.
+                // [t* rt1] -> [t* (rt1 \ rt2)] and [t* rt1] -> [t* rt2]
+                case Opcode::Br_on_cast : case Opcode::Br_on_cast_fail : {
+                    const auto& ins = std::get<WasmInstr::CastOp>(instr.imm);
+                    bool on_fail = (instr.opcode == Opcode::Br_on_cast_fail);
+                    const char* what = on_fail ? "br_on_cast_fail" : "br_on_cast";
+                    if(ins.label >= state.ctrls.size()){
+                        throw Exception::Exception(std::string("label index not found in ") + what);
+                    }
+                    ValueType from = cast_target(context, ins.src_ht, ins.src_n, what);
+                    ValueType to = cast_target(context, ins.dst_ht, ins.dst_n, what);
+                    if(!type_matches(to, from, context.types)){
+                        throw Exception::Exception(
+                            std::string(what) + " casts to a type that is not below the one it casts from");
+                    }
+                    std::vector<ValueType> label_type = state.ctrls[state.ctrls.size() - 1 - ins.label].types();
+                    if(label_type.empty()){
+                        throw Exception::Exception(std::string("label of ") + what + " takes no reference");
+                    }
+                    // What the branch carries, and what is left behind.
+                    ValueType taken = on_fail ? reference_diff(from, to) : to;
+                    ValueType kept = on_fail ? to : reference_diff(from, to);
+                    if(!type_matches(taken, label_type.back(), context.types)){
+                        throw Exception::Exception(
+                            std::string("label of ") + what + " does not accept the reference it is sent");
+                    }
+                    // The operand is on top; the label's other values are below it.
+                    state.pop(from);
+                    std::vector<ValueType> rest(label_type.begin(), label_type.end() - 1);
+                    state.push(state.pop(rest));
+                    state.push(kept);
                 }break;
                 case Opcode::Return :
                     state.pop(state.ctrls.front().type.results);
