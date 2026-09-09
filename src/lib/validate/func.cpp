@@ -168,7 +168,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 // [] -> [t]
                 case Opcode::Ref_null : {
                     const auto& ins = std::get<WasmInstr::HeapRef>(instr.imm);
-                    state.push((ValueType)ins.heaptype);
+                    state.push(valtype_of(ins.heaptype));
                 }break;
                 case Opcode::Local_get : {
                     const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
@@ -436,7 +436,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     const TableType& type = context.tables[ins.index];
                     state.pop(ValueType::i32);
-                    state.push((ValueType)type.reftype);
+                    state.push(valtype_of(type.reftype));
                 }break;
                 // [i32|i64] -> [t]
                 case Opcode::I32_load : {
@@ -600,7 +600,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("table index not found in table.set");
                     }
                     const TableType& type = context.tables[ins.index];
-                    state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype});
+                    state.pop(std::vector<ValueType> {ValueType::i32, valtype_of(type.reftype)});
                 }break;
                 // [i32|i64 t] -> []
                 case Opcode::I32_store : {
@@ -751,7 +751,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("table index not found in table.grow");
                     }
                     const TableType& type = context.tables[ins.index];
-                    state.pop(std::vector<ValueType> {(ValueType)type.reftype, ValueType::i32});
+                    state.pop(std::vector<ValueType> {valtype_of(type.reftype), ValueType::i32});
                     state.push(ValueType::i32);
                 }break;
                 // [t* i32] -> [t*]
@@ -834,7 +834,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("table index not found in table.fill");
                     }
                     const TableType& type = context.tables[ins.index];
-                    state.pop(std::vector<ValueType> {ValueType::i32, (ValueType)type.reftype, ValueType::i32});
+                    state.pop(std::vector<ValueType> {ValueType::i32, valtype_of(type.reftype), ValueType::i32});
                 }break;
                 // [t t i32] -> [t]
                 case Opcode::Select : {
@@ -1107,7 +1107,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(ins.b >= context.elems.size()){
                         throw Exception::Exception("elem index not found for array.new_elem");
                     }
-                    if((RefType)std::get<ValueType>(type.field.storage) != context.elems[ins.b].type){
+                    const ValueType& element = std::get<ValueType>(type.field.storage);
+                        if(!is_legacy_reftype(element) || (reftype_of(element) != context.elems[ins.b].type)){
                         throw Exception::Exception("array.new_elem element type does not match the elem segment");
                     }
                     state.pop(ValueType::i32);
@@ -1202,7 +1203,8 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         if(ins.b >= context.elems.size()){
                             throw Exception::Exception("elem index not found for array.init_elem");
                         }
-                        if((RefType)std::get<ValueType>(type.field.storage) != context.elems[ins.b].type){
+                        const ValueType& element = std::get<ValueType>(type.field.storage);
+                        if(!is_legacy_reftype(element) || (reftype_of(element) != context.elems[ins.b].type)){
                             throw Exception::Exception("array.init_elem element type does not match the elem segment");
                         }
                     }

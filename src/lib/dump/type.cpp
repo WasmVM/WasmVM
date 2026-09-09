@@ -8,7 +8,7 @@
 using namespace WasmVM;
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
-    switch(type){
+    switch(type.kind){
         case ValueType::i32:
             stream << "i32";
         break;

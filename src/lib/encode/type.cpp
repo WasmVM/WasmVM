@@ -81,7 +81,7 @@ template<> Section::Stream& Section::Stream::operator<< <std::string>(std::strin
 }
 
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::ValueType>(WasmVM::ValueType valtype){
-    switch(valtype){
+    switch(valtype.kind){
         case ValueType::i32 :
             *this << (byte_t) 0x7f;
         break;

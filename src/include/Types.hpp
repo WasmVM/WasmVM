@@ -56,28 +56,86 @@ struct i31ref_t { // stores 31-bit value; nullopt = null i31ref
 
 constexpr u64_t page_size = 65536;
 
-using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>;
+// A struct or array on the GC heap. Held by shared_ptr, like exnref_t: a
+// reference is null when the pointer is. Reference counting reclaims what it
+// can; a cycle through a mutable reference field is not collected.
+struct StructObj;
+struct ArrayObj;
+using structref_t = std::shared_ptr<StructObj>;
+using arrayref_t = std::shared_ptr<ArrayObj>;
 
-enum ValueType {
-    i32, i64, f32, f64, funcref, externref, i31ref, exnref
+using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t,
+                           i31ref_t, exnref_t, structref_t, arrayref_t>;
+
+// A value type is a number type or a reference type, and a reference type is
+// `(ref null? heaptype)`. The heap type is abstract -- func, extern, any, eq,
+// i31, struct, array, exn and the three bottom types -- or concrete, naming a
+// type index. `funcref` and the other legacy spellings are the nullable
+// abstract forms: funcref is (ref null func).
+struct ValueType {
+    enum Kind : uint8_t {
+        // Number types.
+        i32, i64, f32, f64,
+        // Abstract heap types. Everything from funcref on is a reference.
+        funcref, externref, i31ref, exnref,
+        structref, arrayref, anyref, eqref,
+        nullref, nullfuncref, nullexternref,
+        // A concrete heap type: typeidx names the type.
+        ref,
+    };
+
+    constexpr ValueType(Kind kind = i32)
+        : kind(kind), nullable(kind >= funcref), typeidx(0) {}
+    constexpr ValueType(Kind kind, bool nullable)
+        : kind(kind), nullable(nullable), typeidx(0) {}
+
+    // (ref $t) / (ref null $t)
+    static constexpr ValueType concrete(index_t typeidx, bool nullable){
+        ValueType type(ref, nullable);
+        type.typeidx = typeidx;
+        return type;
+    }
+
+    Kind kind;
+    bool nullable;   // meaningful for the reference kinds
+    index_t typeidx; // meaningful when kind == ref
+
+    constexpr bool is_num() const { return kind <= f64; }
+    constexpr bool is_ref() const { return kind >= funcref; }
+    constexpr bool is_concrete() const { return kind == ref; }
+    // A bottom heap type: the null of some hierarchy, and nothing else.
+    constexpr bool is_bottom() const { return kind >= nullref && kind <= nullexternref; }
 };
 
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i32, Value>, i32_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i64, Value>, i64_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f32, Value>, f32_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::f64, Value>, f64_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::funcref, Value>, funcref_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::externref, Value>, externref_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::i31ref, Value>, i31ref_t>);
-static_assert(std::is_same_v<std::variant_alternative_t<ValueType::exnref, Value>, exnref_t>);
+constexpr bool operator==(const ValueType& a, const ValueType& b){
+    if(a.kind != b.kind) return false;
+    if(a.is_ref() && (a.nullable != b.nullable)) return false;
+    return !a.is_concrete() || (a.typeidx == b.typeidx);
+}
+constexpr bool operator!=(const ValueType& a, const ValueType& b){ return !(a == b); }
 
-// Full definition (after Value is defined above)
+// Full definitions (after Value is defined above)
+struct StructObj {
+    index_t typeidx;
+    // One per field, in declaration order. A packed field is held as an i32
+    // already truncated to its width; struct.get_s / _u extend it on the way
+    // out.
+    std::vector<Value> fields;
+};
+
+struct ArrayObj {
+    index_t typeidx;
+    std::vector<Value> elems; // packed elements as for StructObj::fields
+};
+
 struct WasmException {
     index_t tag_addr;
     std::vector<Value> values;
     WasmException(index_t addr, std::vector<Value> vals) : tag_addr(addr), values(std::move(vals)) {}
 };
 
+// The element type of a table or an elem segment. Still only the two legacy
+// reference types: tables holding a concrete reference are a further step.
 enum class RefType {
     funcref = ValueType::funcref,
     externref = ValueType::externref,
@@ -176,6 +234,28 @@ struct TagType {
     index_t typeidx;
 };
 
+// A table's / elem segment's element type as a value type, and back. The two
+// legacy reference types are the nullable abstract forms, so the round trip is
+// exact for them and meaningless for anything else.
+constexpr ValueType valtype_of(RefType reftype){
+    return ValueType((ValueType::Kind)reftype);
+}
+constexpr bool is_legacy_reftype(const ValueType& type){
+    return type.nullable
+        && ((type.kind == ValueType::funcref) || (type.kind == ValueType::externref));
+}
+constexpr RefType reftype_of(const ValueType& type){
+    return (RefType)type.kind;
+}
+
+// Whether a runtime value could inhabit `type`, judged on representation
+// alone. A number type and a reference kind with one representation give an
+// exact answer; anyref, eqref and the bottom types are inhabited by several
+// representations, and a concrete reference's type index is a static matter,
+// so those are not refuted here. Used for the interpreter's own sanity
+// checks, never as a substitute for validation.
+bool value_matches(const Value& value, const ValueType& type);
+
 struct ExternVal {
     enum ExternType {Func, Mem, Table, Global, Tag} type;
     index_t addr;
@@ -183,6 +263,9 @@ struct ExternVal {
 
 }
 
+template <> struct std::hash<WasmVM::ValueType> {
+    std::size_t operator()(const WasmVM::ValueType& type) const;
+};
 template <> struct std::hash<WasmVM::FuncType> {
     std::size_t operator()(const WasmVM::FuncType& functype) const;
 };

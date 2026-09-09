@@ -17,12 +17,12 @@ void Validate::Validator::operator()(const WasmGlobal& global, index_t idx){
             if((global.type.type != ValueType::funcref) && (global.type.type != ValueType::externref)){
                 throw Exception::Exception("invalid type in ref.null");
             }
-            if((ValueType)ins.heaptype != global.type.type){
+            if(valtype_of(ins.heaptype) != global.type.type){
                 throw Exception::Exception("reference type mismatch");
             }
         },
         [&](const Instr::Ref_func& ins){
-            if((ValueType)global.type.type != ValueType::funcref){
+            if(global.type.type != ValueType::funcref){
                 throw Exception::Exception("reference type mismatch");
             }
             if(ins.index >= context.funcs.size()){

@@ -35,7 +35,10 @@ void RunVisitor::operator()(Instr::Global_set& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
   index_t globaladdr = frame.module.globaladdrs[instr.index];
+  // The global keeps its declared type. It used to be overwritten with the
+  // stored value's representation, which was a no-op for a validated module
+  // and cannot be written at all now that a type may carry a type index: a
+  // global declared (ref $s) would be downgraded to a bare structref.
   stack.store.globals[globaladdr].value = label.values.top();
-  stack.store.globals[globaladdr].type = (ValueType)label.values.top().index();
   label.values.pop();
 }

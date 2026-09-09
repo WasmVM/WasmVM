@@ -20,7 +20,7 @@ template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
                 }
             },
             [&](const Instr::Ref_func& ins){
-                if((ValueType)elem.type != ValueType::funcref){
+                if(valtype_of(elem.type) != ValueType::funcref){
                     throw Exception::Exception("reference type mismatch");
                 }
                 if(ins.index >= context.funcs.size()){
@@ -32,7 +32,7 @@ template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
                     throw Exception::Exception("global index not found in global.get");
                 }
                 const GlobalType globaltype = context.globals[ins.index];
-                if(globaltype.type != (ValueType)elem.type){
+                if(globaltype.type != valtype_of(elem.type)){
                     throw Exception::Exception("global value type mismatch");
                 }
                 if(globaltype.mut != GlobalType::constant){

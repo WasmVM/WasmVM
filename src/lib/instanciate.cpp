@@ -36,7 +36,7 @@ static void init_table(std::vector<Ref>::iterator it, const WasmElem& elem, Modu
                     throw Exception::Exception("invalid global address in const global.get");
                 }
                 const GlobalInst& got = store.globals[globaladdr];
-                if(static_cast<ValueType>(elem.type) != got.type){
+                if(valtype_of(elem.type) != got.type){
                     throw Exception::Exception("global type not match in const global.get");
                 }
                 switch(elem.type){
@@ -218,7 +218,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 globalinst.value.emplace<f64_t>(instr.value);
             },
             [&](Instr::Ref_null instr){
-                switch(globalinst.type){
+                switch(globalinst.type.kind){
                     case ValueType::funcref :
                         globalinst.value.emplace<funcref_t>(std::nullopt);
                     break;

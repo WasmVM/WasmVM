@@ -9,15 +9,55 @@
 
 using namespace WasmVM;
 
+bool WasmVM::value_matches(const Value& value, const ValueType& type){
+    switch(type.kind){
+        case ValueType::i32:      return std::holds_alternative<i32_t>(value);
+        case ValueType::i64:      return std::holds_alternative<i64_t>(value);
+        case ValueType::f32:      return std::holds_alternative<f32_t>(value);
+        case ValueType::f64:      return std::holds_alternative<f64_t>(value);
+        case ValueType::funcref:
+        case ValueType::nullfuncref:   return std::holds_alternative<funcref_t>(value);
+        case ValueType::externref:
+        case ValueType::nullexternref: return std::holds_alternative<externref_t>(value);
+        case ValueType::i31ref:   return std::holds_alternative<i31ref_t>(value);
+        case ValueType::exnref:   return std::holds_alternative<exnref_t>(value);
+        case ValueType::structref: return std::holds_alternative<structref_t>(value);
+        case ValueType::arrayref:  return std::holds_alternative<arrayref_t>(value);
+        // Several representations inhabit these, and a concrete reference's
+        // type index is checked statically, not here.
+        case ValueType::anyref:
+        case ValueType::eqref:
+        case ValueType::nullref:
+        case ValueType::ref:
+        break;
+    }
+    return true;
+}
+
+std::size_t std::hash<WasmVM::ValueType>::operator()(const WasmVM::ValueType& type) const {
+    std::size_t value = (std::size_t)type.kind;
+    if(type.is_ref()){
+        value = (value << 1) | (type.nullable ? 1 : 0);
+    }
+    if(type.is_concrete()){
+        value = (value << 32) ^ (std::size_t)type.typeidx;
+    }
+    return value;
+};
+
+static void hash_valtypes(std::string& signature, const std::vector<WasmVM::ValueType>& types){
+    std::hash<WasmVM::ValueType> hashfunc;
+    for(const WasmVM::ValueType& type : types){
+        signature += std::to_string(hashfunc(type));
+        signature += ',';
+    }
+}
+
 std::size_t std::hash<WasmVM::FuncType>::operator()(const WasmVM::FuncType& functype) const {
     std::string signature;
-    for(auto param : functype.params){
-        signature += (char) param + '0';
-    }
+    hash_valtypes(signature, functype.params);
     signature += ':';
-    for(auto result : functype.results){
-        signature += (char) result + '0';
-    }
+    hash_valtypes(signature, functype.results);
     return std::hash<std::string>{}(signature);
 };
 
@@ -66,9 +106,10 @@ std::size_t std::hash<WasmVM::SubType>::operator()(const WasmVM::SubType& type) 
     auto field = [&](const FieldType& f){
         signature += f.mut ? 'm' : 'c';
         std::visit(overloaded {
-            [&](ValueType v){ signature += (char)('0' + v); },
+            [&](ValueType v){ signature += std::to_string(std::hash<ValueType>{}(v)); },
             [&](PackedType p){ signature += (p == PackedType::i8) ? 'b' : 'h'; }
         }, f.storage);
+        signature += '.';
     };
     std::visit(overloaded {
         [&](const FuncType& f){ signature += 'F'; signature += std::to_string(std::hash<FuncType>{}(f)); },

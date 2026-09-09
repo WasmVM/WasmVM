@@ -30,7 +30,7 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
     if(std::holds_alternative<WasmFunc>(funcinst.body)){
         WasmFunc& func = std::get<WasmFunc>(funcinst.body);
         for(ValueType type : func.locals){
-            switch(type){
+            switch(type.kind){
                 case ValueType::i32 :
                     frame.locals.emplace_back((i32_t)0);
                 break;
