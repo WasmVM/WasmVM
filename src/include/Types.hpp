@@ -293,6 +293,12 @@ bool comp_matches(index_t a, index_t b, const std::vector<SubType>& types);
 // declaration to be honest.
 bool comp_refines(index_t a, index_t b, const std::vector<SubType>& types);
 
+// The value a local, a global, a struct field or an array element of this type
+// starts as: zero for a number, and the null of the right representation for a
+// reference. `types` resolves a concrete reference to the shape it names.
+Value default_value(const ValueType& type, const std::vector<SubType>& types);
+Value default_value(const StorageType& storage, const std::vector<SubType>& types);
+
 struct ExternVal {
     enum ExternType {Func, Mem, Table, Global, Tag} type;
     index_t addr;

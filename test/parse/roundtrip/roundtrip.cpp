@@ -577,6 +577,8 @@ Suite roundtrip_suite {
             // data.drop 0 = fc 09 00, end = 0b
             std::vector<unsigned char> expected({0xfc, 0x09, 0x00, 0x0b});
             Expect(func_body_of("(module (data \"a\") (func data.drop 0))") == expected);
+        })
+    })
     // A value type is a number type or a reference type, and a reference type
     // is (ref null? heaptype) over an abstract heap type or a type index. The
     // legacy spellings are the nullable abstract forms -- funcref is

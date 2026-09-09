@@ -314,6 +314,40 @@ bool WasmVM::comp_refines(index_t a, index_t b, const std::vector<SubType>& type
     return true;
 }
 
+Value WasmVM::default_value(const ValueType& type, const std::vector<SubType>& types){
+    switch(type.kind){
+        case ValueType::i32: return Value((i32_t)0);
+        case ValueType::i64: return Value((i64_t)0);
+        case ValueType::f32: return Value((f32_t)0.0f);
+        case ValueType::f64: return Value((f64_t)0.0);
+        case ValueType::funcref: case ValueType::nullfuncref:
+            return Value(funcref_t(std::nullopt));
+        case ValueType::externref: case ValueType::nullexternref:
+            return Value((externref_t)nullptr);
+        case ValueType::i31ref: return Value(i31ref_t());
+        case ValueType::exnref: return Value(exnref_t());
+        case ValueType::arrayref: return Value(arrayref_t());
+        case ValueType::ref: {
+            if(type.typeidx < types.size()){
+                if(types[type.typeidx].is_array()) return Value(arrayref_t());
+                if(types[type.typeidx].is_func())  return Value(funcref_t(std::nullopt));
+            }
+            return Value(structref_t());
+        }
+        // structref, and the abstract types of the any hierarchy whose null is
+        // not tied to one representation.
+        default: break;
+    }
+    return Value(structref_t());
+}
+
+Value WasmVM::default_value(const StorageType& storage, const std::vector<SubType>& types){
+    if(std::holds_alternative<PackedType>(storage)){
+        return Value((i32_t)0);
+    }
+    return default_value(std::get<ValueType>(storage), types);
+}
+
 bool WasmVM::type_matches(const ValueType& a, const ValueType& b, const std::vector<SubType>& types){
     if(a == b){
         return true;
