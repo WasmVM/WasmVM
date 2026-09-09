@@ -13,7 +13,16 @@ namespace Validate {
 
 struct State {
 
-    using StackValue = std::variant<std::monostate, ValueType>;
+    // A reference to a concrete type -- (ref null? $t) -- as struct.new and
+    // array.new produce it and struct.get and the like consume it. It lives
+    // only inside the validator: ValueType has no such member yet, so no
+    // local, global, parameter or result can hold one, and pop(ValueType)
+    // rejects it wherever one of those is expected.
+    struct TypedRef {
+        bool nullable;
+        index_t typeidx;
+    };
+    using StackValue = std::variant<std::monostate, ValueType, TypedRef>;
 
     struct CtrlFrame {
         CtrlFrame(Opcode::opcode_t opcode, const FuncType& type, size_t height = 0)
@@ -41,6 +50,9 @@ struct State {
 
     StackValue pop(StackValue expect);
     StackValue pop(ValueType expect1, ValueType expect2);
+    // A reference to `expect.typeidx`; a non-null one satisfies a nullable
+    // expectation, not the other way round.
+    StackValue pop(TypedRef expect);
 
     void unreachable();
 

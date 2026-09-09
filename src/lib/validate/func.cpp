@@ -20,6 +20,9 @@ static bool is_num(Validate::State::StackValue value){
     if(is_unknown(value)){
         return true;
     }
+    if(!std::holds_alternative<ValueType>(value)){
+        return false;
+    }
     ValueType& type = std::get<ValueType>(value);
     return (type == ValueType::i32) || (type == ValueType::i64) || (type == ValueType::f32) || (type == ValueType::f64);
 }
@@ -28,8 +31,60 @@ static bool is_ref(Validate::State::StackValue value){
     if(is_unknown(value)){
         return true;
     }
+    if(std::holds_alternative<Validate::State::TypedRef>(value)){
+        return true;
+    }
     ValueType& type = std::get<ValueType>(value);
     return (type == ValueType::funcref) || (type == ValueType::externref);
+}
+
+// ── GC type helpers ─────────────────────────────────────────────────────────
+static const StructType& struct_type_at(const Validate::Validator::Context& context, index_t index, const char* what){
+    if(index >= context.types.size()){
+        throw Exception::Exception(std::string("type index not found for ") + what);
+    }
+    if(!context.types[index].is_struct()){
+        throw Exception::Exception(std::string("type index is not a struct type for ") + what);
+    }
+    return std::get<StructType>(context.types[index].comp);
+}
+static const ArrayType& array_type_at(const Validate::Validator::Context& context, index_t index, const char* what){
+    if(index >= context.types.size()){
+        throw Exception::Exception(std::string("type index not found for ") + what);
+    }
+    if(!context.types[index].is_array()){
+        throw Exception::Exception(std::string("type index is not an array type for ") + what);
+    }
+    return std::get<ArrayType>(context.types[index].comp);
+}
+static const FieldType& struct_field_at(const Validate::Validator::Context& context, index_t typeidx, index_t fieldidx, const char* what){
+    const StructType& type = struct_type_at(context, typeidx, what);
+    if(fieldidx >= type.fields.size()){
+        throw Exception::Exception(std::string("field index not found for ") + what);
+    }
+    return type.fields[fieldidx];
+}
+static bool is_packed(const StorageType& storage){
+    return std::holds_alternative<PackedType>(storage);
+}
+// A packed field is read and written through i32.
+static ValueType unpacked(const StorageType& storage){
+    return is_packed(storage) ? ValueType::i32 : std::get<ValueType>(storage);
+}
+static bool is_ref_storage(const StorageType& storage){
+    if(is_packed(storage)) return false;
+    ValueType type = std::get<ValueType>(storage);
+    return (type == ValueType::funcref) || (type == ValueType::externref)
+        || (type == ValueType::exnref) || (type == ValueType::i31ref);
+}
+// get on a packed field must say _s or _u; get_s / get_u need a packed field.
+static void check_packed_access(bool packed, bool signed_or_unsigned, const char* what){
+    if(packed && !signed_or_unsigned){
+        throw Exception::Exception(std::string(what) + " on a packed field: use the _s or _u form");
+    }
+    if(!packed && signed_or_unsigned){
+        throw Exception::Exception(std::string(what) + " needs a packed field");
+    }
 }
 
 // The function type a type index names, for instructions whose immediate can
@@ -968,6 +1023,194 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(state.ctrls.front().type.results);
                     state.unreachable();
                 break;
+                // ── GC: struct ──────────────────────────────────────────────
+                // [t*] -> [(ref $t)]
+                case Opcode::Struct_new : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    const StructType& type = struct_type_at(context, ins.index, "struct.new");
+                    for(auto it = type.fields.rbegin(); it != type.fields.rend(); ++it){
+                        state.pop(unpacked(it->storage));
+                    }
+                    state.push(State::TypedRef{false, ins.index});
+                }break;
+                // [] -> [(ref $t)]  (every storage type here has a default)
+                case Opcode::Struct_new_default : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    struct_type_at(context, ins.index, "struct.new_default");
+                    state.push(State::TypedRef{false, ins.index});
+                }break;
+                // [(ref null $t)] -> [t]
+                case Opcode::Struct_get : case Opcode::Struct_get_s : case Opcode::Struct_get_u : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = fieldidx
+                    const char* what = (instr.opcode == Opcode::Struct_get) ? "struct.get"
+                                     : (instr.opcode == Opcode::Struct_get_s) ? "struct.get_s" : "struct.get_u";
+                    const FieldType& field = struct_field_at(context, ins.a, ins.b, what);
+                    check_packed_access(is_packed(field.storage), instr.opcode != Opcode::Struct_get, what);
+                    state.pop(State::TypedRef{true, ins.a});
+                    state.push(unpacked(field.storage));
+                }break;
+                // [(ref null $t) t] -> []
+                case Opcode::Struct_set : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    const FieldType& field = struct_field_at(context, ins.a, ins.b, "struct.set");
+                    if(!field.mut){
+                        throw Exception::Exception("struct.set on an immutable field");
+                    }
+                    state.pop(unpacked(field.storage));
+                    state.pop(State::TypedRef{true, ins.a});
+                }break;
+                // ── GC: array ───────────────────────────────────────────────
+                // [t i32] -> [(ref $t)]
+                case Opcode::Array_new : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    const ArrayType& type = array_type_at(context, ins.index, "array.new");
+                    state.pop(ValueType::i32);
+                    state.pop(unpacked(type.field.storage));
+                    state.push(State::TypedRef{false, ins.index});
+                }break;
+                // [i32] -> [(ref $t)]
+                case Opcode::Array_new_default : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    array_type_at(context, ins.index, "array.new_default");
+                    state.pop(ValueType::i32);
+                    state.push(State::TypedRef{false, ins.index});
+                }break;
+                // [t^n] -> [(ref $t)]
+                case Opcode::Array_new_fixed : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = n
+                    const ArrayType& type = array_type_at(context, ins.a, "array.new_fixed");
+                    for(u32_t n = ins.b; n > 0; --n){
+                        state.pop(unpacked(type.field.storage));
+                    }
+                    state.push(State::TypedRef{false, ins.a});
+                }break;
+                // [i32 i32] -> [(ref $t)]
+                case Opcode::Array_new_data : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = dataidx
+                    const ArrayType& type = array_type_at(context, ins.a, "array.new_data");
+                    if(is_ref_storage(type.field.storage)){
+                        throw Exception::Exception("array.new_data needs a numeric or packed element type");
+                    }
+                    if(ins.b >= context.datas.size()){
+                        throw Exception::Exception("data index not found for array.new_data");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.push(State::TypedRef{false, ins.a});
+                }break;
+                case Opcode::Array_new_elem : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = elemidx
+                    const ArrayType& type = array_type_at(context, ins.a, "array.new_elem");
+                    if(!is_ref_storage(type.field.storage)){
+                        throw Exception::Exception("array.new_elem needs a reference element type");
+                    }
+                    if(ins.b >= context.elems.size()){
+                        throw Exception::Exception("elem index not found for array.new_elem");
+                    }
+                    if((RefType)std::get<ValueType>(type.field.storage) != context.elems[ins.b].type){
+                        throw Exception::Exception("array.new_elem element type does not match the elem segment");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.push(State::TypedRef{false, ins.a});
+                }break;
+                // [(ref null $t) i32] -> [t]
+                case Opcode::Array_get : case Opcode::Array_get_s : case Opcode::Array_get_u : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    const char* what = (instr.opcode == Opcode::Array_get) ? "array.get"
+                                     : (instr.opcode == Opcode::Array_get_s) ? "array.get_s" : "array.get_u";
+                    const ArrayType& type = array_type_at(context, ins.index, what);
+                    check_packed_access(is_packed(type.field.storage), instr.opcode != Opcode::Array_get, what);
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.index});
+                    state.push(unpacked(type.field.storage));
+                }break;
+                // [(ref null $t) i32 t] -> []
+                case Opcode::Array_set : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    const ArrayType& type = array_type_at(context, ins.index, "array.set");
+                    if(!type.field.mut){
+                        throw Exception::Exception("array.set on an immutable array");
+                    }
+                    state.pop(unpacked(type.field.storage));
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.index});
+                }break;
+                // [(ref null array)] -> [i32]
+                case Opcode::Array_len : {
+                    State::StackValue ref = state.pop<State::StackValue>();
+                    if(!is_unknown(ref)){
+                        if(!std::holds_alternative<State::TypedRef>(ref)){
+                            throw Exception::Exception("array.len needs an array reference");
+                        }
+                        const State::TypedRef& typed = std::get<State::TypedRef>(ref);
+                        if(typed.typeidx >= context.types.size() || !context.types[typed.typeidx].is_array()){
+                            throw Exception::Exception("array.len needs an array reference");
+                        }
+                    }
+                    state.push(ValueType::i32);
+                }break;
+                // [(ref null $t) i32 t i32] -> []
+                case Opcode::Array_fill : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    const ArrayType& type = array_type_at(context, ins.index, "array.fill");
+                    if(!type.field.mut){
+                        throw Exception::Exception("array.fill on an immutable array");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(unpacked(type.field.storage));
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.index});
+                }break;
+                // [(ref null $d) i32 (ref null $s) i32 i32] -> []
+                case Opcode::Array_copy : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = dst typeidx, b = src typeidx
+                    const ArrayType& dst = array_type_at(context, ins.a, "array.copy");
+                    const ArrayType& src = array_type_at(context, ins.b, "array.copy");
+                    if(!dst.field.mut){
+                        throw Exception::Exception("array.copy into an immutable array");
+                    }
+                    if(!(dst.field.storage == src.field.storage)){
+                        throw Exception::Exception("array.copy between different element types");
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.b});
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.a});
+                }break;
+                // [(ref null $t) i32 i32 i32] -> []
+                case Opcode::Array_init_data : case Opcode::Array_init_elem : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = data/elem idx
+                    bool data = (instr.opcode == Opcode::Array_init_data);
+                    const char* what = data ? "array.init_data" : "array.init_elem";
+                    const ArrayType& type = array_type_at(context, ins.a, what);
+                    if(!type.field.mut){
+                        throw Exception::Exception(std::string(what) + " into an immutable array");
+                    }
+                    if(data){
+                        if(is_ref_storage(type.field.storage)){
+                            throw Exception::Exception("array.init_data needs a numeric or packed element type");
+                        }
+                        if(ins.b >= context.datas.size()){
+                            throw Exception::Exception("data index not found for array.init_data");
+                        }
+                    }else{
+                        if(!is_ref_storage(type.field.storage)){
+                            throw Exception::Exception("array.init_elem needs a reference element type");
+                        }
+                        if(ins.b >= context.elems.size()){
+                            throw Exception::Exception("elem index not found for array.init_elem");
+                        }
+                        if((RefType)std::get<ValueType>(type.field.storage) != context.elems[ins.b].type){
+                            throw Exception::Exception("array.init_elem element type does not match the elem segment");
+                        }
+                    }
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.pop(ValueType::i32);
+                    state.pop(State::TypedRef{true, ins.a});
+                }break;
                 default:
                 // nop
                 break;
