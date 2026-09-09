@@ -17,10 +17,6 @@ Difference from Wasm spec
   segment still holds only ``funcref`` or ``externref``
   (:cpp:enum:`WasmVM::RefType`), so a table of concrete references cannot be
   declared.
-* ``br_on_null`` and ``br_on_non_null`` execute but are not validated: the
-  function validator has no case for either, so the operand is not required
-  to be a reference and the label is not checked against what the branch
-  sends it.
 
 What's new in 1.3
 -----------------
