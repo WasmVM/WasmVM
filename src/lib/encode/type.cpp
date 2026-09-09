@@ -113,6 +113,10 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::FuncType>(WasmV
     return *this;
 }
 
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::SubType>(WasmVM::SubType type){
+    return *this << type.func();
+}
+
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::RefType>(WasmVM::RefType reftype){
     return *this << (byte_t)((reftype == RefType::funcref) ? 0x70 : 0x6f);
 }
@@ -136,7 +140,7 @@ Section::Stream& Section::Stream::operator<<(std::stringstream& buffer){
     return *this << bytes;
 }
 
-Encode::Type::Type(const std::vector<FuncType>& types) : Section((byte_t)0x01){
+Encode::Type::Type(const std::vector<SubType>& types) : Section((byte_t)0x01){
     if(!types.empty()){
         Encode::Section::Stream stream(buffer);
         stream << types;

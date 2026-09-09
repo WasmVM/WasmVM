@@ -85,10 +85,10 @@ Suite roundtrip_suite {
     Test("function type", {
         WasmModule m = roundtrip("(module (type (func (param i32) (result i64))))");
         AssertEq(m.types.size(), 1U);
-        AssertEq(m.types[0].params.size(), 1U);
-        Expect(m.types[0].params[0] == ValueType::i32);
-        AssertEq(m.types[0].results.size(), 1U);
-        Expect(m.types[0].results[0] == ValueType::i64);
+        AssertEq(m.types[0].func().params.size(), 1U);
+        Expect(m.types[0].func().params[0] == ValueType::i32);
+        AssertEq(m.types[0].func().results.size(), 1U);
+        Expect(m.types[0].func().results[0] == ValueType::i64);
     })
     Test("function type deduplication preserved", {
         WasmModule m = roundtrip(
@@ -103,10 +103,10 @@ Suite roundtrip_suite {
     Test("exnref function type survives binary roundtrip", {
         WasmModule m = binary_roundtrip("(module (type (func (param exnref) (result exnref))))");
         AssertEq(m.types.size(), 1U);
-        AssertEq(m.types[0].params.size(), 1U);
-        Expect(m.types[0].params[0] == ValueType::exnref);
-        AssertEq(m.types[0].results.size(), 1U);
-        Expect(m.types[0].results[0] == ValueType::exnref);
+        AssertEq(m.types[0].func().params.size(), 1U);
+        Expect(m.types[0].func().params[0] == ValueType::exnref);
+        AssertEq(m.types[0].func().results.size(), 1U);
+        Expect(m.types[0].func().results[0] == ValueType::exnref);
     })
     Test("exnref local survives binary roundtrip", {
         WasmModule m = binary_roundtrip("(module (func (local exnref)))");
@@ -173,19 +173,19 @@ Suite roundtrip_suite {
         WasmModule m = binary_roundtrip("(module (tag (param i32)))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-        Expect(m.types[m.tags[0]].results.empty());
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+        Expect(m.types[m.tags[0]].func().results.empty());
     })
     Test("several tags keep their order", {
         WasmModule m = binary_roundtrip(
             "(module (tag (param i32)) (tag) (tag (param i64)))");
         AssertEq(m.tags.size(), 3U);
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-        Expect(m.types[m.tags[1]].params.empty());
-        AssertEq(m.types[m.tags[2]].params.size(), 1U);
-        Expect(m.types[m.tags[2]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+        Expect(m.types[m.tags[1]].func().params.empty());
+        AssertEq(m.types[m.tags[2]].func().params.size(), 1U);
+        Expect(m.types[m.tags[2]].func().params[0] == ValueType::i64);
     })
     Test("a module that throws still validates after a binary roundtrip", {
         // The issue's reproduction: wasmvm-as wrote this module, and it
@@ -220,9 +220,9 @@ Suite roundtrip_suite {
         Assert(std::holds_alternative<TagType>(m.imports[0].desc));
         index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
         Assert(typeidx < m.types.size());
-        AssertEq(m.types[typeidx].params.size(), 1U);
-        Expect(m.types[typeidx].params[0] == ValueType::i32);
-        Expect(m.types[typeidx].results.empty());
+        AssertEq(m.types[typeidx].func().params.size(), 1U);
+        Expect(m.types[typeidx].func().params[0] == ValueType::i32);
+        Expect(m.types[typeidx].func().results.empty());
         // An imported tag is not an imported function, even though both
         // descriptors carry a typeidx.
         Expect(!std::holds_alternative<index_t>(m.imports[0].desc));
@@ -242,8 +242,8 @@ Suite roundtrip_suite {
         ExpectEq(m.exports[0].index, 0U);
         ExpectEq(m.exports[1].index, 1U);
         // The module-defined tag keeps its own type, the i64 one.
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i64);
         Expect(!module_validate(m).has_value());
     })
     Test("a throw against an imported tag validates", {
@@ -269,8 +269,8 @@ Suite roundtrip_suite {
         WasmModule m = roundtrip("(module (tag (param i32)))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
     })
     Test("a throwing module still validates after the text roundtrip", {
         WasmModule m = roundtrip(
@@ -294,8 +294,8 @@ Suite roundtrip_suite {
         AssertEq(m.exports.size(), 2U);
         ExpectEq(m.exports[0].index, 0U);
         ExpectEq(m.exports[1].index, 1U);
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i64);
         Expect(!module_validate(m).has_value());
     })
     // An omitted typeuse is the empty type. It used to fall back to type
@@ -306,8 +306,8 @@ Suite roundtrip_suite {
             "(module (type (func (param i32))) (tag))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        Expect(m.types[m.tags[0]].params.empty());
-        Expect(m.types[m.tags[0]].results.empty());
+        Expect(m.types[m.tags[0]].func().params.empty());
+        Expect(m.types[m.tags[0]].func().results.empty());
     })
     Test("a bare imported tag gets the empty type too", {
         WasmModule m = binary_roundtrip(
@@ -316,14 +316,14 @@ Suite roundtrip_suite {
         Assert(std::holds_alternative<TagType>(m.imports[0].desc));
         index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
         Assert(typeidx < m.types.size());
-        Expect(m.types[typeidx].params.empty());
-        Expect(m.types[typeidx].results.empty());
+        Expect(m.types[typeidx].func().params.empty());
+        Expect(m.types[typeidx].func().results.empty());
     })
     Test("a bare tag works in a module that declares no types at all", {
         WasmModule m = binary_roundtrip("(module (tag))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        Expect(m.types[m.tags[0]].params.empty());
+        Expect(m.types[m.tags[0]].func().params.empty());
         Expect(!module_validate(m).has_value());
     })
     Test("throwing a bare tag needs nothing on the stack", {

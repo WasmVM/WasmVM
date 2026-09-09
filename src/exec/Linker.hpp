@@ -68,7 +68,7 @@ private:
         index_t tag = 0;
     } import_counter;
 
-    std::unordered_map<FuncType, index_t> type_map;
+    std::unordered_map<SubType, index_t> type_map;
     std::unordered_map<std::string, std::unordered_map<std::string, index_t>> import_map; // Map import name to output address
 
     struct {

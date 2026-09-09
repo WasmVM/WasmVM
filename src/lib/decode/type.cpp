@@ -130,6 +130,13 @@ template<> Stream& Decode::operator>> <FuncType>(Stream& stream, FuncType& type)
     return stream >> type.params >> type.results;
 }
 
+template<> Stream& Decode::operator>> <SubType>(Stream& stream, SubType& type){
+    FuncType functype;
+    stream >> functype;
+    type = SubType(std::move(functype));
+    return stream;
+}
+
 template<> Stream& Decode::operator>> <RefType>(Stream& stream, RefType& type){
     switch(stream.get<byte_t>()){
         case byte_t {0x70}:

@@ -56,6 +56,10 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const FuncType& type){
     return stream;
 }
 
+std::ostream& WasmVM::operator<<(std::ostream& stream, const SubType& type){
+    return stream << type.func();
+}
+
 std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
     stream << "  (table " << table.limits.min;
     if(table.limits.max.has_value()){

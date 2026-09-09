@@ -14,7 +14,7 @@ using namespace WasmVM;
 
 std::ostream& WasmVM::module_dump(const WasmModule& module, std::ostream& stream){
     stream << "(module " << std::endl;
-    for(const FuncType& type : module.types){
+    for(const SubType& type : module.types){
         stream << type;
     }
     for(const WasmImport& import : module.imports){

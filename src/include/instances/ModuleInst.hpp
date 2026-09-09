@@ -9,7 +9,7 @@
 namespace WasmVM {
 
 struct ModuleInst {
-    std::vector<FuncType> types;
+    std::vector<SubType> types;
     std::vector<index_t> funcaddrs;
     std::vector<index_t> tableaddrs;
     std::vector<index_t> memaddrs;

@@ -161,7 +161,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
     for(index_t typeidx : module.tags){
         index_t address = store.tags.size();
         TagInst& taginst = store.tags.emplace_back();
-        taginst.type = moduleInst.types[typeidx];
+        taginst.type = moduleInst.types[typeidx].func();
         moduleInst.tagaddrs.emplace_back(address);
     }
     // Funcs
@@ -169,7 +169,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         index_t address = store.funcs.size();
         FuncInst& funcinst = store.funcs.emplace_back(moduleInst);
         funcinst.body = module.funcs[idx];
-        funcinst.type = moduleInst.types[module.funcs[idx].typeidx];
+        funcinst.type = moduleInst.types[module.funcs[idx].typeidx].func();
         moduleInst.funcaddrs.emplace_back(address);
     }
     // Tables

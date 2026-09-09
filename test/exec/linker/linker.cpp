@@ -70,15 +70,15 @@ Suite linker_suite {
         Test("a single module keeps its tag", {
             WasmModule m = link({{"a.wasm", tag_a}});
             AssertEq(m.tags.size(), (size_t)1);
-            AssertEq(m.types[m.tags[0]].params.size(), (size_t)1);
-            Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+            AssertEq(m.types[m.tags[0]].func().params.size(), (size_t)1);
+            Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
             ExpectEq(throw_index(m, 0), (index_t)0);
         })
         Test("two modules keep both tags, with the second index shifted", {
             WasmModule m = link({{"a.wasm", tag_a}, {"b.wasm", tag_b}});
             AssertEq(m.tags.size(), (size_t)2);
-            Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-            Expect(m.types[m.tags[1]].params[0] == ValueType::i64);
+            Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+            Expect(m.types[m.tags[1]].func().params[0] == ValueType::i64);
             // Each module wrote `throw 0` against its own tag; only the
             // second one has to move.
             ExpectEq(throw_index(m, 0), (index_t)0);

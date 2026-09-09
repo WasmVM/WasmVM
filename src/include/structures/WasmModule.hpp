@@ -15,7 +15,8 @@
 namespace WasmVM {
 
 struct WasmModule {
-    std::vector<FuncType> types;
+    std::vector<SubType> types;
+    std::vector<RecGroup> recs; // explicit (rec ...) groups over `types`
     std::vector<WasmImport> imports;
     std::vector<WasmFunc> funcs;
     std::vector<TableType> tables;

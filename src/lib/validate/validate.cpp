@@ -133,6 +133,15 @@ std::optional<Exception::Exception> WasmVM::module_validate(const WasmModule& mo
     return std::nullopt;
 }
 
+// A type index that has to name a function type: funcs, tags and their imports.
+static void require_func(const std::vector<SubType>& types, index_t index, const std::string& where){
+    if(!types[index].is_func()){
+        std::stringstream ss;
+        ss << where << ": type index " << index << " is not a function type";
+        throw Exception::Exception(ss.str());
+    }
+}
+
 Validator::Validator(const WasmModule& module) : context(module.types, module.elems, module.datas) {
     // imports
     size_t idx = 0;
@@ -144,7 +153,8 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
                     ss << "import[" << idx << "]: type index " << index << " not exist";
                     throw Exception::Exception(ss.str());
                 }
-                context.funcs.emplace_back(module.types[index]);
+                require_func(module.types, index, "import[" + std::to_string(idx) + "]");
+                context.funcs.emplace_back(module.types[index].func());
             },
             [&](const TagType& tag){
                 if(tag.typeidx >= module.types.size()){
@@ -152,12 +162,13 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
                     ss << "import[" << idx << "]: type index " << tag.typeidx << " not exist";
                     throw Exception::Exception(ss.str());
                 }
-                if(!module.types[tag.typeidx].results.empty()){
+                require_func(module.types, tag.typeidx, "import[" + std::to_string(idx) + "]");
+                if(!module.types[tag.typeidx].func().results.empty()){
                     std::stringstream ss;
                     ss << "import[" << idx << "]: tag type should have no result";
                     throw Exception::Exception(ss.str());
                 }
-                context.tags.emplace_back(module.types[tag.typeidx]);
+                context.tags.emplace_back(module.types[tag.typeidx].func());
             },
             [&](const TableType& table){
                 context.tables.emplace_back(table);
@@ -179,7 +190,8 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
             ss << "func [" << idx << "]: type index " << func.typeidx << " not exist";
             throw Exception::Exception(ss.str());
         }
-        context.funcs.emplace_back(module.types[func.typeidx]);
+        require_func(module.types, func.typeidx, "func [" + std::to_string(idx) + "]");
+        context.funcs.emplace_back(module.types[func.typeidx].func());
         idx += 1;
     }
     // tables
@@ -202,12 +214,13 @@ Validator::Validator(const WasmModule& module) : context(module.types, module.el
             ss << "tag [" << idx << "]: type index " << typeidx << " not exist";
             throw Exception::Exception(ss.str());
         }
-        if(!module.types[typeidx].results.empty()){
+        require_func(module.types, typeidx, "tag [" + std::to_string(idx) + "]");
+        if(!module.types[typeidx].func().results.empty()){
             std::stringstream ss;
             ss << "tag [" << idx << "]: tag type should have no result";
             throw Exception::Exception(ss.str());
         }
-        context.tags.emplace_back(module.types[typeidx]);
+        context.tags.emplace_back(module.types[typeidx].func());
         idx += 1;
     }
 }

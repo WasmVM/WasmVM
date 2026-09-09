@@ -30,19 +30,32 @@ std::unordered_map<index_t, index_t> ParseContext::reorder_map(IndexSpace& space
 void ParseContext::post_process() {
     std::unordered_map<index_t, index_t> typemap;
     {
-        // Deduplicate types
-        std::unordered_map<FuncType, index_t> funcmap;
-        std::vector<FuncType> functypes;
+        // Deduplicate types. Only a plain function type -- final, no
+        // supertype, outside every rec group -- is folded into an identical
+        // earlier one: that is what merges an inline typeuse with the (type)
+        // it repeats. Struct and array types, subtypes and rec-group members
+        // are distinct types even when written identically, so they keep
+        // their own entries.
+        auto in_rec_group = [&](index_t i) {
+            for (const RecGroup& rec : module_.recs)
+                if (i >= rec.first && i < rec.first + rec.count) return true;
+            return false;
+        };
+        std::unordered_map<SubType, index_t> seen;
+        std::vector<SubType> kept;
         for (index_t i = 0; i < module_.types.size(); ++i) {
-            if (funcmap.contains(module_.types[i])) {
-                typemap[i] = funcmap[module_.types[i]];
+            const SubType& type = module_.types[i];
+            bool plain_func = type.is_func() && type.final && type.supers.empty() && !in_rec_group(i);
+            if (plain_func && seen.contains(type)) {
+                typemap[i] = seen[type];
             } else {
-                funcmap[module_.types[i]] = functypes.size();
-                typemap[i] = functypes.size();
-                functypes.emplace_back(module_.types[i]);
+                if (plain_func) seen[type] = kept.size();
+                typemap[i] = kept.size();
+                kept.emplace_back(type);
             }
         }
-        module_.types = functypes;
+        module_.types = kept;
+        for (RecGroup& rec : module_.recs) rec.first = typemap[rec.first];
     }
     std::unordered_map<index_t, index_t> funcmap    = reorder_map(func_map_);
     std::unordered_map<index_t, index_t> tablemap   = reorder_map(table_map_);

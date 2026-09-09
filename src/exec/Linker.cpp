@@ -22,16 +22,29 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
     ModuleEntry& module_entry = modules.emplace_back();
     module_entry.path = module_path;
 
-    // Types
-    for(FuncType& type : module.types){
-        if(type_map.contains(type)){
+    // Types. Only a plain function type -- final, no supertype, outside every
+    // rec group -- is shared with an identical one from another module; the
+    // GC types are distinct even when written identically.
+    auto in_rec_group = [&](index_t i){
+        for(const RecGroup& rec : module.recs){
+            if(i >= rec.first && i < rec.first + rec.count) return true;
+        }
+        return false;
+    };
+    for(index_t i = 0; i < module.types.size(); ++i){
+        const SubType& type = module.types[i];
+        bool plain_func = type.is_func() && type.final && type.supers.empty() && !in_rec_group(i);
+        if(plain_func && type_map.contains(type)){
             module_entry.types.emplace_back(type_map[type]);
         }else{
             index_t typeidx = (index_t)output.types.size();
-            type_map[type] = typeidx;
+            if(plain_func) type_map[type] = typeidx;
             output.types.emplace_back(type);
             module_entry.types.emplace_back(typeidx);
         }
+    }
+    for(const RecGroup& rec : module.recs){
+        output.recs.emplace_back(RecGroup{module_entry.types[rec.first], rec.count});
     }
 
     // Imports
@@ -528,7 +541,7 @@ void Linker::compose_start_funcs(){
         if(func_indices.size() > 1){
             output.start.emplace<index_t>(output.funcs.size() + import_counter.func);
             WasmFunc& start_func = output.funcs.emplace_back();
-            FuncType type;
+            SubType type(FuncType{});
             if(type_map.contains(type)){
                 start_func.typeidx = type_map[type];
             }else{

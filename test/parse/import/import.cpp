@@ -13,19 +13,19 @@ Suite import {
     Test("func", {
         ParseFile(test_module, "func.wat");
         // types
-        FuncType& type0 = test_module.types[0];
+        FuncType& type0 = test_module.types[0].func();
         Expect(type0.params.size() == 0);
         Expect(type0.results.size() == 0);
-        FuncType& type1 = test_module.types[1];
+        FuncType& type1 = test_module.types[1].func();
         Expect(type1.params.size() == 1);
         Expect(type1.params[0] == ValueType::i32);
         Expect(type1.results.size() == 0);
-        FuncType& type3 = test_module.types[2];
+        FuncType& type3 = test_module.types[2].func();
         Expect(type3.params.size() == 2);
         Expect(type3.params[0] == ValueType::i32);
         Expect(type3.params[1] == ValueType::f32);
         Expect(type3.results.size() == 0);
-        FuncType& type4 = test_module.types[3];
+        FuncType& type4 = test_module.types[3].func();
         Expect(type4.params.size() == 1);
         Expect(type4.params[0] == ValueType::i32);
         Expect(type4.results.size() == 1);

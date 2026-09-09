@@ -60,7 +60,7 @@ WasmModule ParseContext::parse() {
     parse_module();
     // Populate module_.types from internal types_ vector
     std::transform(types_.begin(), types_.end(), std::back_inserter(module_.types),
-        [](auto& p) { return p.first; });
+        [](auto& p) { return SubType(p.first); });
     post_process();
     return module_;
 }

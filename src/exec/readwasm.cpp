@@ -81,7 +81,7 @@ int main(int argc, char const *argv[]){
         }
         // Type
         if(args["type"]){
-            for(const FuncType& type : decoded_module.types){
+            for(const SubType& type : decoded_module.types){
                 std::cout << type;
             }
         }

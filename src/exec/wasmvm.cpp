@@ -39,7 +39,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 if(expo.value.type != ExternVal::ExternType::Func) return true;
                 if(!std::holds_alternative<index_t>(import.desc)) return true;
                 return store.funcs[expo.value.addr].type ==
-                       node.module.types[std::get<index_t>(import.desc)];
+                       node.module.types[std::get<index_t>(import.desc)].func();
             });
         if(export_it == moduleinst.exports.end()){
             throw Exception::Exception(std::string("import '") + import.name + "' not found in module '" + import_path.filename().string() + "'");
@@ -49,7 +49,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 if(!std::holds_alternative<index_t>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }
-                if(store.funcs[export_it->value.addr].type != node.module.types[std::get<index_t>(import.desc)]){
+                if(store.funcs[export_it->value.addr].type != node.module.types[std::get<index_t>(import.desc)].func()){
                     throw Exception::Exception(std::string("import '") + import.name + "' not match function type");
                 }
             break;

@@ -8,6 +8,7 @@ namespace WasmVM {
 
 std::ostream& operator<<(std::ostream& stream, const ValueType& type);
 std::ostream& operator<<(std::ostream& stream, const FuncType& type);
+std::ostream& operator<<(std::ostream& stream, const SubType& type);
 std::ostream& operator<<(std::ostream& stream, const WasmImport& import);
 std::ostream& operator<<(std::ostream& stream, const WasmFunc& func);
 std::ostream& operator<<(std::ostream& stream, const WasmInstr& instr);

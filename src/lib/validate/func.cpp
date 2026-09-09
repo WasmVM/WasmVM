@@ -32,10 +32,22 @@ static bool is_ref(Validate::State::StackValue value){
     return (type == ValueType::funcref) || (type == ValueType::externref);
 }
 
+// The function type a type index names, for instructions whose immediate can
+// only be a function type (block types, call_indirect, call_ref).
+static const FuncType& func_type_at(const Validate::Validator::Context& context, index_t index, const char* what){
+    if(index >= context.types.size()){
+        throw Exception::Exception(std::string("type index not found for ") + what);
+    }
+    if(!context.types[index].is_func()){
+        throw Exception::Exception(std::string("type index is not a function type for ") + what);
+    }
+    return context.types[index].func();
+}
+
 template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     // type
     assert(func.typeidx < context.types.size());
-    FuncType func_type = context.types[func.typeidx];
+    FuncType func_type = context.types[func.typeidx].func();
     // state (context C')
     State state;
     state.locals.insert(state.locals.end(), func_type.params.begin(), func_type.params.end());
@@ -801,10 +813,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
-                        if(ins.type.value() >= context.types.size()){
-                            throw Exception::Exception("type index not found for block type");
-                        }
-                        type = context.types[ins.type.value()];
+                        type = func_type_at(context, ins.type.value(), "block type");
                     }
                     state.pop(type.params);
                     state.push(Opcode::Block, type);
@@ -814,10 +823,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
-                        if(ins.type.value() >= context.types.size()){
-                            throw Exception::Exception("type index not found for loop type");
-                        }
-                        type = context.types[ins.type.value()];
+                        type = func_type_at(context, ins.type.value(), "loop type");
                     }
                     state.pop(type.params);
                     state.push(Opcode::Loop, type);
@@ -848,10 +854,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     if(context.tables[ins.a].reftype != RefType::funcref){
                         throw Exception::Exception("table type should be funcref for call_indirect");
                     }
-                    if(ins.b >= context.types.size()){
-                        throw Exception::Exception("type index not found for call_indirect");
-                    }
-                    FuncType type = context.types[ins.b];
+                    FuncType type = func_type_at(context, ins.b, "call_indirect");
                     state.pop(ValueType::i32);
                     state.pop(type.params);
                     state.push(type.results);
@@ -859,10 +862,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 // call_ref: pop funcref + type's params, push type's results.
                 case Opcode::Call_ref : {
                     const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
-                    if(ins.index >= context.types.size()){
-                        throw Exception::Exception("type index not found for call_ref");
-                    }
-                    FuncType type = context.types[ins.index];
+                    FuncType type = func_type_at(context, ins.index, "call_ref");
                     state.pop(ValueType::funcref);
                     state.pop(type.params);
                     state.push(type.results);
@@ -873,10 +873,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const auto& ins = std::get<WasmInstr::BlockType>(instr.imm);
                     FuncType type;
                     if(ins.type){
-                        if(ins.type.value() >= context.types.size()){
-                            throw Exception::Exception("type index not found for if type");
-                        }
-                        type = context.types[ins.type.value()];
+                        type = func_type_at(context, ins.type.value(), "if type");
                     }
                     state.pop(type.params);
                     state.push(Opcode::If, type);
@@ -887,10 +884,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const auto& ins = std::get<WasmInstr::TryTab>(instr.imm);
                     FuncType type;
                     if(ins.type){
-                        if(ins.type.value() >= context.types.size()){
-                            throw Exception::Exception("type index not found for try_table type");
-                        }
-                        type = context.types[ins.type.value()];
+                        type = func_type_at(context, ins.type.value(), "try_table type");
                     }
                     // Per spec, catch label indices are resolved in the context
                     // enclosing the try_table (its own label is not referable),

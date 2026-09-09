@@ -14,18 +14,18 @@ Suite type {
     Test("void", {
         ParseFile(test_module, "void.wat");
         FuncType void_type;
-        Expect(test_module.types[0] == void_type);
+        Expect(test_module.types[0].func() == void_type);
     })
     Test("param", {
         ParseFile(test_module, "param.wat");
-        FuncType param_i32 = test_module.types[0];
+        FuncType param_i32 = test_module.types[0].func();
         Expect(param_i32.params.size() == 1);
         Expect(param_i32.params[0] == ValueType::i32);
-        FuncType param_i32_i64 = test_module.types[1];
+        FuncType param_i32_i64 = test_module.types[1].func();
         Expect(param_i32_i64.params.size() == 2);
         Expect(param_i32_i64.params[0] == ValueType::i32);
         Expect(param_i32_i64.params[1] == ValueType::i64);
-        FuncType param_f32_f64 = test_module.types[2];
+        FuncType param_f32_f64 = test_module.types[2].func();
         Expect(param_f32_f64.params.size() == 2);
         Expect(param_f32_f64.params[0] == ValueType::f32);
         Expect(param_f32_f64.params[1] == ValueType::f64);
@@ -44,32 +44,32 @@ Suite type {
     })
     Test("result", {
         ParseFile(test_module, "result.wat");
-        FuncType result_i32 = test_module.types[0];
+        FuncType result_i32 = test_module.types[0].func();
         Expect(result_i32.results.size() == 1);
         Expect(result_i32.results[0] == ValueType::i32);
-        FuncType param_i32_i64 = test_module.types[1];
+        FuncType param_i32_i64 = test_module.types[1].func();
         Expect(param_i32_i64.results.size() == 2);
         Expect(param_i32_i64.results[0] == ValueType::i32);
         Expect(param_i32_i64.results[1] == ValueType::i64);
-        FuncType param_f32_f64 = test_module.types[2];
+        FuncType param_f32_f64 = test_module.types[2].func();
         Expect(param_f32_f64.results.size() == 2);
         Expect(param_f32_f64.results[0] == ValueType::f32);
         Expect(param_f32_f64.results[1] == ValueType::f64);
     })
     Test("param + result", {
         ParseFile(test_module, "param_result.wat");
-        FuncType param_i32_result_f64 = test_module.types[0];
+        FuncType param_i32_result_f64 = test_module.types[0].func();
         Expect(param_i32_result_f64.params.size() == 1);
         Expect(param_i32_result_f64.params[0] == ValueType::i32);
         Expect(param_i32_result_f64.results.size() == 1);
         Expect(param_i32_result_f64.results[0] == ValueType::f64);
-        FuncType param_i32_i64_result_i64 = test_module.types[1];
+        FuncType param_i32_i64_result_i64 = test_module.types[1].func();
         Expect(param_i32_i64_result_i64.params.size() == 2);
         Expect(param_i32_i64_result_i64.params[0] == ValueType::i32);
         Expect(param_i32_i64_result_i64.params[1] == ValueType::i64);
         Expect(param_i32_i64_result_i64.results.size() == 1);
         Expect(param_i32_i64_result_i64.results[0] == ValueType::i64);
-        FuncType param_f32_result_i64 = test_module.types[2];
+        FuncType param_f32_result_i64 = test_module.types[2].func();
         Expect(param_f32_result_i64.params.size() == 1);
         Expect(param_f32_result_i64.params[0] == ValueType::f32);
         Expect(param_f32_result_i64.results.size() == 1);
@@ -78,7 +78,7 @@ Suite type {
     Test("exnref", {
         std::stringstream stream("(module (type (func (param exnref) (result exnref))))");
         WasmModule test_module = module_parse(stream);
-        FuncType exn_type = test_module.types[0];
+        FuncType exn_type = test_module.types[0].func();
         Expect(exn_type.params.size() == 1);
         Expect(exn_type.params[0] == ValueType::exnref);
         Expect(exn_type.results.size() == 1);
