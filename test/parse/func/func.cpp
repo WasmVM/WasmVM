@@ -6,6 +6,10 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 
+#include <sstream>
+#include <string>
+#include <vector>
+
 using namespace WasmVM;
 using namespace Testing;
 
@@ -119,5 +123,84 @@ Suite func {
         Expect(export4.name == "func4");
         Expect(export4.desc == WasmExport::DescType::func);
         Expect(export4.index == 3);
+    })
+    // A function's locals are indexed after its parameters, so `$a` in
+    // (func (param $p i32) (local $a i32)) is local 1. The id map was filled
+    // with the count of locals seen so far and no parameter offset, so the
+    // first named local took index 0 -- the first parameter -- and every
+    // later one was off by the same amount. With matching types nothing
+    // complained: the function quietly read and wrote the wrong slot, and a
+    // parameter could be clobbered by a write meant for a local (issue #20).
+    Category("a named local is indexed after the parameters", {
+        Test("one parameter, one named local", {
+            std::istringstream source(
+                "(module (func (param $p i32) (result i32) (local $a i32)"
+                " i32.const 7 local.set $a local.get $a))");
+            WasmModule module = module_parse(source);
+            std::vector<index_t> indices;
+            for (const WasmInstr& instr : module.funcs[0].body) {
+                if (instr.opcode == Opcode::Local_get || instr.opcode == Opcode::Local_set) {
+                    indices.push_back(std::get<WasmInstr::OneIdx>(instr.imm).index);
+                }
+            }
+            AssertEq(indices.size(), 2U);
+            ExpectEq(indices[0], 1U); // local.set $a
+            ExpectEq(indices[1], 1U); // local.get $a
+        })
+        Test("a parameter id still names the parameter", {
+            std::istringstream source(
+                "(module (func (param $p i32) (result i32) (local $a i32)"
+                " i32.const 7 local.set $a local.get $p))");
+            WasmModule module = module_parse(source);
+            const WasmInstr& last = module.funcs[0].body[2];
+            Assert(last.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(last.imm).index, 0U);
+        })
+        Test("several parameters and several locals", {
+            std::istringstream source(
+                "(module (func (param $p i32) (param $q i64) (result i32)"
+                " (local $a f32) (local $b i32)"
+                " local.get $p drop local.get $q drop local.get $a drop local.get $b))");
+            WasmModule module = module_parse(source);
+            std::vector<index_t> gets;
+            for (const WasmInstr& instr : module.funcs[0].body) {
+                if (instr.opcode == Opcode::Local_get) {
+                    gets.push_back(std::get<WasmInstr::OneIdx>(instr.imm).index);
+                }
+            }
+            AssertEq(gets.size(), 4U);
+            ExpectEq(gets[0], 0U); // $p
+            ExpectEq(gets[1], 1U); // $q
+            ExpectEq(gets[2], 2U); // $a
+            ExpectEq(gets[3], 3U); // $b
+        })
+        Test("one (local ...) clause declaring several types", {
+            // Only the first of an id-less group is named, but the count
+            // still has to advance by all of them.
+            std::istringstream source(
+                "(module (func (param $p i32) (result i32)"
+                " (local i32 i64) (local $a f32) (local $b i32) local.get $b))");
+            WasmModule module = module_parse(source);
+            const WasmInstr& get = module.funcs[0].body[0];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 4U);
+        })
+        Test("with no parameters the first local is still 0", {
+            std::istringstream source(
+                "(module (func (result i32) (local $a i32) i32.const 7 local.set $a local.get $a))");
+            WasmModule module = module_parse(source);
+            const WasmInstr& get = module.funcs[0].body[2];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 0U);
+        })
+        Test("the types line up, so a mismatched use is now caught", {
+            // $a is an f32 local behind an i32 parameter. Reading it as an
+            // i32 used to succeed by hitting the parameter instead.
+            std::istringstream source(
+                "(module (func (param $p i32) (result i32) (local $a f32)"
+                " local.get $a))");
+            WasmModule module = module_parse(source);
+            Expect(module_validate(module).has_value());
+        })
     })
 };
