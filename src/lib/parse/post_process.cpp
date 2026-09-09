@@ -84,9 +84,46 @@ void ParseContext::post_process() {
                     auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
                     if (tagmap.contains(o.index)) o.index = tagmap[o.index];
                 } break;
-                case Opcode::Call_indirect: {
+                case Opcode::Call_indirect: case Opcode::Return_call_indirect: {
                     auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
                     if (typemap.contains(tw.b)) tw.b = typemap[tw.b]; // b = typeidx
+                } break;
+                // Every other instruction that names a type index. Dedup above
+                // shifts the indices of everything after a folded type, so the
+                // GC instructions must follow it like call_indirect does.
+                case Opcode::Call_ref: case Opcode::Return_call_ref:
+                case Opcode::Struct_new: case Opcode::Struct_new_default:
+                case Opcode::Array_new: case Opcode::Array_new_default:
+                case Opcode::Array_get: case Opcode::Array_get_s: case Opcode::Array_get_u:
+                case Opcode::Array_set: case Opcode::Array_fill: {
+                    auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if (typemap.contains(o.index)) o.index = typemap[o.index];
+                } break;
+                case Opcode::Struct_get: case Opcode::Struct_get_s: case Opcode::Struct_get_u:
+                case Opcode::Struct_set:
+                case Opcode::Array_new_fixed: case Opcode::Array_new_data: case Opcode::Array_new_elem:
+                case Opcode::Array_init_data: case Opcode::Array_init_elem: {
+                    auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if (typemap.contains(tw.a)) tw.a = typemap[tw.a]; // a = typeidx
+                } break;
+                case Opcode::Array_copy: {
+                    auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if (typemap.contains(tw.a)) tw.a = typemap[tw.a]; // a = dst typeidx
+                    if (typemap.contains(tw.b)) tw.b = typemap[tw.b]; // b = src typeidx
+                } break;
+                // A non-negative heap type is a type index.
+                case Opcode::Ref_test: case Opcode::Ref_test_null:
+                case Opcode::Ref_cast: case Opcode::Ref_cast_null: {
+                    auto& h = std::get<WasmInstr::HeapI32>(instr.imm);
+                    if (h.heaptype >= 0 && typemap.contains((index_t)h.heaptype))
+                        h.heaptype = (int32_t)typemap[(index_t)h.heaptype];
+                } break;
+                case Opcode::Br_on_cast: case Opcode::Br_on_cast_fail: {
+                    auto& c = std::get<WasmInstr::CastOp>(instr.imm);
+                    if (c.src_ht >= 0 && typemap.contains((index_t)c.src_ht))
+                        c.src_ht = (int32_t)typemap[(index_t)c.src_ht];
+                    if (c.dst_ht >= 0 && typemap.contains((index_t)c.dst_ht))
+                        c.dst_ht = (int32_t)typemap[(index_t)c.dst_ht];
                 } break;
                 case Opcode::Ref_func: {
                     auto& o = std::get<WasmInstr::OneIdx>(instr.imm);

@@ -287,8 +287,8 @@ std::pair<bool, int32_t> ParseContext::parse_reftype_annot() {
     bool nullable = false;
     if (tok_.peek_keyword("null")) { tok_.consume(); nullable = true; }
     int32_t heaptype;
-    if (tok_.peek().type == TokenType::Integer) {
-        heaptype = (int32_t)parse_u32();
+    if (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id) {
+        heaptype = (int32_t)parse_typeidx(); // a concrete heap type is a type index
     } else {
         Token ht = tok_.expect(TokenType::Keyword, "heap type");
         if      (ht.text == "func")   heaptype = -16;
@@ -668,10 +668,10 @@ WasmInstr ParseContext::parse_gcinstr(const std::string& name) {
     // Struct
     if (name == "struct.new")         return Instr::Struct_new(parse_typeidx());
     if (name == "struct.new_default") return Instr::Struct_new_default(parse_typeidx());
-    if (name == "struct.get")   { index_t t = parse_typeidx(); return Instr::Struct_get(t, parse_u32()); }
-    if (name == "struct.get_s") { index_t t = parse_typeidx(); return Instr::Struct_get_s(t, parse_u32()); }
-    if (name == "struct.get_u") { index_t t = parse_typeidx(); return Instr::Struct_get_u(t, parse_u32()); }
-    if (name == "struct.set")   { index_t t = parse_typeidx(); return Instr::Struct_set(t, parse_u32()); }
+    if (name == "struct.get")   { index_t t = parse_typeidx(); return Instr::Struct_get(t, parse_fieldidx(t)); }
+    if (name == "struct.get_s") { index_t t = parse_typeidx(); return Instr::Struct_get_s(t, parse_fieldidx(t)); }
+    if (name == "struct.get_u") { index_t t = parse_typeidx(); return Instr::Struct_get_u(t, parse_fieldidx(t)); }
+    if (name == "struct.set")   { index_t t = parse_typeidx(); return Instr::Struct_set(t, parse_fieldidx(t)); }
     // Array
     if (name == "array.new")         return Instr::Array_new(parse_typeidx());
     if (name == "array.new_default") return Instr::Array_new_default(parse_typeidx());
