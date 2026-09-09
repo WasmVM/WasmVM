@@ -30,32 +30,7 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
     if(std::holds_alternative<WasmFunc>(funcinst.body)){
         WasmFunc& func = std::get<WasmFunc>(funcinst.body);
         for(ValueType type : func.locals){
-            switch(type){
-                case ValueType::i32 :
-                    frame.locals.emplace_back((i32_t)0);
-                break;
-                case ValueType::i64 :
-                    frame.locals.emplace_back((i64_t)0);
-                break;
-                case ValueType::f32 :
-                    frame.locals.emplace_back((f32_t)0.0f);
-                break;
-                case ValueType::f64 :
-                    frame.locals.emplace_back((f64_t)0.0);
-                break;
-                case ValueType::funcref :
-                    frame.locals.emplace_back(funcref_t(std::nullopt));
-                break;
-                case ValueType::externref :
-                    frame.locals.emplace_back((externref_t)nullptr);
-                break;
-                case ValueType::i31ref :
-                    frame.locals.emplace_back(i31ref_t());
-                break;
-                case ValueType::exnref :
-                    frame.locals.emplace_back(exnref_t());
-                break;
-            }
+            frame.locals.emplace_back(default_value(type, frame_module.types));
         }
         Label::Counters& pc = label.pc.emplace();
         pc.current = 0;

@@ -13,16 +13,12 @@ namespace Validate {
 
 struct State {
 
-    // A reference to a concrete type -- (ref null? $t) -- as struct.new and
-    // array.new produce it and struct.get and the like consume it. It lives
-    // only inside the validator: ValueType has no such member yet, so no
-    // local, global, parameter or result can hold one, and pop(ValueType)
-    // rejects it wherever one of those is expected.
-    struct TypedRef {
-        bool nullable;
-        index_t typeidx;
-    };
-    using StackValue = std::variant<std::monostate, ValueType, TypedRef>;
+    // The module's type section, so that popping an expected type can follow
+    // the subtyping relation rather than demanding an exact match.
+    explicit State(const std::vector<SubType>& types) : types(types) {}
+    const std::vector<SubType>& types;
+
+    using StackValue = std::variant<std::monostate, ValueType>;
 
     struct CtrlFrame {
         CtrlFrame(Opcode::opcode_t opcode, const FuncType& type, size_t height = 0)
@@ -48,11 +44,9 @@ struct State {
 
     std::vector<StackValue> pop(std::vector<ValueType> expects);
 
+    // Accepts any subtype of `expect`.
     StackValue pop(StackValue expect);
     StackValue pop(ValueType expect1, ValueType expect2);
-    // A reference to `expect.typeidx`; a non-null one satisfies a nullable
-    // expectation, not the other way round.
-    StackValue pop(TypedRef expect);
 
     void unreachable();
 

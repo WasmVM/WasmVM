@@ -77,10 +77,14 @@ struct Return_call_indirect : public Base {
 using Return_call_ref = OneIndex<Opcode::Return_call_ref>;
 
 // Reference instructions
+// The heap type is written as the spec writes it: negative for an abstract
+// one, a type index otherwise. ref.null used to take only func and extern,
+// which left a null struct or array reference impossible to write.
 struct Ref_null : public Base {
-    Ref_null() : Base(Opcode::Ref_null), heaptype(RefType::funcref) {}
-    Ref_null(RefType heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
-    RefType heaptype;
+    Ref_null() : Base(Opcode::Ref_null), heaptype(heaptype_func) {}
+    Ref_null(int32_t heaptype) : Base(Opcode::Ref_null), heaptype(heaptype) {}
+    Ref_null(RefType reftype) : Base(Opcode::Ref_null), heaptype(heaptype_of(valtype_of(reftype))) {}
+    int32_t heaptype;
 };
 using Ref_is_null = Atomic<Opcode::Ref_is_null>;
 using Ref_func = OneIndex<Opcode::Ref_func>;
@@ -529,7 +533,7 @@ struct WasmInstr {
 
     // --- Reference: special structs ---
     WasmInstr(Instr::Ref_null i)
-        : opcode(Opcode::Ref_null), imm(HeapRef{i.heaptype}) {}
+        : opcode(Opcode::Ref_null), imm(HeapI32{i.heaptype}) {}
     WasmInstr(Instr::Br_on_cast i)
         : opcode(Opcode::Br_on_cast), imm(CastOp{i.labelidx, i.src_nullable, i.dst_nullable, i.src_heaptype, i.dst_heaptype}) {}
     WasmInstr(Instr::Br_on_cast_fail i)

@@ -27,14 +27,14 @@ void RunVisitor::operator()(Instr::Select& instr){
         label.values.pop();
     }else{
         for(ValueType type : instr.valtypes){
-            if(label.values.top().index() != (size_t)type){
+            if(!value_matches(label.values.top(), type)){
                 throw Exception::invalid_value();
             }
             val2.emplace_back(label.values.top());
             label.values.pop();
         }
         for(ValueType type : instr.valtypes){
-            if(label.values.top().index() != (size_t)type){
+            if(!value_matches(label.values.top(), type)){
                 throw Exception::invalid_value();
             }
             val1.emplace_back(label.values.top());

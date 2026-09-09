@@ -95,32 +95,41 @@ template<> Stream& Decode::operator>> <std::string>(Stream& stream, std::string&
 }
 
 template<> Stream& Decode::operator>> <ValueType>(Stream& stream, ValueType& type){
-    switch(stream.get<byte_t>()){
+    byte_t prefix = stream.get<byte_t>();
+    switch(prefix){
         case byte_t {0x7f}:
             type = ValueType::i32;
-        break;
+        return stream;
         case byte_t {0x7e}:
             type = ValueType::i64;
-        break;
+        return stream;
         case byte_t {0x7d}:
             type = ValueType::f32;
-        break;
+        return stream;
         case byte_t {0x7c}:
             type = ValueType::f64;
-        break;
-        case byte_t {0x70}:
-            type = ValueType::funcref;
-        break;
-        case byte_t {0x6f}:
-            type = ValueType::externref;
-        break;
-        case byte_t {0x69}:
-            type = ValueType::exnref;
-        break;
+        return stream;
+        // 0x63 / 0x64: a reference with the heap type written out, which is
+        // the only way to spell a non-null one or a concrete one.
+        case byte_t {0x63}:
+        case byte_t {0x64}: {
+            i64_t heaptype = stream.get<i64_t>();
+            if((heaptype < 0) && !abstract_heaptype((int32_t)heaptype)){
+                throw Exception::invalid_valuetype(stream.location());
+            }
+            type = reference_to((int32_t)heaptype, prefix == byte_t {0x63});
+        }
+        return stream;
         default:
-            throw Exception::invalid_valuetype(stream.location());
+        break;
     }
-    return stream;
+    // Otherwise the byte is an abstract heap type standing for the nullable
+    // reference to it.
+    if(std::optional<ValueType::Kind> kind = abstract_heaptype((int32_t)((u8_t)prefix) - 0x80)){
+        type = ValueType(kind.value(), true);
+        return stream;
+    }
+    throw Exception::invalid_valuetype(stream.location());
 }
 
 template<> Stream& Decode::operator>> <FuncType>(Stream& stream, FuncType& type){

@@ -319,7 +319,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Return_c
     return *this << (byte_t)instr.opcode << instr.typeidx << instr.tableidx;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_null>(WasmVM::Instr::Ref_null instr){
-    return *this << (byte_t)instr.opcode << instr.heaptype;
+    return *this << (byte_t)instr.opcode << (i64_t)instr.heaptype;
 }
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::Instr::Ref_test>(WasmVM::Instr::Ref_test instr){
     return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << (i64_t)instr.heaptype;
@@ -463,7 +463,7 @@ template<> Section::Stream& Section::Stream::operator<< <WasmInstr>(WasmInstr in
     case Opcode::I64_const: { auto& c=std::get<WasmInstr::ConstI64>(instr.imm); Instr::I64_const t{c.value}; return *this<<t; }
     case Opcode::F32_const: { auto& c=std::get<WasmInstr::ConstF32>(instr.imm); Instr::F32_const t{c.value}; return *this<<t; }
     case Opcode::F64_const: { auto& c=std::get<WasmInstr::ConstF64>(instr.imm); Instr::F64_const t{c.value}; return *this<<t; }
-    case Opcode::Ref_null: { auto& h=std::get<WasmInstr::HeapRef>(instr.imm); Instr::Ref_null t{h.heaptype}; return *this<<t; }
+    case Opcode::Ref_null: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_null t{h.heaptype}; return *this<<t; }
     case Opcode::Ref_test: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_test t{h.heaptype}; return *this<<t; }
     case Opcode::Ref_test_null: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_test_null t{h.heaptype}; return *this<<t; }
     case Opcode::Ref_cast: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_cast t{h.heaptype}; return *this<<t; }

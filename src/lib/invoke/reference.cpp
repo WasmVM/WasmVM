@@ -10,28 +10,43 @@
 using namespace WasmVM;
 
 void RunVisitor::operator()(Instr::Ref_null& instr){
-    Label& label = stack.frames.top().labels.top();
-    switch(instr.heaptype){
-        case RefType::funcref :
+    Frame& frame = stack.frames.top();
+    Label& label = frame.labels.top();
+    // A concrete heap type takes the representation of whatever it defines.
+    ValueType::Kind kind = ValueType::structref;
+    if(std::optional<ValueType::Kind> abstract = abstract_heaptype(instr.heaptype)){
+        kind = abstract.value();
+    }else{
+        index_t typeidx = (index_t)instr.heaptype;
+        if(typeidx < frame.module.types.size()){
+            const SubType& type = frame.module.types[typeidx];
+            kind = type.is_struct() ? ValueType::structref
+                 : type.is_array()  ? ValueType::arrayref
+                                    : ValueType::funcref;
+        }
+    }
+    switch(kind){
+        case ValueType::funcref : case ValueType::nullfuncref :
             label.values.emplace<funcref_t>(std::nullopt);
         break;
-        case RefType::externref :
+        case ValueType::externref : case ValueType::nullexternref :
             label.values.emplace<externref_t>(nullptr);
         break;
-    }
-}
-void RunVisitor::operator()(Instr::Ref_is_null&){
-    Label& label = stack.frames.top().labels.top();
-    Value val = label.values.top();
-    label.values.pop();
-    if(std::holds_alternative<funcref_t>(val)){
-        label.values.emplace<i32_t>(!std::get<funcref_t>(val).has_value());
-    }else if(std::holds_alternative<externref_t>(val)){
-        label.values.emplace<i32_t>(std::get<externref_t>(val) == nullptr);
-    }else if(std::holds_alternative<i31ref_t>(val)){
-        label.values.emplace<i32_t>(std::get<i31ref_t>(val).has_value() ? 0 : 1);
-    }else{
-        throw Exception::invalid_reference();
+        case ValueType::i31ref :
+            label.values.emplace(Value(i31ref_t()));
+        break;
+        case ValueType::exnref :
+            label.values.emplace(Value(exnref_t()));
+        break;
+        case ValueType::arrayref :
+            label.values.emplace(Value(arrayref_t()));
+        break;
+        // struct, and the abstract types of the any hierarchy whose null is
+        // not tied to one representation. Every one of them is null, which is
+        // all any observer can tell.
+        default :
+            label.values.emplace(Value(structref_t()));
+        break;
     }
 }
 void RunVisitor::operator()(Instr::Ref_func& instr){
@@ -50,22 +65,68 @@ static bool ref_is_null(const Value& val){
     if(std::holds_alternative<i31ref_t>(val)){
         return !std::get<i31ref_t>(val).has_value();
     }
+    if(std::holds_alternative<exnref_t>(val)){
+        return !std::get<exnref_t>(val).has_value();
+    }
+    if(std::holds_alternative<structref_t>(val)){
+        return std::get<structref_t>(val) == nullptr;
+    }
+    if(std::holds_alternative<arrayref_t>(val)){
+        return std::get<arrayref_t>(val) == nullptr;
+    }
     return false;
 }
 
+// Whether a value is a reference at all, rather than a number.
+static bool is_reference(const Value& val){
+    return std::holds_alternative<funcref_t>(val) || std::holds_alternative<externref_t>(val)
+        || std::holds_alternative<i31ref_t>(val) || std::holds_alternative<exnref_t>(val)
+        || std::holds_alternative<structref_t>(val) || std::holds_alternative<arrayref_t>(val);
+}
 
-// heaptype encoding as signed LEB128: -16=func, -17=extern, -20=i31
-static bool ref_matches_heaptype(const Value& val, int32_t heaptype){
+
+// Whether a non-null reference is of the given heap type. A concrete heap
+// type names a type index, which a struct or array carries; an abstract one
+// is matched against the hierarchy the value belongs to.
+static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const std::vector<SubType>& types){
     if(std::holds_alternative<funcref_t>(val)){
-        return heaptype == -16; // func
+        return (heaptype == heaptype_func) || (heaptype == heaptype_nofunc);
     }
     if(std::holds_alternative<externref_t>(val)){
-        return heaptype == -17; // extern
+        return (heaptype == heaptype_extern) || (heaptype == heaptype_noextern);
+    }
+    if(std::holds_alternative<exnref_t>(val)){
+        return heaptype == heaptype_exn;
     }
     if(std::holds_alternative<i31ref_t>(val)){
-        return heaptype == -20; // i31
+        return (heaptype == heaptype_i31) || (heaptype == heaptype_eq) || (heaptype == heaptype_any);
     }
-    return false;
+    index_t typeidx = 0;
+    int32_t own = 0;
+    if(std::holds_alternative<structref_t>(val)){
+        typeidx = std::get<structref_t>(val)->typeidx;
+        own = heaptype_struct;
+    }else if(std::holds_alternative<arrayref_t>(val)){
+        typeidx = std::get<arrayref_t>(val)->typeidx;
+        own = heaptype_array;
+    }else{
+        return false;
+    }
+    if(heaptype < 0){
+        return (heaptype == own) || (heaptype == heaptype_eq) || (heaptype == heaptype_any);
+    }
+    // A concrete heap type: the value's own type must be at or below it.
+    return comp_matches(typeidx, (index_t)heaptype, types);
+}
+
+void RunVisitor::operator()(Instr::Ref_is_null&){
+    Label& label = stack.frames.top().labels.top();
+    Value val = label.values.top();
+    label.values.pop();
+    if(!is_reference(val)){
+        throw Exception::invalid_reference();
+    }
+    label.values.emplace<i32_t>(ref_is_null(val) ? 1 : 0);
 }
 
 void RunVisitor::operator()(Instr::Ref_as_non_null&){
@@ -81,11 +142,21 @@ void RunVisitor::operator()(Instr::Ref_eq&){
     Label& label = stack.frames.top().labels.top();
     Value val2 = label.values.top(); label.values.pop();
     Value val1 = label.values.top(); label.values.pop();
+    // Two references are equal when they name the same thing, and two nulls
+    // of the same hierarchy are equal however they are represented.
     bool equal = false;
-    if(std::holds_alternative<funcref_t>(val1) && std::holds_alternative<funcref_t>(val2)){
+    if(ref_is_null(val1) && ref_is_null(val2)){
+        equal = true;
+    } else if(std::holds_alternative<funcref_t>(val1) && std::holds_alternative<funcref_t>(val2)){
         equal = std::get<funcref_t>(val1) == std::get<funcref_t>(val2);
     } else if(std::holds_alternative<externref_t>(val1) && std::holds_alternative<externref_t>(val2)){
         equal = std::get<externref_t>(val1) == std::get<externref_t>(val2);
+    } else if(std::holds_alternative<i31ref_t>(val1) && std::holds_alternative<i31ref_t>(val2)){
+        equal = *std::get<i31ref_t>(val1) == *std::get<i31ref_t>(val2);
+    } else if(std::holds_alternative<structref_t>(val1) && std::holds_alternative<structref_t>(val2)){
+        equal = std::get<structref_t>(val1) == std::get<structref_t>(val2);
+    } else if(std::holds_alternative<arrayref_t>(val1) && std::holds_alternative<arrayref_t>(val2)){
+        equal = std::get<arrayref_t>(val1) == std::get<arrayref_t>(val2);
     }
     label.values.emplace<i32_t>(equal ? 1 : 0);
 }
@@ -93,21 +164,21 @@ void RunVisitor::operator()(Instr::Ref_eq&){
 void RunVisitor::operator()(Instr::Ref_test& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top(); label.values.pop();
-    bool result = !ref_is_null(val) && ref_matches_heaptype(val, instr.heaptype);
+    bool result = !ref_is_null(val) && ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types);
     label.values.emplace<i32_t>(result ? 1 : 0);
 }
 
 void RunVisitor::operator()(Instr::Ref_test_null& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top(); label.values.pop();
-    bool result = ref_is_null(val) || ref_matches_heaptype(val, instr.heaptype);
+    bool result = ref_is_null(val) || ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types);
     label.values.emplace<i32_t>(result ? 1 : 0);
 }
 
 void RunVisitor::operator()(Instr::Ref_cast& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top();
-    if(ref_is_null(val) || !ref_matches_heaptype(val, instr.heaptype)){
+    if(ref_is_null(val) || !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types)){
         throw Exception::cast_failure();
     }
     // value already on stack
@@ -116,7 +187,7 @@ void RunVisitor::operator()(Instr::Ref_cast& instr){
 void RunVisitor::operator()(Instr::Ref_cast_null& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top();
-    if(!ref_is_null(val) && !ref_matches_heaptype(val, instr.heaptype)){
+    if(!ref_is_null(val) && !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types)){
         throw Exception::cast_failure();
     }
     // value already on stack
@@ -236,7 +307,7 @@ void RunVisitor::operator()(Instr::Br_on_cast& instr){
     Frame& frame = stack.frames.top();
     Value val = frame.labels.top().values.top();
     bool is_null = ref_is_null(val);
-    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype));
+    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types));
     if(matches){
         // Branch: ref stays on stack as part of branch values
         do_branch(stack, instr.labelidx);
@@ -248,7 +319,7 @@ void RunVisitor::operator()(Instr::Br_on_cast_fail& instr){
     Frame& frame = stack.frames.top();
     Value val = frame.labels.top().values.top();
     bool is_null = ref_is_null(val);
-    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype));
+    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types));
     if(!matches){
         // Branch: ref stays on stack as part of branch values
         do_branch(stack, instr.labelidx);

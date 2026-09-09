@@ -72,6 +72,9 @@ private:
 
     // ── Type / structural sub-parsers ────────────────────────────────────────
     ValueType  parse_valtype();
+    // True when the next tokens start a value type: a keyword naming one, or
+    // '(' 'ref' ... for a reference to a named heap type.
+    bool is_valtype_start();
     // Parses a functype rule '(' 'func' param* result* ')'
     std::pair<FuncType, std::map<std::string, index_t>> parse_functype();
     // Parses one '(' 'type' id? subtype ')' and returns its index.
@@ -153,6 +156,8 @@ private:
     WasmInstr parse_gcinstr(const std::string& name);
     // Parses (ref null? heaptype) and returns {nullable, heaptype-as-int32}.
     std::pair<bool, int32_t> parse_reftype_annot();
+    // heaptype ::= abstract keyword | typeidx
+    int32_t parse_heaptype();
     std::pair<offset_t, std::optional<align_t>> parse_memarg();
 
     // ── Post-processing (same logic as original post_process.cpp) ────────────

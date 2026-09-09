@@ -286,22 +286,28 @@ std::pair<bool, int32_t> ParseContext::parse_reftype_annot() {
     tok_.expect_keyword("ref");
     bool nullable = false;
     if (tok_.peek_keyword("null")) { tok_.consume(); nullable = true; }
-    int32_t heaptype;
-    if (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id) {
-        heaptype = (int32_t)parse_typeidx(); // a concrete heap type is a type index
-    } else {
-        Token ht = tok_.expect(TokenType::Keyword, "heap type");
-        if      (ht.text == "func")   heaptype = -16;
-        else if (ht.text == "extern") heaptype = -17;
-        else if (ht.text == "any")    heaptype = -18;
-        else if (ht.text == "eq")     heaptype = -19;
-        else if (ht.text == "i31")    heaptype = -20;
-        else if (ht.text == "struct") heaptype = -21;
-        else if (ht.text == "array")  heaptype = -22;
-        else throw Exception::Parse("unknown heap type '" + ht.text + "'", {ht.line, ht.column});
-    }
+    int32_t heaptype = parse_heaptype();
     tok_.expect(TokenType::RParen);
     return {nullable, heaptype};
+}
+
+int32_t ParseContext::parse_heaptype() {
+    if (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id) {
+        return (int32_t)parse_typeidx(); // a concrete heap type is a type index
+    }
+    Token ht = tok_.expect(TokenType::Keyword, "heap type");
+    if (ht.text == "func")     return heaptype_func;
+    if (ht.text == "extern")   return heaptype_extern;
+    if (ht.text == "any")      return heaptype_any;
+    if (ht.text == "eq")       return heaptype_eq;
+    if (ht.text == "i31")      return heaptype_i31;
+    if (ht.text == "struct")   return heaptype_struct;
+    if (ht.text == "array")    return heaptype_array;
+    if (ht.text == "exn")      return heaptype_exn;
+    if (ht.text == "none")     return heaptype_none;
+    if (ht.text == "nofunc")   return heaptype_nofunc;
+    if (ht.text == "noextern") return heaptype_noextern;
+    throw Exception::Parse("unknown heap type '" + ht.text + "'", {ht.line, ht.column});
 }
 
 WasmInstr ParseContext::parse_referenceinstr(const std::string& name) {
@@ -332,11 +338,8 @@ WasmInstr ParseContext::parse_referenceinstr(const std::string& name) {
             return Instr::Br_on_cast(labelidx, src_nullable, dst_nullable, src_ht, dst_ht);
         return Instr::Br_on_cast_fail(labelidx, src_nullable, dst_nullable, src_ht, dst_ht);
     }
-    // ref.null — heaptype keyword
-    Token ref = tok_.expect(TokenType::Keyword, "heap type");
-    if (ref.text == "func")   return Instr::Ref_null(RefType::funcref);
-    if (ref.text == "extern") return Instr::Ref_null(RefType::externref);
-    throw Exception::Parse("expected heap type after ref.null", {ref.line, ref.column});
+    // ref.null heaptype -- abstract by keyword, or a type by index or id.
+    return Instr::Ref_null(parse_heaptype());
 }
 
 // ── Parametric instructions ───────────────────────────────────────────────────

@@ -26,7 +26,7 @@ Suite global {
         Expect(glo2.type.type == ValueType::funcref);
         Expect(glo2.type.mut == GlobalType::constant);
         Expect(std::holds_alternative<Instr::Ref_null>(glo2.init));
-        Expect(std::get<Instr::Ref_null>(glo2.init).heaptype == RefType::funcref);
+        Expect(std::get<Instr::Ref_null>(glo2.init).heaptype == heaptype_of(valtype_of(RefType::funcref)));
     })
     Test("with_import", {
         ParseFile(test_module, "with_import.wat");

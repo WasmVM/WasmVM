@@ -8,7 +8,32 @@
 using namespace WasmVM;
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
-    switch(type){
+    // A non-null reference, and any reference to a concrete type, has no
+    // shorthand: it prints as (ref null? heaptype).
+    if(type.is_ref() && (!type.nullable || type.is_concrete())){
+        stream << "(ref ";
+        if(type.nullable){
+            stream << "null ";
+        }
+        if(type.is_concrete()){
+            return stream << type.typeidx << ")";
+        }
+        switch(type.kind){
+            case ValueType::funcref:       stream << "func"; break;
+            case ValueType::externref:     stream << "extern"; break;
+            case ValueType::anyref:        stream << "any"; break;
+            case ValueType::eqref:         stream << "eq"; break;
+            case ValueType::i31ref:        stream << "i31"; break;
+            case ValueType::structref:     stream << "struct"; break;
+            case ValueType::arrayref:      stream << "array"; break;
+            case ValueType::nullref:       stream << "none"; break;
+            case ValueType::nullfuncref:   stream << "nofunc"; break;
+            case ValueType::nullexternref: stream << "noextern"; break;
+            default:                       stream << "exn"; break;
+        }
+        return stream << ")";
+    }
+    switch(type.kind){
         case ValueType::i32:
             stream << "i32";
         break;
@@ -33,6 +58,29 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
         case ValueType::exnref:
             stream << "exnref";
         break;
+        case ValueType::structref:
+            stream << "structref";
+        break;
+        case ValueType::arrayref:
+            stream << "arrayref";
+        break;
+        case ValueType::anyref:
+            stream << "anyref";
+        break;
+        case ValueType::eqref:
+            stream << "eqref";
+        break;
+        case ValueType::nullref:
+            stream << "nullref";
+        break;
+        case ValueType::nullfuncref:
+            stream << "nullfuncref";
+        break;
+        case ValueType::nullexternref:
+            stream << "nullexternref";
+        break;
+        case ValueType::ref:
+        break; // handled above
     }
     return stream;
 }

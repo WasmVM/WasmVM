@@ -14,10 +14,9 @@ using namespace WasmVM;
 using namespace Validate;
 
 // The type section's own rules: a subtype names at most one supertype, which
-// must be defined before it (also inside a rec group), must not be final, and
-// must be the same kind of composite type. Whether the two composite types
-// actually stand in the subtyping relation is not checked yet: that needs the
-// typed reference value types, which are not representable so far.
+// must be defined before it (also inside a rec group), must not be final, must
+// be the same kind of composite type, and must actually be a supertype -- the
+// declaration has to be honest about the shapes.
 static std::optional<Exception::Exception> validate_types(const WasmModule& module){
     for(index_t idx = 0; idx < module.types.size(); ++idx){
         const SubType& type = module.types[idx];
@@ -38,6 +37,10 @@ static std::optional<Exception::Exception> validate_types(const WasmModule& modu
             }
             if(module.types[super].comp.index() != type.comp.index()){
                 ss << "supertype " << super << " is a different kind of composite type";
+                return Exception::Exception(ss.str());
+            }
+            if(!comp_refines(idx, super, module.types)){
+                ss << "type does not refine its supertype " << super;
                 return Exception::Exception(ss.str());
             }
         }

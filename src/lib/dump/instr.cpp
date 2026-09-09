@@ -296,12 +296,18 @@ struct InstrVisitor {
     std::ostream& operator()(const WasmVM::Instr::Ref_null& instr){
         stream << "ref.null ";
         switch(instr.heaptype){
-            case RefType::funcref:
-                return stream << "func";
-            case RefType::externref:
-                return stream << "extern";
-            default:
-                return stream;
+            case heaptype_func:     return stream << "func";
+            case heaptype_extern:   return stream << "extern";
+            case heaptype_any:      return stream << "any";
+            case heaptype_eq:       return stream << "eq";
+            case heaptype_i31:      return stream << "i31";
+            case heaptype_struct:   return stream << "struct";
+            case heaptype_array:    return stream << "array";
+            case heaptype_exn:      return stream << "exn";
+            case heaptype_none:     return stream << "none";
+            case heaptype_nofunc:   return stream << "nofunc";
+            case heaptype_noextern: return stream << "noextern";
+            default:                return stream << instr.heaptype;
         }
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_test& instr){
@@ -533,7 +539,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmInstr& instr){
     case Opcode::I64_const: { auto& c=std::get<WasmInstr::ConstI64>(instr.imm); Instr::I64_const t{c.value}; return v(t); }
     case Opcode::F32_const: { auto& c=std::get<WasmInstr::ConstF32>(instr.imm); Instr::F32_const t{c.value}; return v(t); }
     case Opcode::F64_const: { auto& c=std::get<WasmInstr::ConstF64>(instr.imm); Instr::F64_const t{c.value}; return v(t); }
-    case Opcode::Ref_null: { auto& h=std::get<WasmInstr::HeapRef>(instr.imm); Instr::Ref_null t{h.heaptype}; return v(t); }
+    case Opcode::Ref_null: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_null t{h.heaptype}; return v(t); }
     case Opcode::Ref_test: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_test t{h.heaptype}; return v(t); }
     case Opcode::Ref_test_null: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_test_null t{h.heaptype}; return v(t); }
     case Opcode::Ref_cast: { auto& h=std::get<WasmInstr::HeapI32>(instr.imm); Instr::Ref_cast t{h.heaptype}; return v(t); }

@@ -80,34 +80,52 @@ template<> Section::Stream& Section::Stream::operator<< <std::string>(std::strin
     return *this;
 }
 
+// The one-byte form of an abstract heap type. Its own encoding doubles as the
+// shorthand for the nullable reference to it, which is how the four legacy
+// value types have always been written.
+static byte_t abstract_heaptype_byte(ValueType::Kind kind){
+    switch(kind){
+        case ValueType::nullfuncref:   return (byte_t) 0x73;
+        case ValueType::nullexternref: return (byte_t) 0x72;
+        case ValueType::nullref:       return (byte_t) 0x71;
+        case ValueType::funcref:       return (byte_t) 0x70;
+        case ValueType::externref:     return (byte_t) 0x6f;
+        case ValueType::anyref:        return (byte_t) 0x6e;
+        case ValueType::eqref:         return (byte_t) 0x6d;
+        case ValueType::i31ref:        return (byte_t) 0x6c;
+        case ValueType::structref:     return (byte_t) 0x6b;
+        case ValueType::arrayref:      return (byte_t) 0x6a;
+        default:                       return (byte_t) 0x69; // exn
+    }
+}
+
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::ValueType>(WasmVM::ValueType valtype){
-    switch(valtype){
+    switch(valtype.kind){
         case ValueType::i32 :
-            *this << (byte_t) 0x7f;
-        break;
+            return *this << (byte_t) 0x7f;
         case ValueType::i64 :
-            *this << (byte_t) 0x7e;
-        break;
+            return *this << (byte_t) 0x7e;
         case ValueType::f32 :
-            *this << (byte_t) 0x7d;
-        break;
+            return *this << (byte_t) 0x7d;
         case ValueType::f64 :
-            *this << (byte_t) 0x7c;
-        break;
-        case ValueType::funcref :
-            *this << (byte_t) 0x70;
-        break;
-        case ValueType::externref :
-            *this << (byte_t) 0x6f;
-        break;
-        case ValueType::i31ref :
-            *this << (byte_t) 0x6c;
-        break;
-        case ValueType::exnref :
-            *this << (byte_t) 0x69;
+            return *this << (byte_t) 0x7c;
+        default:
         break;
     }
-    return *this;
+    // A nullable reference to an abstract heap type is written with that heap
+    // type's own byte; everything else needs the explicit 0x63 / 0x64 form
+    // carrying the heap type as a signed value.
+    if(valtype.nullable && !valtype.is_concrete()){
+        return *this << abstract_heaptype_byte(valtype.kind);
+    }
+    *this << (byte_t)(valtype.nullable ? 0x63 : 0x64);
+    // An abstract heap type's own byte is already the one-byte signed encoding
+    // of its negative number, so write it directly: going through the general
+    // signed writer would pad it to two bytes.
+    if(valtype.is_concrete()){
+        return *this << (i64_t)valtype.typeidx;
+    }
+    return *this << abstract_heaptype_byte(valtype.kind);
 }
 
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::FuncType>(WasmVM::FuncType functype){

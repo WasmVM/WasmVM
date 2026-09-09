@@ -109,9 +109,9 @@ Suite instruction {
         ParseFile(test_module, "reference.wat");
         std::vector<WasmInstr>& instrs = test_module.funcs[1].body;
         Expect(instrs[0].opcode == Opcode::Ref_null);
-        Expect(as_href(instrs[0]).heaptype == RefType::funcref);
+        Expect(as_hi32(instrs[0]).heaptype == heaptype_func);
         Expect(instrs[1].opcode == Opcode::Ref_null);
-        Expect(as_href(instrs[1]).heaptype == RefType::externref);
+        Expect(as_hi32(instrs[1]).heaptype == heaptype_extern);
         Expect(instrs[2].opcode == Opcode::Ref_is_null);
         Expect(instrs[3].opcode == Opcode::Ref_func);
         Expect(as_one(instrs[3]).index == 0);

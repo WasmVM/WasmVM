@@ -88,9 +88,9 @@ Suite table {
         Expect(std::get<Instr::I32_const>(elem1.mode.offset.value()).value == 0);
         Expect(elem1.elemlist.size() == 2);
         Instr::Ref_null& instr1_0 = std::get<Instr::Ref_null>(elem1.elemlist[0]);
-        Expect(instr1_0.heaptype == RefType::externref);
+        Expect(instr1_0.heaptype == heaptype_of(valtype_of(RefType::externref)));
         Instr::Ref_null& instr1_1 = std::get<Instr::Ref_null>(elem1.elemlist[1]);
-        Expect(instr1_1.heaptype == RefType::externref);
+        Expect(instr1_1.heaptype == heaptype_of(valtype_of(RefType::externref)));
 
         WasmElem& elem2 = test_module.elems[2];
         Expect(elem2.type == RefType::funcref);
