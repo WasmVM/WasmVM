@@ -31,11 +31,7 @@ static bool is_ref(Validate::State::StackValue value){
     if(is_unknown(value)){
         return true;
     }
-    if(std::holds_alternative<Validate::State::TypedRef>(value)){
-        return true;
-    }
-    ValueType& type = std::get<ValueType>(value);
-    return (type == ValueType::funcref) || (type == ValueType::externref);
+    return std::get<ValueType>(value).is_ref();
 }
 
 // ── GC type helpers ─────────────────────────────────────────────────────────
@@ -104,7 +100,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     assert(func.typeidx < context.types.size());
     FuncType func_type = context.types[func.typeidx].func();
     // state (context C')
-    State state;
+    State state(context.types);
     state.locals.insert(state.locals.end(), func_type.params.begin(), func_type.params.end());
     state.locals.insert(state.locals.end(), func.locals.begin(), func.locals.end());
     state.push(Opcode::Nop, func_type);
@@ -167,8 +163,11 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                 }break;
                 // [] -> [t]
                 case Opcode::Ref_null : {
-                    const auto& ins = std::get<WasmInstr::HeapRef>(instr.imm);
-                    state.push(valtype_of(ins.heaptype));
+                    const auto& ins = std::get<WasmInstr::HeapI32>(instr.imm);
+                    if(!abstract_heaptype(ins.heaptype) && ((index_t)ins.heaptype >= context.types.size())){
+                        throw Exception::Exception("type index not found for ref.null");
+                    }
+                    state.push(reference_to(ins.heaptype, true));
                 }break;
                 case Opcode::Local_get : {
                     const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
@@ -1031,13 +1030,13 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     for(auto it = type.fields.rbegin(); it != type.fields.rend(); ++it){
                         state.pop(unpacked(it->storage));
                     }
-                    state.push(State::TypedRef{false, ins.index});
+                    state.push(ValueType::concrete(ins.index, false));
                 }break;
                 // [] -> [(ref $t)]  (every storage type here has a default)
                 case Opcode::Struct_new_default : {
                     const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     struct_type_at(context, ins.index, "struct.new_default");
-                    state.push(State::TypedRef{false, ins.index});
+                    state.push(ValueType::concrete(ins.index, false));
                 }break;
                 // [(ref null $t)] -> [t]
                 case Opcode::Struct_get : case Opcode::Struct_get_s : case Opcode::Struct_get_u : {
@@ -1046,7 +1045,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                                      : (instr.opcode == Opcode::Struct_get_s) ? "struct.get_s" : "struct.get_u";
                     const FieldType& field = struct_field_at(context, ins.a, ins.b, what);
                     check_packed_access(is_packed(field.storage), instr.opcode != Opcode::Struct_get, what);
-                    state.pop(State::TypedRef{true, ins.a});
+                    state.pop(ValueType::concrete(ins.a, true));
                     state.push(unpacked(field.storage));
                 }break;
                 // [(ref null $t) t] -> []
@@ -1057,7 +1056,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         throw Exception::Exception("struct.set on an immutable field");
                     }
                     state.pop(unpacked(field.storage));
-                    state.pop(State::TypedRef{true, ins.a});
+                    state.pop(ValueType::concrete(ins.a, true));
                 }break;
                 // ── GC: array ───────────────────────────────────────────────
                 // [t i32] -> [(ref $t)]
@@ -1066,14 +1065,14 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const ArrayType& type = array_type_at(context, ins.index, "array.new");
                     state.pop(ValueType::i32);
                     state.pop(unpacked(type.field.storage));
-                    state.push(State::TypedRef{false, ins.index});
+                    state.push(ValueType::concrete(ins.index, false));
                 }break;
                 // [i32] -> [(ref $t)]
                 case Opcode::Array_new_default : {
                     const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
                     array_type_at(context, ins.index, "array.new_default");
                     state.pop(ValueType::i32);
-                    state.push(State::TypedRef{false, ins.index});
+                    state.push(ValueType::concrete(ins.index, false));
                 }break;
                 // [t^n] -> [(ref $t)]
                 case Opcode::Array_new_fixed : {
@@ -1082,7 +1081,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     for(u32_t n = ins.b; n > 0; --n){
                         state.pop(unpacked(type.field.storage));
                     }
-                    state.push(State::TypedRef{false, ins.a});
+                    state.push(ValueType::concrete(ins.a, false));
                 }break;
                 // [i32 i32] -> [(ref $t)]
                 case Opcode::Array_new_data : {
@@ -1096,7 +1095,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.pop(ValueType::i32);
                     state.pop(ValueType::i32);
-                    state.push(State::TypedRef{false, ins.a});
+                    state.push(ValueType::concrete(ins.a, false));
                 }break;
                 case Opcode::Array_new_elem : {
                     const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = typeidx, b = elemidx
@@ -1113,7 +1112,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.pop(ValueType::i32);
                     state.pop(ValueType::i32);
-                    state.push(State::TypedRef{false, ins.a});
+                    state.push(ValueType::concrete(ins.a, false));
                 }break;
                 // [(ref null $t) i32] -> [t]
                 case Opcode::Array_get : case Opcode::Array_get_s : case Opcode::Array_get_u : {
@@ -1123,7 +1122,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     const ArrayType& type = array_type_at(context, ins.index, what);
                     check_packed_access(is_packed(type.field.storage), instr.opcode != Opcode::Array_get, what);
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.index});
+                    state.pop(ValueType::concrete(ins.index, true));
                     state.push(unpacked(type.field.storage));
                 }break;
                 // [(ref null $t) i32 t] -> []
@@ -1135,19 +1134,16 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.pop(unpacked(type.field.storage));
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.index});
+                    state.pop(ValueType::concrete(ins.index, true));
                 }break;
                 // [(ref null array)] -> [i32]
                 case Opcode::Array_len : {
+                    // Any array reference: the abstract arrayref, or a
+                    // concrete reference to an array type.
                     State::StackValue ref = state.pop<State::StackValue>();
-                    if(!is_unknown(ref)){
-                        if(!std::holds_alternative<State::TypedRef>(ref)){
-                            throw Exception::Exception("array.len needs an array reference");
-                        }
-                        const State::TypedRef& typed = std::get<State::TypedRef>(ref);
-                        if(typed.typeidx >= context.types.size() || !context.types[typed.typeidx].is_array()){
-                            throw Exception::Exception("array.len needs an array reference");
-                        }
+                    if(!is_unknown(ref)
+                        && !type_matches(std::get<ValueType>(ref), ValueType(ValueType::arrayref), context.types)){
+                        throw Exception::Exception("array.len needs an array reference");
                     }
                     state.push(ValueType::i32);
                 }break;
@@ -1161,7 +1157,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i32);
                     state.pop(unpacked(type.field.storage));
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.index});
+                    state.pop(ValueType::concrete(ins.index, true));
                 }break;
                 // [(ref null $d) i32 (ref null $s) i32 i32] -> []
                 case Opcode::Array_copy : {
@@ -1176,9 +1172,9 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     }
                     state.pop(ValueType::i32);
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.b});
+                    state.pop(ValueType::concrete(ins.b, true));
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.a});
+                    state.pop(ValueType::concrete(ins.a, true));
                 }break;
                 // [(ref null $t) i32 i32 i32] -> []
                 case Opcode::Array_init_data : case Opcode::Array_init_elem : {
@@ -1211,7 +1207,7 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     state.pop(ValueType::i32);
                     state.pop(ValueType::i32);
                     state.pop(ValueType::i32);
-                    state.pop(State::TypedRef{true, ins.a});
+                    state.pop(ValueType::concrete(ins.a, true));
                 }break;
                 default:
                 // nop

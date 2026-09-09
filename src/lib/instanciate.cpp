@@ -219,11 +219,40 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
             },
             [&](Instr::Ref_null instr){
                 switch(globalinst.type.kind){
-                    case ValueType::funcref :
+                    case ValueType::funcref : case ValueType::nullfuncref :
                         globalinst.value.emplace<funcref_t>(std::nullopt);
                     break;
-                    case ValueType::externref :
+                    case ValueType::externref : case ValueType::nullexternref :
                         globalinst.value.emplace<externref_t>(nullptr);
+                    break;
+                    case ValueType::i31ref :
+                        globalinst.value.emplace<i31ref_t>();
+                    break;
+                    case ValueType::exnref :
+                        globalinst.value.emplace<exnref_t>();
+                    break;
+                    case ValueType::arrayref :
+                        globalinst.value.emplace<arrayref_t>();
+                    break;
+                    case ValueType::structref : case ValueType::anyref :
+                    case ValueType::eqref : case ValueType::nullref :
+                        globalinst.value.emplace<structref_t>();
+                    break;
+                    // A concrete reference: whatever the named type defines.
+                    case ValueType::ref : {
+                        index_t typeidx = globalinst.type.typeidx;
+                        if(typeidx >= moduleInst.types.size()){
+                            throw Exception::Exception("invalid global init expression");
+                        }
+                        const SubType& named = moduleInst.types[typeidx];
+                        if(named.is_struct()){
+                            globalinst.value.emplace<structref_t>();
+                        }else if(named.is_array()){
+                            globalinst.value.emplace<arrayref_t>();
+                        }else{
+                            globalinst.value.emplace<funcref_t>(std::nullopt);
+                        }
+                    }
                     break;
                     default:
                         throw Exception::Exception("invalid global init expression");

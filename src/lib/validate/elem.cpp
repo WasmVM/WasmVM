@@ -15,7 +15,7 @@ template<> void Validate::Validator::operator()<WasmElem>(const WasmElem& elem){
     for(const ConstInstr& instr : elem.elemlist){
         std::visit(overloaded {
             [&](const Instr::Ref_null& ins){
-                if(ins.heaptype != elem.type){
+                if(ins.heaptype != heaptype_of(valtype_of(elem.type))){
                     throw Exception::Exception("reference type mismatch");
                 }
             },

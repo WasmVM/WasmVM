@@ -76,7 +76,7 @@ void RunVisitor::run(WasmInstr& instr) {
     ONE(Br_on_non_null, Br_on_non_null)
     // --- Reference: heap-ref ---
     case Opcode::Ref_null: {
-        auto& h = std::get<WasmInstr::HeapRef>(instr.imm);
+        auto& h = std::get<WasmInstr::HeapI32>(instr.imm);
         Instr::Ref_null t{h.heaptype};
         operator()(t);
         break;

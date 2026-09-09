@@ -52,7 +52,7 @@ bool rejected_with(const std::string& wat, const std::string& fragment) {
 // $f: array (mut funcref) with a passive funcref elem segment.
 const std::string prelude =
     "(module"
-    " (type $s (struct (field $x i32) (field $y (mut i8))))"
+    " (type $s (sub (struct (field $x i32) (field $y (mut i8)))))"
     " (type $a (array (mut i32)))"
     " (type $p (array (mut i16)))"
     " (type $c (array i32))"
@@ -187,18 +187,129 @@ Suite validate_gc_types {
             Expect(rejected_with(with_body("i32.const 1 array.new_fixed $a 2 drop"), "empty validate value stack"));
         })
     })
-    Category("a reference to a GC type stays on the operand stack", {
-        Test("it cannot be returned", {
-            Expect(rejected_with(prelude + " (func (result i32) struct.new_default $s))", "value type not match"));
+    // A reference to a struct or array type is an ordinary value type now:
+    // (ref null? $t) can be a parameter, a result, a local, a global, a field
+    // and an array element. Until the value types carried a type index it
+    // could only sit on the operand stack, which made these instructions
+    // impossible to use for anything.
+    Category("a reference to a GC type is an ordinary value", {
+        Test("it can be returned", {
+            Expect(!validate(prelude + " (func (result (ref $s)) struct.new_default $s))"));
         })
-        Test("it cannot be stored in a local", {
-            Expect(rejected_with(with_body("(local i32) struct.new_default $s local.set 0"), "value type not match"));
+        Test("it can be a parameter and be read through", {
+            Expect(!validate(prelude + " (func (param (ref $s)) (result i32) local.get 0 struct.get $s $x))"));
+        })
+        Test("it can be stored in a local", {
+            Expect(!validate(with_body("(local (ref null $s)) struct.new_default $s local.set 0")));
+        })
+        Test("it can be a global", {
+            Expect(!validate(prelude + " (global (ref null $s) (ref.null $s)))"));
+        })
+        Test("it can be a struct field and an array element", {
+            Expect(!validate(
+                "(module (type $n (sub (struct (field (mut (ref null $n))))))"
+                " (type $l (array (mut (ref null $n))))"
+                " (func (result (ref $l)) i32.const 4 array.new_default $l))"));
+        })
+        Test("a wrong concrete type is still refused", {
+            Expect(rejected_with(prelude + " (func (result (ref $a)) struct.new_default $s))",
+                                 "reference to a different type"));
         })
         Test("it is a reference for ref.is_null", {
             Expect(!validate(with_body("struct.new_default $s ref.is_null drop")));
         })
         Test("it is not numeric for select", {
             Expect(rejected_with(with_body("struct.new_default $s struct.new_default $s i32.const 1 select drop"), "numeric types"));
+        })
+    })
+    // The subtyping relation, which the type section's declarations and every
+    // typed operand are now checked against.
+    Category("subtyping", {
+        Test("a subtype is accepted where its supertype is expected", {
+            Expect(!validate(
+                "(module (type $b (sub (struct (field i32)))) (type $d (sub $b (struct (field i32) (field i64))))"
+                " (func (param (ref $d)) (result i32) local.get 0 struct.get $b 0))"));
+        })
+        Test("a supertype is not accepted where the subtype is expected", {
+            Expect(rejected_with(
+                "(module (type $b (sub (struct (field i32)))) (type $d (sub $b (struct (field i32) (field i64))))"
+                " (func (param (ref $b)) (result i64) local.get 0 struct.get $d 1))",
+                "reference to a different type"));
+        })
+        Test("an abstract reference is not accepted where a concrete one is expected", {
+            Expect(rejected_with(prelude + " (func (param structref) (result i32) local.get 0 struct.get $s $x))",
+                                 "reference to a different type"));
+        })
+        Test("a concrete reference is accepted where its abstract one is expected", {
+            Expect(!validate(prelude + " (func (param (ref $s)) (result i32) local.get 0 array.len))") == false);
+            Expect(!validate(prelude + " (func (param (ref $a)) (result i32) local.get 0 array.len))"));
+        })
+        Test("a non-null reference satisfies a nullable expectation", {
+            Expect(!validate(prelude + " (func (param (ref $s)) (result i32) local.get 0 struct.get $s $x))"));
+        })
+        Test("a nullable reference does not satisfy a non-null one", {
+            Expect(rejected_with(
+                prelude + " (func (param (ref null $s)) (result (ref $s)) local.get 0))",
+                "nullable reference where a non-null one is required"));
+        })
+        Test("the func and any hierarchies do not mix", {
+            Expect(rejected_with(with_body("i32.const 3 array.new_default $a ref.is_null drop"
+                                           " ref.null func array.len drop"),
+                                 "needs an array reference"));
+        })
+    })
+    // A declared supertype has to be honest about the shapes.
+    Category("a declared supertype must be one", {
+        Test("adding fields to a struct is a refinement", {
+            Expect(!validate("(module (type $a (sub (struct (field i32)))) (type (sub $a (struct (field i32) (field i64)))))"));
+        })
+        Test("changing a field type is not", {
+            Expect(rejected_with("(module (type $a (sub (struct (field i32)))) (type (sub $a (struct (field i64)))))",
+                                 "does not refine its supertype"));
+        })
+        Test("dropping a field is not", {
+            Expect(rejected_with("(module (type $a (sub (struct (field i32) (field i64)))) (type (sub $a (struct (field i32)))))",
+                                 "does not refine its supertype"));
+        })
+        Test("an immutable field may be refined", {
+            Expect(!validate("(module (type $s (sub (struct))) (type $t (sub $s (struct)))"
+                             " (type $a (sub (struct (field (ref $s))))) (type (sub $a (struct (field (ref $t))))))"));
+        })
+        Test("a mutable field is invariant", {
+            Expect(rejected_with(
+                "(module (type $s (sub (struct (field i32)))) (type $t (sub $s (struct (field i32) (field i64))))"
+                " (type $a (sub (struct (field (mut (ref $s)))))) (type (sub $a (struct (field (mut (ref $t)))))))",
+                "does not refine its supertype"));
+        })
+        Test("an array's element must match", {
+            Expect(!validate("(module (type $a (sub (array i32))) (type (sub $a (array i32))))"));
+            Expect(rejected_with("(module (type $a (sub (array i32))) (type (sub $a (array i64))))",
+                                 "does not refine its supertype"));
+        })
+        Test("a function's parameters are contravariant and its results covariant", {
+            const std::string types =
+                "(module (type $s (sub (struct (field i32)))) (type $t (sub $s (struct (field i32) (field i64)))) ";
+            Expect(!validate(types + "(type $f (sub (func (param (ref $t))))) (type (sub $f (func (param (ref $s))))))"));
+            Expect(rejected_with(types + "(type $f (sub (func (param (ref $s))))) (type (sub $f (func (param (ref $t))))))",
+                                 "does not refine its supertype"));
+            Expect(!validate(types + "(type $f (sub (func (result (ref $s))))) (type (sub $f (func (result (ref $t))))))"));
+            Expect(rejected_with(types + "(type $f (sub (func (result (ref $t))))) (type (sub $f (func (result (ref $s))))))",
+                                 "does not refine its supertype"));
+        })
+    })
+    // ref.null used to take only func and extern, which left a null struct or
+    // array reference impossible to write.
+    Category("ref.null over any heap type", {
+        Test("a concrete type", {
+            Expect(!validate(prelude + " (func (result (ref null $s)) ref.null $s))"));
+        })
+        Test("an abstract one", {
+            Expect(!validate(prelude + " (func (result structref) ref.null struct))"));
+            Expect(!validate(prelude + " (func (result arrayref) ref.null array))"));
+            Expect(!validate(prelude + " (func (result anyref) ref.null any))"));
+        })
+        Test("a type index that does not exist", {
+            Expect(rejected_with(prelude + " (func (result anyref) ref.null 99))", "type index not found for ref.null"));
         })
     })
     Category("the type section", {

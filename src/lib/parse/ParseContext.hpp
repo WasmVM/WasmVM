@@ -156,6 +156,8 @@ private:
     WasmInstr parse_gcinstr(const std::string& name);
     // Parses (ref null? heaptype) and returns {nullable, heaptype-as-int32}.
     std::pair<bool, int32_t> parse_reftype_annot();
+    // heaptype ::= abstract keyword | typeidx
+    int32_t parse_heaptype();
     std::pair<offset_t, std::optional<align_t>> parse_memarg();
 
     // ── Post-processing (same logic as original post_process.cpp) ────────────

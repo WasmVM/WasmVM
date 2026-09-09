@@ -10,13 +10,42 @@
 using namespace WasmVM;
 
 void RunVisitor::operator()(Instr::Ref_null& instr){
-    Label& label = stack.frames.top().labels.top();
-    switch(instr.heaptype){
-        case RefType::funcref :
+    Frame& frame = stack.frames.top();
+    Label& label = frame.labels.top();
+    // A concrete heap type takes the representation of whatever it defines.
+    ValueType::Kind kind = ValueType::structref;
+    if(std::optional<ValueType::Kind> abstract = abstract_heaptype(instr.heaptype)){
+        kind = abstract.value();
+    }else{
+        index_t typeidx = (index_t)instr.heaptype;
+        if(typeidx < frame.module.types.size()){
+            const SubType& type = frame.module.types[typeidx];
+            kind = type.is_struct() ? ValueType::structref
+                 : type.is_array()  ? ValueType::arrayref
+                                    : ValueType::funcref;
+        }
+    }
+    switch(kind){
+        case ValueType::funcref : case ValueType::nullfuncref :
             label.values.emplace<funcref_t>(std::nullopt);
         break;
-        case RefType::externref :
+        case ValueType::externref : case ValueType::nullexternref :
             label.values.emplace<externref_t>(nullptr);
+        break;
+        case ValueType::i31ref :
+            label.values.emplace(Value(i31ref_t()));
+        break;
+        case ValueType::exnref :
+            label.values.emplace(Value(exnref_t()));
+        break;
+        case ValueType::arrayref :
+            label.values.emplace(Value(arrayref_t()));
+        break;
+        // struct, and the abstract types of the any hierarchy whose null is
+        // not tied to one representation. Every one of them is null, which is
+        // all any observer can tell.
+        default :
+            label.values.emplace(Value(structref_t()));
         break;
     }
 }

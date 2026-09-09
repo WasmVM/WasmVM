@@ -714,10 +714,7 @@ ConstInstr ParseContext::parse_constexpr() {
     else if (kw.text == "i64.const") result = ConstInstr{Instr::I64_const(parse_i64())};
     else if (kw.text == "f32.const") result = ConstInstr{Instr::F32_const(parse_f32())};
     else if (kw.text == "f64.const") result = ConstInstr{Instr::F64_const(parse_f64())};
-    else if (kw.text == "ref.null") {
-        Token ref = tok_.expect(TokenType::Keyword, "func/extern");
-        result = ConstInstr{Instr::Ref_null(ref.text == "func" ? RefType::funcref : RefType::externref)};
-    }
+    else if (kw.text == "ref.null") result = ConstInstr{Instr::Ref_null(parse_heaptype())};
     else if (kw.text == "ref.func") result = ConstInstr{Instr::Ref_func(parse_funcidx())};
     else if (kw.text == "global.get") result = ConstInstr{Instr::Global_get(parse_globalidx())};
     else throw Exception::Parse("unknown const expression '" + kw.text + "'", {kw.line, kw.column});

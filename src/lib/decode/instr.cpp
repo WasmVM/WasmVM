@@ -335,7 +335,7 @@ template<> Stream& Decode::operator>> <WasmInstr>(Stream& stream, WasmInstr& ins
             instr = Instr::Return_call_indirect(stream.get<index_t>(), typeidx);
         }break;
         case Opcode::Ref_null :
-            instr = Instr::Ref_null(stream.get<RefType>());
+            instr = Instr::Ref_null((int32_t)stream.get<i64_t>());
         break;
         case Opcode::Ref_test :
             instr = Instr::Ref_test((int32_t)stream.get<i64_t>());
@@ -456,7 +456,7 @@ template<> Stream& Decode::operator>> <ConstInstr>(Stream& stream, ConstInstr& i
         OneIndexInstrC(Ref_func)
         OneIndexInstrC(Global_get)
         case Opcode::Ref_null :
-            instr.emplace<Instr::Ref_null>(stream.get<RefType>());
+            instr.emplace<Instr::Ref_null>((int32_t)stream.get<i64_t>());
         break;
         case Opcode::I32_const :
             instr.emplace<Instr::I32_const>(stream.get<i32_t>());

@@ -286,8 +286,12 @@ ValueType reference_to(int32_t heaptype, bool nullable);
 bool type_matches(const ValueType& a, const ValueType& b, const std::vector<SubType>& types);
 bool storage_matches(const StorageType& a, const StorageType& b, const std::vector<SubType>& types);
 bool field_matches(const FieldType& a, const FieldType& b, const std::vector<SubType>& types);
-// Whether the composite type at index `a` is a subtype of the one at `b`.
+// Whether the composite type at index `a` is a subtype of the one at `b`,
+// following any supertype `a` declares.
 bool comp_matches(index_t a, index_t b, const std::vector<SubType>& types);
+// The same, by shape alone: what a declared supertype has to satisfy for the
+// declaration to be honest.
+bool comp_refines(index_t a, index_t b, const std::vector<SubType>& types);
 
 struct ExternVal {
     enum ExternType {Func, Mem, Table, Global, Tag} type;

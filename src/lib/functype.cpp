@@ -260,6 +260,16 @@ bool WasmVM::comp_matches(index_t a, index_t b, const std::vector<SubType>& type
             return true;
         }
     }
+    return comp_refines(a, b, types);
+}
+
+bool WasmVM::comp_refines(index_t a, index_t b, const std::vector<SubType>& types){
+    if(a == b){
+        return true;
+    }
+    if((a >= types.size()) || (b >= types.size())){
+        return false;
+    }
     const SubType& sub = types[a];
     const SubType& sup = types[b];
     if(sub.comp.index() != sup.comp.index()){

@@ -14,10 +14,10 @@ using namespace WasmVM;
 void Validate::Validator::operator()(const WasmGlobal& global, index_t idx){
     std::visit(overloaded {
         [&](const Instr::Ref_null& ins){
-            if((global.type.type != ValueType::funcref) && (global.type.type != ValueType::externref)){
+            if(!global.type.type.is_ref()){
                 throw Exception::Exception("invalid type in ref.null");
             }
-            if(valtype_of(ins.heaptype) != global.type.type){
+            if(!type_matches(reference_to(ins.heaptype, true), global.type.type, context.types)){
                 throw Exception::Exception("reference type mismatch");
             }
         },
