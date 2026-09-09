@@ -25,6 +25,8 @@ using namespace Encode;
     template<> Section::Stream& Section::Stream::operator<< <T>(T instr){ \
         if(instr.opcode <= 0xff){ \
             return *this << (byte_t)instr.opcode << instr.index; \
+        }else if((instr.opcode >> 8) == 0xfb){ \
+            return *this << (byte_t)0xfb << (u32_t)(instr.opcode & 0xff) << instr.index; \
         }else{ \
             return *this << (byte_t)0xfc << (byte_t)(instr.opcode & 0xff) << instr.index; \
         } \

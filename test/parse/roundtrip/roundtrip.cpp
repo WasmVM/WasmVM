@@ -67,6 +67,13 @@ static std::string text_of(WasmModule& module) {
 // working directory.
 static const char* fixture_dirs[] = { "../instruction", "../type" };
 
+// The instructions of the single function `src` defines, as bytes: the code
+// section's payload past the function count, the body size and the local
+// declarations. Like type_section_of, this pins the wire format itself
+// rather than a roundtrip that an encoder and decoder could agree on while
+// both disagreeing with the spec.
+static std::vector<unsigned char> func_body_of(const std::string& src);
+
 // The payload of the type section (after its id and size) of the binary
 // `src` encodes to. Pins the wire format itself: a roundtrip through our own
 // decoder would also pass with an encoder and decoder that agree with each
@@ -92,13 +99,42 @@ static std::vector<unsigned char> type_section_of(const std::string& src) {
     return {};
 }
 
+static std::vector<unsigned char> func_body_of(const std::string& src) {
+    std::istringstream in(src);
+    WasmModule m = module_parse(in);
+    std::stringstream bin(std::ios::in | std::ios::out | std::ios::binary);
+    module_encode(m, bin);
+    const std::string bytes = bin.str();
+    size_t pos = 8; // magic + version
+    auto leb = [&]() {
+        uint32_t value = 0;
+        for (int shift = 0;; shift += 7) {
+            unsigned char b = (unsigned char)bytes[pos++];
+            value |= (uint32_t)(b & 0x7f) << shift;
+            if (!(b & 0x80)) break;
+        }
+        return value;
+    };
+    while (pos < bytes.size()) {
+        unsigned char id = (unsigned char)bytes[pos++];
+        uint32_t size = leb();
+        if (id == 10) { // code section
+            leb();                             // function count (one, here)
+            const uint32_t body_size = leb();  // sequenced before pos is read below
+            const size_t end = pos + body_size;
+            for (uint32_t locals = leb(); locals > 0; --locals) { leb(); leb(); }
+            return std::vector<unsigned char>(bytes.begin() + pos, bytes.begin() + end);
+        }
+        pos += size;
+    }
+    return {};
+}
+
 // Fixtures the encoder is known not to read back yet, each with the issue that
 // tracks it. The sweep below holds these to *failing*: when one of them starts
 // reading back, the test goes red and says which entry to remove, so a fix
-// cannot land without also retiring its exemption.
+// cannot land without also retiring its exemption. Empty is the good state.
 static const std::vector<std::string> known_not_reading_back = { // sorted: set_difference below
-    "gc_array.wat",   // #19: one-index GC ops written with the 0xfc prefix
-    "gc_struct.wat",  // #19
 };
 
 Suite roundtrip_suite {
@@ -488,6 +524,60 @@ Suite roundtrip_suite {
         }
         ExpectEq(unexpected_failures.size(), 0U);
         ExpectEq(now_reading_back.size(), 0U);
+    })
+    // The GC instructions carrying a single type index are prefixed 0xfb, not
+    // the 0xfc of the saturating conversions. The encoder's one-index macro
+    // predates the prefix and wrote 0xfc for every multi-byte opcode, so a
+    // struct.new came back as an i32.trunc_sat_f32_s followed by an
+    // unreachable, and the rest of the function body was read off by one
+    // byte (issue #19).
+    Category("one-index GC instructions keep the 0xfb prefix", {
+        Test("struct.new is written 0xfb 0x00", {
+            // i32.const 0 = 41 00, struct.new 0 = fb 00 00, drop = 1a, end = 0b
+            std::vector<unsigned char> expected({0x41, 0x00, 0xfb, 0x00, 0x00, 0x1a, 0x0b});
+            Expect(func_body_of(
+                "(module (type $s (struct (field i32)))"
+                " (func i32.const 0 struct.new $s drop))") == expected);
+        })
+        Test("array.new_default is written 0xfb 0x07", {
+            std::vector<unsigned char> expected({0x41, 0x00, 0xfb, 0x07, 0x00, 0x1a, 0x0b});
+            Expect(func_body_of(
+                "(module (type $a (array (mut i32)))"
+                " (func i32.const 0 array.new_default $a drop))") == expected);
+        })
+        Test("all eight survive the binary roundtrip", {
+            // struct.new, struct.new_default, array.new, array.new_default,
+            // array.get, array.get_s, array.get_u, array.set -- the whole set
+            // routed through the one-index macro.
+            const std::string src =
+                "(module"
+                "  (type $s (struct (field i32)))"
+                "  (type $a (array (mut i32)))"
+                "  (type $p (array (mut i8)))"
+                "  (func (export \"f\")"
+                "    i32.const 1 struct.new $s drop"
+                "    struct.new_default $s drop"
+                "    i32.const 7 i32.const 3 array.new $a drop"
+                "    i32.const 3 array.new_default $a i32.const 0 array.get $a drop"
+                "    i32.const 3 array.new_default $p i32.const 0 array.get_s $p drop"
+                "    i32.const 3 array.new_default $p i32.const 0 array.get_u $p drop"
+                "    i32.const 3 array.new_default $a i32.const 0 i32.const 5 array.set $a))";
+            std::istringstream in(src);
+            WasmModule before = module_parse(in);
+            WasmModule after = binary_roundtrip(src);
+            AssertEq(after.funcs.size(), 1U);
+            AssertEq(after.funcs[0].body.size(), before.funcs[0].body.size());
+            Expect(text_of(after) == text_of(before));
+            Expect(!module_validate(after).has_value());
+        })
+        // The saturating conversions share the low byte with the GC opcodes
+        // and must keep the 0xfc prefix: i32.trunc_sat_f32_s is fc 00, the
+        // very instruction a mis-prefixed struct.new used to decode as.
+        Test("the 0xfc one-index instructions are untouched", {
+            // data.drop 0 = fc 09 00, end = 0b
+            std::vector<unsigned char> expected({0xfc, 0x09, 0x00, 0x0b});
+            Expect(func_body_of("(module (data \"a\") (func data.drop 0))") == expected);
+        })
     })
     // Type definitions from the GC proposal: struct and array composite types,
     // subtypes and recursion groups (issue #19's prerequisite). The binary
