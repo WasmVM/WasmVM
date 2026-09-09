@@ -72,9 +72,11 @@ void RunVisitor::operator()(Instr::Table_grow& instr){
     label.values.emplace<i32_t>(-1);
     return;
   }
+  const size_t old_len = table.elems.size();
   table.elems.resize(len, ref);
   table.type.limits.min = len;
-  label.values.emplace<i32_t>(len);
+  // Return the OLD length (per spec), as memory.grow does.
+  label.values.emplace<i32_t>((i32_t)(u32_t)old_len);
 }
 void RunVisitor::operator()(Instr::Table_fill& instr){
   Frame& frame = stack.frames.top();
