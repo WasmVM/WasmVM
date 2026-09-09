@@ -6,8 +6,28 @@
 #include <optional>
 #include <vector>
 #include <exception.hpp>
+#include "exception.hpp"
 
 using namespace WasmVM;
+
+// Whether an access of `count` items starting at `start` lies inside `size`.
+//
+// Written so that neither the addition nor the comparison can wrap. The
+// checks here used to read `(start + count) > size`, which comes back in
+// range for a start near the top of the address space -- and the access then
+// happened wherever the wrapped arithmetic pointed.
+inline bool fits_within(u64_t start, u64_t count, u64_t size){
+    return (start <= size) && (count <= (size - start));
+}
+
+// The address an access begins at once its static offset is added, refusing
+// rather than wrapping.
+inline u64_t offset_from(u64_t base, u64_t offset){
+    if(base > ((u64_t)-1 - offset)){
+        throw Exception::length_too_long();
+    }
+    return base + offset;
+}
 
 struct RunVisitor {
     RunVisitor(Stack& stack) : stack(stack){};

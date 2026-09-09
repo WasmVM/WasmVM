@@ -63,11 +63,13 @@ void RunVisitor::operator()(Instr::Table_grow& instr){
   Label& label = frame.labels.top();
   index_t addr = frame.module.tableaddrs[instr.index];
   TableInst& table = stack.store.tables[addr];
-  i32_t count = std::get<i32_t>(label.values.top());
+  // The count is an i32 holding an unsigned quantity, so widen it without
+  // its sign: -1 asks for 4294967295 more slots, not for one fewer.
+  u64_t count = (u64_t)(u32_t)std::get<i32_t>(label.values.top());
   label.values.pop();
   Value ref = get_ref(label.values.top());
   label.values.pop();
-  size_t len = count + table.elems.size();
+  u64_t len = count + table.elems.size();
   if((len >= (u32_t)-1) || (table.type.limits.max && (len > table.type.limits.max.value()))){
     label.values.emplace<i32_t>(-1);
     return;
@@ -83,13 +85,13 @@ void RunVisitor::operator()(Instr::Table_fill& instr){
   Label& label = frame.labels.top();
   index_t addr = frame.module.tableaddrs[instr.index];
   TableInst& table = stack.store.tables[addr];
-  i32_t count = std::get<i32_t>(label.values.top());
+  u64_t count = (u64_t)(u32_t)std::get<i32_t>(label.values.top());
   label.values.pop();
   Value ref = get_ref(label.values.top());
   label.values.pop();
-  i32_t index = std::get<i32_t>(label.values.top());
+  u64_t index = (u64_t)(u32_t)std::get<i32_t>(label.values.top());
   label.values.pop();
-  if((index + count) > table.elems.size()){
+  if(!fits_within(index, count, table.elems.size())){
     throw Exception::length_too_long();
   }
   std::fill_n(table.elems.begin() + index, count, ref);
@@ -107,7 +109,8 @@ void RunVisitor::operator()(Instr::Table_copy& instr){
   label.values.pop();
   i32_t dst_idx = std::get<i32_t>(label.values.top());
   label.values.pop();
-  if(((src_idx + count) > src_table.elems.size()) || ((dst_idx + count) > dst_table.elems.size())){
+  if(!fits_within(src_idx, count, src_table.elems.size())
+     || !fits_within(dst_idx, count, dst_table.elems.size())){
     throw Exception::length_too_long();
   }
   std::copy_n(src_table.elems.begin() + src_idx, count, dst_table.elems.begin() + dst_idx);
@@ -125,7 +128,8 @@ void RunVisitor::operator()(Instr::Table_init& instr){
   label.values.pop();
   i32_t dst_idx = std::get<i32_t>(label.values.top());
   label.values.pop();
-  if(((src_idx + count) > elem.elem.size()) || ((dst_idx + count) > table.elems.size())){
+  if(!fits_within(src_idx, count, elem.elem.size())
+     || !fits_within(dst_idx, count, table.elems.size())){
     throw Exception::length_too_long();
   }
   std::copy_n(elem.elem.begin() + src_idx, count, table.elems.begin() + dst_idx);
