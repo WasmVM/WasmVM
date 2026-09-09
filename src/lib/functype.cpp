@@ -35,6 +35,9 @@ bool WasmVM::operator==(const StructType& a, const StructType& b){
 bool WasmVM::operator==(const ArrayType& a, const ArrayType& b){
     return a.field == b.field;
 }
+bool WasmVM::operator==(const RecGroup& a, const RecGroup& b){
+    return (a.first == b.first) && (a.count == b.count);
+}
 bool WasmVM::operator==(const SubType& a, const SubType& b){
     return (a.final == b.final) && (a.supers == b.supers) && (a.comp == b.comp);
 }

@@ -11,6 +11,12 @@ namespace Exception {
     struct invalid_functype : public Decode {
         invalid_functype(size_t location);
     };
+    struct invalid_comptype : public Decode {
+        invalid_comptype(size_t location);
+    };
+    struct invalid_fieldtype : public Decode {
+        invalid_fieldtype(size_t location);
+    };
     struct invalid_valuetype : public Decode {
         invalid_valuetype(size_t location);
     };

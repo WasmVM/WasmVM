@@ -57,10 +57,11 @@ protected:
 Stream& operator>>(Stream& stream, Section&& secion);
 
 struct Type : public Section {
-    Type(std::vector<SubType>& types) : Section((byte_t)0x01), types(types){}
+    Type(std::vector<SubType>& types, std::vector<RecGroup>& recs) : Section((byte_t)0x01), types(types), recs(recs){}
 protected:
     Stream& read(Stream& stream) override;
     std::vector<SubType>& types;
+    std::vector<RecGroup>& recs;
 };
 
 struct Import : public Section {

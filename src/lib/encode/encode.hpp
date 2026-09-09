@@ -43,7 +43,7 @@ protected:
 };
 
 struct Type : public Section {
-    Type(const std::vector<SubType>& types);
+    Type(const std::vector<SubType>& types, const std::vector<RecGroup>& recs);
 };
 
 struct Import : public Section {

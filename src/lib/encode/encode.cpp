@@ -20,7 +20,7 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     // Magic & version
     ostream.write(Encode::magic, sizeof(Encode::magic) - 1);
     // Type
-    Encode::Type(module.types).write(ostream);
+    Encode::Type(module.types, module.recs).write(ostream);
     // Import
     Encode::Import(module.imports).write(ostream);
     // Func

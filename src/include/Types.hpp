@@ -146,6 +146,7 @@ struct RecGroup {
     index_t first;
     index_t count;
 };
+bool operator==(const RecGroup&, const RecGroup&);
 
 struct Limits {
     offset_t min;

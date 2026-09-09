@@ -139,7 +139,8 @@ void ParseContext::parse_recsection() {
     while (tok_.peek().type == TokenType::LParen)
         parse_typedef();
     tok_.expect(TokenType::RParen);
-    module_.recs.push_back(RecGroup{first, (index_t)(types_.size() - first)});
+    if (types_.size() > first) // an empty (rec) defines nothing and is not recorded
+        module_.recs.push_back(RecGroup{first, (index_t)(types_.size() - first)});
     resolve_pending_supers();
 }
 

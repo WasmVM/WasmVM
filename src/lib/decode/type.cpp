@@ -130,11 +130,76 @@ template<> Stream& Decode::operator>> <FuncType>(Stream& stream, FuncType& type)
     return stream >> type.params >> type.results;
 }
 
-template<> Stream& Decode::operator>> <SubType>(Stream& stream, SubType& type){
-    FuncType functype;
-    stream >> functype;
-    type = SubType(std::move(functype));
+template<> Stream& Decode::operator>> <StorageType>(Stream& stream, StorageType& storage){
+    switch(stream.peek()){
+        case byte_t {0x78}:
+            stream.get<byte_t>();
+            storage = PackedType::i8;
+        break;
+        case byte_t {0x77}:
+            stream.get<byte_t>();
+            storage = PackedType::i16;
+        break;
+        default:
+            storage = stream.get<ValueType>();
+        break;
+    }
     return stream;
+}
+
+template<> Stream& Decode::operator>> <FieldType>(Stream& stream, FieldType& field){
+    stream >> field.storage;
+    switch(stream.get<byte_t>()){
+        case byte_t {0x00}:
+            field.mut = false;
+        break;
+        case byte_t {0x01}:
+            field.mut = true;
+        break;
+        default:
+            throw Exception::invalid_fieldtype(stream.location());
+    }
+    return stream;
+}
+
+template<> Stream& Decode::operator>> <CompType>(Stream& stream, CompType& comp){
+    switch(stream.peek()){
+        case byte_t {0x60}:
+            comp = stream.get<FuncType>();
+        break;
+        case byte_t {0x5f}: {
+            stream.get<byte_t>();
+            StructType structtype;
+            stream >> structtype.fields;
+            comp = std::move(structtype);
+        }break;
+        case byte_t {0x5e}: {
+            stream.get<byte_t>();
+            ArrayType arraytype;
+            stream >> arraytype.field;
+            comp = std::move(arraytype);
+        }break;
+        default:
+            throw Exception::invalid_comptype(stream.location());
+    }
+    return stream;
+}
+
+// subtype ::= 0x50 vec(typeidx) comptype   (open to subtyping)
+//           | 0x4f vec(typeidx) comptype   (final)
+//           | comptype                     (final, no supertype)
+template<> Stream& Decode::operator>> <SubType>(Stream& stream, SubType& type){
+    byte_t prefix = stream.peek();
+    if(prefix == byte_t {0x50} || prefix == byte_t {0x4f}){
+        stream.get<byte_t>();
+        type.final = (prefix == byte_t {0x4f});
+        type.supers.clear();
+        stream >> type.supers;
+    }else{
+        type.final = true;
+        type.supers.clear();
+    }
+    return stream >> type.comp;
 }
 
 template<> Stream& Decode::operator>> <RefType>(Stream& stream, RefType& type){
@@ -175,10 +240,26 @@ template<> Stream& Decode::operator>> <Limits>(Stream& stream, Limits& limit){
     return stream;
 }
 
+// The section is a vector of recursion groups: 0x4e vec(subtype), or a bare
+// subtype standing for a group of one. Explicit groups are recorded in recs;
+// an empty one defines nothing and is dropped.
 Stream& Decode::Type::read(Stream& stream){
     auto size = header(stream);
     if(size){
-        stream >> types;
+        for(u32_t groups = stream.get<u32_t>(); groups > 0; --groups){
+            if(stream.peek() == byte_t {0x4e}){
+                stream.get<byte_t>();
+                u32_t count = stream.get<u32_t>();
+                if(count > 0){
+                    recs.push_back(RecGroup{(index_t)types.size(), count});
+                }
+                for(; count > 0; --count){
+                    stream >> types.emplace_back();
+                }
+            }else{
+                stream >> types.emplace_back();
+            }
+        }
     }
     return stream;
 }

@@ -9,6 +9,8 @@ namespace WasmVM {
 std::ostream& operator<<(std::ostream& stream, const ValueType& type);
 std::ostream& operator<<(std::ostream& stream, const FuncType& type);
 std::ostream& operator<<(std::ostream& stream, const SubType& type);
+// One `(type ...)` line with the given indentation; the rec-group form indents its members.
+std::ostream& dump_subtype(std::ostream& stream, const SubType& type, const char* indent);
 std::ostream& operator<<(std::ostream& stream, const WasmImport& import);
 std::ostream& operator<<(std::ostream& stream, const WasmFunc& func);
 std::ostream& operator<<(std::ostream& stream, const WasmInstr& instr);
