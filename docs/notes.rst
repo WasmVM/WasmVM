@@ -9,12 +9,11 @@ Difference from Wasm spec
 * Multiple function results & block parameters/results
 * 64-bit memory address space (``memory64``) is supported alongside the
   32-bit default; per-memory selection is carried by :cpp:member:`Limits::is64`.
-* GC proposal, with two gaps. Struct, array, ``sub`` and ``rec`` type
+* GC proposal, with one gap. Struct, array, ``sub`` and ``rec`` type
   definitions and the typed reference value types ``(ref null? heaptype)``
-  are parsed, encoded, decoded, dumped, linked, validated and executed. What
-  is missing: garbage is reclaimed by reference counting, so a cycle through
-  a mutable reference field is never collected; and a table or an elem
-  segment still holds only ``funcref`` or ``externref``
+  are parsed, encoded, decoded, dumped, linked, validated and executed, and
+  everything a guest allocates is reclaimed. What is missing: a table or an
+  elem segment still holds only ``funcref`` or ``externref``
   (:cpp:enum:`WasmVM::RefType`), so a table of concrete references cannot be
   declared.
 
@@ -34,6 +33,16 @@ What's new in 1.3
 
 Unreleased
 ----------
+
+* Everything a guest allocates is reclaimed, cycles included. Reference
+  counting does the everyday work, and a cycle collector -- Bacon and Rajan's
+  synchronous trial deletion -- settles what a count cannot see. It works
+  from the objects whose count was decremented without reaching zero, so it
+  never enumerates roots, which matters because a :cpp:type:`WasmVM::Value`
+  can be held by the embedder where no tracing collector could find it.
+  :cpp:func:`WasmVM::gc_collect` forces a collection and
+  :cpp:func:`WasmVM::gc_live_count` reports what is outstanding; an embedder
+  need call neither.
 
 * The GC proposal's struct and array instructions execute. A struct or array
   is an object on the heap carrying the index of its type; a packed field

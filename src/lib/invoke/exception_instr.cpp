@@ -26,7 +26,7 @@ void RunVisitor::operator()(Instr::Throw& instr){
         label.values.pop();
     }
     // Create and throw the Wasm exception
-    auto exn = std::make_shared<WasmException>(tag_addr, std::move(args));
+    GcPtr<WasmException> exn = gc_new<WasmException>(tag_addr, std::move(args));
     throw WasmThrow(exn);
 }
 

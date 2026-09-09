@@ -185,13 +185,35 @@ Enumerations
 
         A concrete reference, whose ``typeidx`` names the type
 
-.. cpp:type:: WasmVM::structref_t = std::shared_ptr<StructObj>
+.. cpp:struct:: WasmVM::GcObject
 
-    A reference to a struct on the heap; null when the pointer is
+    Base of everything a guest allocates on the garbage-collected heap: a
+    struct, an array, an exception payload. Reference counted, with a cycle
+    collector on top so that a cycle through a mutable reference field is
+    reclaimed as well.
 
-.. cpp:type:: WasmVM::arrayref_t = std::shared_ptr<ArrayObj>
+.. cpp:class:: template<typename T> WasmVM::GcPtr
 
-    A reference to an array on the heap; null when the pointer is
+    A counted handle on a :cpp:struct:`WasmVM::GcObject`, null when it holds
+    nothing. Shaped like the ``std::shared_ptr`` it replaces.
+
+.. cpp:function:: std::size_t WasmVM::gc_collect()
+
+    Collect now, and return how many objects were freed. Collection also
+    happens on its own as candidates gather, so an embedder need not call
+    this.
+
+.. cpp:function:: std::size_t WasmVM::gc_live_count()
+
+    How many objects the guest has allocated and not yet had reclaimed.
+
+.. cpp:type:: WasmVM::structref_t = GcPtr<StructObj>
+
+    A reference to a struct on the heap; null when the handle is
+
+.. cpp:type:: WasmVM::arrayref_t = GcPtr<ArrayObj>
+
+    A reference to an array on the heap; null when the handle is
 
 .. cpp:struct:: WasmVM::StructObj
 

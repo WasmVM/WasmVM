@@ -158,24 +158,24 @@ void array_get(Stack& stack, index_t typeidx, bool signed_form){
 
 void RunVisitor::operator()(Instr::Struct_new& instr){
     const StructType& type = struct_type(stack, instr.index);
-    std::shared_ptr<StructObj> obj = std::make_shared<StructObj>();
+    structref_t obj = gc_new<StructObj>();
     obj->typeidx = instr.index;
     obj->fields.resize(type.fields.size());
     // The last field is on top of the stack.
     for(size_t i = type.fields.size(); i > 0; --i){
         obj->fields[i - 1] = store_field(type.fields[i - 1], pop(stack));
     }
-    top_label(stack).values.emplace(Value(structref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Struct_new_default& instr){
     const StructType& type = struct_type(stack, instr.index);
-    std::shared_ptr<StructObj> obj = std::make_shared<StructObj>();
+    structref_t obj = gc_new<StructObj>();
     obj->typeidx = instr.index;
     for(const FieldType& field : type.fields){
         obj->fields.emplace_back(field_default(stack, field));
     }
-    top_label(stack).values.emplace(Value(structref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Struct_get& instr){
@@ -204,31 +204,31 @@ void RunVisitor::operator()(Instr::Array_new& instr){
     const ArrayType& type = array_type(stack, instr.index);
     i32_t count = pop_i32(stack);
     Value init = store_field(type.field, pop(stack));
-    std::shared_ptr<ArrayObj> obj = std::make_shared<ArrayObj>();
+    arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.index;
     obj->elems.assign((size_t)(u32_t)count, init);
-    top_label(stack).values.emplace(Value(arrayref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Array_new_default& instr){
     const ArrayType& type = array_type(stack, instr.index);
     i32_t count = pop_i32(stack);
-    std::shared_ptr<ArrayObj> obj = std::make_shared<ArrayObj>();
+    arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.index;
     obj->elems.assign((size_t)(u32_t)count, field_default(stack, type.field));
-    top_label(stack).values.emplace(Value(arrayref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Array_new_fixed& instr){
     const ArrayType& type = array_type(stack, instr.typeidx);
-    std::shared_ptr<ArrayObj> obj = std::make_shared<ArrayObj>();
+    arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
     obj->elems.resize((size_t)instr.n);
     // The last element is on top of the stack.
     for(size_t i = (size_t)instr.n; i > 0; --i){
         obj->elems[i - 1] = store_field(type.field, pop(stack));
     }
-    top_label(stack).values.emplace(Value(arrayref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Array_new_data& instr){
@@ -243,7 +243,7 @@ void RunVisitor::operator()(Instr::Array_new_data& instr){
         : ((std::get<ValueType>(type.field.storage).kind == ValueType::i64
             || std::get<ValueType>(type.field.storage).kind == ValueType::f64) ? 8 : 4);
     check_bounds((u64_t)(u32_t)offset, (u64_t)(u32_t)count * width, data.size());
-    std::shared_ptr<ArrayObj> obj = std::make_shared<ArrayObj>();
+    arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
     for(u32_t i = 0; i < (u32_t)count; ++i){
         u64_t at = (u64_t)(u32_t)offset + (u64_t)i * width;
@@ -270,7 +270,7 @@ void RunVisitor::operator()(Instr::Array_new_data& instr){
             }
         }
     }
-    top_label(stack).values.emplace(Value(arrayref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Array_new_elem& instr){
@@ -280,7 +280,7 @@ void RunVisitor::operator()(Instr::Array_new_elem& instr){
     index_t elemaddr = stack.frames.top().module.elemaddrs[instr.elemidx];
     const ElemInst& segment = stack.store.elems[elemaddr];
     check_bounds((u64_t)(u32_t)offset, (u64_t)(u32_t)count, segment.elem.size());
-    std::shared_ptr<ArrayObj> obj = std::make_shared<ArrayObj>();
+    arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
     for(u32_t i = 0; i < (u32_t)count; ++i){
         std::visit(overloaded {
@@ -288,7 +288,7 @@ void RunVisitor::operator()(Instr::Array_new_elem& instr){
             [&](const externref_t& ref){ obj->elems.emplace_back(Value(ref)); }
         }, segment.elem[(size_t)((u32_t)offset + i)]);
     }
-    top_label(stack).values.emplace(Value(arrayref_t(std::move(obj))));
+    top_label(stack).values.emplace(Value(std::move(obj)));
 }
 
 void RunVisitor::operator()(Instr::Array_get& instr){

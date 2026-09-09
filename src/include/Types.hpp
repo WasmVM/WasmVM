@@ -8,6 +8,8 @@
 #include <string>
 #include <cstdint>
 #include <cstddef>
+#include <atomic>
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <type_traits>
@@ -36,13 +38,109 @@ constexpr index_t index_npos = (index_t) -1;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
 
+// ── The garbage-collected heap ──────────────────────────────────────────────
+// Everything a guest allocates -- a struct, an array, an exception payload --
+// is reference counted, which reclaims promptly and predictably but cannot
+// reclaim a cycle. A cycle is easy for a guest to build: any mutable
+// reference field pointing back at its own object graph makes one, which is
+// what a doubly-linked list or a tree with parent pointers is. So a cycle
+// collector runs on top of the counts, and nothing is left uncollected.
+//
+// The collector is Bacon and Rajan's synchronous trial deletion: it works
+// from the objects whose count was decremented without reaching zero, so it
+// never has to enumerate roots. That matters here because a Value can be
+// held by the embedder -- Stack::run() hands a vector of them back -- where
+// no tracing collector could see it. The count remains the truth; the
+// collector only settles what the count cannot.
+struct GcObject {
+    virtual ~GcObject() = default;
+    // Every GC reference this object holds, for the collector to walk.
+    virtual void gc_children(void (*visit)(GcObject*, void*), void* context) const = 0;
+    // Let go of every GC reference, so that a cycle can be taken apart while
+    // all of its members are still allocated.
+    virtual void gc_clear_children() = 0;
+
+    // Collector state. `count` is atomic because two embedder threads may
+    // drive two stores at once, which the shared_ptr this replaces allowed.
+    std::atomic<std::size_t> gc_count{0};
+    enum class GcColour : std::uint8_t { black, gray, white, purple };
+    GcColour gc_colour = GcColour::black;
+    bool gc_buffered = false;
+    // Claimed by the collector as part of a cycle it is taking apart.
+    bool gc_doomed = false;
+};
+
+void gc_acquire(GcObject* object);
+void gc_release(GcObject* object);
+
+/// Collect now. Frees every cycle that has become unreachable, and anything
+/// whose count had already reached zero while it waited in the collector's
+/// candidate buffer. Returns how many objects it freed in total. An embedder
+/// need not call this -- it runs on its own as candidates gather -- but a
+/// test or a memory-sensitive caller may want a definite point.
+std::size_t gc_collect();
+/// How many objects the guest has allocated and not yet had reclaimed. An
+/// object whose count has reached zero may still be counted here until the
+/// next collection, if it was waiting in the candidate buffer.
+std::size_t gc_live_count();
+
+// A counted handle on a GcObject. Null when it holds nothing, and shaped like
+// the shared_ptr it replaces so that holding, comparing and dereferencing one
+// read the same at every use.
+template <typename T>
+class GcPtr {
+public:
+    constexpr GcPtr() noexcept : pointer(nullptr) {}
+    constexpr GcPtr(std::nullptr_t) noexcept : pointer(nullptr) {}
+    explicit GcPtr(T* raw) : pointer(raw) { if(pointer){ gc_acquire(pointer); } }
+    GcPtr(const GcPtr& other) : pointer(other.pointer) { if(pointer){ gc_acquire(pointer); } }
+    GcPtr(GcPtr&& other) noexcept : pointer(other.pointer) { other.pointer = nullptr; }
+    ~GcPtr(){ if(pointer){ gc_release(pointer); } }
+
+    GcPtr& operator=(const GcPtr& other){
+        if(this != &other){
+            T* previous = pointer;
+            pointer = other.pointer;
+            if(pointer){ gc_acquire(pointer); }
+            if(previous){ gc_release(previous); }
+        }
+        return *this;
+    }
+    GcPtr& operator=(GcPtr&& other) noexcept {
+        if(this != &other){
+            T* previous = pointer;
+            pointer = other.pointer;
+            other.pointer = nullptr;
+            if(previous){ gc_release(previous); }
+        }
+        return *this;
+    }
+
+    T* operator->() const { return pointer; }
+    T& operator*() const { return *pointer; }
+    T* get() const { return pointer; }
+    explicit operator bool() const { return pointer != nullptr; }
+
+    friend bool operator==(const GcPtr& a, const GcPtr& b){ return a.pointer == b.pointer; }
+    friend bool operator==(const GcPtr& a, std::nullptr_t){ return a.pointer == nullptr; }
+
+private:
+    T* pointer;
+};
+
+// Allocate a GC object and take the first reference to it.
+template <typename T, typename... Args>
+GcPtr<T> gc_new(Args&&... args){
+    return GcPtr<T>(new T(std::forward<Args>(args)...));
+}
+
 // Forward declaration for exnref_t
 struct WasmException;
 
 struct exnref_t {
-    std::shared_ptr<WasmException> value; // nullptr = null exnref
-    constexpr exnref_t() : value() {}
-    explicit exnref_t(std::shared_ptr<WasmException> e) : value(std::move(e)) {}
+    GcPtr<WasmException> value; // null when it holds nothing
+    exnref_t() = default;
+    explicit exnref_t(GcPtr<WasmException> e) : value(std::move(e)) {}
     bool has_value() const { return value != nullptr; }
 };
 
@@ -56,13 +154,11 @@ struct i31ref_t { // stores 31-bit value; nullopt = null i31ref
 
 constexpr u64_t page_size = 65536;
 
-// A struct or array on the GC heap. Held by shared_ptr, like exnref_t: a
-// reference is null when the pointer is. Reference counting reclaims what it
-// can; a cycle through a mutable reference field is not collected.
+// A struct or array on the GC heap: a reference is null when the handle is.
 struct StructObj;
 struct ArrayObj;
-using structref_t = std::shared_ptr<StructObj>;
-using arrayref_t = std::shared_ptr<ArrayObj>;
+using structref_t = GcPtr<StructObj>;
+using arrayref_t = GcPtr<ArrayObj>;
 
 using Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t,
                            i31ref_t, exnref_t, structref_t, arrayref_t>;
@@ -115,7 +211,9 @@ constexpr bool operator==(const ValueType& a, const ValueType& b){
 constexpr bool operator!=(const ValueType& a, const ValueType& b){ return !(a == b); }
 
 // Full definitions (after Value is defined above)
-struct StructObj {
+struct StructObj : public GcObject {
+    void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
+    void gc_clear_children() override;
     index_t typeidx;
     // One per field, in declaration order. A packed field is held as an i32
     // already truncated to its width; struct.get_s / _u extend it on the way
@@ -123,12 +221,18 @@ struct StructObj {
     std::vector<Value> fields;
 };
 
-struct ArrayObj {
+struct ArrayObj : public GcObject {
+    void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
+    void gc_clear_children() override;
     index_t typeidx;
     std::vector<Value> elems; // packed elements as for StructObj::fields
 };
 
-struct WasmException {
+// An exception payload is on the same heap: it holds Values, so a cycle can
+// run through one -- catch a reference, then store the exnref back into it.
+struct WasmException : public GcObject {
+    void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
+    void gc_clear_children() override;
     index_t tag_addr;
     std::vector<Value> values;
     WasmException(index_t addr, std::vector<Value> vals) : tag_addr(addr), values(std::move(vals)) {}
