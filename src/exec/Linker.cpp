@@ -22,16 +22,38 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
     ModuleEntry& module_entry = modules.emplace_back();
     module_entry.path = module_path;
 
-    // Types
-    for(FuncType& type : module.types){
-        if(type_map.contains(type)){
+    // Types. Only a plain function type -- final, no supertype, outside every
+    // rec group -- is shared with an identical one from another module; the
+    // GC types are distinct even when written identically.
+    auto in_rec_group = [&](index_t i){
+        for(const RecGroup& rec : module.recs){
+            if(i >= rec.first && i < rec.first + rec.count) return true;
+        }
+        return false;
+    };
+    std::vector<index_t> appended; // output indices this module contributed
+    for(index_t i = 0; i < module.types.size(); ++i){
+        const SubType& type = module.types[i];
+        bool plain_func = type.is_func() && type.final && type.supers.empty() && !in_rec_group(i);
+        if(plain_func && type_map.contains(type)){
             module_entry.types.emplace_back(type_map[type]);
         }else{
             index_t typeidx = (index_t)output.types.size();
-            type_map[type] = typeidx;
+            if(plain_func) type_map[type] = typeidx;
             output.types.emplace_back(type);
             module_entry.types.emplace_back(typeidx);
+            appended.emplace_back(typeidx);
         }
+    }
+    // A supertype is a type index of this module, and inside a rec group it
+    // may name a later member, so the remap waits until every index is known.
+    for(index_t out : appended){
+        for(index_t& super : output.types[out].supers){
+            super = module_entry.types[super];
+        }
+    }
+    for(const RecGroup& rec : module.recs){
+        output.recs.emplace_back(RecGroup{module_entry.types[rec.first], rec.count});
     }
 
     // Imports
@@ -391,10 +413,43 @@ void Linker::instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry){
             auto& blk = std::get<WasmInstr::BlockType>(instr.imm);
             if(blk.type){ blk.type = module_entry.types[blk.type.value()]; }
         } break;
-        case Opcode::Call_indirect: {
+        case Opcode::Call_indirect: case Opcode::Return_call_indirect: {
             auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
             tw.b = module_entry.types[tw.b]; // b = typeidx
             update_index(tw.a, table)         // a = tableidx
+        } break;
+        // Every other instruction naming a type index. A module's types land
+        // after those of the modules linked before it, so these move exactly
+        // as the block types and call_indirect above do.
+        case Opcode::Call_ref: case Opcode::Return_call_ref:
+        case Opcode::Struct_new: case Opcode::Struct_new_default:
+        case Opcode::Array_new: case Opcode::Array_new_default:
+        case Opcode::Array_get: case Opcode::Array_get_s: case Opcode::Array_get_u:
+        case Opcode::Array_set: case Opcode::Array_fill: {
+            auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+            o.index = module_entry.types[o.index];
+        } break;
+        case Opcode::Struct_get: case Opcode::Struct_get_s: case Opcode::Struct_get_u:
+        case Opcode::Struct_set:
+        case Opcode::Array_new_fixed: case Opcode::Array_new_data: case Opcode::Array_new_elem:
+        case Opcode::Array_init_data: case Opcode::Array_init_elem: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            tw.a = module_entry.types[tw.a]; // a = typeidx
+        } break;
+        case Opcode::Array_copy: {
+            auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+            tw.a = module_entry.types[tw.a]; // dst typeidx
+            tw.b = module_entry.types[tw.b]; // src typeidx
+        } break;
+        case Opcode::Ref_test: case Opcode::Ref_test_null:
+        case Opcode::Ref_cast: case Opcode::Ref_cast_null: {
+            auto& h = std::get<WasmInstr::HeapI32>(instr.imm);
+            if(h.heaptype >= 0){ h.heaptype = (int32_t)module_entry.types[(index_t)h.heaptype]; }
+        } break;
+        case Opcode::Br_on_cast: case Opcode::Br_on_cast_fail: {
+            auto& c = std::get<WasmInstr::CastOp>(instr.imm);
+            if(c.src_ht >= 0){ c.src_ht = (int32_t)module_entry.types[(index_t)c.src_ht]; }
+            if(c.dst_ht >= 0){ c.dst_ht = (int32_t)module_entry.types[(index_t)c.dst_ht]; }
         } break;
         case Opcode::Global_get: case Opcode::Global_set: {
             auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
@@ -528,7 +583,7 @@ void Linker::compose_start_funcs(){
         if(func_indices.size() > 1){
             output.start.emplace<index_t>(output.funcs.size() + import_counter.func);
             WasmFunc& start_func = output.funcs.emplace_back();
-            FuncType type;
+            SubType type(FuncType{});
             if(type_map.contains(type)){
                 start_func.typeidx = type_map[type];
             }else{

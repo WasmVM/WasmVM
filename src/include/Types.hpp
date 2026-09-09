@@ -91,6 +91,63 @@ struct FuncType {
 };
 bool operator==(const FuncType&, const FuncType&);
 
+// ── Type definitions (GC proposal) ──────────────────────────────────────────
+// A type section entry used to be a FuncType. It is now a subtype: a composite
+// type -- function, struct or array -- that may name a supertype and may sit
+// inside an explicit recursion group.
+
+// Packed storage for struct fields and array elements. Never a value type: a
+// packed field is read and written through i32.
+enum class PackedType { i8, i16 };
+using StorageType = std::variant<ValueType, PackedType>;
+
+struct FieldType {
+    StorageType storage;
+    bool mut = false;
+};
+bool operator==(const FieldType&, const FieldType&);
+
+struct StructType {
+    std::vector<FieldType> fields;
+};
+bool operator==(const StructType&, const StructType&);
+
+struct ArrayType {
+    FieldType field;
+};
+bool operator==(const ArrayType&, const ArrayType&);
+
+using CompType = std::variant<FuncType, StructType, ArrayType>;
+
+struct SubType {
+    SubType() = default;
+    explicit SubType(FuncType type) : comp(std::move(type)) {}
+    explicit SubType(StructType type) : comp(std::move(type)) {}
+    explicit SubType(ArrayType type) : comp(std::move(type)) {}
+
+    bool final = true;
+    std::vector<index_t> supers; // the spec allows at most one; kept as written
+    CompType comp;
+
+    bool is_func()   const { return std::holds_alternative<FuncType>(comp); }
+    bool is_struct() const { return std::holds_alternative<StructType>(comp); }
+    bool is_array()  const { return std::holds_alternative<ArrayType>(comp); }
+    // The function type, for the many places a type index can only ever name
+    // a function's. Throws Exception::Exception when it names something else.
+    const FuncType& func() const;
+    FuncType& func();
+};
+bool operator==(const SubType&, const SubType&);
+
+// An explicit `(rec ...)` group: `count` consecutive entries of
+// WasmModule::types starting at `first`. An entry outside every group is a
+// group of one by definition and is not recorded.
+struct RecGroup {
+    index_t first;
+    index_t count;
+};
+bool operator==(const RecGroup&, const RecGroup&);
+
 struct Limits {
     offset_t min;
     std::optional<offset_t> max;
@@ -128,6 +185,9 @@ struct ExternVal {
 
 template <> struct std::hash<WasmVM::FuncType> {
     std::size_t operator()(const WasmVM::FuncType& functype) const;
+};
+template <> struct std::hash<WasmVM::SubType> {
+    std::size_t operator()(const WasmVM::SubType& type) const;
 };
 
 #endif

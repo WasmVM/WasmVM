@@ -23,7 +23,7 @@ void RunVisitor::operator()(Instr::Block& instr){
   // Get type
   FuncType type;
   if(instr.type){
-    type = frame.module.types[instr.type.value()];
+    type = frame.module.types[instr.type.value()].func();
   }
   // Pop values
   std::vector<Value> args;
@@ -68,7 +68,7 @@ void RunVisitor::operator()(Instr::Loop& instr){
   // Get type
   FuncType type;
   if(instr.type){
-    type = frame.module.types[instr.type.value()];
+    type = frame.module.types[instr.type.value()].func();
   }
   // Pop values
   std::vector<Value> args;
@@ -95,7 +95,7 @@ void RunVisitor::operator()(Instr::If& instr){
   // Get type
   FuncType type;
   if(instr.type){
-    type = frame.module.types[instr.type.value()];
+    type = frame.module.types[instr.type.value()].func();
   }
   // Pop operant
   bool goElse = (std::get<i32_t>(label.values.top()) == 0);
@@ -316,7 +316,7 @@ void RunVisitor::operator()(Instr::Return_call_indirect& instr){
     }
     index_t funcaddr = funcref.value();
     FuncType& type = stack.store.funcs[funcaddr].type;
-    if(type != frame.module.types[instr.typeidx]){
+    if(type != frame.module.types[instr.typeidx].func()){
         throw Exception::function_type_unmatch();
     }
     std::vector<Value> args;
@@ -347,7 +347,7 @@ void RunVisitor::operator()(Instr::Call_ref& instr){
     }
     index_t funcaddr = funcref.value();
     FuncType& type = stack.store.funcs[funcaddr].type;
-    if(type != frame.module.types[instr.index]){
+    if(type != frame.module.types[instr.index].func()){
         throw Exception::function_type_unmatch();
     }
     std::vector<Value> args;
@@ -376,7 +376,7 @@ void RunVisitor::operator()(Instr::Call_indirect& instr){
   }
   index_t funcaddr = funcref.value();
   FuncType& type = stack.store.funcs[funcaddr].type;
-  if(type != frame.module.types[instr.typeidx]){
+  if(type != frame.module.types[instr.typeidx].func()){
     throw Exception::function_type_unmatch();
   }
   std::vector<Value> args;

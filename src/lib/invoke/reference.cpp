@@ -178,7 +178,7 @@ void RunVisitor::operator()(Instr::Return_call_ref& instr){
     }
     index_t funcaddr = funcref.value();
     FuncType& type = stack.store.funcs[funcaddr].type;
-    if(type != frame.module.types[instr.index]){
+    if(type != frame.module.types[instr.index].func()){
         throw Exception::function_type_unmatch();
     }
     std::vector<Value> args;

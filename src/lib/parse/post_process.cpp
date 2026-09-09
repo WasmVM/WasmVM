@@ -30,19 +30,32 @@ std::unordered_map<index_t, index_t> ParseContext::reorder_map(IndexSpace& space
 void ParseContext::post_process() {
     std::unordered_map<index_t, index_t> typemap;
     {
-        // Deduplicate types
-        std::unordered_map<FuncType, index_t> funcmap;
-        std::vector<FuncType> functypes;
+        // Deduplicate types. Only a plain function type -- final, no
+        // supertype, outside every rec group -- is folded into an identical
+        // earlier one: that is what merges an inline typeuse with the (type)
+        // it repeats. Struct and array types, subtypes and rec-group members
+        // are distinct types even when written identically, so they keep
+        // their own entries.
+        auto in_rec_group = [&](index_t i) {
+            for (const RecGroup& rec : module_.recs)
+                if (i >= rec.first && i < rec.first + rec.count) return true;
+            return false;
+        };
+        std::unordered_map<SubType, index_t> seen;
+        std::vector<SubType> kept;
         for (index_t i = 0; i < module_.types.size(); ++i) {
-            if (funcmap.contains(module_.types[i])) {
-                typemap[i] = funcmap[module_.types[i]];
+            const SubType& type = module_.types[i];
+            bool plain_func = type.is_func() && type.final && type.supers.empty() && !in_rec_group(i);
+            if (plain_func && seen.contains(type)) {
+                typemap[i] = seen[type];
             } else {
-                funcmap[module_.types[i]] = functypes.size();
-                typemap[i] = functypes.size();
-                functypes.emplace_back(module_.types[i]);
+                if (plain_func) seen[type] = kept.size();
+                typemap[i] = kept.size();
+                kept.emplace_back(type);
             }
         }
-        module_.types = functypes;
+        module_.types = kept;
+        for (RecGroup& rec : module_.recs) rec.first = typemap[rec.first];
     }
     std::unordered_map<index_t, index_t> funcmap    = reorder_map(func_map_);
     std::unordered_map<index_t, index_t> tablemap   = reorder_map(table_map_);
@@ -71,9 +84,46 @@ void ParseContext::post_process() {
                     auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
                     if (tagmap.contains(o.index)) o.index = tagmap[o.index];
                 } break;
-                case Opcode::Call_indirect: {
+                case Opcode::Call_indirect: case Opcode::Return_call_indirect: {
                     auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
                     if (typemap.contains(tw.b)) tw.b = typemap[tw.b]; // b = typeidx
+                } break;
+                // Every other instruction that names a type index. Dedup above
+                // shifts the indices of everything after a folded type, so the
+                // GC instructions must follow it like call_indirect does.
+                case Opcode::Call_ref: case Opcode::Return_call_ref:
+                case Opcode::Struct_new: case Opcode::Struct_new_default:
+                case Opcode::Array_new: case Opcode::Array_new_default:
+                case Opcode::Array_get: case Opcode::Array_get_s: case Opcode::Array_get_u:
+                case Opcode::Array_set: case Opcode::Array_fill: {
+                    auto& o = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if (typemap.contains(o.index)) o.index = typemap[o.index];
+                } break;
+                case Opcode::Struct_get: case Opcode::Struct_get_s: case Opcode::Struct_get_u:
+                case Opcode::Struct_set:
+                case Opcode::Array_new_fixed: case Opcode::Array_new_data: case Opcode::Array_new_elem:
+                case Opcode::Array_init_data: case Opcode::Array_init_elem: {
+                    auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if (typemap.contains(tw.a)) tw.a = typemap[tw.a]; // a = typeidx
+                } break;
+                case Opcode::Array_copy: {
+                    auto& tw = std::get<WasmInstr::TwoIdx>(instr.imm);
+                    if (typemap.contains(tw.a)) tw.a = typemap[tw.a]; // a = dst typeidx
+                    if (typemap.contains(tw.b)) tw.b = typemap[tw.b]; // b = src typeidx
+                } break;
+                // A non-negative heap type is a type index.
+                case Opcode::Ref_test: case Opcode::Ref_test_null:
+                case Opcode::Ref_cast: case Opcode::Ref_cast_null: {
+                    auto& h = std::get<WasmInstr::HeapI32>(instr.imm);
+                    if (h.heaptype >= 0 && typemap.contains((index_t)h.heaptype))
+                        h.heaptype = (int32_t)typemap[(index_t)h.heaptype];
+                } break;
+                case Opcode::Br_on_cast: case Opcode::Br_on_cast_fail: {
+                    auto& c = std::get<WasmInstr::CastOp>(instr.imm);
+                    if (c.src_ht >= 0 && typemap.contains((index_t)c.src_ht))
+                        c.src_ht = (int32_t)typemap[(index_t)c.src_ht];
+                    if (c.dst_ht >= 0 && typemap.contains((index_t)c.dst_ht))
+                        c.dst_ht = (int32_t)typemap[(index_t)c.dst_ht];
                 } break;
                 case Opcode::Ref_func: {
                     auto& o = std::get<WasmInstr::OneIdx>(instr.imm);

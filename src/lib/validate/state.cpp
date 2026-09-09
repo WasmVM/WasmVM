@@ -56,15 +56,35 @@ State::StackValue State::pop(State::StackValue expect){
     if(std::holds_alternative<std::monostate>(expect)){
         return actual;
     }
+    if(actual.index() != expect.index()){
+        throw Exception::Exception("validate value type not match");
+    }
+    if(std::holds_alternative<TypedRef>(actual)){
+        const TypedRef& got = std::get<TypedRef>(actual);
+        const TypedRef& want = std::get<TypedRef>(expect);
+        if(got.typeidx != want.typeidx){
+            throw Exception::Exception("reference to a different type");
+        }
+        if(got.nullable && !want.nullable){
+            throw Exception::Exception("nullable reference where a non-null one is required");
+        }
+        return actual;
+    }
     if(std::get<ValueType>(actual) != std::get<ValueType>(expect)){
         throw Exception::Exception("validate value type not match");
     }
     return actual;
 }
+State::StackValue State::pop(TypedRef expect){
+    return pop(StackValue(expect));
+}
 State::StackValue State::pop(ValueType expect1, ValueType expect2){
     State::StackValue actual = pop<State::StackValue>();
     if(std::holds_alternative<std::monostate>(actual)){
         return expect1;
+    }
+    if(!std::holds_alternative<ValueType>(actual)){
+        throw Exception::Exception("validate value type not match");
     }
     if((std::get<ValueType>(actual) != expect1) && (std::get<ValueType>(actual) != expect2)){
         throw Exception::Exception("validate value type not match");

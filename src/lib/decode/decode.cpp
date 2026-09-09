@@ -27,7 +27,7 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     WasmModule module;
     Decode::Stream stream(istream, module);
     // Types
-    stream >> Decode::Type(module.types);
+    stream >> Decode::Type(module.types, module.recs);
     // Imports
     stream >> Decode::Import(module.imports);
     // Funcs
@@ -100,6 +100,10 @@ Exception::incorrect_magic::incorrect_magic() :
     Decode("incorrect magic & version number", 0) {}
 Exception::invalid_functype::invalid_functype(size_t location) : 
     Decode("invalid func type: func type should start with 0x60", location) {}
+Exception::invalid_comptype::invalid_comptype(size_t location) :
+    Decode("invalid composite type: expected 0x60 (func), 0x5f (struct) or 0x5e (array)", location) {}
+Exception::invalid_fieldtype::invalid_fieldtype(size_t location) :
+    Decode("invalid field type: mutability should be 0x00 or 0x01", location) {}
 Exception::invalid_valuetype::invalid_valuetype(size_t location) : 
     Decode("invalid value type", location) {}
 Exception::invalid_import::invalid_import(size_t location) : 

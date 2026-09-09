@@ -7,6 +7,7 @@
 #include <exception.hpp>
 
 #include <algorithm>
+#include <cstdint>
 #include <filesystem>
 #include <fstream>
 #include <iostream>
@@ -61,9 +62,35 @@ static std::string text_of(WasmModule& module) {
     return out.str();
 }
 
-// Where the parse suite keeps one .wat per instruction family. Both suites run
-// with their own source directory as the working directory.
-static const char* instruction_fixtures = "../instruction";
+// Where the parse suite keeps one .wat per instruction family, and one per
+// type-section form. Every suite runs with its own source directory as the
+// working directory.
+static const char* fixture_dirs[] = { "../instruction", "../type" };
+
+// The payload of the type section (after its id and size) of the binary
+// `src` encodes to. Pins the wire format itself: a roundtrip through our own
+// decoder would also pass with an encoder and decoder that agree with each
+// other and disagree with the spec.
+static std::vector<unsigned char> type_section_of(const std::string& src) {
+    std::istringstream in(src);
+    WasmModule m = module_parse(in);
+    std::stringstream bin(std::ios::in | std::ios::out | std::ios::binary);
+    module_encode(m, bin);
+    const std::string bytes = bin.str();
+    size_t pos = 8; // magic + version
+    while (pos < bytes.size()) {
+        unsigned char id = (unsigned char)bytes[pos++];
+        uint32_t size = 0;
+        for (int shift = 0;; shift += 7) {
+            unsigned char b = (unsigned char)bytes[pos++];
+            size |= (uint32_t)(b & 0x7f) << shift;
+            if (!(b & 0x80)) break;
+        }
+        if (id == 1) return std::vector<unsigned char>(bytes.begin() + pos, bytes.begin() + pos + size);
+        pos += size;
+    }
+    return {};
+}
 
 // Fixtures the encoder is known not to read back yet, each with the issue that
 // tracks it. The sweep below holds these to *failing*: when one of them starts
@@ -85,10 +112,10 @@ Suite roundtrip_suite {
     Test("function type", {
         WasmModule m = roundtrip("(module (type (func (param i32) (result i64))))");
         AssertEq(m.types.size(), 1U);
-        AssertEq(m.types[0].params.size(), 1U);
-        Expect(m.types[0].params[0] == ValueType::i32);
-        AssertEq(m.types[0].results.size(), 1U);
-        Expect(m.types[0].results[0] == ValueType::i64);
+        AssertEq(m.types[0].func().params.size(), 1U);
+        Expect(m.types[0].func().params[0] == ValueType::i32);
+        AssertEq(m.types[0].func().results.size(), 1U);
+        Expect(m.types[0].func().results[0] == ValueType::i64);
     })
     Test("function type deduplication preserved", {
         WasmModule m = roundtrip(
@@ -103,10 +130,10 @@ Suite roundtrip_suite {
     Test("exnref function type survives binary roundtrip", {
         WasmModule m = binary_roundtrip("(module (type (func (param exnref) (result exnref))))");
         AssertEq(m.types.size(), 1U);
-        AssertEq(m.types[0].params.size(), 1U);
-        Expect(m.types[0].params[0] == ValueType::exnref);
-        AssertEq(m.types[0].results.size(), 1U);
-        Expect(m.types[0].results[0] == ValueType::exnref);
+        AssertEq(m.types[0].func().params.size(), 1U);
+        Expect(m.types[0].func().params[0] == ValueType::exnref);
+        AssertEq(m.types[0].func().results.size(), 1U);
+        Expect(m.types[0].func().results[0] == ValueType::exnref);
     })
     Test("exnref local survives binary roundtrip", {
         WasmModule m = binary_roundtrip("(module (func (local exnref)))");
@@ -173,19 +200,19 @@ Suite roundtrip_suite {
         WasmModule m = binary_roundtrip("(module (tag (param i32)))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-        Expect(m.types[m.tags[0]].results.empty());
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+        Expect(m.types[m.tags[0]].func().results.empty());
     })
     Test("several tags keep their order", {
         WasmModule m = binary_roundtrip(
             "(module (tag (param i32)) (tag) (tag (param i64)))");
         AssertEq(m.tags.size(), 3U);
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-        Expect(m.types[m.tags[1]].params.empty());
-        AssertEq(m.types[m.tags[2]].params.size(), 1U);
-        Expect(m.types[m.tags[2]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+        Expect(m.types[m.tags[1]].func().params.empty());
+        AssertEq(m.types[m.tags[2]].func().params.size(), 1U);
+        Expect(m.types[m.tags[2]].func().params[0] == ValueType::i64);
     })
     Test("a module that throws still validates after a binary roundtrip", {
         // The issue's reproduction: wasmvm-as wrote this module, and it
@@ -220,9 +247,9 @@ Suite roundtrip_suite {
         Assert(std::holds_alternative<TagType>(m.imports[0].desc));
         index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
         Assert(typeidx < m.types.size());
-        AssertEq(m.types[typeidx].params.size(), 1U);
-        Expect(m.types[typeidx].params[0] == ValueType::i32);
-        Expect(m.types[typeidx].results.empty());
+        AssertEq(m.types[typeidx].func().params.size(), 1U);
+        Expect(m.types[typeidx].func().params[0] == ValueType::i32);
+        Expect(m.types[typeidx].func().results.empty());
         // An imported tag is not an imported function, even though both
         // descriptors carry a typeidx.
         Expect(!std::holds_alternative<index_t>(m.imports[0].desc));
@@ -242,8 +269,8 @@ Suite roundtrip_suite {
         ExpectEq(m.exports[0].index, 0U);
         ExpectEq(m.exports[1].index, 1U);
         // The module-defined tag keeps its own type, the i64 one.
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i64);
         Expect(!module_validate(m).has_value());
     })
     Test("a throw against an imported tag validates", {
@@ -269,8 +296,8 @@ Suite roundtrip_suite {
         WasmModule m = roundtrip("(module (tag (param i32)))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
     })
     Test("a throwing module still validates after the text roundtrip", {
         WasmModule m = roundtrip(
@@ -294,8 +321,8 @@ Suite roundtrip_suite {
         AssertEq(m.exports.size(), 2U);
         ExpectEq(m.exports[0].index, 0U);
         ExpectEq(m.exports[1].index, 1U);
-        AssertEq(m.types[m.tags[0]].params.size(), 1U);
-        Expect(m.types[m.tags[0]].params[0] == ValueType::i64);
+        AssertEq(m.types[m.tags[0]].func().params.size(), 1U);
+        Expect(m.types[m.tags[0]].func().params[0] == ValueType::i64);
         Expect(!module_validate(m).has_value());
     })
     // An omitted typeuse is the empty type. It used to fall back to type
@@ -306,8 +333,8 @@ Suite roundtrip_suite {
             "(module (type (func (param i32))) (tag))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        Expect(m.types[m.tags[0]].params.empty());
-        Expect(m.types[m.tags[0]].results.empty());
+        Expect(m.types[m.tags[0]].func().params.empty());
+        Expect(m.types[m.tags[0]].func().results.empty());
     })
     Test("a bare imported tag gets the empty type too", {
         WasmModule m = binary_roundtrip(
@@ -316,14 +343,14 @@ Suite roundtrip_suite {
         Assert(std::holds_alternative<TagType>(m.imports[0].desc));
         index_t typeidx = std::get<TagType>(m.imports[0].desc).typeidx;
         Assert(typeidx < m.types.size());
-        Expect(m.types[typeidx].params.empty());
-        Expect(m.types[typeidx].results.empty());
+        Expect(m.types[typeidx].func().params.empty());
+        Expect(m.types[typeidx].func().results.empty());
     })
     Test("a bare tag works in a module that declares no types at all", {
         WasmModule m = binary_roundtrip("(module (tag))");
         AssertEq(m.tags.size(), 1U);
         Assert(m.tags[0] < m.types.size());
-        Expect(m.types[m.tags[0]].params.empty());
+        Expect(m.types[m.tags[0]].func().params.empty());
         Expect(!module_validate(m).has_value());
     })
     Test("throwing a bare tag needs nothing on the stack", {
@@ -412,8 +439,9 @@ Suite roundtrip_suite {
     Test("every instruction fixture reads back as what was written", {
         std::vector<std::string> checked;
         std::vector<std::string> differed;
+        for (const char* dir : fixture_dirs)
         for (const std::filesystem::directory_entry& entry :
-                 std::filesystem::directory_iterator(instruction_fixtures)) {
+                 std::filesystem::directory_iterator(dir)) {
             if (entry.path().extension() != ".wat") {
                 continue;
             }
@@ -460,5 +488,87 @@ Suite roundtrip_suite {
         }
         ExpectEq(unexpected_failures.size(), 0U);
         ExpectEq(now_reading_back.size(), 0U);
+    })
+    // Type definitions from the GC proposal: struct and array composite types,
+    // subtypes and recursion groups (issue #19's prerequisite). The binary
+    // encoding is asserted byte for byte, then whole modules go round through
+    // both writers and are compared structurally.
+    Category("GC type definitions", {
+        Test("struct type wire format", {
+            // 1 group; 0x5f struct, 2 fields: (mut i8) = 0x78 0x01, i32 = 0x7f 0x00
+            std::vector<unsigned char> expected({0x01, 0x5f, 0x02, 0x78, 0x01, 0x7f, 0x00});
+            Expect(type_section_of("(module (type (struct (field (mut i8)) (field i32))))") == expected);
+        })
+        Test("array type wire format", {
+            // 0x5e array, field (mut i16) = 0x77 0x01
+            std::vector<unsigned char> expected({0x01, 0x5e, 0x77, 0x01});
+            Expect(type_section_of("(module (type (array (mut i16))))") == expected);
+        })
+        Test("sub wire format", {
+            // 0x50 = open subtype, 0x4f = final; each carries vec(typeidx)
+            std::vector<unsigned char> expected({0x02, 0x50, 0x00, 0x5f, 0x00, 0x4f, 0x01, 0x00, 0x5f, 0x00});
+            Expect(type_section_of("(module (type $a (sub (struct))) (type (sub final $a (struct))))") == expected);
+        })
+        Test("rec wire format", {
+            // 2 groups: 0x4e with 2 members, then a bare (func)
+            std::vector<unsigned char> expected({0x02, 0x4e, 0x02, 0x5f, 0x00, 0x5e, 0x78, 0x00, 0x60, 0x00, 0x00});
+            Expect(type_section_of("(module (rec (type (struct)) (type (array i8))) (type (func)))") == expected);
+        })
+        Test("a final subtype with no supertype is written bare", {
+            std::vector<unsigned char> expected({0x01, 0x60, 0x00, 0x00});
+            Expect(type_section_of("(module (type (sub final (func))))") == expected);
+        })
+        Test("a plain function type still prints as it always did", {
+            std::istringstream in("(module (type (func (param i32 i64) (result f64))))");
+            WasmModule m = module_parse(in);
+            Expect(text_of(m).find("  (type (func (param i32 i64) (result f64) ) )\n") != std::string::npos);
+        })
+        Test("GC types survive the binary roundtrip", {
+            const std::string src =
+                "(module"
+                "  (type $f (func (param i32) (result i64)))"
+                "  (rec"
+                "    (type $a (sub (struct (field $x (mut i8)) (field i16) (field f32))))"
+                "    (type $b (sub $a (struct (field (mut i8)) (field i16) (field f32) (field funcref)))))"
+                "  (type $c (sub final $b (struct (field (mut i8)) (field i16) (field f32) (field funcref))))"
+                "  (type $arr (array (mut externref)))"
+                "  (type $g (func)))";
+            std::istringstream in(src);
+            WasmModule before = module_parse(in);
+            WasmModule after = binary_roundtrip(src);
+            AssertEq(after.types.size(), 6U);
+            Expect(after.types == before.types);
+            Expect(after.recs == before.recs);
+            Expect(!module_validate(after).has_value());
+        })
+        Test("GC types survive the text roundtrip", {
+            const std::string src =
+                "(module (rec (type (sub (struct (field (mut i8))))) (type (sub 0 (struct (field (mut i8)) (field i64)))))"
+                " (type (array i16)) (type (func (param i32))))";
+            std::istringstream in(src);
+            WasmModule before = module_parse(in);
+            WasmModule after = roundtrip(src);
+            Expect(after.types == before.types);
+            Expect(after.recs == before.recs);
+            Expect(text_of(before) == text_of(after));
+        })
+        Test("the dump spells the forms the parser reads", {
+            std::istringstream in(
+                "(module (rec (type $a (sub (struct (field $x (mut i8)) (field i16))))"
+                " (type (sub final $a (struct (field (mut i8)) (field i16))))) (type (array (mut f32))))");
+            WasmModule m = module_parse(in);
+            const std::string text = text_of(m);
+            Expect(text.find("  (rec\n") != std::string::npos);
+            Expect(text.find("    (type (sub (struct (field (mut i8)) (field i16) ) ) )\n") != std::string::npos);
+            Expect(text.find("    (type (sub final 0 (struct (field (mut i8)) (field i16) ) ) )\n") != std::string::npos);
+            Expect(text.find("  )\n") != std::string::npos);
+            Expect(text.find("  (type (array (mut f32) ) )\n") != std::string::npos);
+        })
+        Test("a malformed composite type is a decode error, not a crash", {
+            // magic, version, type section of 3 bytes: 1 group, tag 0x5d (nothing), 0x00
+            const std::string bytes("\0asm\x01\0\0\0\x01\x03\x01\x5d\x00", 14);
+            std::istringstream in(bytes, std::ios::binary);
+            Throw(Exception::Decode, { module_decode(in); });
+        })
     })
 };

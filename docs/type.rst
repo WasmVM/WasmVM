@@ -172,6 +172,77 @@ Object types
 
         Value types of function results (return values)
 
+.. cpp:enum-class:: WasmVM::PackedType
+
+    Packed storage of a struct field or array element (GC proposal). Never a
+    value type: a packed field is read and written through ``i32``.
+
+    .. cpp:enumerator:: i8
+
+    .. cpp:enumerator:: i16
+
+.. cpp:type:: WasmVM::StorageType = std::variant<ValueType, PackedType>
+
+    Storage type of a struct field or array element
+
+.. cpp:struct:: WasmVM::FieldType
+
+    Type of a struct field or of an array's elements
+
+    .. cpp:member:: StorageType storage
+
+    .. cpp:member:: bool mut = false
+
+        Whether ``struct.set`` / ``array.set`` may write it
+
+.. cpp:struct:: WasmVM::StructType
+
+    .. cpp:member:: std::vector<FieldType> fields
+
+.. cpp:struct:: WasmVM::ArrayType
+
+    .. cpp:member:: FieldType field
+
+.. cpp:type:: WasmVM::CompType = std::variant<FuncType, StructType, ArrayType>
+
+    Composite type: what a type section entry defines
+
+.. cpp:struct:: WasmVM::SubType
+
+    One entry of the type section: a composite type that may name a
+    supertype and may sit inside a recursion group. A plain function type
+    is a ``SubType`` that is ``final`` with no ``supers``.
+
+    .. cpp:member:: bool final = true
+
+    .. cpp:member:: std::vector<index_t> supers
+
+        Supertype indices, as written. The spec allows at most one; the
+        validator rejects more.
+
+    .. cpp:member:: CompType comp
+
+    .. cpp:function:: bool is_func() const
+
+    .. cpp:function:: bool is_struct() const
+
+    .. cpp:function:: bool is_array() const
+
+    .. cpp:function:: const FuncType& func() const
+
+        The function type, for the places a type index can only ever name a
+        function's. Throws :cpp:struct:`WasmVM::Exception::Exception` when
+        the entry is a struct or array type.
+
+.. cpp:struct:: WasmVM::RecGroup
+
+    An explicit ``(rec ...)`` group: ``count`` consecutive entries of
+    :cpp:member:`WasmVM::WasmModule::types` starting at ``first``.
+
+    .. cpp:member:: index_t first
+
+    .. cpp:member:: index_t count
+
 .. cpp:type:: WasmVM::MemType = Limits
 
     Declarational type (signature) of memory

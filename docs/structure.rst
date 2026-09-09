@@ -5,7 +5,15 @@ Data structures of WasmVM objects for general use.
 
 .. cpp:struct:: WasmVM::WasmModule
     
-    .. cpp:member:: std::vector<FuncType> types
+    .. cpp:member:: std::vector<SubType> types
+
+        Type section: each entry is a function, struct or array type,
+        see :cpp:struct:`WasmVM::SubType`.
+
+    .. cpp:member:: std::vector<RecGroup> recs
+
+        Explicit ``(rec ...)`` groups over ``types``. An entry outside
+        every group is a group of one and is not recorded.
 
     .. cpp:member:: std::vector<WasmImport> imports
 

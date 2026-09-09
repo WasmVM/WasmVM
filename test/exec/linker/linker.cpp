@@ -70,15 +70,15 @@ Suite linker_suite {
         Test("a single module keeps its tag", {
             WasmModule m = link({{"a.wasm", tag_a}});
             AssertEq(m.tags.size(), (size_t)1);
-            AssertEq(m.types[m.tags[0]].params.size(), (size_t)1);
-            Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
+            AssertEq(m.types[m.tags[0]].func().params.size(), (size_t)1);
+            Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
             ExpectEq(throw_index(m, 0), (index_t)0);
         })
         Test("two modules keep both tags, with the second index shifted", {
             WasmModule m = link({{"a.wasm", tag_a}, {"b.wasm", tag_b}});
             AssertEq(m.tags.size(), (size_t)2);
-            Expect(m.types[m.tags[0]].params[0] == ValueType::i32);
-            Expect(m.types[m.tags[1]].params[0] == ValueType::i64);
+            Expect(m.types[m.tags[0]].func().params[0] == ValueType::i32);
+            Expect(m.types[m.tags[1]].func().params[0] == ValueType::i64);
             // Each module wrote `throw 0` against its own tag; only the
             // second one has to move.
             ExpectEq(throw_index(m, 0), (index_t)0);
@@ -122,6 +122,55 @@ Suite linker_suite {
         Test("a module with no tag links to no tag section", {
             WasmModule m = link({{"n.wasm", "(module (func (export \"f\")))"}});
             Expect(m.tags.empty());
+        })
+    })
+    // GC type definitions land after the types of the modules linked before
+    // them, and every instruction naming one has to move with them. struct.new
+    // itself cannot be assembled yet (issue #19: wasmvm-as writes its prefix
+    // wrong), so the instruction side is pinned through ref.test's heap type;
+    // the struct.new case follows with that fix.
+    Category("GC types survive linking", {
+        Test("a struct type and the heap type naming it shift together", {
+            WasmModule m = link({
+                {"a.wasm", "(module (type (func (param i32))) (func (export \"fa\") (param i32)))"},
+                {"b.wasm", "(module (type $s (struct (field i32)))"
+                           " (func (export \"fb\") (param funcref) local.get 0 ref.test (ref $s) drop))"},
+            });
+            int32_t heaptype = -1;
+            for (const WasmInstr& instr : m.funcs[1].body) {
+                if (instr.opcode == Opcode::Ref_test) heaptype = std::get<WasmInstr::HeapI32>(instr.imm).heaptype;
+            }
+            // The struct type is the only one in the output, and it is no
+            // longer at index 0: a's types come first.
+            index_t struct_idx = index_npos;
+            for (index_t i = 0; i < m.types.size(); ++i) {
+                if (m.types[i].is_struct()) { Assert(struct_idx == index_npos); struct_idx = i; }
+            }
+            Assert(struct_idx != index_npos);
+            Expect(struct_idx != 0U);
+            ExpectEq(heaptype, (int32_t)struct_idx);
+        })
+        Test("a rec group keeps its bounds and its supertype after the shift", {
+            WasmModule m = link({
+                {"a.wasm", "(module (type (func)) (func (export \"fa\")))"},
+                {"b.wasm", "(module (rec (type $p (sub (struct (field i32)))) (type $q (sub $p (struct (field i32) (field i64)))))"
+                           " (func (export \"fb\")))"},
+            });
+            AssertEq(m.types.size(), 3U);
+            AssertEq(m.recs.size(), 1U);
+            ExpectEq(m.recs[0].first, 1U);
+            ExpectEq(m.recs[0].count, 2U);
+            // $q's supertype $p moved from 0 to 1 with the group.
+            AssertEq(m.types[2].supers.size(), 1U);
+            ExpectEq(m.types[2].supers[0], 1U);
+        })
+        Test("identical struct types from two modules stay distinct", {
+            WasmModule m = link({
+                {"a.wasm", "(module (type (struct (field i32))) (func (export \"fa\")))"},
+                {"b.wasm", "(module (type (struct (field i32))) (func (export \"fb\")))"},
+            });
+            // One shared () -> () function type, two struct types.
+            ExpectEq(m.types.size(), 3U);
         })
     })
 };

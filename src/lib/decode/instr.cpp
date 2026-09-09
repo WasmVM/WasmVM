@@ -71,13 +71,13 @@ template<> BlockType Stream::get<BlockType>(){
             target.results.emplace_back(valuetype);
             index_t idx = 0;
             for(; idx < module.types.size(); ++idx){
-                if(module.types[idx] == target){
+                if(module.types[idx] == SubType(target)){
                     typemap[valuetype] = idx;
                     return idx;
                 }
             }
             typemap[valuetype] = idx;
-            module.types.emplace_back(target);
+            module.types.emplace_back(SubType(target));
             return idx;
         }
     }else{

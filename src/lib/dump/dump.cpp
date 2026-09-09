@@ -6,16 +6,36 @@
 
 #include "dump.hpp"
 
+#include <algorithm>
 #include <string>
 #include <ostream>
 #include <utility>
+#include <vector>
 
 using namespace WasmVM;
 
 std::ostream& WasmVM::module_dump(const WasmModule& module, std::ostream& stream){
     stream << "(module " << std::endl;
-    for(const FuncType& type : module.types){
-        stream << type;
+    {
+        // Types outside every explicit (rec ...) group print bare; a group
+        // prints as one (rec ...) with its members indented.
+        std::vector<RecGroup> recs(module.recs.begin(), module.recs.end());
+        std::sort(recs.begin(), recs.end(), [](const RecGroup& a, const RecGroup& b){ return a.first < b.first; });
+        size_t k = 0;
+        for(index_t i = 0; i < module.types.size();){
+            if(k < recs.size() && recs[k].first == i){
+                stream << "  (rec" << std::endl;
+                for(index_t j = 0; j < recs[k].count && (i + j) < module.types.size(); ++j){
+                    dump_subtype(stream, module.types[i + j], "    ");
+                }
+                stream << "  )" << std::endl;
+                i += recs[k].count;
+                k += 1;
+            }else{
+                stream << module.types[i];
+                i += 1;
+            }
+        }
     }
     for(const WasmImport& import : module.imports){
         stream << import;

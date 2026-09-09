@@ -51,7 +51,7 @@ void RunVisitor::operator()(Instr::Try_table& instr){
     // Get type
     FuncType type;
     if(instr.type){
-        type = frame.module.types[instr.type.value()];
+        type = frame.module.types[instr.type.value()].func();
     }
     // Pop parameters
     std::vector<Value> args;

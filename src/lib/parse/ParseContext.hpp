@@ -13,6 +13,7 @@
 #include <vector>
 #include <optional>
 #include <string>
+#include <tuple>
 #include <utility>
 
 namespace WasmVM {
@@ -40,8 +41,14 @@ private:
     std::map<std::string, index_t> local_map_;
     std::map<std::string, index_t> label_map_;
     IndexSpace func_map_, table_map_, mem_map_, global_map_, tag_map_;
-    // types_ stores (FuncType, param-id-map) pairs; module_.types is populated in parse()
-    std::vector<std::pair<FuncType, std::map<std::string, index_t>>> types_;
+    // types_ stores (SubType, member-id-map) pairs; module_.types is populated
+    // in parse(). The map holds the param ids of a function type or the field
+    // ids of a struct type, whichever the entry is.
+    std::vector<std::pair<SubType, std::map<std::string, index_t>>> types_;
+    // A supertype named by an id that was not yet defined: inside a (rec ...)
+    // group a member may name a later member. Resolved when the group closes.
+    // (type index, position in supers, the id token)
+    std::vector<std::tuple<index_t, size_t, Token>> pending_supers_;
     index_t block_level_ = 0;
 
     Tokenizer& tok_;
@@ -51,6 +58,7 @@ private:
     void parse_modulefield();
 
     void parse_typesection();
+    void parse_recsection();
     void parse_importsection();
     void parse_funcsection();
     void parse_tablesection();
@@ -66,6 +74,15 @@ private:
     ValueType  parse_valtype();
     // Parses a functype rule '(' 'func' param* result* ')'
     std::pair<FuncType, std::map<std::string, index_t>> parse_functype();
+    // Parses one '(' 'type' id? subtype ')' and returns its index.
+    index_t parse_typedef();
+    // subtype ::= '(' 'sub' 'final'? typeidx* comptype ')' | comptype
+    std::pair<SubType, std::map<std::string, index_t>> parse_subtype(index_t self);
+    // comptype ::= functype | '(' 'struct' field* ')' | '(' 'array' fieldtype ')'
+    std::pair<CompType, std::map<std::string, index_t>> parse_comptype();
+    FieldType   parse_fieldtype();   // storagetype | '(' 'mut' storagetype ')'
+    StorageType parse_storagetype(); // valtype | i8 | i16
+    void resolve_pending_supers();
 
     Limits     parse_limits();
     MemType    parse_memtype();
@@ -90,6 +107,8 @@ private:
 
     // ── Index parsers ────────────────────────────────────────────────────────
     index_t parse_typeidx();
+    // A field of struct type `typeidx`, by id or by number.
+    index_t parse_fieldidx(index_t typeidx);
     index_t parse_funcidx();
     index_t parse_tableidx();
     index_t parse_memidx();

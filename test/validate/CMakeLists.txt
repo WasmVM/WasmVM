@@ -20,3 +20,4 @@ endmacro(add_validate_suite)
 
 # Add tests under here
 add_validate_suite(exception)
+add_validate_suite(gc_types)

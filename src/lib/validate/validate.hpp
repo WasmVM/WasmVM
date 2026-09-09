@@ -18,8 +18,8 @@ struct Validator {
     void operator()(const WasmGlobal&, index_t);
     
     struct Context {
-        Context(const std::vector<FuncType>& types, const std::vector<WasmElem>& elems, const std::vector<WasmData>& datas) : types(types), elems(elems), datas(datas) {}
-        const std::vector<FuncType>& types;
+        Context(const std::vector<SubType>& types, const std::vector<WasmElem>& elems, const std::vector<WasmData>& datas) : types(types), elems(elems), datas(datas) {}
+        const std::vector<SubType>& types;
         std::vector<FuncType> funcs;
         std::vector<TableType> tables;
         std::vector<MemType> mems;

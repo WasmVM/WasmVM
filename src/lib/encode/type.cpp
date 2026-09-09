@@ -3,7 +3,9 @@
 // license that can be found in the LICENSE file.
 
 #include "encode.hpp"
+#include <Util.hpp>
 
+#include <algorithm>
 #include <deque>
 
 using namespace WasmVM;
@@ -113,6 +115,40 @@ template<> Section::Stream& Section::Stream::operator<< <WasmVM::FuncType>(WasmV
     return *this;
 }
 
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::StorageType>(WasmVM::StorageType storage){
+    return std::visit(overloaded {
+        [&](ValueType valtype) -> Section::Stream& { return *this << valtype; },
+        [&](PackedType packed) -> Section::Stream& {
+            return *this << (byte_t)((packed == PackedType::i8) ? 0x78 : 0x77);
+        }
+    }, storage);
+}
+
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::FieldType>(WasmVM::FieldType field){
+    return *this << field.storage << (byte_t)(field.mut ? 0x01 : 0x00);
+}
+
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::StructType>(WasmVM::StructType type){
+    return *this << (byte_t) 0x5f << type.fields;
+}
+
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::ArrayType>(WasmVM::ArrayType type){
+    return *this << (byte_t) 0x5e << type.field;
+}
+
+// A final subtype with no supertype is written as its bare composite type,
+// which the spec defines as the same thing.
+template<> Section::Stream& Section::Stream::operator<< <WasmVM::SubType>(WasmVM::SubType type){
+    if(!type.final || !type.supers.empty()){
+        *this << (byte_t)(type.final ? 0x4f : 0x50) << type.supers;
+    }
+    return std::visit(overloaded {
+        [&](const FuncType& functype) -> Section::Stream& { return *this << functype; },
+        [&](const StructType& structtype) -> Section::Stream& { return *this << structtype; },
+        [&](const ArrayType& arraytype) -> Section::Stream& { return *this << arraytype; }
+    }, type.comp);
+}
+
 template<> Section::Stream& Section::Stream::operator<< <WasmVM::RefType>(WasmVM::RefType reftype){
     return *this << (byte_t)((reftype == RefType::funcref) ? 0x70 : 0x6f);
 }
@@ -136,9 +172,31 @@ Section::Stream& Section::Stream::operator<<(std::stringstream& buffer){
     return *this << bytes;
 }
 
-Encode::Type::Type(const std::vector<FuncType>& types) : Section((byte_t)0x01){
+// The section is a vector of recursion groups. A type outside every explicit
+// (rec ...) group is a group of one and is written bare.
+Encode::Type::Type(const std::vector<SubType>& types, const std::vector<RecGroup>& recs) : Section((byte_t)0x01){
     if(!types.empty()){
+        std::vector<RecGroup> groups(recs.begin(), recs.end());
+        std::sort(groups.begin(), groups.end(), [](const RecGroup& a, const RecGroup& b){ return a.first < b.first; });
+        u32_t count = (u32_t)types.size();
+        for(const RecGroup& rec : groups){
+            count -= rec.count - 1;
+        }
         Encode::Section::Stream stream(buffer);
-        stream << types;
+        stream << count;
+        size_t k = 0;
+        for(index_t i = 0; i < types.size();){
+            if(k < groups.size() && groups[k].first == i){
+                stream << (byte_t) 0x4e << (u32_t)groups[k].count;
+                for(index_t j = 0; j < groups[k].count; ++j){
+                    stream << types[i + j];
+                }
+                i += groups[k].count;
+                k += 1;
+            }else{
+                stream << types[i];
+                i += 1;
+            }
+        }
     }
 }

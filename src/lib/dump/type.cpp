@@ -3,6 +3,7 @@
 // license that can be found in the LICENSE file.
 
 #include "dump.hpp"
+#include <Util.hpp>
 
 using namespace WasmVM;
 
@@ -36,24 +37,89 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
     return stream;
 }
 
-std::ostream& WasmVM::operator<<(std::ostream& stream, const FuncType& type){
-    stream << "  (type (func";
-    if(!type.params.empty()){
-        stream << " (param";
-        for(auto& param : type.params){
-            stream << " " << param;
-        }
-        stream << ")";
-    }
-    if(!type.results.empty()){
-        stream << " (result";
-        for(auto& result : type.results){
-            stream << " " << result;
-        }
-        stream << ")";
-    }
-    stream << " ) )" << std::endl;
+static std::ostream& dump_storage(std::ostream& stream, const StorageType& storage){
+    std::visit(overloaded {
+        [&](ValueType valtype){ stream << valtype; },
+        [&](PackedType packed){ stream << ((packed == PackedType::i8) ? "i8" : "i16"); }
+    }, storage);
     return stream;
+}
+
+static std::ostream& dump_field(std::ostream& stream, const FieldType& field){
+    if(field.mut){
+        stream << "(mut ";
+        dump_storage(stream, field.storage);
+        return stream << ")";
+    }
+    return dump_storage(stream, field.storage);
+}
+
+static std::ostream& dump_comptype(std::ostream& stream, const CompType& comp){
+    std::visit(overloaded {
+        [&](const FuncType& type){
+            stream << "(func";
+            if(!type.params.empty()){
+                stream << " (param";
+                for(auto& param : type.params){
+                    stream << " " << param;
+                }
+                stream << ")";
+            }
+            if(!type.results.empty()){
+                stream << " (result";
+                for(auto& result : type.results){
+                    stream << " " << result;
+                }
+                stream << ")";
+            }
+            stream << " )";
+        },
+        [&](const StructType& type){
+            stream << "(struct";
+            for(const FieldType& field : type.fields){
+                stream << " (field ";
+                dump_field(stream, field);
+                stream << ")";
+            }
+            stream << " )";
+        },
+        [&](const ArrayType& type){
+            stream << "(array ";
+            dump_field(stream, type.field);
+            stream << " )";
+        }
+    }, comp);
+    return stream;
+}
+
+std::ostream& WasmVM::operator<<(std::ostream& stream, const FuncType& type){
+    stream << "  (type ";
+    dump_comptype(stream, CompType(type));
+    return stream << " )" << std::endl;
+}
+
+std::ostream& WasmVM::dump_subtype(std::ostream& stream, const SubType& type, const char* indent){
+    stream << indent << "(type ";
+    // A final subtype with no supertype is its bare composite type.
+    bool sub = !type.final || !type.supers.empty();
+    if(sub){
+        stream << "(sub ";
+        if(type.final){
+            stream << "final ";
+        }
+        for(index_t super : type.supers){
+            stream << super << " ";
+        }
+    }
+    dump_comptype(stream, type.comp);
+    if(sub){
+        stream << " )";
+    }
+    return stream << " )" << std::endl;
+}
+
+std::ostream& WasmVM::operator<<(std::ostream& stream, const SubType& type){
+    return dump_subtype(stream, type, "  ");
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){

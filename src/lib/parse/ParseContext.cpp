@@ -109,6 +109,7 @@ void ParseContext::parse_modulefield() {
 
     const std::string& name = kw.text;
     if      (name == "type")   parse_typesection();
+    else if (name == "rec")    parse_recsection();
     else if (name == "import") parse_importsection();
     else if (name == "func")   parse_funcsection();
     else if (name == "table")  parse_tablesection();
@@ -125,17 +126,139 @@ void ParseContext::parse_modulefield() {
 // ── Type section ──────────────────────────────────────────────────────────────
 
 void ParseContext::parse_typesection() {
+    parse_typedef();
+    // A bare type definition is a recursion group of one: an id it names as a
+    // supertype has to exist already.
+    resolve_pending_supers();
+}
+
+void ParseContext::parse_recsection() {
+    tok_.expect(TokenType::LParen);
+    tok_.expect_keyword("rec");
+    index_t first = (index_t)types_.size();
+    while (tok_.peek().type == TokenType::LParen)
+        parse_typedef();
+    tok_.expect(TokenType::RParen);
+    if (types_.size() > first) // an empty (rec) defines nothing and is not recorded
+        module_.recs.push_back(RecGroup{first, (index_t)(types_.size() - first)});
+    resolve_pending_supers();
+}
+
+index_t ParseContext::parse_typedef() {
     tok_.expect(TokenType::LParen);
     tok_.expect_keyword("type");
+    index_t typeidx = (index_t)types_.size();
     // optional Id
     if (tok_.peek().type == TokenType::Id) {
         std::string id = tok_.consume().text;
         if (type_map_.contains(id))
             throw Exception::Parse("duplicated type id '" + id + "'", tok_.location());
-        type_map_[id] = types_.size();
+        type_map_[id] = typeidx;
     }
-    types_.emplace_back(parse_functype());
+    types_.emplace_back(parse_subtype(typeidx));
     tok_.expect(TokenType::RParen);
+    return typeidx;
+}
+
+std::pair<SubType, std::map<std::string, index_t>> ParseContext::parse_subtype(index_t self) {
+    if (tok_.peek().type == TokenType::LParen &&
+        tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "sub") {
+        tok_.consume(); tok_.consume(); // '(' 'sub'
+        SubType sub;
+        sub.final = false;
+        if (tok_.peek_keyword("final")) { tok_.consume(); sub.final = true; }
+        while (tok_.peek().type == TokenType::Id || tok_.peek().type == TokenType::Integer) {
+            if (tok_.peek().type == TokenType::Id) {
+                Token t = tok_.consume();
+                if (type_map_.contains(t.text)) {
+                    sub.supers.push_back(type_map_[t.text]);
+                } else {
+                    sub.supers.push_back(index_npos);
+                    pending_supers_.emplace_back(self, sub.supers.size() - 1, t);
+                }
+            } else {
+                sub.supers.push_back((index_t)parse_u32());
+            }
+        }
+        auto [comp, ids] = parse_comptype();
+        sub.comp = std::move(comp);
+        tok_.expect(TokenType::RParen);
+        return {std::move(sub), std::move(ids)};
+    }
+    auto [comp, ids] = parse_comptype();
+    SubType sub; // final, no supertype
+    sub.comp = std::move(comp);
+    return {std::move(sub), std::move(ids)};
+}
+
+std::pair<CompType, std::map<std::string, index_t>> ParseContext::parse_comptype() {
+    if (tok_.peek().type != TokenType::LParen)
+        throw Exception::Parse("expected '('", tok_.location());
+    const Token& kw = tok_.peek2();
+    if (kw.type == TokenType::Keyword && kw.text == "func") {
+        auto [functype, ids] = parse_functype();
+        return {CompType(std::move(functype)), std::move(ids)};
+    }
+    if (kw.type == TokenType::Keyword && kw.text == "struct") {
+        tok_.consume(); tok_.consume(); // '(' 'struct'
+        StructType structtype;
+        std::map<std::string, index_t> ids;
+        // field ::= '(' 'field' id fieldtype ')' | '(' 'field' fieldtype* ')'
+        while (tok_.peek().type == TokenType::LParen &&
+               tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "field") {
+            tok_.consume(); tok_.consume(); // '(' 'field'
+            if (tok_.peek().type == TokenType::Id) {
+                Token id = tok_.consume();
+                if (ids.contains(id.text))
+                    throw Exception::Parse("duplicated field id '" + id.text + "'", {id.line, id.column});
+                ids[id.text] = (index_t)structtype.fields.size();
+                structtype.fields.push_back(parse_fieldtype());
+            } else {
+                while (tok_.peek().type != TokenType::RParen && !tok_.at_eof())
+                    structtype.fields.push_back(parse_fieldtype());
+            }
+            tok_.expect(TokenType::RParen);
+        }
+        tok_.expect(TokenType::RParen);
+        return {CompType(std::move(structtype)), std::move(ids)};
+    }
+    if (kw.type == TokenType::Keyword && kw.text == "array") {
+        tok_.consume(); tok_.consume(); // '(' 'array'
+        ArrayType arraytype;
+        arraytype.field = parse_fieldtype();
+        tok_.expect(TokenType::RParen);
+        return {CompType(std::move(arraytype)), {}};
+    }
+    throw Exception::Parse("expected 'func', 'struct' or 'array'", {kw.line, kw.column});
+}
+
+FieldType ParseContext::parse_fieldtype() {
+    FieldType fieldtype;
+    if (tok_.peek().type == TokenType::LParen &&
+        tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "mut") {
+        tok_.consume(); tok_.consume(); // '(' 'mut'
+        fieldtype.mut = true;
+        fieldtype.storage = parse_storagetype();
+        tok_.expect(TokenType::RParen);
+    } else {
+        fieldtype.storage = parse_storagetype();
+    }
+    return fieldtype;
+}
+
+StorageType ParseContext::parse_storagetype() {
+    if (tok_.peek_keyword("i8"))  { tok_.consume(); return PackedType::i8; }
+    if (tok_.peek_keyword("i16")) { tok_.consume(); return PackedType::i16; }
+    return parse_valtype();
+}
+
+void ParseContext::resolve_pending_supers() {
+    for (auto& [typeidx, position, token] : pending_supers_) {
+        if (!type_map_.contains(token.text))
+            throw Exception::Parse("type id '" + token.text + "' not found", {token.line, token.column});
+        types_[typeidx].first.supers[position] = type_map_[token.text];
+    }
+    pending_supers_.clear();
 }
 
 // ── Valtype / FuncType / type sub-parsers ─────────────────────────────────────
@@ -312,20 +435,23 @@ index_t ParseContext::parse_typeuse() {
 
     // Create a new type by copying the base type and adding params/results.
     // Copy first to avoid reference invalidation when emplace_back reallocates.
+    if (!types_[typeidx].first.is_func())
+        throw Exception::Parse("type index in typeuse is not a function type", tok_.location());
     auto base_type = types_[typeidx];
     auto& new_type = types_.emplace_back(std::move(base_type));
     typeidx = (index_t)(types_.size() - 1);
+    FuncType& functype = new_type.first.func();
 
     for (auto& [id, types] : params_list) {
         if (!id.empty()) {
             if (new_type.second.contains(id))
                 throw Exception::Parse("duplicated param id '" + id + "'", tok_.location());
-            new_type.second[id] = new_type.first.params.size();
+            new_type.second[id] = functype.params.size();
         }
-        new_type.first.params.insert(new_type.first.params.end(), types.begin(), types.end());
+        functype.params.insert(functype.params.end(), types.begin(), types.end());
     }
     for (auto& results : results_list) {
-        new_type.first.results.insert(new_type.first.results.end(), results.begin(), results.end());
+        functype.results.insert(functype.results.end(), results.begin(), results.end());
     }
     return typeidx;
 }
@@ -380,6 +506,16 @@ index_t ParseContext::parse_typeidx() {
         if (!type_map_.contains(t.text))
             throw Exception::Parse("type id '" + t.text + "' not found", {t.line, t.column});
         return type_map_[t.text];
+    }
+    return (index_t)parse_u32();
+}
+
+index_t ParseContext::parse_fieldidx(index_t typeidx) {
+    if (tok_.peek().type == TokenType::Id) {
+        Token t = tok_.consume();
+        if (typeidx >= types_.size() || !types_[typeidx].second.contains(t.text))
+            throw Exception::Parse("field id '" + t.text + "' not found", {t.line, t.column});
+        return types_[typeidx].second[t.text];
     }
     return (index_t)parse_u32();
 }
