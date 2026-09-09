@@ -846,13 +846,21 @@ void ParseContext::parse_funcsection() {
         WasmFunc& func = module_.funcs.emplace_back();
         func.typeidx = parse_typeuse();
         // set local_map from param ids
+        // A function's locals are indexed after its parameters, so a local id
+        // names `params + n`, not `n`. The map starts as the parameter ids,
+        // which already hold the right indices.
         local_map_ = types_[func.typeidx].second;
+        // A typeuse naming a struct or array type is the validator's to
+        // report, with the index in the message; asking it for parameters
+        // here would throw first and say less.
+        const size_t param_count = types_[func.typeidx].first.is_func()
+            ? types_[func.typeidx].first.func().params.size() : 0;
         // locals
         while (tok_.peek().type == TokenType::LParen &&
                tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "local") {
             auto [id, types] = parse_local();
             if (!id.empty()) {
-                local_map_[id] = func.locals.size();
+                local_map_[id] = (index_t)(param_count + func.locals.size());
             }
             func.locals.insert(func.locals.end(), types.begin(), types.end());
         }
