@@ -72,6 +72,9 @@ private:
 
     // ── Type / structural sub-parsers ────────────────────────────────────────
     ValueType  parse_valtype();
+    // A value type that has to be a reference: a table's or an elem
+    // segment's element type.
+    ValueType  parse_reference_valtype(const char* what);
     // True when the next tokens start a value type: a keyword naming one, or
     // '(' 'ref' ... for a reference to a named heap type.
     bool is_valtype_start();
