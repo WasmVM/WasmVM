@@ -19,7 +19,7 @@ static auto& as_blk(const WasmInstr& i) { return std::get<WasmInstr::BlockType>(
 static auto& as_mem(const WasmInstr& i) { return std::get<WasmInstr::MemArg>(i.imm); }
 static auto& as_brt(const WasmInstr& i) { return std::get<WasmInstr::BrTab>(i.imm); }
 static auto& as_try(const WasmInstr& i) { return std::get<WasmInstr::TryTab>(i.imm); }
-static auto& as_href(const WasmInstr& i) { return std::get<WasmInstr::HeapRef>(i.imm); }
+static auto& as_href(const WasmInstr& i) { return std::get<WasmInstr::HeapI32>(i.imm); }
 static auto& as_hi32(const WasmInstr& i) { return std::get<WasmInstr::HeapI32>(i.imm); }
 static auto& as_cast(const WasmInstr& i) { return std::get<WasmInstr::CastOp>(i.imm); }
 static auto& as_sel(const WasmInstr& i)  { return std::get<WasmInstr::SelectV>(i.imm); }

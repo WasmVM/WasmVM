@@ -211,20 +211,6 @@ template<> Stream& Decode::operator>> <SubType>(Stream& stream, SubType& type){
     return stream >> type.comp;
 }
 
-template<> Stream& Decode::operator>> <RefType>(Stream& stream, RefType& type){
-    switch(stream.get<byte_t>()){
-        case byte_t {0x70}:
-            type = RefType::funcref;
-        break;
-        case byte_t {0x6f}:
-            type = RefType::externref;
-        break;
-        default:
-            throw Exception::invalid_reftype(stream.location());
-    }
-    return stream;
-}
-
 template<> Stream& Decode::operator>> <Limits>(Stream& stream, Limits& limit){
     limit.max.reset();
     limit.is64 = false;

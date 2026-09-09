@@ -283,6 +283,14 @@ bool ParseContext::is_valtype_start() {
            tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "ref";
 }
 
+ValueType ParseContext::parse_reference_valtype(const char* what) {
+    std::pair<size_t, size_t> where = tok_.location();
+    ValueType type = parse_valtype();
+    if (!type.is_ref())
+        throw Exception::Parse(std::string(what) + " must be a reference type", where);
+    return type;
+}
+
 ValueType ParseContext::parse_valtype() {
     // (ref null? heaptype)
     if (tok_.peek().type == TokenType::LParen &&
@@ -382,8 +390,7 @@ MemType ParseContext::parse_memtype() {
 TableType ParseContext::parse_tabletype() {
     TableType tt;
     tt.limits = parse_limits();
-    Token ref = tok_.expect(TokenType::Keyword, "RefType");
-    tt.reftype = (ref.text == "externref") ? RefType::externref : RefType::funcref;
+    tt.elemtype = parse_reference_valtype("a table's element type");
     return tt;
 }
 
@@ -731,17 +738,16 @@ ConstInstr ParseContext::parse_elemexpr() {
     return ci;
 }
 
-std::pair<RefType, std::vector<ConstInstr>> ParseContext::parse_elemlist() {
-    std::pair<RefType, std::vector<ConstInstr>> result;
+std::pair<ValueType, std::vector<ConstInstr>> ParseContext::parse_elemlist() {
+    std::pair<ValueType, std::vector<ConstInstr>> result;
     if (tok_.peek_keyword("func")) {
         tok_.consume(); // 'func'
-        result.first = RefType::funcref;
+        result.first = ValueType(ValueType::funcref);
         while (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id)
             result.second.push_back(ConstInstr{Instr::Ref_func(parse_funcidx())});
     } else {
-        // RefType elemexpr*
-        Token ref = tok_.expect(TokenType::Keyword, "RefType");
-        result.first = (ref.text == "externref") ? RefType::externref : RefType::funcref;
+        // reftype elemexpr*
+        result.first = parse_reference_valtype("an elem segment's element type");
         // consume all '(' 'item'|constexpr-keyword ')' forms
         while (tok_.peek().type == TokenType::LParen) {
             const Token& kw = tok_.peek2();
@@ -914,17 +920,15 @@ void ParseContext::parse_tablesection() {
         table_map_.records.emplace_back(IndexSpace::Type::Normal);
         TableType& table = module_.tables.emplace_back();
         if (tok_.peek().type == TokenType::Integer) {
-            // tabletype: limits RefType
+            // tabletype: limits reftype
             table = parse_tabletype();
-        } else if (tok_.peek().type == TokenType::Keyword &&
-                   (tok_.peek().text == "funcref" || tok_.peek().text == "externref")) {
-            // Inline elem: RefType '(' 'elem' ... ')'
-            Token ref = tok_.consume();
-            table.reftype = (ref.text == "externref") ? RefType::externref : RefType::funcref;
+        } else if (is_valtype_start()) {
+            // Inline elem: reftype '(' 'elem' ... ')'
+            table.elemtype = parse_reference_valtype("a table's element type");
             tok_.expect(TokenType::LParen);
             tok_.expect_keyword("elem");
             WasmElem& elem = module_.elems.emplace_back();
-            elem.type = table.reftype;
+            elem.type = table.elemtype;
             elem.mode = WasmElem::ElemMode{
                 .type = WasmElem::ElemMode::Mode::active,
                 .tableidx = table_idx,
@@ -1103,7 +1107,7 @@ void ParseContext::parse_elemsection() {
         if (!elem.mode.tableidx.has_value()) elem.mode.tableidx = 0;
         // funcidx* (legacy form)
         if (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id) {
-            elem.type = RefType::funcref;
+            elem.type = ValueType(ValueType::funcref);
             while (tok_.peek().type == TokenType::Integer || tok_.peek().type == TokenType::Id) {
                 elem.elemlist.push_back(ConstInstr{Instr::Ref_func(parse_funcidx())});
             }

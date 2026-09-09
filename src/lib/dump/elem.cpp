@@ -19,14 +19,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmElem& elem){
         default:
         break;
     }
-    switch(elem.type){
-        case RefType::externref :
-            stream << "externref ";
-        break;
-        case RefType::funcref :
-            stream << "funcref ";
-        break;
-    }
+    stream << elem.type << " ";
     for(const ConstInstr& instr : elem.elemlist){
         stream << std::endl << "    (item " << instr << ")";
     }

@@ -194,7 +194,7 @@ Suite roundtrip_suite {
         WasmModule m = roundtrip("(module (table 4 funcref))");
         AssertEq(m.tables.size(), 1U);
         ExpectEq(m.tables[0].limits.min, 4U);
-        Expect(m.tables[0].reftype == RefType::funcref);
+        Expect(m.tables[0].elemtype == ValueType::funcref);
     })
     Test("global constant", {
         WasmModule m = roundtrip("(module (global i32 (i32.const 42)))");

@@ -283,10 +283,7 @@ void RunVisitor::operator()(Instr::Array_new_elem& instr){
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
     for(u32_t i = 0; i < (u32_t)count; ++i){
-        std::visit(overloaded {
-            [&](const funcref_t& ref){ obj->elems.emplace_back(Value(ref)); },
-            [&](const externref_t& ref){ obj->elems.emplace_back(Value(ref)); }
-        }, segment.elem[(size_t)((u32_t)offset + i)]);
+        obj->elems.emplace_back(segment.elem[(size_t)((u32_t)offset + i)]);
     }
     top_label(stack).values.emplace(Value(std::move(obj)));
 }
@@ -400,9 +397,6 @@ void RunVisitor::operator()(Instr::Array_init_elem& instr){
     check_bounds((u64_t)(u32_t)src_offset, (u64_t)(u32_t)count, segment.elem.size());
     check_bounds((u64_t)(u32_t)dst_offset, (u64_t)(u32_t)count, ref->elems.size());
     for(u32_t i = 0; i < (u32_t)count; ++i){
-        std::visit(overloaded {
-            [&](const funcref_t& item){ ref->elems[(size_t)((u32_t)dst_offset + i)] = Value(item); },
-            [&](const externref_t& item){ ref->elems[(size_t)((u32_t)dst_offset + i)] = Value(item); }
-        }, segment.elem[(size_t)((u32_t)src_offset + i)]);
+        ref->elems[(size_t)((u32_t)dst_offset + i)] = segment.elem[(size_t)((u32_t)src_offset + i)];
     }
 }

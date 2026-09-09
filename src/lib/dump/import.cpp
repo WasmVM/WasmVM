@@ -21,15 +21,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmImport& import)
             if(table.limits.max){
                 stream << " " << table.limits.max.value();
             }
-            switch(table.reftype){
-                case RefType::funcref :
-                    stream << " funcref";
-                break;
-                case RefType::externref :
-                    stream << " externref";
-                break;
-            }
-            stream << ")";
+            stream << " " << table.elemtype << ")";
         },
         [&](WasmVM::MemType mem){
             stream << " (memory ";

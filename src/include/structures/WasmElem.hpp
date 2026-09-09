@@ -17,7 +17,7 @@ struct WasmElem {
         std::optional<ConstInstr> offset;
     };
     
-    RefType type;
+    ValueType type = ValueType(ValueType::funcref);
     std::vector<ConstInstr> elemlist;
     ElemMode mode;
 };

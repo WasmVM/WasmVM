@@ -64,7 +64,7 @@ Suite import {
         TableType& table0 = std::get<TableType>(imp0.desc);
         Expect(table0.limits.min == 2);
         Expect(table0.limits.max && table0.limits.max.value() == 3);
-        Expect(table0.reftype == RefType::funcref);
+        Expect(table0.elemtype == ValueType::funcref);
         Expect(imp0.module == "testmod");
         Expect(imp0.name == "table0");
         WasmImport& imp1 = test_module.imports[1];
@@ -72,7 +72,7 @@ Suite import {
         TableType& table1 = std::get<TableType>(imp1.desc);
         Expect(table1.limits.min == 4);
         Expect(table1.limits.max && table1.limits.max.value() == 5);
-        Expect(table1.reftype == RefType::externref);
+        Expect(table1.elemtype == ValueType::externref);
         Expect(imp1.module == "testmod");
         Expect(imp1.name == "table1");
         WasmImport& imp2 = test_module.imports[2];
@@ -80,7 +80,7 @@ Suite import {
         TableType& table2 = std::get<TableType>(imp2.desc);
         Expect(table2.limits.min == 6);
         Expect(!table2.limits.max);
-        Expect(table2.reftype == RefType::funcref);
+        Expect(table2.elemtype == ValueType::funcref);
         Expect(imp2.module == "testmod");
         Expect(imp2.name == "table2");
     })

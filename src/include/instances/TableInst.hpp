@@ -9,7 +9,7 @@ namespace WasmVM {
 
 struct TableInst {
     TableType type;
-    std::vector<Ref> elems;
+    std::vector<Value> elems;
 };
 
 }

@@ -18,7 +18,9 @@ template<> Section::Stream& Section::Stream::operator<< <WasmElem>(WasmElem elem
                     *this << Instr::I32_const(0);
                 }
                 return *this << elem.type << elem.elemlist;
-            }else{
+            }else if(elem.type == ValueType::funcref){
+                // 0x04 is active on table 0 with the element type left
+                // implicit, which the format only allows for funcref.
                 *this << (byte_t)0x04;
                 if(elem.mode.offset){
                     *this << elem.mode.offset.value();
@@ -26,6 +28,14 @@ template<> Section::Stream& Section::Stream::operator<< <WasmElem>(WasmElem elem
                     *this << Instr::I32_const(0);
                 }
                 return *this << elem.elemlist;
+            }else{
+                *this << (byte_t)0x06 << (index_t)0;
+                if(elem.mode.offset){
+                    *this << elem.mode.offset.value();
+                }else{
+                    *this << Instr::I32_const(0);
+                }
+                return *this << elem.type << elem.elemlist;
             }
         break;
         case WasmElem::ElemMode::Mode::passive : 

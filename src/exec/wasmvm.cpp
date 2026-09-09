@@ -67,7 +67,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                         throw Exception::Exception(std::string("import '") + import.name + "' not match table limit");
                     }
                 }
-                if(imported.reftype != exported.reftype){
+                if(imported.elemtype != exported.elemtype){
                     throw Exception::Exception(std::string("import '") + import.name + "' not match reference type");
                 }
             }break;

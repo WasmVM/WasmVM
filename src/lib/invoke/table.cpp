@@ -10,13 +10,14 @@
 
 using namespace WasmVM;
 
-static Ref get_ref(Value& val){
-  if(std::holds_alternative<funcref_t>(val)){
-    return std::get<funcref_t>(val);
-  }else if(std::holds_alternative<externref_t>(val)){
-    return std::get<externref_t>(val);
+// A table slot holds a Value now, so the only thing to check is that what
+// goes in is a reference at all.
+static Value get_ref(Value& val){
+  if(std::holds_alternative<i32_t>(val) || std::holds_alternative<i64_t>(val)
+     || std::holds_alternative<f32_t>(val) || std::holds_alternative<f64_t>(val)){
+    throw Exception::invalid_value();
   }
-  throw Exception::invalid_value();
+  return val;
 }
 
 void RunVisitor::operator()(Instr::Table_get& instr){
@@ -40,7 +41,7 @@ void RunVisitor::operator()(Instr::Table_set& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
   index_t addr = frame.module.tableaddrs[instr.index];
-  Ref ref = get_ref(label.values.top());
+  Value ref = get_ref(label.values.top());
   label.values.pop();
   i32_t idx = std::get<i32_t>(label.values.top());
   label.values.pop();
@@ -64,7 +65,7 @@ void RunVisitor::operator()(Instr::Table_grow& instr){
   TableInst& table = stack.store.tables[addr];
   i32_t count = std::get<i32_t>(label.values.top());
   label.values.pop();
-  Ref ref = get_ref(label.values.top());
+  Value ref = get_ref(label.values.top());
   label.values.pop();
   size_t len = count + table.elems.size();
   if((len >= (u32_t)-1) || (table.type.limits.max && (len > table.type.limits.max.value()))){
@@ -82,7 +83,7 @@ void RunVisitor::operator()(Instr::Table_fill& instr){
   TableInst& table = stack.store.tables[addr];
   i32_t count = std::get<i32_t>(label.values.top());
   label.values.pop();
-  Ref ref = get_ref(label.values.top());
+  Value ref = get_ref(label.values.top());
   label.values.pop();
   i32_t index = std::get<i32_t>(label.values.top());
   label.values.pop();

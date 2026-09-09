@@ -9,7 +9,7 @@ using namespace WasmVM;
 using namespace Decode;
 
 template<> Stream& Decode::operator>> <TableType>(Stream& stream, TableType& type){
-    return stream >> type.reftype >> type.limits;
+    return stream >> type.elemtype >> type.limits;
 }
 
 Stream& Decode::Table::read(Stream& stream){

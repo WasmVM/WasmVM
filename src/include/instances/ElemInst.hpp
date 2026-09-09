@@ -7,8 +7,8 @@
 namespace WasmVM {
 
 struct ElemInst {
-    RefType type;
-    std::vector<Ref> elem;
+    ValueType type = ValueType(ValueType::funcref);
+    std::vector<Value> elem;
 };
 
 }
