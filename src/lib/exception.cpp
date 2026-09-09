@@ -14,5 +14,5 @@ Exception::unexpected_eof::unexpected_eof() :
 Exception::interrupted::interrupted() :
     Exception("interrupted") {}
 
-Exception::Uncaught::Uncaught(std::shared_ptr<WasmException> exn) :
+Exception::Uncaught::Uncaught(GcPtr<WasmException> exn) :
     Exception("unhandled WebAssembly exception"), exn(std::move(exn)) {}

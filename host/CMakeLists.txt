@@ -2,6 +2,10 @@ set_source_files_properties(${CMAKE_CURRENT_BINARY_DIR}/host.cpp PROPERTIES GENE
 add_library(WasmVM_host SHARED
   ${CMAKE_CURRENT_BINARY_DIR}/host.cpp
 )
+# A host module holds Values, and a Value can now be a handle on the GC heap,
+# whose reference counting lives in the library. Everything the host modules
+# used before this was inline, so they linked against nothing.
+target_link_libraries(WasmVM_host PRIVATE WasmVM)
 
 # Macro for adding host modules
 macro(add_host_module mod_name mod_desc)

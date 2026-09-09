@@ -51,8 +51,8 @@ namespace Exception{
     // Not a Trap: the spec keeps exceptions and traps distinct. Carries the
     // thrown exception (tag address and payload values).
     struct Uncaught : public Exception {
-        Uncaught(std::shared_ptr<WasmException> exn);
-        std::shared_ptr<WasmException> exn;
+        Uncaught(GcPtr<WasmException> exn);
+        GcPtr<WasmException> exn;
     };
 
     struct Warning {

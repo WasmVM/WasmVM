@@ -9,8 +9,8 @@ namespace WasmVM {
 
 // C++ exception used for Wasm exception propagation
 struct WasmThrow {
-    std::shared_ptr<WasmException> exn;
-    WasmThrow(std::shared_ptr<WasmException> e) : exn(std::move(e)) {}
+    GcPtr<WasmException> exn;
+    WasmThrow(GcPtr<WasmException> e) : exn(std::move(e)) {}
 };
 
 namespace Exception {

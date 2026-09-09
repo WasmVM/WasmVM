@@ -72,6 +72,7 @@ target_precompile_headers(WasmVM_binfmt PRIVATE
 endif()
 
 add_library(WasmVM_src OBJECT
+    collector.cpp
     exception.cpp
     functype.cpp
 )
