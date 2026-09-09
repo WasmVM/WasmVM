@@ -12,9 +12,9 @@
 // (issue #21).
 //
 // Every "rejects" case below is a module that used to be accepted, and the
-// crashing ones are marked. The two convert instructions are deliberately
-// still missing: they do not touch the operand stack, so they mis-type rather
-// than crash, and they are left to the issue.
+// crashing ones are marked. The last two, the convert instructions, never
+// touched the operand stack, so they mis-typed rather than crashed; they are
+// here too, which leaves nothing in the twelve without a case.
 
 #include <harness.hpp>
 #include <WasmVM.hpp>
@@ -216,6 +216,47 @@ Suite validate_instructions {
                 "(func (export \"f\") (result i32) block $h (result i32)"
                 " i32.const 9 struct.new $s br_on_non_null $h i32.const 0 return end))",
                 "label of br_on_non_null does not accept the reference it is sent"));
+        })
+    })
+    // The two that mis-typed rather than crashed. They move a reference
+    // between the extern and any hierarchies and keep its nullability;
+    // nothing happens to the value at run time, so only the type changes.
+    Category("any.convert_extern and extern.convert_any", {
+        Test("each takes a reference of the hierarchy it converts from", {
+            Expect(accepted("(module (func (export \"f\") (result i32)"
+                            " ref.null extern any.convert_extern ref.is_null))"));
+            Expect(accepted("(module (func (export \"f\") (result i32)"
+                            " ref.null any extern.convert_any ref.is_null))"));
+        })
+        Test("a number is refused", {
+            // Both used to be accepted, giving a wrong result rather than a
+            // diagnosis.
+            Expect(rejected_with("(module (func (export \"f\") (result i32)"
+                                 " i32.const 1 any.convert_extern))",
+                                 "value type not match"));
+            Expect(rejected_with("(module (func (export \"f\") (result i32)"
+                                 " i32.const 1 extern.convert_any))",
+                                 "value type not match"));
+        })
+        Test("the hierarchies are not interchangeable", {
+            Expect(rejected_with("(module (func (export \"f\") (result i32)"
+                                 " ref.null any any.convert_extern ref.is_null))",
+                                 "reference to a different type"));
+            Expect(rejected_with("(module (func (export \"f\") (result i32)"
+                                 " ref.null extern extern.convert_any ref.is_null))",
+                                 "reference to a different type"));
+        })
+        Test("the result is of the hierarchy converted to", {
+            Expect(rejected_with("(module (func (export \"f\") (result externref)"
+                                 " ref.null extern any.convert_extern))",
+                                 "reference to a different type"));
+        })
+        Test("nullability is carried across", {
+            Expect(accepted("(module (func (param (ref extern)) (result (ref any))"
+                            " local.get 0 any.convert_extern))"));
+            Expect(rejected_with("(module (func (param externref) (result (ref any))"
+                                 " local.get 0 any.convert_extern))",
+                                 "nullable reference where a non-null one is required"));
         })
     })
 };

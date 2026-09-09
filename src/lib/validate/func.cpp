@@ -1203,6 +1203,29 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                         state.push(non_null);
                     }
                 }break;
+                // The last two that had no case. They move a reference
+                // between the extern and any hierarchies and keep its
+                // nullability; at run time nothing happens to the value, so
+                // only the type changes. Unlike the ten above they never
+                // touched the operand stack, so a wrong operand gave a wrong
+                // result rather than a crash (issue #21).
+                // [(ref null? extern)] -> [(ref null? any)] and back
+                case Opcode::Any_convert_extern : case Opcode::Extern_convert_any : {
+                    bool to_any = (instr.opcode == Opcode::Any_convert_extern);
+                    const char* what = to_any ? "any.convert_extern" : "extern.convert_any";
+                    ValueType::Kind from = to_any ? ValueType::externref : ValueType::anyref;
+                    ValueType::Kind into = to_any ? ValueType::anyref : ValueType::externref;
+                    State::StackValue operand = state.pop(ValueType(from));
+                    bool nullable = true;
+                    if(!is_unknown(operand)){
+                        const ValueType& type = std::get<ValueType>(operand);
+                        if(!type.is_ref()){
+                            throw Exception::Exception(std::string(what) + " should consume reference type");
+                        }
+                        nullable = type.nullable;
+                    }
+                    state.push(ValueType(into, nullable));
+                }break;
                 case Opcode::Return :
                     state.pop(state.ctrls.front().type.results);
                     state.unreachable();
