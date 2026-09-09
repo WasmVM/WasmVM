@@ -104,6 +104,21 @@ static ValueType cast_target(const Validate::Validator::Context& context, int32_
     return reference_to(heaptype, nullable);
 }
 
+// A tail call returns the callee's results straight to the caller's caller,
+// so they have to be the enclosing function's own results.
+static void check_tail_results(Validate::State& state, const FuncType& callee,
+                               const std::vector<SubType>& types, const char* what){
+    const std::vector<ValueType>& enclosing = state.ctrls.front().type.results;
+    bool ok = (callee.results.size() == enclosing.size());
+    for(size_t i = 0; ok && (i < callee.results.size()); ++i){
+        ok = type_matches(callee.results[i], enclosing[i], types);
+    }
+    if(!ok){
+        throw Exception::Exception(
+            std::string(what) + " results do not match the enclosing function's");
+    }
+}
+
 template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     // type
     assert(func.typeidx < context.types.size());
@@ -1078,6 +1093,115 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
                     std::vector<ValueType> rest(label_type.begin(), label_type.end() - 1);
                     state.push(state.pop(rest));
                     state.push(kept);
+                }break;
+                // ── the instructions that had no case at all ────────────────
+                // Each of these was a no-op in the validator while the
+                // interpreter popped operands for it, so a module could empty
+                // the operand stack and take the host down with it (issue
+                // #21). The two convert instructions are still missing: they
+                // do not touch the stack, so they mis-type rather than crash.
+                // [t1*] -> [t2*], and nothing after it is reachable
+                case Opcode::Return_call : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    if(ins.index >= context.funcs.size()){
+                        throw Exception::Exception("function index not found for return_call");
+                    }
+                    FuncType type = context.funcs[ins.index];
+                    check_tail_results(state, type, context.types, "return_call");
+                    state.pop(type.params);
+                    state.unreachable();
+                }break;
+                case Opcode::Return_call_indirect : {
+                    const auto& ins = std::get<WasmInstr::TwoIdx>(instr.imm); // a = tableidx, b = typeidx
+                    if(ins.a >= context.tables.size()){
+                        throw Exception::Exception("table index not found for return_call_indirect");
+                    }
+                    if(context.tables[ins.a].reftype != RefType::funcref){
+                        throw Exception::Exception("table type should be funcref for return_call_indirect");
+                    }
+                    FuncType type = func_type_at(context, ins.b, "return_call_indirect");
+                    check_tail_results(state, type, context.types, "return_call_indirect");
+                    state.pop(ValueType::i32);
+                    state.pop(type.params);
+                    state.unreachable();
+                }break;
+                case Opcode::Return_call_ref : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    FuncType type = func_type_at(context, ins.index, "return_call_ref");
+                    check_tail_results(state, type, context.types, "return_call_ref");
+                    // The same operand call_ref takes. ref.func pushes the
+                    // abstract funcref here rather than a reference to the
+                    // function's own type, so asking for the concrete one
+                    // would reject what call_ref accepts.
+                    state.pop(ValueType::funcref);
+                    state.pop(type.params);
+                    state.unreachable();
+                }break;
+                // [eqref eqref] -> [i32]
+                case Opcode::Ref_eq : {
+                    state.pop(ValueType(ValueType::eqref));
+                    state.pop(ValueType(ValueType::eqref));
+                    state.push(ValueType::i32);
+                }break;
+                // [(ref null ht)] -> [(ref ht)]
+                case Opcode::Ref_as_non_null : {
+                    State::StackValue operand = state.pop<State::StackValue>();
+                    if(is_unknown(operand)){
+                        state.push(operand);
+                        break;
+                    }
+                    ValueType type = std::get<ValueType>(operand);
+                    if(!type.is_ref()){
+                        throw Exception::Exception("ref.as_non_null should consume reference type");
+                    }
+                    type.nullable = false;
+                    state.push(type);
+                }break;
+                // [i32] -> [(ref i31)]
+                case Opcode::Ref_i31 : {
+                    state.pop(ValueType::i32);
+                    state.push(ValueType(ValueType::i31ref, false));
+                }break;
+                // [i31ref] -> [i32]
+                case Opcode::I31_get_s : case Opcode::I31_get_u : {
+                    state.pop(ValueType(ValueType::i31ref));
+                    state.push(ValueType::i32);
+                }break;
+                // br_on_null sends the label everything but the reference and
+                // leaves the non-null one behind; br_on_non_null is the other
+                // way round, and its label takes the non-null reference.
+                case Opcode::Br_on_null : case Opcode::Br_on_non_null : {
+                    const auto& ins = std::get<WasmInstr::OneIdx>(instr.imm);
+                    bool on_non_null = (instr.opcode == Opcode::Br_on_non_null);
+                    const char* what = on_non_null ? "br_on_non_null" : "br_on_null";
+                    if(ins.index >= state.ctrls.size()){
+                        throw Exception::Exception(std::string("label index not found in ") + what);
+                    }
+                    State::StackValue operand = state.pop<State::StackValue>();
+                    ValueType non_null(ValueType::nullref, false);
+                    if(!is_unknown(operand)){
+                        ValueType type = std::get<ValueType>(operand);
+                        if(!type.is_ref()){
+                            throw Exception::Exception(std::string(what) + " should consume reference type");
+                        }
+                        non_null = type;
+                        non_null.nullable = false;
+                    }
+                    std::vector<ValueType> label_type = state.ctrls[state.ctrls.size() - 1 - ins.index].types();
+                    if(on_non_null){
+                        if(label_type.empty()){
+                            throw Exception::Exception("label of br_on_non_null takes no reference");
+                        }
+                        if(!type_matches(non_null, label_type.back(), context.types)){
+                            throw Exception::Exception(
+                                "label of br_on_non_null does not accept the reference it is sent");
+                        }
+                        std::vector<ValueType> rest(label_type.begin(), label_type.end() - 1);
+                        state.push(state.pop(rest));
+                    }else{
+                        state.push(state.pop(label_type));
+                        state.push(non_null);
+                    }
                 }break;
                 case Opcode::Return :
                     state.pop(state.ctrls.front().type.results);
