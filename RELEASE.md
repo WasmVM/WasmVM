@@ -1,32 +1,42 @@
-`v1.4`
-# v1.4 Correctness fixes, getopt-style CLI, wasm64-only, tooling cleanup
+`v1.5`
+# v1.5 GC types, exception handling, embedder API, trap correctness
 
-Highlights since v1.3:
+Highlights since v1.4:
 
-- **Execution correctness**: f64 arithmetic now pushes a double-width
-  NaN (not a float-width one); out-of-range float-to-int truncation
-  traps; `return` arity and the `i64` comparison result type are fixed.
-- **Host / sysenv fixes**: host functions now access the *caller's*
-  linear memory, and syscall memory access honors tagged pointers.
-- **wasm64-only host interface**: `sys_fs` / `sys_proc` dropped wasm32
-  support and require `i64` pointers, matching the 64-bit memory model.
-- **Decoder / loader fixes**: multi-field stream values are read in a
-  defined order, and module files are opened in binary mode (no more
-  `0x0d`/`0x1a` mangling on Windows).
-- **Validator**: `call_ref` is now accepted by the function validator.
-- **getopt-style CLI**: a reworked `CommandParser` adds the `--extra`/`-e`
-  flag, matches multi-character short aliases such as `-ns` / `-np`, and
-  repairs the broken `--no-system` and `readwasm --start` flags.
-- **wasmvm-ar**: correct archive-header magic is written, and `--config`
-  is optional in create mode.
-- **MSVC / Windows**: Release builds and installs work under MSVC, and
-  the test runner copies `WasmVM.dll` next to the test binaries.
-- **CI & tooling cleanup**: job timeouts and run de-duplication, Windows
-  validated on `master`, docs built on `ubuntu-latest` via apt Sphinx,
-  and the unused `external/`, `.devcontainer`, `.vscode`, and `docker/`
-  scaffolding retired.
-- **Documentation**: the reStructuredText reference docs are realigned
-  with the current codebase (types, instances, host interface, opcodes).
+- **GC proposal**: `struct`, `array`, `sub` and `rec` type definitions
+  are parsed, encoded, dumped and validated; a value type now carries
+  nullability and a type index, so typed references such as
+  `(ref null $t)` are real throughout the pipeline; the `struct.*` and
+  `array.*` instructions execute, the cast instructions validate, and
+  reference cycles a guest allocates are collected instead of leaked.
+- **Exception handling**: `try_table`, `throw` and `throw_ref` are
+  validated (a module carrying `try_table` was rejected outright
+  before), catch labels resolve in the enclosing context, `exnref`
+  decodes and is accepted as a local, the tag section is emitted so an
+  assembled module with a tag loads, tags survive linking with their
+  indices remapped, `(tag ...)` is printed when dumping to text, and an
+  omitted typeuse on a tag is the empty type rather than type index 0.
+- **Embedder API**: the installed `<exception.hpp>` now declares `Trap`,
+  `Uncaught` and `interrupted`, so an embedder can catch what the
+  headers document; `Stack::run()` takes an optional external interrupt
+  flag to stop a guest that has entered an infinite loop.
+- **Trap and arithmetic correctness**: integer division by zero and
+  `INT_MIN / -1` trap; `f32`/`f64` `min` and `max` return NaN when
+  either operand is NaN; shift counts are taken modulo the operand
+  width; `memory.copy` checks the destination against its own memory
+  and copies like `memmove`; `table.get` / `table.set` trap when out of
+  bounds; `table.grow` answers with the length before the growth; an
+  address or a count near the top of the range no longer wraps.
+- **Validator hardening**: twelve instructions that could crash the host
+  are validated instead, a named local is indexed after the parameters,
+  and a branch to depth 0 hands on its operands once rather than twice.
+- **Tables**: a table or an elem segment may name any reference type,
+  and both are validated accordingly.
+- **Encoder and parser fixes**: a typed select keeps its valtypes,
+  `memory.init` keeps `memidx` and `dataidx` apart, and the text parser
+  accepts unsigned `inf`/`nan` and integer-shaped float literals.
+- **Tests & CI**: every instruction fixture is read back out of the
+  binary, and a GitLab CI pipeline covers build, test and docs.
 
 ## Install guides
 
