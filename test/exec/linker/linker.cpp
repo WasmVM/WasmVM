@@ -125,11 +125,31 @@ Suite linker_suite {
         })
     })
     // GC type definitions land after the types of the modules linked before
-    // them, and every instruction naming one has to move with them. struct.new
-    // itself cannot be assembled yet (issue #19: wasmvm-as writes its prefix
-    // wrong), so the instruction side is pinned through ref.test's heap type;
-    // the struct.new case follows with that fix.
+    // them, and every instruction naming one has to move with them.
     Category("GC types survive linking", {
+        Test("a struct type and its struct.new shift together", {
+            WasmModule m = link({
+                {"a.wasm", "(module (type (func (param i32))) (func (export \"fa\") (param i32)))"},
+                {"b.wasm", "(module (type $s (struct (field i32)))"
+                           " (func (export \"fb\") i32.const 1 struct.new $s drop))"},
+            });
+            index_t named = index_npos;
+            for (const WasmInstr& instr : m.funcs[1].body) {
+                if (instr.opcode == Opcode::Struct_new) named = std::get<WasmInstr::OneIdx>(instr.imm).index;
+            }
+            Assert(named != index_npos);
+            // The struct type is the only one in the output, and a's types
+            // pushed it off index 0.
+            index_t struct_idx = index_npos;
+            for (index_t i = 0; i < m.types.size(); ++i) {
+                if (m.types[i].is_struct()) { Assert(struct_idx == index_npos); struct_idx = i; }
+            }
+            Assert(struct_idx != index_npos);
+            Expect(struct_idx != 0U);
+            ExpectEq(named, struct_idx);
+            // The linked module still describes what it meant.
+            Expect(!module_validate(m).has_value());
+        })
         Test("a struct type and the heap type naming it shift together", {
             WasmModule m = link({
                 {"a.wasm", "(module (type (func (param i32))) (func (export \"fa\") (param i32)))"},
