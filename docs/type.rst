@@ -88,7 +88,38 @@ Constants
 Enumerations
 ------------
 
-.. cpp:enum:: WasmVM::ValueType
+.. cpp:struct:: WasmVM::ValueType
+
+    A number type, or a reference type ``(ref null? heaptype)``. The heap
+    type is abstract or names a type index; the legacy spellings are the
+    nullable abstract forms, so ``funcref`` is ``(ref null func)``.
+
+    .. cpp:member:: Kind kind
+
+        Which number type, or which abstract heap type, or
+        :cpp:enumerator:`ref` for a concrete one.
+
+    .. cpp:member:: bool nullable
+
+        Meaningful for the reference kinds.
+
+    .. cpp:member:: index_t typeidx
+
+        Meaningful when ``kind`` is :cpp:enumerator:`ref`.
+
+    .. cpp:function:: static ValueType concrete(index_t typeidx, bool nullable)
+
+        ``(ref $t)`` / ``(ref null $t)``
+
+    .. cpp:function:: bool is_num() const
+
+    .. cpp:function:: bool is_ref() const
+
+    .. cpp:function:: bool is_concrete() const
+
+    .. cpp:function:: bool is_bottom() const
+
+.. cpp:enum:: WasmVM::ValueType::Kind
 
     .. cpp:enumerator:: i32
         
@@ -122,6 +153,63 @@ Enumerations
 
         Denote exnref_t value (exception-handling proposal)
 
+    .. cpp:enumerator:: structref
+
+        Any struct (GC proposal)
+
+    .. cpp:enumerator:: arrayref
+
+        Any array (GC proposal)
+
+    .. cpp:enumerator:: anyref
+
+        Anything in the internal hierarchy (GC proposal)
+
+    .. cpp:enumerator:: eqref
+
+        Anything comparable with ``ref.eq`` (GC proposal)
+
+    .. cpp:enumerator:: nullref
+
+        The bottom of the internal hierarchy: only null
+
+    .. cpp:enumerator:: nullfuncref
+
+        The bottom of the function hierarchy: only null
+
+    .. cpp:enumerator:: nullexternref
+
+        The bottom of the external hierarchy: only null
+
+    .. cpp:enumerator:: ref
+
+        A concrete reference, whose ``typeidx`` names the type
+
+.. cpp:type:: WasmVM::structref_t = std::shared_ptr<StructObj>
+
+    A reference to a struct on the heap; null when the pointer is
+
+.. cpp:type:: WasmVM::arrayref_t = std::shared_ptr<ArrayObj>
+
+    A reference to an array on the heap; null when the pointer is
+
+.. cpp:struct:: WasmVM::StructObj
+
+    .. cpp:member:: index_t typeidx
+
+        The type this struct was allocated from
+
+    .. cpp:member:: std::vector<Value> fields
+
+        One per field, in declaration order. A packed field is held as an
+        ``i32`` already truncated to its width.
+
+.. cpp:struct:: WasmVM::ArrayObj
+
+    .. cpp:member:: index_t typeidx
+
+    .. cpp:member:: std::vector<Value> elems
+
 .. cpp:enum:: WasmVM::RefType
 
     .. cpp:enumerator:: funcref
@@ -135,7 +223,7 @@ Enumerations
 Object types
 ------------
 
-.. cpp:type:: WasmVM::Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t>
+.. cpp:type:: WasmVM::Value = std::variant<i32_t, i64_t, f32_t, f64_t, funcref_t, externref_t, i31ref_t, exnref_t, structref_t, arrayref_t>
 
     General type of value
 
