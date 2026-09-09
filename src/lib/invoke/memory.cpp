@@ -11,15 +11,16 @@
 
 using namespace WasmVM;
 
+// An address, a length or a count off the operand stack. A 32-bit memory
+// takes an i32, which is an *unsigned* quantity: widening it with its sign
+// turned -1 into the top of the 64-bit address space instead of 4294967295.
 static u64_t get_base(Label& label){
-  u64_t base = 0;
   Value val = label.values.top();
   label.values.pop();
   if(std::holds_alternative<i32_t>(val)){
-    return std::get<i32_t>(val);
-  }else{
-    return std::get<i64_t>(val);
+    return (u64_t)(u32_t)std::get<i32_t>(val);
   }
+  return (u64_t)std::get<i64_t>(val);
 }
 
 template <typename T, typename I>
@@ -30,8 +31,8 @@ static void load_mem(Stack& stack, I& instr){
   index_t addr = frame.module.memaddrs[instr.memidx];
   MemInst& mem = stack.store.mems[addr];
   u64_t base = get_base(label);
-  base += instr.offset;
-  if((base + sizeof(T)) > mem.data.size()){
+  base = offset_from(base, instr.offset);
+  if(!fits_within(base, sizeof(T), mem.data.size())){
     throw Exception::length_too_long();
   }
   label.values.emplace(Value(*(T*)(mem.data.data() + base)));
@@ -45,8 +46,8 @@ static void load_mem(Stack& stack, I& instr){
   index_t addr = frame.module.memaddrs[instr.memidx];
   MemInst& mem = stack.store.mems[addr];
   u64_t base = get_base(label);
-  base += instr.offset;
-  if((base + sizeof(S)) > mem.data.size()){
+  base = offset_from(base, instr.offset);
+  if(!fits_within(base, sizeof(S), mem.data.size())){
     throw Exception::length_too_long();
   }
   label.values.emplace(Value((T)*(S*)(mem.data.data() + base)));
@@ -62,8 +63,8 @@ static void store_mem(Stack& stack, I& instr){
   T val = std::get<T>(label.values.top());
   label.values.pop();
   u64_t base = get_base(label);
-  base += instr.offset;
-  if((base + sizeof(T)) > mem.data.size()){
+  base = offset_from(base, instr.offset);
+  if(!fits_within(base, sizeof(T), mem.data.size())){
     throw Exception::length_too_long();
   }
   *(T*)(mem.data.data() + base) = val;
@@ -79,8 +80,8 @@ static void store_mem(Stack& stack, I& instr){
   T val = std::get<T>(label.values.top());
   label.values.pop();
   u64_t base = get_base(label);
-  base += instr.offset;
-  if((base + sizeof(S)) > mem.data.size()){
+  base = offset_from(base, instr.offset);
+  if(!fits_within(base, sizeof(S), mem.data.size())){
     throw Exception::length_too_long();
   }
   *(S*)(mem.data.data() + base) = (S)val;
@@ -173,8 +174,22 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
   MemInst& mem = stack.store.mems[addr];
   u64_t old_pages = mem.data.size() / page_size;
   u64_t val = get_base(label);
+  // get_base no longer sign-extends, but a 64-bit memory can still be asked
+  // for a count that overflows the sum.
+  if(val > ((u64_t)-1 - old_pages)){
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
+    return;
+  }
   u64_t new_pages = old_pages + val;
-  if((new_pages > (1ULL << 48ULL)) || (mem.type.max && (new_pages > mem.type.max.value()))) {
+  // A 32-bit memory addresses at most 2^32 bytes, which is 2^16 pages; the
+  // 2^48 bound belongs to a 64-bit one. Applying the wide bound to both let a
+  // 32-bit memory be asked for 2^32 pages and try to allocate 256 TiB, which
+  // came out of the allocator as a std::bad_alloc rather than as -1.
+  const u64_t page_limit = mem.type.is64 ? (1ULL << 48ULL) : (1ULL << 16ULL);
+  if((new_pages > page_limit) || (mem.type.max && (new_pages > mem.type.max.value()))) {
     if(mem.type.is64)
       label.values.emplace<i64_t>(i64_t(-1));
     else
@@ -198,7 +213,7 @@ void RunVisitor::operator()(Instr::Memory_fill& instr){
   byte_t val = (byte_t)std::get<i32_t>(label.values.top());
   label.values.pop();
   u64_t index = get_base(label);
-  if((index + count) > mem.data.size()){
+  if(!fits_within(index, count, mem.data.size())){
     throw Exception::length_too_long();
   }
   std::fill_n(mem.data.begin() + index, count, val);
@@ -213,7 +228,8 @@ void RunVisitor::operator()(Instr::Memory_copy& instr){
   u64_t count = get_base(label);
   u64_t src_idx = get_base(label);
   u64_t dst_idx = get_base(label);
-  if(((src_idx + count) > src_mem.data.size()) || ((dst_idx + count) > dst_mem.data.size())){
+  if(!fits_within(src_idx, count, src_mem.data.size())
+     || !fits_within(dst_idx, count, dst_mem.data.size())){
     throw Exception::length_too_long();
   }
   // The spec copies backwards when the destination lies past the source, so
@@ -232,7 +248,8 @@ void RunVisitor::operator()(Instr::Memory_init& instr){
   u64_t count = get_base(label);
   u64_t src_idx = get_base(label);
   u64_t dst_idx = get_base(label);
-  if(((src_idx + count) > data.size()) || ((dst_idx + count) > mem.data.size())){
+  if(!fits_within(src_idx, count, data.size())
+     || !fits_within(dst_idx, count, mem.data.size())){
     throw Exception::length_too_long();
   }
   std::copy_n(data.begin() + src_idx, count, mem.data.begin() + dst_idx);
