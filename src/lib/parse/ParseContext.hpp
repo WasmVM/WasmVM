@@ -72,6 +72,9 @@ private:
 
     // ── Type / structural sub-parsers ────────────────────────────────────────
     ValueType  parse_valtype();
+    // True when the next tokens start a value type: a keyword naming one, or
+    // '(' 'ref' ... for a reference to a named heap type.
+    bool is_valtype_start();
     // Parses a functype rule '(' 'func' param* result* ')'
     std::pair<FuncType, std::map<std::string, index_t>> parse_functype();
     // Parses one '(' 'type' id? subtype ')' and returns its index.

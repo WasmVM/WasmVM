@@ -263,16 +263,38 @@ void ParseContext::resolve_pending_supers() {
 
 // ── Valtype / FuncType / type sub-parsers ─────────────────────────────────────
 
+// The shorthand keywords: each reference one is the nullable reference to an
+// abstract heap type, so `funcref` is `(ref null func)`.
+static const std::map<std::string, ValueType::Kind> valtype_keywords = {
+    {"i32", ValueType::i32}, {"i64", ValueType::i64},
+    {"f32", ValueType::f32}, {"f64", ValueType::f64},
+    {"funcref", ValueType::funcref}, {"externref", ValueType::externref},
+    {"exnref", ValueType::exnref}, {"i31ref", ValueType::i31ref},
+    {"structref", ValueType::structref}, {"arrayref", ValueType::arrayref},
+    {"anyref", ValueType::anyref}, {"eqref", ValueType::eqref},
+    {"nullref", ValueType::nullref}, {"nullfuncref", ValueType::nullfuncref},
+    {"nullexternref", ValueType::nullexternref},
+};
+
+bool ParseContext::is_valtype_start() {
+    if (tok_.peek().type == TokenType::Keyword)
+        return valtype_keywords.contains(tok_.peek().text);
+    return tok_.peek().type == TokenType::LParen &&
+           tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "ref";
+}
+
 ValueType ParseContext::parse_valtype() {
+    // (ref null? heaptype)
+    if (tok_.peek().type == TokenType::LParen &&
+        tok_.peek2().type == TokenType::Keyword && tok_.peek2().text == "ref") {
+        auto [nullable, heaptype] = parse_reftype_annot();
+        return reference_to(heaptype, nullable);
+    }
     Token t = tok_.expect(TokenType::Keyword, "valtype");
-    if      (t.text == "i32")      return ValueType(ValueType::i32);
-    else if (t.text == "i64")      return ValueType(ValueType::i64);
-    else if (t.text == "f32")      return ValueType(ValueType::f32);
-    else if (t.text == "f64")      return ValueType(ValueType::f64);
-    else if (t.text == "funcref")  return ValueType(ValueType::funcref);
-    else if (t.text == "externref") return ValueType(ValueType::externref);
-    else if (t.text == "exnref")   return ValueType(ValueType::exnref);
-    throw Exception::Parse("unknown valtype '" + t.text + "'", {t.line, t.column});
+    auto found = valtype_keywords.find(t.text);
+    if (found == valtype_keywords.end())
+        throw Exception::Parse("unknown valtype '" + t.text + "'", {t.line, t.column});
+    return ValueType(found->second);
 }
 
 std::pair<FuncType, std::map<std::string, index_t>> ParseContext::parse_functype() {
@@ -308,11 +330,7 @@ std::pair<std::string, std::vector<ValueType>> ParseContext::parse_param() {
         result.first = tok_.consume().text;
         result.second.push_back(parse_valtype());
     } else {
-        while (tok_.peek().type == TokenType::Keyword &&
-               (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
-                tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-                tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
-                tok_.peek().text == "exnref")) {
+        while (is_valtype_start()) {
             result.second.push_back(parse_valtype());
         }
     }
@@ -324,11 +342,7 @@ std::vector<ValueType> ParseContext::parse_result() {
     tok_.expect(TokenType::LParen);
     tok_.expect_keyword("result");
     std::vector<ValueType> results;
-    while (tok_.peek().type == TokenType::Keyword &&
-           (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
-            tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-            tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
-            tok_.peek().text == "exnref")) {
+    while (is_valtype_start()) {
         results.push_back(parse_valtype());
     }
     tok_.expect(TokenType::RParen);
@@ -681,11 +695,7 @@ std::pair<std::string, std::vector<ValueType>> ParseContext::parse_local() {
             throw Exception::Parse("duplicated local id '" + result.first + "'", tok_.location());
         result.second.push_back(parse_valtype());
     } else {
-        while (tok_.peek().type == TokenType::Keyword &&
-               (tok_.peek().text == "i32" || tok_.peek().text == "i64" ||
-                tok_.peek().text == "f32" || tok_.peek().text == "f64" ||
-                tok_.peek().text == "funcref" || tok_.peek().text == "externref" ||
-                tok_.peek().text == "exnref")) {
+        while (is_valtype_start()) {
             result.second.push_back(parse_valtype());
         }
     }

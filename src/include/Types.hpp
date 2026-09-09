@@ -256,6 +256,39 @@ constexpr RefType reftype_of(const ValueType& type){
 // checks, never as a substitute for validation.
 bool value_matches(const Value& value, const ValueType& type);
 
+
+// The spec writes a heap type as a signed integer: negative values are the
+// abstract heap types, a non-negative one is a type index. These are the same
+// numbers the binary format's s33 carries and the text parser already used.
+constexpr int32_t heaptype_nofunc    = -13;
+constexpr int32_t heaptype_noextern  = -14;
+constexpr int32_t heaptype_none      = -15;
+constexpr int32_t heaptype_func      = -16;
+constexpr int32_t heaptype_extern    = -17;
+constexpr int32_t heaptype_any       = -18;
+constexpr int32_t heaptype_eq        = -19;
+constexpr int32_t heaptype_i31       = -20;
+constexpr int32_t heaptype_struct    = -21;
+constexpr int32_t heaptype_array     = -22;
+constexpr int32_t heaptype_exn       = -23;
+
+// The abstract kind a negative heap type names, or nullopt when it names none.
+std::optional<ValueType::Kind> abstract_heaptype(int32_t heaptype);
+// The heap type of a reference: negative for an abstract kind, the type index
+// for a concrete one.
+int32_t heaptype_of(const ValueType& type);
+// A reference type from a heap type as the spec writes it.
+ValueType reference_to(int32_t heaptype, bool nullable);
+
+// Whether `a` is a subtype of `b`, in a module whose type section is `types`.
+// Structural, as the spec is: two composite types match when one's shape
+// refines the other's, and a declared supertype is followed as well.
+bool type_matches(const ValueType& a, const ValueType& b, const std::vector<SubType>& types);
+bool storage_matches(const StorageType& a, const StorageType& b, const std::vector<SubType>& types);
+bool field_matches(const FieldType& a, const FieldType& b, const std::vector<SubType>& types);
+// Whether the composite type at index `a` is a subtype of the one at `b`.
+bool comp_matches(index_t a, index_t b, const std::vector<SubType>& types);
+
 struct ExternVal {
     enum ExternType {Func, Mem, Table, Global, Tag} type;
     index_t addr;

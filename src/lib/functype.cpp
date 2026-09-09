@@ -5,7 +5,9 @@
 #include <Types.hpp>
 #include <Util.hpp>
 #include <exception.hpp>
+#include <optional>
 #include <string>
+#include <vector>
 
 using namespace WasmVM;
 
@@ -117,4 +119,220 @@ std::size_t std::hash<WasmVM::SubType>::operator()(const WasmVM::SubType& type) 
         [&](const ArrayType& a){ signature += 'A'; field(a.field); }
     }, type.comp);
     return std::hash<std::string>{}(signature);
+}
+// ── Heap types and subtyping ────────────────────────────────────────────────
+
+std::optional<ValueType::Kind> WasmVM::abstract_heaptype(int32_t heaptype){
+    switch(heaptype){
+        case heaptype_nofunc:   return ValueType::nullfuncref;
+        case heaptype_noextern: return ValueType::nullexternref;
+        case heaptype_none:     return ValueType::nullref;
+        case heaptype_func:     return ValueType::funcref;
+        case heaptype_extern:   return ValueType::externref;
+        case heaptype_any:      return ValueType::anyref;
+        case heaptype_eq:       return ValueType::eqref;
+        case heaptype_i31:      return ValueType::i31ref;
+        case heaptype_struct:   return ValueType::structref;
+        case heaptype_array:    return ValueType::arrayref;
+        case heaptype_exn:      return ValueType::exnref;
+        default: break;
+    }
+    return std::nullopt;
+}
+
+int32_t WasmVM::heaptype_of(const ValueType& type){
+    switch(type.kind){
+        case ValueType::nullfuncref:   return heaptype_nofunc;
+        case ValueType::nullexternref: return heaptype_noextern;
+        case ValueType::nullref:       return heaptype_none;
+        case ValueType::funcref:       return heaptype_func;
+        case ValueType::externref:     return heaptype_extern;
+        case ValueType::anyref:        return heaptype_any;
+        case ValueType::eqref:         return heaptype_eq;
+        case ValueType::i31ref:        return heaptype_i31;
+        case ValueType::structref:     return heaptype_struct;
+        case ValueType::arrayref:      return heaptype_array;
+        case ValueType::exnref:        return heaptype_exn;
+        case ValueType::ref:           return (int32_t)type.typeidx;
+        default: break;
+    }
+    return 0;
+}
+
+ValueType WasmVM::reference_to(int32_t heaptype, bool nullable){
+    if(std::optional<ValueType::Kind> kind = abstract_heaptype(heaptype)){
+        return ValueType(kind.value(), nullable);
+    }
+    return ValueType::concrete((index_t)heaptype, nullable);
+}
+
+// Which hierarchy an abstract kind belongs to. References only match within
+// one: no funcref is ever an anyref.
+namespace {
+enum class Hierarchy { any, func, extern_, exn, none };
+
+Hierarchy hierarchy_of_kind(ValueType::Kind kind){
+    switch(kind){
+        case ValueType::anyref: case ValueType::eqref: case ValueType::i31ref:
+        case ValueType::structref: case ValueType::arrayref: case ValueType::nullref:
+            return Hierarchy::any;
+        case ValueType::funcref: case ValueType::nullfuncref:
+            return Hierarchy::func;
+        case ValueType::externref: case ValueType::nullexternref:
+            return Hierarchy::extern_;
+        case ValueType::exnref:
+            return Hierarchy::exn;
+        default:
+            return Hierarchy::none;
+    }
+}
+
+// The abstract kind a concrete type index sits under.
+ValueType::Kind kind_of_comp(index_t typeidx, const std::vector<SubType>& types){
+    if(typeidx >= types.size()){
+        return ValueType::anyref;
+    }
+    if(types[typeidx].is_struct()) return ValueType::structref;
+    if(types[typeidx].is_array())  return ValueType::arrayref;
+    return ValueType::funcref;
+}
+
+Hierarchy hierarchy_of(const ValueType& type, const std::vector<SubType>& types){
+    if(type.is_concrete()){
+        return hierarchy_of_kind(kind_of_comp(type.typeidx, types));
+    }
+    return hierarchy_of_kind(type.kind);
+}
+
+// Whether abstract kind `a` is at or below abstract kind `b`.
+bool abstract_matches(ValueType::Kind a, ValueType::Kind b){
+    if(a == b) return true;
+    switch(b){
+        case ValueType::anyref:
+            return (a == ValueType::eqref) || (a == ValueType::i31ref)
+                || (a == ValueType::structref) || (a == ValueType::arrayref)
+                || (a == ValueType::nullref);
+        case ValueType::eqref:
+            return (a == ValueType::i31ref) || (a == ValueType::structref)
+                || (a == ValueType::arrayref) || (a == ValueType::nullref);
+        case ValueType::i31ref: case ValueType::structref: case ValueType::arrayref:
+            return a == ValueType::nullref;
+        case ValueType::funcref:
+            return a == ValueType::nullfuncref;
+        case ValueType::externref:
+            return a == ValueType::nullexternref;
+        default:
+            return false;
+    }
+}
+} // namespace
+
+bool WasmVM::storage_matches(const StorageType& a, const StorageType& b, const std::vector<SubType>& types){
+    if(std::holds_alternative<PackedType>(a) || std::holds_alternative<PackedType>(b)){
+        return a == b;
+    }
+    return type_matches(std::get<ValueType>(a), std::get<ValueType>(b), types);
+}
+
+bool WasmVM::field_matches(const FieldType& a, const FieldType& b, const std::vector<SubType>& types){
+    if(a.mut != b.mut){
+        return false;
+    }
+    // A mutable field is read and written, so it is invariant; an immutable
+    // one is only read, and may be refined.
+    if(b.mut){
+        return a.storage == b.storage;
+    }
+    return storage_matches(a.storage, b.storage, types);
+}
+
+bool WasmVM::comp_matches(index_t a, index_t b, const std::vector<SubType>& types){
+    if(a == b){
+        return true;
+    }
+    if((a >= types.size()) || (b >= types.size())){
+        return false;
+    }
+    // A declared supertype, followed transitively. The type section's own
+    // rules keep this from looping: a supertype is always defined earlier.
+    for(index_t super : types[a].supers){
+        if(comp_matches(super, b, types)){
+            return true;
+        }
+    }
+    const SubType& sub = types[a];
+    const SubType& sup = types[b];
+    if(sub.comp.index() != sup.comp.index()){
+        return false;
+    }
+    if(sub.is_struct()){
+        // A struct refines another by keeping its fields, in order, and may
+        // add more after them.
+        const StructType& x = std::get<StructType>(sub.comp);
+        const StructType& y = std::get<StructType>(sup.comp);
+        if(x.fields.size() < y.fields.size()){
+            return false;
+        }
+        for(size_t i = 0; i < y.fields.size(); ++i){
+            if(!field_matches(x.fields[i], y.fields[i], types)){
+                return false;
+            }
+        }
+        return true;
+    }
+    if(sub.is_array()){
+        return field_matches(std::get<ArrayType>(sub.comp).field,
+                             std::get<ArrayType>(sup.comp).field, types);
+    }
+    // A function refines another with contravariant parameters and covariant
+    // results.
+    const FuncType& x = sub.func();
+    const FuncType& y = sup.func();
+    if((x.params.size() != y.params.size()) || (x.results.size() != y.results.size())){
+        return false;
+    }
+    for(size_t i = 0; i < x.params.size(); ++i){
+        if(!type_matches(y.params[i], x.params[i], types)){
+            return false;
+        }
+    }
+    for(size_t i = 0; i < x.results.size(); ++i){
+        if(!type_matches(x.results[i], y.results[i], types)){
+            return false;
+        }
+    }
+    return true;
+}
+
+bool WasmVM::type_matches(const ValueType& a, const ValueType& b, const std::vector<SubType>& types){
+    if(a == b){
+        return true;
+    }
+    if(!a.is_ref() || !b.is_ref()){
+        return a.kind == b.kind;
+    }
+    // A non-null reference satisfies a nullable expectation, never the reverse.
+    if(a.nullable && !b.nullable){
+        return false;
+    }
+    if(hierarchy_of(a, types) != hierarchy_of(b, types)){
+        return false;
+    }
+    // The bottom of a hierarchy is below everything in it.
+    if(a.is_bottom()){
+        return true;
+    }
+    if(b.is_bottom()){
+        return false;
+    }
+    if(a.is_concrete() && b.is_concrete()){
+        return comp_matches(a.typeidx, b.typeidx, types);
+    }
+    if(a.is_concrete()){
+        return abstract_matches(kind_of_comp(a.typeidx, types), b.kind);
+    }
+    if(b.is_concrete()){
+        return false; // an abstract type is never below a concrete one
+    }
+    return abstract_matches(a.kind, b.kind);
 }

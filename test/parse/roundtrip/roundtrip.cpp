@@ -577,6 +577,72 @@ Suite roundtrip_suite {
             // data.drop 0 = fc 09 00, end = 0b
             std::vector<unsigned char> expected({0xfc, 0x09, 0x00, 0x0b});
             Expect(func_body_of("(module (data \"a\") (func data.drop 0))") == expected);
+    // A value type is a number type or a reference type, and a reference type
+    // is (ref null? heaptype) over an abstract heap type or a type index. The
+    // legacy spellings are the nullable abstract forms -- funcref is
+    // (ref null func) -- so they must still encode to the single byte they
+    // always did, while everything else needs the explicit 0x63 / 0x64 form.
+    Category("reference value types", {
+        Test("the legacy shorthands keep their one-byte encoding", {
+            // (func (param funcref externref exnref)) -> 60 03 70 6f 69 00
+            std::vector<unsigned char> expected({0x01, 0x60, 0x03, 0x70, 0x6f, 0x69, 0x00});
+            Expect(type_section_of("(module (type (func (param funcref externref exnref))))") == expected);
+        })
+        Test("the other abstract heap types get theirs", {
+            // i31 6c, struct 6b, array 6a, any 6e, eq 6d, none 71, nofunc 73, noextern 72
+            std::vector<unsigned char> expected(
+                {0x01, 0x60, 0x08, 0x6c, 0x6b, 0x6a, 0x6e, 0x6d, 0x71, 0x73, 0x72, 0x00});
+            Expect(type_section_of(
+                "(module (type (func (param i31ref structref arrayref anyref eqref"
+                " nullref nullfuncref nullexternref))))") == expected);
+        })
+        Test("a non-null reference is written 0x64 with its heap type", {
+            // (ref func) = 64 70, (ref struct) = 64 6b
+            std::vector<unsigned char> expected({0x01, 0x60, 0x02, 0x64, 0x70, 0x64, 0x6b, 0x00});
+            Expect(type_section_of("(module (type (func (param (ref func) (ref struct)))))") == expected);
+        })
+        Test("a concrete reference carries the type index", {
+            // type 0 is the struct; (ref null 0) = 63 00, (ref 0) = 64 00
+            std::vector<unsigned char> expected(
+                {0x02, 0x5f, 0x00, 0x60, 0x02, 0x63, 0x00, 0x64, 0x00, 0x00});
+            Expect(type_section_of(
+                "(module (type $s (struct)) (type (func (param (ref null $s) (ref $s)))))") == expected);
+        })
+        Test("(ref null func) is written as the funcref shorthand", {
+            std::vector<unsigned char> expected({0x01, 0x60, 0x01, 0x70, 0x00});
+            Expect(type_section_of("(module (type (func (param (ref null func)))))") == expected);
+        })
+        Test("every reference value type survives the binary roundtrip", {
+            const std::string src =
+                "(module"
+                "  (type $s (struct (field (ref null $s)) (field (mut (ref $s)))))"
+                "  (type $a (array (mut (ref null $a))))"
+                "  (type (func (param funcref externref exnref i31ref structref arrayref anyref eqref)"
+                "              (result nullref nullfuncref nullexternref)))"
+                "  (type (func (param (ref func) (ref extern) (ref any) (ref $s)) (result (ref null $a))))"
+                "  (func (local (ref null $s) anyref)))";
+            std::istringstream in(src);
+            WasmModule before = module_parse(in);
+            WasmModule after = binary_roundtrip(src);
+            Expect(after.types == before.types);
+            AssertEq(after.funcs.size(), 1U);
+            Expect(after.funcs[0].locals == before.funcs[0].locals);
+            Expect(text_of(after) == text_of(before));
+        })
+        Test("the dump spells what the parser reads", {
+            std::istringstream in(
+                "(module (type $s (struct))"
+                " (type (func (param (ref $s) (ref null $s) (ref any) structref) (result funcref))))");
+            WasmModule m = module_parse(in);
+            const std::string text = text_of(m);
+            Expect(text.find("(param (ref 0) (ref null 0) (ref any) structref)") != std::string::npos);
+            Expect(text.find("(result funcref)") != std::string::npos);
+        })
+        Test("an unknown heap type byte is a decode error", {
+            // 0x64 0x60: a non-null reference to a heap type that is not one
+            const std::string bytes("\0asm\x01\0\0\0\x01\x06\x01\x60\x01\x64\x60\x00", 17);
+            std::istringstream in(bytes, std::ios::binary);
+            Throw(Exception::Decode, { module_decode(in); });
         })
     })
     // Type definitions from the GC proposal: struct and array composite types,
