@@ -17,11 +17,10 @@ Difference from Wasm spec
   segment still holds only ``funcref`` or ``externref``
   (:cpp:enum:`WasmVM::RefType`), so a table of concrete references cannot be
   declared.
-* ``ref.test``, ``ref.cast``, ``br_on_cast`` and ``br_on_cast_fail`` execute
-  but are not validated: the function validator has no case for them, so
-  ``ref.test`` does not push its ``i32`` and ``ref.cast`` does not refine the
-  operand's type. A cast is therefore no use for turning an abstract
-  reference into a concrete one.
+* ``br_on_null`` and ``br_on_non_null`` execute but are not validated: the
+  function validator has no case for either, so the operand is not required
+  to be a reference and the label is not checked against what the branch
+  sends it.
 
 What's new in 1.3
 -----------------
@@ -58,6 +57,11 @@ Unreleased
 * ``ref.null`` takes any heap type, abstract or concrete. It took only
   ``func`` and ``extern``, which left a null struct or array reference
   impossible to write.
+* ``ref.test``, ``ref.cast``, ``br_on_cast`` and ``br_on_cast_fail`` are
+  validated. They executed but had no case in the function validator, so
+  ``ref.test`` did not push its ``i32`` and ``ref.cast`` did not refine its
+  operand -- which left a cast unable to do the one thing it is for, turning
+  an abstract reference into a concrete one.
 
 * Type section entries are subtypes (:cpp:struct:`WasmVM::SubType`): a
   function, struct or array composite type, optionally ``(sub final? $super

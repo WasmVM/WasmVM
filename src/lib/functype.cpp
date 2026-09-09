@@ -314,6 +314,23 @@ bool WasmVM::comp_refines(index_t a, index_t b, const std::vector<SubType>& type
     return true;
 }
 
+ValueType WasmVM::top_of(const ValueType& type, const std::vector<SubType>& types){
+    switch(hierarchy_of(type, types)){
+        case Hierarchy::func:    return ValueType(ValueType::funcref);
+        case Hierarchy::extern_: return ValueType(ValueType::externref);
+        case Hierarchy::exn:     return ValueType(ValueType::exnref);
+        default:                 return ValueType(ValueType::anyref);
+    }
+}
+
+ValueType WasmVM::reference_diff(const ValueType& a, const ValueType& b){
+    ValueType result = a;
+    if(b.nullable){
+        result.nullable = false;
+    }
+    return result;
+}
+
 Value WasmVM::default_value(const ValueType& type, const std::vector<SubType>& types){
     switch(type.kind){
         case ValueType::i32: return Value((i32_t)0);

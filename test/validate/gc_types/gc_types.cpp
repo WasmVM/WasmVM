@@ -258,6 +258,77 @@ Suite validate_gc_types {
                                  "needs an array reference"));
         })
     })
+    // The cast instructions execute, but the function validator had no case
+    // for any of them: ref.test did not push its i32 and ref.cast did not
+    // refine its operand, so a cast was no use for turning an abstract
+    // reference into a concrete one -- the one thing it is for.
+    Category("casts", {
+        Test("ref.test takes the top of the hierarchy and pushes i32", {
+            Expect(!validate(prelude + " (func (param anyref) (result i32) local.get 0 ref.test (ref $s)))"));
+            Expect(!validate(prelude + " (func (param funcref) (result i32) local.get 0 ref.test (ref func)))"));
+        })
+        Test("the hierarchies do not mix", {
+            Expect(rejected_with(prelude + " (func (param funcref) (result i32) local.get 0 ref.test (ref $s)))",
+                                 "reference to a different type"));
+            Expect(rejected_with(prelude + " (func (param externref) (result i32) local.get 0 ref.test (ref array)))",
+                                 "reference to a different type"));
+        })
+        Test("a number is not a reference to test", {
+            Expect(rejected_with(prelude + " (func (param i32) (result i32) local.get 0 ref.test (ref $s)))",
+                                 "value type not match"));
+        })
+        Test("a type index that does not exist", {
+            Expect(rejected_with(prelude + " (func (param anyref) (result i32) local.get 0 ref.test (ref 99)))",
+                                 "type index not found for ref.test"));
+            Expect(rejected_with(prelude + " (func (param anyref) (result anyref) local.get 0 ref.cast (ref 99)))",
+                                 "type index not found for ref.cast"));
+        })
+        Test("ref.cast refines the operand to what it names", {
+            // Reading a struct field off an anyref is only possible through
+            // the cast, which is the whole point of having one.
+            Expect(!validate(prelude + " (func (param anyref) (result i32)"
+                                       " local.get 0 ref.cast (ref $s) struct.get $s $x))"));
+        })
+        Test("a nullable cast gives a nullable result", {
+            Expect(!validate(prelude + " (func (param anyref) (result (ref null $s))"
+                                       " local.get 0 ref.cast (ref null $s)))"));
+            Expect(rejected_with(prelude + " (func (param anyref) (result (ref $s))"
+                                           " local.get 0 ref.cast (ref null $s)))",
+                                 "nullable reference where a non-null one is required"));
+        })
+        Test("br_on_cast sends the cast type to its label", {
+            Expect(!validate(prelude +
+                " (func (param anyref) (result i32) block $h (result (ref $s))"
+                " local.get 0 br_on_cast $h (ref null any) (ref $s) drop i32.const 0 return end"
+                " struct.get $s $x))"));
+        })
+        Test("a label that cannot take the reference is refused", {
+            Expect(rejected_with(prelude +
+                " (func (param anyref) (result i32) block $h (result (ref $a))"
+                " local.get 0 br_on_cast $h (ref null any) (ref $s) drop i32.const 0 return end"
+                " array.len))",
+                "label of br_on_cast does not accept the reference it is sent"));
+        })
+        Test("casting to something not below the source is refused", {
+            Expect(rejected_with(prelude +
+                " (func (param anyref) (result i32) block $h (result (ref $s))"
+                " local.get 0 ref.cast (ref $a) br_on_cast $h (ref $a) (ref $s) drop i32.const 0 return end"
+                " struct.get $s $x))",
+                "casts to a type that is not below the one it casts from"));
+        })
+        Test("br_on_cast_fail keeps the cast type and branches with the rest", {
+            Expect(!validate(prelude +
+                " (func (param anyref) (result i32) block $h (result (ref null any))"
+                " local.get 0 br_on_cast_fail $h (ref null any) (ref $s) struct.get $s $x return end"
+                " drop i32.const 0))"));
+        })
+        Test("a label index that does not exist", {
+            Expect(rejected_with(prelude +
+                " (func (param anyref) (result i32) local.get 0"
+                " br_on_cast 9 (ref null any) (ref $s) drop i32.const 0))",
+                "label index not found in br_on_cast"));
+        })
+    })
     // A declared supertype has to be honest about the shapes.
     Category("a declared supertype must be one", {
         Test("adding fields to a struct is a refinement", {
