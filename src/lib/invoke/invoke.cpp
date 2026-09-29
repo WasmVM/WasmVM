@@ -177,3 +177,21 @@ integer_divide_by_zero::integer_divide_by_zero() :
     Trap("integer divide by zero") {}
 integer_overflow::integer_overflow() :
     Trap("integer overflow") {}
+
+invalid_argument::~invalid_argument() = default;
+invalid_results::~invalid_results() = default;
+unreachable::~unreachable() = default;
+no_end_of_func::~no_end_of_func() = default;
+func_not_exist::~func_not_exist() = default;
+invalid_label::~invalid_label() = default;
+invalid_elem_index::~invalid_elem_index() = default;
+invalid_reference::~invalid_reference() = default;
+uninitialized_element::~uninitialized_element() = default;
+invalid_value::~invalid_value() = default;
+function_type_unmatch::~function_type_unmatch() = default;
+length_too_long::~length_too_long() = default;
+cast_failure::~cast_failure() = default;
+null_reference::~null_reference() = default;
+invalid_conversion_to_integer::~invalid_conversion_to_integer() = default;
+integer_divide_by_zero::~integer_divide_by_zero() = default;
+integer_overflow::~integer_overflow() = default;

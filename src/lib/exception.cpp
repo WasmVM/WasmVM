@@ -16,3 +16,11 @@ Exception::interrupted::interrupted() :
 
 Exception::Uncaught::Uncaught(GcPtr<WasmException> exn) :
     Exception("unhandled WebAssembly exception"), exn(std::move(exn)) {}
+
+Exception::Exception::~Exception() = default;
+Exception::Parse::~Parse() = default;
+Exception::Decode::~Decode() = default;
+Exception::unexpected_eof::~unexpected_eof() = default;
+Exception::interrupted::~interrupted() = default;
+Exception::Trap::~Trap() = default;
+Exception::Uncaught::~Uncaught() = default;
