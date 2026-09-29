@@ -64,6 +64,14 @@ std::string binop(const std::string& type, const std::string& op, const std::str
            "(" + type + "." + op + " (" + type + ".const " + lhs + ") (" + type + ".const " + rhs + "))))";
 }
 
+// A module whose "f" pushes `type.const value`, applies `ops`, and returns the
+// `result` it leaves.
+std::string convert(const std::string& result, const std::string& type, const std::string& value,
+                    const std::string& ops) {
+    return "(module (func (export \"f\") (result " + result + ") "
+           + type + ".const " + value + " " + ops + "))";
+}
+
 const std::string i32_min = std::to_string(std::numeric_limits<int32_t>::min());
 const std::string i64_min = std::to_string(std::numeric_limits<int64_t>::min());
 
@@ -274,6 +282,129 @@ Suite numeric {
             std::vector<Value> r = run(binop("i32", "shr_u", "-16", "28"));
             AssertEq(r.size(), (size_t)1);
             ExpectEq(std::get<i32_t>(r[0]), (i32_t)15);
+        })
+    })
+
+    Category("saturating truncation", {
+        // An operand that truncates into range gives that integer; only one
+        // outside the range saturates. Converting a value above the signed
+        // maximum straight to the signed type is undefined in C++, so the
+        // unsigned forms returned the signed maximum on arm64 and the signed
+        // minimum on x86-64 for anything at or above 2^31 (2^63).
+        Test("i32.trunc_sat_f64_u of 2147483647", {
+            std::vector<Value> r = run(convert("i32", "f64", "2147483647", "i32.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0x7FFFFFFFu);
+        })
+        Test("i32.trunc_sat_f64_u of 2147483648", {
+            std::vector<Value> r = run(convert("i32", "f64", "2147483648", "i32.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0x80000000u);
+        })
+        Test("i32.trunc_sat_f64_u of 3000000000", {
+            std::vector<Value> r = run(convert("i32", "f64", "3000000000", "i32.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xB2D05E00u);
+        })
+        Test("i32.trunc_sat_f64_u of 4294967040", {
+            std::vector<Value> r = run(convert("i32", "f64", "4294967040", "i32.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xFFFFFF00u);
+        })
+        Test("i32.trunc_sat_f32_u of 2147483648", {
+            std::vector<Value> r = run(convert("i32", "f64", "2147483648", "f32.demote_f64 i32.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0x80000000u);
+        })
+        Test("i32.trunc_sat_f32_u of 3000000000", {
+            std::vector<Value> r = run(convert("i32", "f64", "3000000000", "f32.demote_f64 i32.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xB2D05E00u);
+        })
+        Test("i32.trunc_sat_f32_u of 4294967040", {
+            std::vector<Value> r = run(convert("i32", "f64", "4294967040", "f32.demote_f64 i32.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xFFFFFF00u);
+        })
+        Test("i64.trunc_sat_f64_u of 2^63", {
+            std::vector<Value> r = run(convert("i64", "f64", "9223372036854775808", "i64.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0x8000000000000000ull);
+        })
+        Test("i64.trunc_sat_f64_u of 1.2e19", {
+            std::vector<Value> r = run(convert("i64", "f64", "1.2e19", "i64.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xA688906BD8B00000ull);
+        })
+        Test("i64.trunc_sat_f32_u of 2^63", {
+            std::vector<Value> r = run(convert("i64", "f64", "9223372036854775808", "f32.demote_f64 i64.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0x8000000000000000ull);
+        })
+        Test("i64.trunc_sat_f32_u of 1.2e19", {
+            // 1.2e19 is not exact in f32; demoted, it is 0xA688900000000000.
+            std::vector<Value> r = run(convert("i64", "f64", "1.2e19", "f32.demote_f64 i64.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xA688900000000000ull);
+        })
+    })
+
+    Category("saturating truncation of exactly 2^N", {
+        // The saturation bound is the integer limit converted to the float
+        // type, which rounds up to exactly 2^N. An operand equal to it must
+        // saturate rather than fall through to the out-of-range conversion.
+        // On arm64 the conversion happens to saturate by itself, so only an
+        // x86-64 run tells the three signed cases apart from the unfixed code.
+        Test("i32.trunc_sat_f32_u of 2^32 saturates", {
+            std::vector<Value> r = run(convert("i32", "f32", "4294967296", "i32.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xFFFFFFFFu);
+        })
+        Test("i64.trunc_sat_f32_u of 2^64 saturates", {
+            std::vector<Value> r = run(convert("i64", "f32", "18446744073709551616", "i64.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xFFFFFFFFFFFFFFFFull);
+        })
+        Test("i64.trunc_sat_f64_u of 2^64 saturates", {
+            std::vector<Value> r = run(convert("i64", "f64", "18446744073709551616", "i64.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xFFFFFFFFFFFFFFFFull);
+        })
+        Test("i32.trunc_sat_f32_s of 2^31 saturates", {
+            std::vector<Value> r = run(convert("i32", "f32", "2147483648", "i32.trunc_sat_f32_s"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), std::numeric_limits<i32_t>::max());
+        })
+        Test("i64.trunc_sat_f32_s of 2^63 saturates", {
+            std::vector<Value> r = run(convert("i64", "f32", "9223372036854775808", "i64.trunc_sat_f32_s"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), std::numeric_limits<i64_t>::max());
+        })
+        Test("i64.trunc_sat_f64_s of 2^63 saturates", {
+            std::vector<Value> r = run(convert("i64", "f64", "9223372036854775808", "i64.trunc_sat_f64_s"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i64_t>(r[0]), std::numeric_limits<i64_t>::max());
+        })
+        // Controls: the largest value below each bound still truncates.
+        Test("i32.trunc_sat_f32_u of 4294967040 does not saturate", {
+            std::vector<Value> r = run(convert("i32", "f32", "4294967040", "i32.trunc_sat_f32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u32_t)std::get<i32_t>(r[0]), (u32_t)0xFFFFFF00u);
+        })
+        Test("i32.trunc_sat_f32_s of 2147483520 does not saturate", {
+            std::vector<Value> r = run(convert("i32", "f32", "2147483520", "i32.trunc_sat_f32_s"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)2147483520);
+        })
+        Test("i64.trunc_sat_f64_s of 2^63 - 1024 does not saturate", {
+            std::vector<Value> r = run(convert("i64", "f64", "9223372036854774784", "i64.trunc_sat_f64_s"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0x7FFFFFFFFFFFFC00ull);
+        })
+        Test("i64.trunc_sat_f64_u of 2^64 - 2048 does not saturate", {
+            std::vector<Value> r = run(convert("i64", "f64", "18446744073709549568", "i64.trunc_sat_f64_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xFFFFFFFFFFFFF800ull);
         })
     })
 };
