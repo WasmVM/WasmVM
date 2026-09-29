@@ -216,7 +216,7 @@ void RunVisitor::operator()(Instr::I64_trunc_sat_f32_s&){
         put_op(stack, (i64_t)((value < 0) ? INT64_MIN : INT64_MAX));
     }else if(value < (f32_t)INT64_MIN){
         put_op(stack, (i64_t)INT64_MIN);
-    }else if(value > (f32_t)INT64_MAX){
+    }else if(value >= (f32_t)INT64_MAX){
         put_op(stack, (i64_t)INT64_MAX);
     }else{
         put_op(stack, (i64_t)value);
@@ -230,10 +230,10 @@ void RunVisitor::operator()(Instr::I64_trunc_sat_f32_u&){
         put_op(stack, (i64_t)((value < 0) ? 0 : UINT64_MAX));
     }else if(value < 0){
         put_op(stack, (i64_t)0);
-    }else if(value > (f32_t)UINT64_MAX){
+    }else if(value >= (f32_t)UINT64_MAX){
         put_op(stack, (i64_t)UINT64_MAX);
     }else{
-        put_op(stack, (i64_t)value);
+        put_op(stack, (i64_t)(u64_t)value);
     }
 }
 void RunVisitor::operator()(Instr::I64_trunc_sat_f64_s&){
@@ -244,7 +244,7 @@ void RunVisitor::operator()(Instr::I64_trunc_sat_f64_s&){
         put_op(stack, (i64_t)((value < 0) ? INT64_MIN : INT64_MAX));
     }else if(value < (f64_t)INT64_MIN){
         put_op(stack, (i64_t)INT64_MIN);
-    }else if(value > (f64_t)INT64_MAX){
+    }else if(value >= (f64_t)INT64_MAX){
         put_op(stack, (i64_t)INT64_MAX);
     }else{
         put_op(stack, (i64_t)value);
@@ -258,9 +258,9 @@ void RunVisitor::operator()(Instr::I64_trunc_sat_f64_u&){
         put_op(stack, (i64_t)((value < 0) ? 0 : UINT64_MAX));
     }else if(value < 0){
         put_op(stack, (i64_t)0);
-    }else if(value > (f64_t)UINT64_MAX){
+    }else if(value >= (f64_t)UINT64_MAX){
         put_op(stack, (i64_t)UINT64_MAX);
     }else{
-        put_op(stack, (i64_t)value);
+        put_op(stack, (i64_t)(u64_t)value);
     }
 }

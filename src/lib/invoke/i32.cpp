@@ -174,7 +174,7 @@ void RunVisitor::operator()(Instr::I32_trunc_sat_f32_s&){
         put_op(stack, (i32_t)((value < 0) ? INT32_MIN : INT32_MAX));
     }else if(value < (f32_t)INT32_MIN){
         put_op(stack, (i32_t)INT32_MIN);
-    }else if(value > (f32_t)INT32_MAX){
+    }else if(value >= (f32_t)INT32_MAX){
         put_op(stack, (i32_t)INT32_MAX);
     }else{
         put_op(stack, (i32_t)value);
@@ -188,10 +188,10 @@ void RunVisitor::operator()(Instr::I32_trunc_sat_f32_u&){
         put_op(stack, (i32_t)((value < 0) ? 0 : UINT32_MAX));
     }else if(value < 0){
         put_op(stack, (i32_t)0);
-    }else if(value > (f32_t)UINT32_MAX){
+    }else if(value >= (f32_t)UINT32_MAX){
         put_op(stack, (i32_t)UINT32_MAX);
     }else{
-        put_op(stack, (i32_t)value);
+        put_op(stack, (i32_t)(u32_t)value);
     }
 }
 void RunVisitor::operator()(Instr::I32_trunc_sat_f64_s&){
@@ -219,7 +219,7 @@ void RunVisitor::operator()(Instr::I32_trunc_sat_f64_u&){
     }else if(value > (f64_t)UINT32_MAX){
         put_op(stack, (i32_t)UINT32_MAX);
     }else{
-        put_op(stack, (i32_t)value);
+        put_op(stack, (i32_t)(u64_t)value);
     }
 }
 void RunVisitor::operator()(Instr::I32_wrap_i64&){
