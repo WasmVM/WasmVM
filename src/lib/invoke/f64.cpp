@@ -249,7 +249,7 @@ void RunVisitor::operator()(Instr::F64_convert_i32_s&){
     put_op(stack, (f64_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_convert_i32_u&){
-    put_op(stack, (f64_t)(u64_t)get_op<i32_t>(stack));
+    put_op(stack, (f64_t)(u32_t)get_op<i32_t>(stack));
 }
 void RunVisitor::operator()(Instr::F64_convert_i64_s&){
     put_op(stack, (f64_t)get_op<i64_t>(stack));

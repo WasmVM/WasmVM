@@ -407,4 +407,35 @@ Suite numeric {
             ExpectEq((u64_t)std::get<i64_t>(r[0]), (u64_t)0xFFFFFFFFFFFFF800ull);
         })
     })
+
+    Category("f64.convert_i32_u is unsigned", {
+        // The operand is read as unsigned. Converting the signed i32 straight
+        // to u64 sign-extended it, so anything at or above 2^31 came back near
+        // 2^64. Every value here is exact in f64.
+        Test("f64.convert_i32_u of 5", {
+            std::vector<Value> r = run(convert("f64", "i32", "5", "f64.convert_i32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)5.0);
+        })
+        Test("f64.convert_i32_u of 0x7FFFFFFF", {
+            std::vector<Value> r = run(convert("f64", "i32", "2147483647", "f64.convert_i32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)2147483647.0);
+        })
+        Test("f64.convert_i32_u of 0x80000000", {
+            std::vector<Value> r = run(convert("f64", "i32", "-2147483648", "f64.convert_i32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)2147483648.0);
+        })
+        Test("f64.convert_i32_u of 0xB2D05E00", {
+            std::vector<Value> r = run(convert("f64", "i32", "-1294967296", "f64.convert_i32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)3000000000.0);
+        })
+        Test("f64.convert_i32_u of 0xFFFFFFFF", {
+            std::vector<Value> r = run(convert("f64", "i32", "-1", "f64.convert_i32_u"));
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<f64_t>(r[0]), (f64_t)4294967295.0);
+        })
+    })
 };
