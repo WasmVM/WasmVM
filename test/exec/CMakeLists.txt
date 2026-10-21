@@ -27,3 +27,50 @@ endmacro(add_exec_test_suite)
 
 add_exec_test_suite(commandparser ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp)
 add_exec_test_suite(linker ${PROJECT_SOURCE_DIR}/src/exec/Linker.cpp)
+
+# Limits of memory and table imports, matched by the wasmvm CLI (issue #26).
+# Each importer is run as the main module with the real wasmvm executable; the
+# exporter sits next to it and is found by name. The .wat fixtures are
+# assembled with wasmvm-as at build time.
+set(IMPORT_LIMITS_SRC ${CMAKE_CURRENT_LIST_DIR}/import_limits)
+set(IMPORT_LIMITS_BIN ${CMAKE_CURRENT_BINARY_DIR}/import_limits)
+set(IMPORT_LIMITS_MODULES
+  mem2 mem1to2 mem1 grown
+  imp_mem_min1_from_mem2 imp_mem_min2_from_mem2 imp_mem_nomax_from_max2
+  imp_mem_max2_from_nomax imp_table_min0_from_grown
+)
+set(IMPORT_LIMITS_WASM)
+foreach(module ${IMPORT_LIMITS_MODULES})
+  add_custom_command(
+    OUTPUT ${IMPORT_LIMITS_BIN}/${module}.wasm
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${IMPORT_LIMITS_BIN}
+    COMMAND $<TARGET_FILE:wasmvm-as> ${IMPORT_LIMITS_SRC}/${module}.wat
+      -o ${IMPORT_LIMITS_BIN}/${module}.wasm
+    DEPENDS wasmvm-as ${IMPORT_LIMITS_SRC}/${module}.wat
+  )
+  list(APPEND IMPORT_LIMITS_WASM ${IMPORT_LIMITS_BIN}/${module}.wasm)
+endforeach()
+add_custom_target(exec_import_limits_modules ALL DEPENDS ${IMPORT_LIMITS_WASM})
+
+# An importer that matches must instantiate (exit 0); one that does not must be
+# rejected by the limit check itself, not by some other failure, so its test
+# passes only on the limit message.
+macro(add_import_limits_test importer)
+  add_test(NAME exec_import_limits_${importer}
+    COMMAND $<TARGET_FILE:wasmvm> --no-system ${IMPORT_LIMITS_BIN}/${importer}.wasm
+  )
+  set_property(TEST exec_import_limits_${importer} PROPERTY
+    ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+  )
+  if(${ARGC} GREATER 1)
+    set_property(TEST exec_import_limits_${importer} PROPERTY
+      PASS_REGULAR_EXPRESSION "${ARGV1}"
+    )
+  endif()
+endmacro(add_import_limits_test)
+
+add_import_limits_test(imp_mem_min1_from_mem2)
+add_import_limits_test(imp_mem_min2_from_mem2)
+add_import_limits_test(imp_mem_nomax_from_max2)
+add_import_limits_test(imp_mem_max2_from_nomax "import 'm' not match memory limit")
+add_import_limits_test(imp_table_min0_from_grown)

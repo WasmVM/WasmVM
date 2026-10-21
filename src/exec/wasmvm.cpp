@@ -59,11 +59,11 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 }
                 TableType imported = std::get<TableType>(import.desc);
                 TableType exported = store.tables[export_it->value.addr].type;
-                if(imported.limits.min < exported.limits.min){
+                if(exported.limits.min < imported.limits.min){
                     throw Exception::Exception(std::string("import '") + import.name + "' not match table limit");
                 }
-                if(exported.limits.max.has_value()){
-                    if(!imported.limits.max.has_value() || (imported.limits.max.value() < exported.limits.max.value())){
+                if(imported.limits.max.has_value()){
+                    if(!exported.limits.max.has_value() || (exported.limits.max.value() > imported.limits.max.value())){
                         throw Exception::Exception(std::string("import '") + import.name + "' not match table limit");
                     }
                 }
@@ -77,11 +77,11 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 }
                 MemType imported = std::get<MemType>(import.desc);
                 MemType exported = store.mems[export_it->value.addr].type;
-                if(imported.min < exported.min){
+                if(exported.min < imported.min){
                     throw Exception::Exception(std::string("import '") + import.name + "' not match memory limit");
                 }
-                if(exported.max.has_value()){
-                    if(!imported.max.has_value() || (imported.max.value() < exported.max.value())){
+                if(imported.max.has_value()){
+                    if(!exported.max.has_value() || (exported.max.value() > imported.max.value())){
                         throw Exception::Exception(std::string("import '") + import.name + "' not match memory limit");
                     }
                 }
