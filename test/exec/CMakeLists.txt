@@ -115,12 +115,13 @@ set_property(TEST exec_canon_identity_isomorphic PROPERTY
   ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
 )
 
-# Import function-type matching (issue #39, option A), through the real wasmvm
-# CLI loading two modules. Module `a` exports a function whose declared type is
-# a subtype of `$t` with a refined signature. An importer declaring the import
-# as `$t` must be ACCEPTED by declared subtyping (structural equality would
-# reject it); an importer declaring it as a same-shaped but unrelated type must
-# be REJECTED (structural equality would wrongly accept it).
+# Import function-type matching (issue #39), through the real wasmvm CLI loading
+# two modules. Module `a` exports "f" of type `$g` (result (ref null eq)).
+# importer_ok declares the import as `$h` (result (ref null any)): `$g` does not
+# declare `$h` as a supertype, but it structurally refines it (eq <: any), so the
+# structural import rule (canon_matches) accepts it -- declared-only matching
+# would not. importer_bad declares it as `$u` (result (ref null extern)), a
+# different hierarchy that `$g` neither equals nor refines, so it is rejected.
 set(IMPORT_MATCH_SRC ${CMAKE_CURRENT_LIST_DIR}/import_match)
 set(IMPORT_MATCH_BIN ${CMAKE_CURRENT_BINARY_DIR}/import_match)
 set(IMPORT_MATCH_MODULES a importer_ok importer_bad)
@@ -137,14 +138,16 @@ foreach(module ${IMPORT_MATCH_MODULES})
 endforeach()
 add_custom_target(exec_import_match_modules ALL DEPENDS ${IMPORT_MATCH_WASM})
 
-# A declared subtype satisfies the import; the module instantiates (exit 0).
+# The export structurally refines the (undeclared) import type; it is accepted
+# and the module instantiates (exit 0).
 add_test(NAME exec_import_match_accept
   COMMAND $<TARGET_FILE:wasmvm> --no-system ${IMPORT_MATCH_BIN}/importer_ok.wasm
 )
 set_property(TEST exec_import_match_accept PROPERTY
   ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
 )
-# An undeclared, same-shaped import type is not satisfied; load is rejected.
+# A structurally incompatible import type is not satisfied; the load is rejected
+# (the find_if filters it out, so it surfaces as "not found").
 add_test(NAME exec_import_match_reject
   COMMAND $<TARGET_FILE:wasmvm> --no-system ${IMPORT_MATCH_BIN}/importer_bad.wasm
 )
