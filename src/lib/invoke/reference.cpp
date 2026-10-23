@@ -97,11 +97,12 @@ static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const Modul
         if((heaptype == heaptype_func) || (heaptype == heaptype_nofunc)){
             return true;
         }
-        // A concrete function type. The function matches when its declared
-        // type is at or below the target, following declared supertypes across
-        // modules via Store-wide identities (#38). A host function has no
-        // declared type (canon == index_npos): it declares no supertypes, so
-        // the only match is exact, and it is compared structurally as before.
+        // A concrete function type. The function matches when its type is a
+        // Store-wide subtype of the target: structural refinement and declared
+        // supertypes (canon_matches), the same rule as struct/array casts and
+        // import matching (#43, on the Owner's #38 ruling). A host function with
+        // no canonical identity (canon == index_npos) is compared structurally
+        // by FuncType, as before.
         if((heaptype < 0) || ((index_t)heaptype >= types.size()) || !types[heaptype].is_func()){
             return false;
         }
@@ -111,7 +112,7 @@ static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const Modul
         }
         const FuncInst& funcinst = store.funcs[funcref.value()];
         if((funcinst.canon != index_npos) && ((index_t)heaptype < module.type_ids.size())){
-            return canon_cast_matches(funcinst.canon, module.type_ids[heaptype], store.canon);
+            return canon_matches(funcinst.canon, module.type_ids[heaptype], store.canon);
         }
         return funcinst.type == types[heaptype].func();
     }

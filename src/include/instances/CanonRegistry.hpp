@@ -47,15 +47,6 @@ CanonId canonicalize_functype(const FuncType& type, CanonRegistry& reg);
 // followed, exactly as `comp_matches` does within a single module.
 bool canon_matches(CanonId a, CanonId b, const CanonRegistry& reg);
 
-// Whether `a` is `b` or has `b` among its transitive *declared* supertypes --
-// the spec's defined-type matching, which follows only declared edges and does
-// not accept an undeclared type that merely happens to refine `b`'s shape. Used
-// for function-type casts (#38), where a function matches a concrete target
-// type exactly when its declared type is at or below it. (The structural
-// refinement that `canon_matches` also admits is the well-formedness condition
-// on a declared supertype, checked at validation, not a cast-time rule.)
-bool canon_cast_matches(CanonId a, CanonId b, const CanonRegistry& reg);
-
 }
 
 #endif
