@@ -133,6 +133,8 @@ std::vector<Value> run_single(const std::string& wat) {
 // $t is a non-final function type; $g declares $t as supertype with a refined
 // (result-covariant) signature; $h has $g's exact shape but declares no
 // supertype. ref.func on a function of each, then ref.test against (ref $t).
+// Under canon_matches (#43) both match: $g by its declared supertype, $h by
+// structural refinement.
 const std::string func_subtype_module =
     "(module"
     " (type $t (sub (func (result (ref null any)))))"
@@ -143,7 +145,41 @@ const std::string func_subtype_module =
     " (elem declare func $gf $hf)"
     " (func (export \"f\") (result i32 i32)"
     "   ref.func $gf ref.test (ref $t)"   // declared subtype -> 1
-    "   ref.func $hf ref.test (ref $t)))"; // undeclared, shape-compatible -> 0
+    "   ref.func $hf ref.test (ref $t)))"; // undeclared, structurally refines -> 1
+
+// $x is a function type in the same (func) hierarchy as $t but structurally
+// incompatible: its result (ref null extern) neither equals nor refines $t's
+// (ref null any). ref.test is 0; ref.cast traps.
+const std::string func_incompatible_module =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $x (func (result (ref null extern))))"
+    " (func $xf (type $x) (ref.null extern))"
+    " (elem declare func $xf)"
+    " (func (export \"f\") (result i32)"
+    "   ref.func $xf ref.test (ref $t)))";
+
+// $r structurally refines $t ((ref null eq) <: (ref null any)) without
+// declaring it a supertype. ref.cast (ref $t) succeeds under canon_matches, so
+// "f" drops the cast result and returns 1.
+const std::string func_cast_refine_module =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $r (func (result (ref null eq))))"
+    " (func $rf (type $r) (ref.null eq))"
+    " (elem declare func $rf)"
+    " (func (export \"f\") (result i32)"
+    "   ref.func $rf ref.cast (ref $t) drop i32.const 1))";
+
+// The incompatible funcref, cast instead of tested: ref.cast (ref $t) must trap.
+const std::string func_cast_bad_module =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $x (func (result (ref null extern))))"
+    " (func $xf (type $x) (ref.null extern))"
+    " (elem declare func $xf)"
+    " (func (export \"f\") (result i32)"
+    "   ref.func $xf ref.cast (ref $t) drop i32.const 1))";
 
 // Producer exporting "mk", itself a function of type $g (a declared subtype of
 // $t). run_pair wires it straight into the consumer's import.
@@ -254,16 +290,33 @@ Suite invoke_canon {
             ExpectEq(i32_at(r, 0), 1);
         })
     })
-    Category("function cast (#38)", {
-        Test("ref.test follows a declared supertype, not shape alone", {
+    Category("function cast (#38, #43)", {
+        Test("ref.test accepts a declared subtype and an undeclared structural refinement (#43)", {
             // $gf declares its type a subtype of $t (refined result); $hf has
-            // the same shape as $gf but declares no supertype. The declared one
-            // matches (ref $t); the undeclared one does not, even though its
-            // signature would structurally refine $t.
+            // the same shape but declares no supertype. Under canon_matches
+            // both match (ref $t): $gf through its declared supertype, $hf
+            // through structural refinement -- the Owner's #43 rule, the same
+            // as struct/array casts and function import matching.
             std::vector<Value> r = run_single(func_subtype_module);
             AssertEq(r.size(), 2U);
             ExpectEq(i32_at(r, 0), 1); // declared subtype
-            ExpectEq(i32_at(r, 1), 0); // undeclared, shape-compatible
+            ExpectEq(i32_at(r, 1), 1); // undeclared, structurally refines
+        })
+        Test("ref.test rejects a structurally incompatible funcref (#43)", {
+            // $xf's result (ref null extern) neither equals nor refines $t's
+            // (ref null any), so the predicate is 0.
+            std::vector<Value> r = run_single(func_incompatible_module);
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 0);
+        })
+        Test("ref.cast succeeds on an undeclared structural refinement (#43)", {
+            // $rf refines $t without declaring it; the cast does not trap.
+            std::vector<Value> r = run_single(func_cast_refine_module);
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 1);
+        })
+        Test("ref.cast traps on a structurally incompatible funcref (#43)", {
+            ExpectThrows(Exception::Trap, run_single(func_cast_bad_module));
         })
         Test("ref.test follows a declared supertype across modules", {
             // The imported function's declared type ($g) is a subtype of $t,

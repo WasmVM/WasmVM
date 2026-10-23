@@ -200,26 +200,6 @@ bool WasmVM::canon_matches(CanonId a, CanonId b, const CanonRegistry& reg){
     return comp_matches(a, b, reg.types);
 }
 
-bool WasmVM::canon_cast_matches(CanonId a, CanonId b, const CanonRegistry& reg){
-    // Declared edges only: `a` matches `b` when it is `b` or declares a
-    // supertype that matches `b`. No structural-refinement fallback, so an
-    // undeclared type that merely refines `b`'s shape does not match. A
-    // declared supertype is always a strictly smaller CanonId, so this
-    // terminates.
-    if(a == b){
-        return true;
-    }
-    if(a >= reg.types.size()){
-        return false;
-    }
-    for(CanonId super : reg.types[a].supers){
-        if(canon_cast_matches(super, b, reg)){
-            return true;
-        }
-    }
-    return false;
-}
-
 CanonId WasmVM::canonicalize_functype(const FuncType& type, CanonRegistry& reg){
     // A host function's type has no type section around it: treat it as a group
     // of one -- a final composite type with no supertypes -- so its closed key
