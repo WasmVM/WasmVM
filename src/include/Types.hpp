@@ -35,6 +35,12 @@ using index_t = u32_t;
 using offset_t = u64_t;
 using align_t = uint8_t;
 constexpr index_t index_npos = (index_t) -1;
+// A type's identity across every module instantiated into one Store. A local
+// type index means nothing outside its own module, so a Store-wide registry
+// rolls each module's recursion groups to a closed form and hands back a
+// CanonId: two of them are equal exactly when they name the same type, however
+// the modules that declared it numbered it. See instances/CanonRegistry.hpp.
+using CanonId = index_t;
 using funcref_t = std::optional<index_t>;
 using externref_t = void*;
 
@@ -215,6 +221,10 @@ struct StructObj : public GcObject {
     void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
     void gc_clear_children() override;
     index_t typeidx;
+    // The Store-wide identity of `typeidx`, stamped when the object is
+    // allocated. A cast compares this, not `typeidx`, which only means
+    // something inside the module that allocated the object.
+    CanonId canon = 0;
     // One per field, in declaration order. A packed field is held as an i32
     // already truncated to its width; struct.get_s / _u extend it on the way
     // out.
@@ -225,6 +235,7 @@ struct ArrayObj : public GcObject {
     void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
     void gc_clear_children() override;
     index_t typeidx;
+    CanonId canon = 0; // Store-wide identity of `typeidx`; see StructObj::canon
     std::vector<Value> elems; // packed elements as for StructObj::fields
 };
 

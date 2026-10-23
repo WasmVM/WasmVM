@@ -145,6 +145,9 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
     }
     // Types
     moduleInst.types = module.types;
+    // Give every local type a Store-wide identity, so casts and import checks
+    // compare types, not module-local indices.
+    canonicalize_types(moduleInst.type_ids, module, store.canon);
     // Tags
     for(index_t typeidx : module.tags){
         index_t address = store.tags.size();
@@ -364,6 +367,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
 
 void ModuleInst::reset(){
     types.clear();
+    type_ids.clear();
     funcaddrs.clear();
     tableaddrs.clear();
     memaddrs.clear();

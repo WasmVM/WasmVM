@@ -10,6 +10,9 @@ namespace WasmVM {
 
 struct ModuleInst {
     std::vector<SubType> types;
+    // The Store-wide CanonId of each local type index, filled at
+    // instantiation. `type_ids[i]` is the identity of `types[i]`.
+    std::vector<CanonId> type_ids;
     std::vector<index_t> funcaddrs;
     std::vector<index_t> tableaddrs;
     std::vector<index_t> memaddrs;

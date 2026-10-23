@@ -75,6 +75,7 @@ add_library(WasmVM_src OBJECT
     collector.cpp
     exception.cpp
     functype.cpp
+    canon.cpp
 )
 set_property(TARGET WasmVM_src PROPERTY POSITION_INDEPENDENT_CODE 1)
 

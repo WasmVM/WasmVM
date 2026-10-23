@@ -47,6 +47,13 @@ const SubType& named_type(Stack& stack, index_t typeidx){
     return types[typeidx];
 }
 
+// The Store-wide identity of a local type index, to stamp on a new object.
+// Only called after `struct_type`/`array_type` has already bounds-checked the
+// index, and `type_ids` is the same length as the module's type section.
+CanonId canon_of(Stack& stack, index_t typeidx){
+    return stack.frames.top().module.type_ids[typeidx];
+}
+
 const StructType& struct_type(Stack& stack, index_t typeidx){
     const SubType& type = named_type(stack, typeidx);
     if(!type.is_struct()){
@@ -160,6 +167,7 @@ void RunVisitor::operator()(Instr::Struct_new& instr){
     const StructType& type = struct_type(stack, instr.index);
     structref_t obj = gc_new<StructObj>();
     obj->typeidx = instr.index;
+    obj->canon = canon_of(stack, instr.index);
     obj->fields.resize(type.fields.size());
     // The last field is on top of the stack.
     for(size_t i = type.fields.size(); i > 0; --i){
@@ -172,6 +180,7 @@ void RunVisitor::operator()(Instr::Struct_new_default& instr){
     const StructType& type = struct_type(stack, instr.index);
     structref_t obj = gc_new<StructObj>();
     obj->typeidx = instr.index;
+    obj->canon = canon_of(stack, instr.index);
     for(const FieldType& field : type.fields){
         obj->fields.emplace_back(field_default(stack, field));
     }
@@ -206,6 +215,7 @@ void RunVisitor::operator()(Instr::Array_new& instr){
     Value init = store_field(type.field, pop(stack));
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.index;
+    obj->canon = canon_of(stack, instr.index);
     obj->elems.assign((size_t)(u32_t)count, init);
     top_label(stack).values.emplace(Value(std::move(obj)));
 }
@@ -215,6 +225,7 @@ void RunVisitor::operator()(Instr::Array_new_default& instr){
     i32_t count = pop_i32(stack);
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.index;
+    obj->canon = canon_of(stack, instr.index);
     obj->elems.assign((size_t)(u32_t)count, field_default(stack, type.field));
     top_label(stack).values.emplace(Value(std::move(obj)));
 }
@@ -223,6 +234,7 @@ void RunVisitor::operator()(Instr::Array_new_fixed& instr){
     const ArrayType& type = array_type(stack, instr.typeidx);
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
+    obj->canon = canon_of(stack, instr.typeidx);
     obj->elems.resize((size_t)instr.n);
     // The last element is on top of the stack.
     for(size_t i = (size_t)instr.n; i > 0; --i){
@@ -245,6 +257,7 @@ void RunVisitor::operator()(Instr::Array_new_data& instr){
     check_bounds((u64_t)(u32_t)offset, (u64_t)(u32_t)count * width, data.size());
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
+    obj->canon = canon_of(stack, instr.typeidx);
     for(u32_t i = 0; i < (u32_t)count; ++i){
         u64_t at = (u64_t)(u32_t)offset + (u64_t)i * width;
         u64_t bits = 0;
@@ -282,6 +295,7 @@ void RunVisitor::operator()(Instr::Array_new_elem& instr){
     check_bounds((u64_t)(u32_t)offset, (u64_t)(u32_t)count, segment.elem.size());
     arrayref_t obj = gc_new<ArrayObj>();
     obj->typeidx = instr.typeidx;
+    obj->canon = canon_of(stack, instr.typeidx);
     for(u32_t i = 0; i < (u32_t)count; ++i){
         obj->elems.emplace_back(segment.elem[(size_t)((u32_t)offset + i)]);
     }
