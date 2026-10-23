@@ -7,6 +7,7 @@
 #include <type_traits>
 #include <cstring>
 #include <new>
+#include <limits>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
 
@@ -191,6 +192,16 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
   // came out of the allocator as a std::bad_alloc rather than as -1.
   const u64_t page_limit = mem.type.is64 ? (1ULL << 48ULL) : (1ULL << 16ULL);
   if((new_pages > page_limit) || (mem.type.max && (new_pages > mem.type.max.value()))) {
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
+    return;
+  }
+  // The byte count must fit size_t. 2^48 pages is 2^64 bytes, which wraps to
+  // 0 and would resize the memory to nothing while answering success; refuse
+  // it as the spec allows memory.grow to.
+  if(new_pages > (std::numeric_limits<std::size_t>::max() / page_size)){
     if(mem.type.is64)
       label.values.emplace<i64_t>(i64_t(-1));
     else
