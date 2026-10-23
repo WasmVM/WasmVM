@@ -112,6 +112,57 @@ std::string consumer_testing(const std::string& type0) {
            " (func (export \"f\") (result i32) call $mk ref.test (ref 0)))";
 }
 
+// Parse, validate, instantiate one module into its own Store and run its "f".
+std::vector<Value> run_single(const std::string& wat) {
+    static std::list<ModuleInst> instances;
+    static std::list<Store>      stores;
+    Store& store = stores.emplace_back();
+    WasmModule module = parse_valid(wat);
+    ModuleInst& instance = instances.emplace_back();
+    module_instanciate(instance, store, module, {});
+    for (ExportInst& exported : instance.exports) {
+        if (exported.name == "f" && exported.value.type == ExternVal::ExternType::Func) {
+            Stack stack(store);
+            stack.invoke(exported.value.addr, {});
+            return stack.run();
+        }
+    }
+    throw Exception::Exception("module has no exported function 'f'");
+}
+
+// $t is a non-final function type; $g declares $t as supertype with a refined
+// (result-covariant) signature; $h has $g's exact shape but declares no
+// supertype. ref.func on a function of each, then ref.test against (ref $t).
+const std::string func_subtype_module =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $g (sub $t (func (result (ref null eq)))))"
+    " (type $h (sub (func (result (ref null eq)))))"
+    " (func $gf (type $g) (ref.null eq))"
+    " (func $hf (type $h) (ref.null eq))"
+    " (elem declare func $gf $hf)"
+    " (func (export \"f\") (result i32 i32)"
+    "   ref.func $gf ref.test (ref $t)"   // declared subtype -> 1
+    "   ref.func $hf ref.test (ref $t)))"; // undeclared, shape-compatible -> 0
+
+// Producer exporting "mk", itself a function of type $g (a declared subtype of
+// $t). run_pair wires it straight into the consumer's import.
+const std::string producer_func_subtype =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $g (sub $t (func (result (ref null eq)))))"
+    " (func (export \"mk\") (type $g) (ref.null eq)))";
+
+// Consumer importing that function as type $g (identical to the producer's, so
+// they share a CanonId), taking a reference to it, and ref.testing against $t.
+const std::string consumer_func_subtype =
+    "(module"
+    " (type $t (sub (func (result (ref null any)))))"
+    " (type $g (sub $t (func (result (ref null eq)))))"
+    " (import \"a\" \"mk\" (func $mk (type $g)))"
+    " (elem declare func $mk)"
+    " (func (export \"f\") (result i32) ref.func $mk ref.test (ref $t)))";
+
 } // namespace
 
 Suite invoke_canon {
@@ -180,6 +231,26 @@ Suite invoke_canon {
             // the two roll to one CanonId and the cast must succeed.
             std::vector<Value> r = run_pair(producer_i32_struct,
                 consumer_testing("(type $s2 (struct (field i32)))"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 1);
+        })
+    })
+    Category("function cast (#38)", {
+        Test("ref.test follows a declared supertype, not shape alone", {
+            // $gf declares its type a subtype of $t (refined result); $hf has
+            // the same shape as $gf but declares no supertype. The declared one
+            // matches (ref $t); the undeclared one does not, even though its
+            // signature would structurally refine $t.
+            std::vector<Value> r = run_single(func_subtype_module);
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), 1); // declared subtype
+            ExpectEq(i32_at(r, 1), 0); // undeclared, shape-compatible
+        })
+        Test("ref.test follows a declared supertype across modules", {
+            // The imported function's declared type ($g) is a subtype of $t,
+            // which the consumer names identically; they share a CanonId, so
+            // the cast across the boundary succeeds.
+            std::vector<Value> r = run_pair(producer_func_subtype, consumer_func_subtype);
             AssertEq(r.size(), 1U);
             ExpectEq(i32_at(r, 0), 1);
         })
