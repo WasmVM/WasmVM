@@ -263,5 +263,14 @@ Suite invoke_table {
                 "(module (memory i64 281474976710656)"
                 " (func (export \"f\") (result i64) memory.size 0))"));
         })
+        // A min that fits size_t but the host cannot allocate: 2^46 pages is
+        // 2^62 bytes, which the allocator refuses up front. The resize threw a
+        // std::bad_alloc that escaped module_instanciate; it must fail
+        // instantiation with Exception::Exception instead.
+        Test("instantiating a memory the host cannot allocate fails", {
+            ExpectThrows(Exception::Exception, run(
+                "(module (memory i64 70368744177664)"
+                " (func (export \"f\") (result i64) memory.size 0))"));
+        })
     })
 };
