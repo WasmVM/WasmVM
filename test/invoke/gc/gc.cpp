@@ -91,6 +91,13 @@ bool traps(const std::string& results, const std::string& code) {
     return false;
 }
 
+// $t is [] -> [] and $u is [i32] -> []; $f has type $t and $g type $u.
+std::string funcs_module(const std::string& results, const std::string& code) {
+    return "(module (type $t (func)) (type $u (func (param i32)))"
+           " (func $f (type $t)) (func $g (type $u))"
+           " (func (export \"f\") " + results + " " + code + "))";
+}
+
 } // namespace
 
 Suite invoke_gc {
@@ -398,6 +405,39 @@ Suite invoke_gc {
             std::vector<Value> r = run(body("(result i32)", code));
             AssertEq(r.size(), 1U);
             ExpectEq(i32_at(r, 0), 111); // fell through: it was an array
+        })
+    })
+    // A function reference against a concrete function type. The runtime
+    // checked a funcref only against the abstract func, so every cast to a
+    // concrete function type trapped and every test answered 0. A function
+    // matches when its type has the same parameters and results, the same
+    // check call_ref makes; declared supertypes are not followed (#38).
+    Category("casts of function references", {
+        Test("ref.cast to the function's own type succeeds", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "ref.func $f ref.cast (ref $t) drop i32.const 1"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 1);
+        })
+        Test("ref.cast to a different function type traps", {
+            ExpectThrows(Exception::Trap, run(funcs_module("",
+                "ref.func $g ref.cast (ref $t) drop")));
+        })
+        Test("ref.test answers 1 for the function's type and 0 for another", {
+            std::vector<Value> r = run(funcs_module("(result i32 i32)",
+                "ref.func $f ref.test (ref $t) ref.func $g ref.test (ref $t)"));
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), 1);
+            ExpectEq(i32_at(r, 1), 0);
+        })
+        Test("br_on_cast branches for the function's type", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "block $h (result (ref $t)) ref.func $f"
+                "   br_on_cast $h (ref null func) (ref $t)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 222); // branched: $f is a $t
         })
     })
 };
