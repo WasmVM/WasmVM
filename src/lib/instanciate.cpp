@@ -8,6 +8,7 @@
 #include <instances/Stack.hpp>
 #include <instances/TagInst.hpp>
 #include <limits>
+#include <new>
 
 using namespace WasmVM;
 
@@ -165,8 +166,15 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         TableInst& tableinst = store.tables.emplace_back();
         moduleInst.tableaddrs.emplace_back(address);
         tableinst.type = module.tables[idx];
-        tableinst.elems.resize(tableinst.type.limits.min,
-                               default_value(tableinst.type.elemtype, moduleInst.types));
+        // A legal table min (up to 2^32-1) can still be more than the host can
+        // allocate; a failed resize must fail instantiation, not escape as a
+        // std::bad_alloc.
+        try {
+            tableinst.elems.resize(tableinst.type.limits.min,
+                                   default_value(tableinst.type.elemtype, moduleInst.types));
+        } catch(const std::bad_alloc&) {
+            throw Exception::Exception("table could not be allocated");
+        }
     }
     // Memories
     for(size_t idx = 0; idx < module.mems.size(); ++idx){
@@ -180,7 +188,14 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         if(meminst.type.min > (std::numeric_limits<std::size_t>::max() / page_size)){
             throw Exception::Exception("memory minimum size too large to allocate");
         }
-        meminst.data.resize(meminst.type.min * page_size);
+        // The byte count fits size_t but may still be more than the host can
+        // allocate; a failed resize must fail instantiation, not escape as a
+        // std::bad_alloc.
+        try {
+            meminst.data.resize(meminst.type.min * page_size);
+        } catch(const std::bad_alloc&) {
+            throw Exception::Exception("memory could not be allocated");
+        }
     }
     // Globals
     for(size_t idx = 0; idx < module.globals.size(); ++idx){
