@@ -140,6 +140,12 @@ Suite traps {
                 "(func (export \"f\") (result i32) i32.const 5 call_indirect (type 0)))"),
                 (int)escape_trap);
         })
+        Test("call_indirect: negative index (undefined element)", {
+            ExpectEq((int)escape_of(
+                call_indirect_prefix + "(table 1 funcref) "
+                "(func (export \"f\") (result i32) i32.const -1 call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
         Test("call_indirect: null table slot (uninitialized element)", {
             ExpectEq((int)escape_of(
                 call_indirect_prefix + "(table 1 funcref) " + call_indirect_body + ")"),
@@ -204,6 +210,30 @@ Suite traps {
                 "i32.const 0 ref.null func table.set 0 i32.const 0 table.get 0 ref.is_null))");
             AssertEq(r.size(), (size_t)1);
             ExpectEq(std::get<i32_t>(r[0]), (i32_t)1);
+        })
+    })
+    Category("return_call_indirect bounds are Exception::Trap", {
+        // return_call_indirect indexes the table with an i32 off the stack.
+        // The index is unsigned per spec, so a negative value must trap. A
+        // signed comparison against the table size lets a negative index slip
+        // past the bounds check into an out-of-range vector access.
+        Test("negative index", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (table 1 funcref) "
+                "(func (export \"f\") i32.const -1 return_call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
+        Test("index equal to the table size", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (table 1 funcref) "
+                "(func (export \"f\") i32.const 1 return_call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
+        Test("in-bounds tail call still dispatches", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (func $g) (table funcref (elem $g)) "
+                "(func (export \"f\") i32.const 0 return_call_indirect (type 0)))"),
+                (int)escape_none);
         })
     })
     Category("memory.copy bounds and overlap", {
