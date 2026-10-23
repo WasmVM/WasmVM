@@ -97,10 +97,11 @@ static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const Modul
         if((heaptype == heaptype_func) || (heaptype == heaptype_nofunc)){
             return true;
         }
-        // A concrete function type: the function matches when its type has
-        // the same parameters and results, the same check call_ref makes.
-        // Declared supertypes are not followed. (Cross-module function-type
-        // identity is #38, a later change.)
+        // A concrete function type. The function matches when its declared
+        // type is at or below the target, following declared supertypes across
+        // modules via Store-wide identities (#38). A host function has no
+        // declared type (canon == index_npos): it declares no supertypes, so
+        // the only match is exact, and it is compared structurally as before.
         if((heaptype < 0) || ((index_t)heaptype >= types.size()) || !types[heaptype].is_func()){
             return false;
         }
@@ -108,7 +109,11 @@ static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const Modul
         if(!funcref.has_value() || (funcref.value() >= store.funcs.size())){
             return false;
         }
-        return store.funcs[funcref.value()].type == types[heaptype].func();
+        const FuncInst& funcinst = store.funcs[funcref.value()];
+        if((funcinst.canon != index_npos) && ((index_t)heaptype < module.type_ids.size())){
+            return canon_cast_matches(funcinst.canon, module.type_ids[heaptype], store.canon);
+        }
+        return funcinst.type == types[heaptype].func();
     }
     if(std::holds_alternative<externref_t>(val)){
         return (heaptype == heaptype_extern) || (heaptype == heaptype_noextern);

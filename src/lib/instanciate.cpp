@@ -161,6 +161,9 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         FuncInst& funcinst = store.funcs.emplace_back(moduleInst);
         funcinst.body = module.funcs[idx];
         funcinst.type = moduleInst.types[module.funcs[idx].typeidx].func();
+        // Store-wide identity of the function's declared type, so a cast
+        // against a concrete function type follows declared subtyping (#38).
+        funcinst.canon = moduleInst.type_ids[module.funcs[idx].typeidx];
         moduleInst.funcaddrs.emplace_back(address);
     }
     // Tables
