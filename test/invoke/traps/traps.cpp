@@ -206,6 +206,30 @@ Suite traps {
             ExpectEq(std::get<i32_t>(r[0]), (i32_t)1);
         })
     })
+    Category("return_call_indirect bounds are Exception::Trap", {
+        // return_call_indirect indexes the table with an i32 off the stack.
+        // The index is unsigned per spec, so a negative value must trap. A
+        // signed comparison against the table size lets a negative index slip
+        // past the bounds check into an out-of-range vector access.
+        Test("negative index", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (table 1 funcref) "
+                "(func (export \"f\") i32.const -1 return_call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
+        Test("index equal to the table size", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (table 1 funcref) "
+                "(func (export \"f\") i32.const 1 return_call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
+        Test("in-bounds tail call still dispatches", {
+            ExpectEq((int)escape_of(
+                "(module (type (func)) (func $g) (table funcref (elem $g)) "
+                "(func (export \"f\") i32.const 0 return_call_indirect (type 0)))"),
+                (int)escape_none);
+        })
+    })
     Category("memory.copy bounds and overlap", {
         // Memory 0 is one page, memory 1 is two. memory.copy takes the
         // destination index first, so `memory.copy 0 1` copies from the big
