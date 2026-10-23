@@ -74,3 +74,43 @@ add_import_limits_test(imp_mem_min2_from_mem2)
 add_import_limits_test(imp_mem_nomax_from_max2)
 add_import_limits_test(imp_mem_max2_from_nomax "import 'm' not match memory limit")
 add_import_limits_test(imp_table_min0_from_grown)
+
+# Cross-module type identity (issue #39), through the real wasmvm CLI loading
+# two modules. The importer's start function casts the object it imports from
+# `a` to its own type 0: a differently-shaped type 0 must trap (not be accepted
+# because both modules numbered a struct 0), while an isomorphic type 0 must
+# succeed. The .wat fixtures are assembled with wasmvm-as at build time, as the
+# import-limits fixtures are.
+set(CANON_ID_SRC ${CMAKE_CURRENT_LIST_DIR}/canon_identity)
+set(CANON_ID_BIN ${CMAKE_CURRENT_BINARY_DIR}/canon_identity)
+set(CANON_ID_MODULES a importer_bad importer_iso)
+set(CANON_ID_WASM)
+foreach(module ${CANON_ID_MODULES})
+  add_custom_command(
+    OUTPUT ${CANON_ID_BIN}/${module}.wasm
+    COMMAND ${CMAKE_COMMAND} -E make_directory ${CANON_ID_BIN}
+    COMMAND $<TARGET_FILE:wasmvm-as> ${CANON_ID_SRC}/${module}.wat
+      -o ${CANON_ID_BIN}/${module}.wasm
+    DEPENDS wasmvm-as ${CANON_ID_SRC}/${module}.wat
+  )
+  list(APPEND CANON_ID_WASM ${CANON_ID_BIN}/${module}.wasm)
+endforeach()
+add_custom_target(exec_canon_identity_modules ALL DEPENDS ${CANON_ID_WASM})
+
+# A mismatched cast across the module boundary must trap with "cast failure".
+add_test(NAME exec_canon_identity_mismatch
+  COMMAND $<TARGET_FILE:wasmvm> --no-system ${CANON_ID_BIN}/importer_bad.wasm
+)
+set_property(TEST exec_canon_identity_mismatch PROPERTY
+  PASS_REGULAR_EXPRESSION "cast failure"
+)
+set_property(TEST exec_canon_identity_mismatch PROPERTY
+  ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+)
+# An isomorphic cast across the boundary must succeed (instantiation completes).
+add_test(NAME exec_canon_identity_isomorphic
+  COMMAND $<TARGET_FILE:wasmvm> --no-system ${CANON_ID_BIN}/importer_iso.wasm
+)
+set_property(TEST exec_canon_identity_isomorphic PROPERTY
+  ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+)

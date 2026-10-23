@@ -31,6 +31,7 @@ add_invoke_suite(traps)
 add_invoke_suite(branch)
 add_invoke_suite(gc)
 add_invoke_suite(gc_collect)
+add_invoke_suite(canon)
 add_invoke_suite(table)
 add_invoke_suite(global_init)
 # Outer backstop for the interrupt suite's infinite-loop fixtures: a broken

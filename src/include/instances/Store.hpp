@@ -11,6 +11,7 @@
 #include "ElemInst.hpp"
 #include "DataInst.hpp"
 #include "TagInst.hpp"
+#include "CanonRegistry.hpp"
 
 namespace WasmVM {
 
@@ -22,6 +23,8 @@ struct Store {
     std::vector<ElemInst> elems;
     std::vector<DataInst> datas;
     std::vector<TagInst> tags;
+    // Store-wide type identities, shared by every module instantiated here.
+    CanonRegistry canon;
 };
 
 }
