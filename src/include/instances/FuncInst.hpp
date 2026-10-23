@@ -20,11 +20,12 @@ struct FuncInst {
     FuncType type;
     ModuleInst& module;
     std::variant<hostfunc_t, WasmFunc> body;
-    // The Store-wide identity of this function's declared type, stamped at
-    // instantiation for a module-defined function. `index_npos` means "no
-    // canonical identity": a host function registered by an embedder declares
-    // no type index and no supertypes, so a cast against it falls back to
-    // structural equality of its FuncType, as before this field existed.
+    // The Store-wide identity of this function's declared type. A module
+    // function is stamped at instantiation; a host function registered through
+    // the CLI's sysenv reg_func is stamped there via canonicalize_functype.
+    // `index_npos` means no canonical identity was assigned -- a host function
+    // an embedder registers directly, which must
+    // canonicalize its own type if it wants canonical matching.
     CanonId canon = index_npos;
 };
 

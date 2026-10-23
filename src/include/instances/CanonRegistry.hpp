@@ -35,6 +35,13 @@ struct CanonRegistry {
 // module's local type `i`. `type_ids` is resized to `module.types.size()`.
 void canonicalize_types(std::vector<CanonId>& type_ids, const WasmModule& module, CanonRegistry& reg);
 
+// The Store-wide identity of a standalone function type -- a host function's,
+// which has no type section. Rolls it as a lone final composite type with no
+// supertypes and de-duplicates, so a host function matches a module function of
+// the same (or a refining) signature through the same canonical path. Returns
+// its CanonId.
+CanonId canonicalize_functype(const FuncType& type, CanonRegistry& reg);
+
 // Whether the type `a` is a subtype of the type `b`, both named Store-wide.
 // Equality of CanonId is identity; otherwise `a`'s declared supertypes are
 // followed, exactly as `comp_matches` does within a single module.

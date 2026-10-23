@@ -219,3 +219,28 @@ bool WasmVM::canon_cast_matches(CanonId a, CanonId b, const CanonRegistry& reg){
     }
     return false;
 }
+
+CanonId WasmVM::canonicalize_functype(const FuncType& type, CanonRegistry& reg){
+    // A host function's type has no type section around it: treat it as a group
+    // of one -- a final composite type with no supertypes -- so its closed key
+    // matches a module's identically-shaped singleton function type and the two
+    // de-duplicate to one CanonId. A host function type carries no concrete
+    // references, so the within-group encoding never actually fires.
+    SubType sub(type);
+    IndexMap encode = [](index_t idx) -> index_t { return idx; };
+    std::string key = std::to_string(1);
+    key += '/';
+    key += member_key(sub, encode);
+    key += ';';
+    auto found = reg.groups.find(key);
+    if(found != reg.groups.end()){
+        return found->second;
+    }
+    CanonId base = (CanonId)reg.types.size();
+    reg.groups.emplace(key, base);
+    SubType closed = sub;
+    IndexMap absolute = [&](index_t idx) -> index_t { return base + idx; };
+    map_subtype(closed, absolute);
+    reg.types.emplace_back(std::move(closed));
+    return base;
+}
