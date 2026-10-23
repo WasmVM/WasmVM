@@ -368,7 +368,8 @@ void RunVisitor::operator()(Instr::Call_indirect& instr){
   TableInst& table = stack.store.tables[frame.module.tableaddrs[instr.tableidx]];
   i32_t operant = std::get<i32_t>(frame.labels.top().values.top());
   frame.labels.top().values.pop();
-  if(operant >= table.elems.size()){
+  // Compare as unsigned so a negative i32 index also traps.
+  if((u32_t)operant >= table.elems.size()){
     throw Exception::invalid_elem_index();
   }
   funcref_t funcref = std::get<funcref_t>(table.elems[operant]);

@@ -140,6 +140,12 @@ Suite traps {
                 "(func (export \"f\") (result i32) i32.const 5 call_indirect (type 0)))"),
                 (int)escape_trap);
         })
+        Test("call_indirect: negative index (undefined element)", {
+            ExpectEq((int)escape_of(
+                call_indirect_prefix + "(table 1 funcref) "
+                "(func (export \"f\") (result i32) i32.const -1 call_indirect (type 0)))"),
+                (int)escape_trap);
+        })
         Test("call_indirect: null table slot (uninitialized element)", {
             ExpectEq((int)escape_of(
                 call_indirect_prefix + "(table 1 funcref) " + call_indirect_body + ")"),
