@@ -202,7 +202,10 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 globalinst.value = default_value(globalinst.type, moduleInst.types);
             },
             [&](Instr::Ref_func instr){
-                globalinst.value.emplace<funcref_t>(instr.index);
+                // A funcref holds a store address, as ref.func at run time and
+                // an elem segment both store: the module's own index only
+                // matches it while nothing precedes the module in the store.
+                globalinst.value.emplace<funcref_t>(moduleInst.funcaddrs[instr.index]);
             },
             [&](Instr::Global_get instr){
                 index_t globaladdr = moduleInst.globaladdrs[instr.index];
