@@ -216,6 +216,25 @@ Suite invoke_canon {
             Expect(canon_matches(ids.at(1), ids.at(0), reg));   // d <: base
             Expect(!canon_matches(ids.at(0), ids.at(1), reg));  // base is not <: d
         })
+        Test("re-canonicalizing a module yields the same CanonIds", {
+            // The CLI canonicalizes an importing module in match_imports and
+            // then again in module_instanciate; de-duplication must make the
+            // second pass return identical ids and add no new registry entries.
+            CanonRegistry reg;
+            WasmModule m = parse_valid(
+                "(module"
+                " (type $s (sub (struct (field i32))))"
+                " (type $t (sub $s (struct (field i32) (field i64)))))");
+            std::vector<CanonId> first;
+            canonicalize_types(first, m, reg);
+            size_t size_after_first = reg.types.size();
+            std::vector<CanonId> second;
+            canonicalize_types(second, m, reg);
+            AssertEq(second.size(), first.size());
+            ExpectEq(second.at(0), first.at(0));
+            ExpectEq(second.at(1), first.at(1));
+            ExpectEq(reg.types.size(), size_after_first); // no new entries second pass
+        })
     })
     Category("cross-module cast", {
         Test("ref.test rejects an object of a same-numbered but different type (#39)", {

@@ -21,8 +21,23 @@
 
 using namespace WasmVM;
 
-static std::vector<ExternVal> match_imports(const Store& store, std::map<std::filesystem::path, ModuleInst>& moduleinsts, ModuleQueue::Node& node){
+static std::vector<ExternVal> match_imports(Store& store, std::map<std::filesystem::path, ModuleInst>& moduleinsts, ModuleQueue::Node& node){
     std::vector<ExternVal> externvals;
+    // The importing module is not instantiated yet, so give its declared import
+    // types Store-wide identities now. module_instanciate canonicalizes the same
+    // module again; de-duplication makes that idempotent -- the same CanonIds.
+    std::vector<CanonId> import_type_ids;
+    canonicalize_types(import_type_ids, node.module, store.canon);
+    // A function export satisfies a function import when its type is a Store-wide
+    // subtype of the import's: structural refinement, and declared supertypes too
+    // (canon_matches). This replaces the raw index equality FuncType== did, which
+    // confused same-numbered types across modules. The CLI's module functions and
+    // its sysenv host functions all carry a canonical type (the latter stamped at
+    // registration), so there is no structural fallback here. An embedder that
+    // registers host functions another way does its own import matching, not this.
+    auto func_import_matches = [&](index_t export_addr, index_t import_typeidx) -> bool {
+        return canon_matches(store.funcs[export_addr].canon, import_type_ids[import_typeidx], store.canon);
+    };
     for(size_t idx = 0; idx < node.import_paths.size(); ++idx){
         std::filesystem::path import_path = node.import_paths[idx];
         if(!moduleinsts.contains(import_path)){
@@ -38,8 +53,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 if(expo.name != import.name) return false;
                 if(expo.value.type != ExternVal::ExternType::Func) return true;
                 if(!std::holds_alternative<index_t>(import.desc)) return true;
-                return store.funcs[expo.value.addr].type ==
-                       node.module.types[std::get<index_t>(import.desc)].func();
+                return func_import_matches(expo.value.addr, std::get<index_t>(import.desc));
             });
         if(export_it == moduleinst.exports.end()){
             throw Exception::Exception(std::string("import '") + import.name + "' not found in module '" + import_path.filename().string() + "'");
@@ -49,7 +63,7 @@ static std::vector<ExternVal> match_imports(const Store& store, std::map<std::fi
                 if(!std::holds_alternative<index_t>(import.desc)){
                     throw Exception::Exception(std::string("import '") + import.name + "' type not match");
                 }
-                if(store.funcs[export_it->value.addr].type != node.module.types[std::get<index_t>(import.desc)].func()){
+                if(!func_import_matches(export_it->value.addr, std::get<index_t>(import.desc))){
                     throw Exception::Exception(std::string("import '") + import.name + "' not match function type");
                 }
             break;

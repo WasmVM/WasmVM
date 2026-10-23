@@ -115,6 +115,9 @@ void reg_func(
     for(ValueType vt : params)   fi.type.params.emplace_back(vt);
     for(ValueType vt : results)  fi.type.results.emplace_back(vt);
     fi.body.emplace<hostfunc_t>(fn);
+    // Give the host function a Store-wide type identity, so an import of it is
+    // matched through the same canonical path as a module function.
+    fi.canon = canonicalize_functype(fi.type, store.canon);
 
     ExportInst& ex = moduleinst.exports.emplace_back();
     ex.name = name;
