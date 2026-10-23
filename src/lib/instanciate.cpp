@@ -7,6 +7,7 @@
 #include <Util.hpp>
 #include <instances/Stack.hpp>
 #include <instances/TagInst.hpp>
+#include <limits>
 
 using namespace WasmVM;
 
@@ -173,6 +174,12 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         MemInst& meminst = store.mems.emplace_back();
         moduleInst.memaddrs.emplace_back(address);
         meminst.type = module.mems[idx];
+        // The byte count must fit size_t. A min of 2^48 pages is 2^64 bytes,
+        // which wraps to 0 and would resize to an empty memory reported as
+        // success; fail instantiation instead.
+        if(meminst.type.min > (std::numeric_limits<std::size_t>::max() / page_size)){
+            throw Exception::Exception("memory minimum size too large to allocate");
+        }
         meminst.data.resize(meminst.type.min * page_size);
     }
     // Globals

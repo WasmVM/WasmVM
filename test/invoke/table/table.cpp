@@ -238,4 +238,30 @@ Suite invoke_table {
             ExpectEq(std::get<i64_t>(results.at(1)), (i64_t)1);
         })
     })
+    Category("growing to a page count whose byte size overflows", {
+        // 2^48-1 pages added to the one page is 2^48 pages, whose byte count
+        // 2^48 * 65536 is 2^64: it wrapped to 0 and resized the memory to
+        // nothing while answering success. memory.grow must answer -1 and
+        // leave the page, and its contents, untouched.
+        Test("memory.grow refuses and keeps the memory", {
+            std::vector<Value> r = run(
+                "(module (memory i64 1) (func (export \"f\") (result i64 i64 i64)"
+                " i64.const 0 i64.const 1234 i64.store"
+                " i64.const 281474976710655 memory.grow 0"
+                " memory.size 0"
+                " i64.const 0 i64.load))");
+            AssertEq(r.size(), 3U);
+            ExpectEq(std::get<i64_t>(r.at(0)), (i64_t)-1);
+            ExpectEq(std::get<i64_t>(r.at(1)), (i64_t)1);
+            ExpectEq(std::get<i64_t>(r.at(2)), (i64_t)1234);
+        })
+        // The module validates (min <= 2^48 is allowed), but instantiating it
+        // would resize to 2^64 bytes, which wrapped to an empty memory
+        // reported as success. It must fail instantiation instead.
+        Test("instantiating a memory whose byte size overflows fails", {
+            ExpectThrows(Exception::Exception, run(
+                "(module (memory i64 281474976710656)"
+                " (func (export \"f\") (result i64) memory.size 0))"));
+        })
+    })
 };
