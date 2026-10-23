@@ -88,9 +88,22 @@ static bool is_reference(const Value& val){
 // Whether a non-null reference is of the given heap type. A concrete heap
 // type names a type index, which a struct or array carries; an abstract one
 // is matched against the hierarchy the value belongs to.
-static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const std::vector<SubType>& types){
+static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const std::vector<SubType>& types, const Store& store){
     if(std::holds_alternative<funcref_t>(val)){
-        return (heaptype == heaptype_func) || (heaptype == heaptype_nofunc);
+        if((heaptype == heaptype_func) || (heaptype == heaptype_nofunc)){
+            return true;
+        }
+        // A concrete function type: the function matches when its type has
+        // the same parameters and results, the same check call_ref makes.
+        // Declared supertypes are not followed.
+        if((heaptype < 0) || ((index_t)heaptype >= types.size()) || !types[heaptype].is_func()){
+            return false;
+        }
+        const funcref_t& funcref = std::get<funcref_t>(val);
+        if(!funcref.has_value() || (funcref.value() >= store.funcs.size())){
+            return false;
+        }
+        return store.funcs[funcref.value()].type == types[heaptype].func();
     }
     if(std::holds_alternative<externref_t>(val)){
         return (heaptype == heaptype_extern) || (heaptype == heaptype_noextern);
@@ -164,21 +177,21 @@ void RunVisitor::operator()(Instr::Ref_eq&){
 void RunVisitor::operator()(Instr::Ref_test& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top(); label.values.pop();
-    bool result = !ref_is_null(val) && ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types);
+    bool result = !ref_is_null(val) && ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types, stack.store);
     label.values.emplace<i32_t>(result ? 1 : 0);
 }
 
 void RunVisitor::operator()(Instr::Ref_test_null& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top(); label.values.pop();
-    bool result = ref_is_null(val) || ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types);
+    bool result = ref_is_null(val) || ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types, stack.store);
     label.values.emplace<i32_t>(result ? 1 : 0);
 }
 
 void RunVisitor::operator()(Instr::Ref_cast& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top();
-    if(ref_is_null(val) || !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types)){
+    if(ref_is_null(val) || !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types, stack.store)){
         throw Exception::cast_failure();
     }
     // value already on stack
@@ -187,7 +200,7 @@ void RunVisitor::operator()(Instr::Ref_cast& instr){
 void RunVisitor::operator()(Instr::Ref_cast_null& instr){
     Label& label = stack.frames.top().labels.top();
     Value val = label.values.top();
-    if(!ref_is_null(val) && !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types)){
+    if(!ref_is_null(val) && !ref_matches_heaptype(val, instr.heaptype, stack.frames.top().module.types, stack.store)){
         throw Exception::cast_failure();
     }
     // value already on stack
@@ -307,7 +320,7 @@ void RunVisitor::operator()(Instr::Br_on_cast& instr){
     Frame& frame = stack.frames.top();
     Value val = frame.labels.top().values.top();
     bool is_null = ref_is_null(val);
-    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types));
+    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types, stack.store));
     if(matches){
         // Branch: ref stays on stack as part of branch values
         do_branch(stack, instr.labelidx);
@@ -319,7 +332,7 @@ void RunVisitor::operator()(Instr::Br_on_cast_fail& instr){
     Frame& frame = stack.frames.top();
     Value val = frame.labels.top().values.top();
     bool is_null = ref_is_null(val);
-    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types));
+    bool matches = (instr.dst_nullable && is_null) || (!is_null && ref_matches_heaptype(val, instr.dst_heaptype, frame.module.types, stack.store));
     if(!matches){
         // Branch: ref stays on stack as part of branch values
         do_branch(stack, instr.labelidx);
