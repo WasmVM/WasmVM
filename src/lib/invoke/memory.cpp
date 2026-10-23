@@ -6,6 +6,7 @@
 #include <Util.hpp>
 #include <type_traits>
 #include <cstring>
+#include <new>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
 
@@ -196,7 +197,17 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
       label.values.emplace<i32_t>(i32_t(-1));
     return;
   }
-  mem.data.resize(new_pages * page_size, (byte_t)0x00);
+  // Within the bounds but more than the host can give: the spec answers -1,
+  // and resize leaves the memory as it was when the allocation fails.
+  try {
+    mem.data.resize(new_pages * page_size, (byte_t)0x00);
+  } catch(const std::bad_alloc&) {
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
+    return;
+  }
   mem.type.min = new_pages;
   // Return the OLD page count (per spec)
   if(mem.type.is64)

@@ -223,4 +223,19 @@ Suite invoke_table {
             ExpectEq(i32_at(ok, 0), 1);
         })
     })
+    Category("growing past what the host can allocate", {
+        Test("memory.grow answers -1 when the allocation fails", {
+            // 2^40 pages is under a 64-bit memory's 2^48-page bound, but is
+            // 2^56 bytes, which the allocator refuses outright rather than
+            // handing out pages. The failure came out as a std::bad_alloc
+            // escaping Stack::run() instead of as -1, and the memory must be
+            // left as it was.
+            std::vector<Value> results = run(
+                "(module (memory i64 1) (func (export \"f\") (result i64 i64)"
+                " i64.const 1099511627776 memory.grow 0 memory.size 0))");
+            AssertEq(results.size(), 2U);
+            ExpectEq(std::get<i64_t>(results.at(0)), (i64_t)-1);
+            ExpectEq(std::get<i64_t>(results.at(1)), (i64_t)1);
+        })
+    })
 };
