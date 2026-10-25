@@ -8,6 +8,7 @@
 #include <cstring>
 #include <new>
 #include <limits>
+#include <stdexcept>
 #include "RunVisitor.hpp"
 #include "exception.hpp"
 
@@ -208,11 +209,30 @@ void RunVisitor::operator()(Instr::Memory_grow& instr){
       label.values.emplace<i32_t>(i32_t(-1));
     return;
   }
+  // vector::max_size() is below SIZE_MAX, so a byte count past it (new_pages in
+  // [2^47, 2^48)) would make resize throw std::length_error, not bad_alloc;
+  // refuse it up front (the spec answers -1) so resize stays within what the
+  // vector can hold.
+  if(new_pages > (mem.data.max_size() / page_size)){
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
+    return;
+  }
   // Within the bounds but more than the host can give: the spec answers -1,
   // and resize leaves the memory as it was when the allocation fails.
+  // std::length_error is caught too as a safety net for an over-max request
+  // (the guard above already bounds it).
   try {
     mem.data.resize(new_pages * page_size, (byte_t)0x00);
   } catch(const std::bad_alloc&) {
+    if(mem.type.is64)
+      label.values.emplace<i64_t>(i64_t(-1));
+    else
+      label.values.emplace<i32_t>(i32_t(-1));
+    return;
+  } catch(const std::length_error&) {
     if(mem.type.is64)
       label.values.emplace<i64_t>(i64_t(-1));
     else
