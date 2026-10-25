@@ -9,6 +9,7 @@
 #include <instances/TagInst.hpp>
 #include <limits>
 #include <new>
+#include <stdexcept>
 
 using namespace WasmVM;
 
@@ -194,12 +195,20 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         if(meminst.type.min > (std::numeric_limits<std::size_t>::max() / page_size)){
             throw Exception::Exception("memory minimum size too large to allocate");
         }
+        // vector::max_size() is below SIZE_MAX; a min past it (page count in
+        // [2^47, 2^48)) would make resize throw std::length_error, not
+        // std::bad_alloc. Fail instantiation up front.
+        if(meminst.type.min > (meminst.data.max_size() / page_size)){
+            throw Exception::Exception("memory minimum size too large to allocate");
+        }
         // The byte count fits size_t but may still be more than the host can
         // allocate; a failed resize must fail instantiation, not escape as a
-        // std::bad_alloc.
+        // std::bad_alloc. std::length_error is caught too as a safety net.
         try {
             meminst.data.resize(meminst.type.min * page_size);
         } catch(const std::bad_alloc&) {
+            throw Exception::Exception("memory could not be allocated");
+        } catch(const std::length_error&) {
             throw Exception::Exception("memory could not be allocated");
         }
     }

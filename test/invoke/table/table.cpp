@@ -273,4 +273,26 @@ Suite invoke_table {
                 " (func (export \"f\") (result i64) memory.size 0))"));
         })
     })
+    Category("growing past what the backing vector can hold (#44)", {
+        // 2^47 pages is 2^63 bytes, just over a byte vector's max_size()
+        // (PTRDIFF_MAX): below the size_t guard (2^48) but past max_size, so
+        // resize throws std::length_error -- not std::bad_alloc -- which used to
+        // escape and abort the host. memory.grow must answer -1 and leave the
+        // one page as it was.
+        Test("memory.grow refuses a page count past vector max_size", {
+            std::vector<Value> r = run(
+                "(module (memory i64 1) (func (export \"f\") (result i64 i64)"
+                " i64.const 140737488355327 memory.grow 0 memory.size 0))");
+            AssertEq(r.size(), 2U);
+            ExpectEq(std::get<i64_t>(r.at(0)), (i64_t)-1);
+            ExpectEq(std::get<i64_t>(r.at(1)), (i64_t)1);
+        })
+        // The same size as a declared min: instantiation must fail with an
+        // Exception, not abort via an uncaught std::length_error.
+        Test("instantiating a memory past vector max_size fails", {
+            ExpectThrows(Exception::Exception, run(
+                "(module (memory i64 140737488355328)"
+                " (func (export \"f\") (result i64) memory.size 0))"));
+        })
+    })
 };
