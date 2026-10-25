@@ -98,6 +98,41 @@ std::string funcs_module(const std::string& results, const std::string& code) {
            " (func (export \"f\") " + results + " " + code + "))";
 }
 
+// A non-null externref cannot be built by any wasm instruction (externref_t is
+// void* and nothing constructs one), so it can only enter from the host. These
+// tests import a global holding a real non-null externref and read it with
+// global.get $ext inside `code`; that is the only way to drive a non-null value
+// into the externref branch of ref_matches_heaptype (#40). The (ref extern)
+// positive controls confirm the value really is a non-null externref and the
+// branch is reached, so a 0/trap/no-branch for noextern is not a false pass.
+int extern_dummy = 0;
+std::vector<Value> run_extern(const std::string& results, const std::string& code) {
+    static std::list<ModuleInst> instances;
+    static std::list<Store>      stores;
+    Store& store = stores.emplace_back();
+    index_t gaddr = store.globals.size();
+    store.globals.push_back(GlobalInst{ValueType::externref, Value(externref_t(&extern_dummy))});
+    const std::string wat =
+        "(module (import \"a\" \"ext\" (global $ext externref))"
+        " (func (export \"f\") " + results + " " + code + "))";
+    std::istringstream source(wat);
+    WasmModule module = module_parse(source);
+    if (std::optional<Exception::Exception> error = module_validate(module)) {
+        throw *error;
+    }
+    ModuleInst& instance = instances.emplace_back();
+    std::vector<ExternVal> imports = { ExternVal{ ExternVal::ExternType::Global, gaddr } };
+    module_instanciate(instance, store, module, imports);
+    for (ExportInst& exported : instance.exports) {
+        if (exported.name == "f" && exported.value.type == ExternVal::ExternType::Func) {
+            Stack stack(store);
+            stack.invoke(exported.value.addr, {});
+            return stack.run();
+        }
+    }
+    throw Exception::Exception("extern test module has no exported function 'f'");
+}
+
 } // namespace
 
 Suite invoke_gc {
@@ -438,6 +473,125 @@ Suite invoke_gc {
                 " drop i32.const 222"));
             AssertEq(r.size(), 1U);
             ExpectEq(i32_at(r, 0), 222); // branched: $f is a $t
+        })
+    })
+    // #40: nofunc is the bottom of the function hierarchy and holds only null,
+    // so a non-null funcref must not match it. The matching (ref func) controls
+    // use the same funcref, so each op is shown to answer both ways and the
+    // negative result is not a check that silently never ran.
+    Category("non-null funcref against the bottom type nofunc (#40)", {
+        Test("ref.test is 0 for nofunc and 1 for func", {
+            std::vector<Value> r = run(funcs_module("(result i32 i32)",
+                "ref.func $f ref.test (ref nofunc) ref.func $f ref.test (ref func)"));
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), 0); // nofunc: no match
+            ExpectEq(i32_at(r, 1), 1); // func: matches
+        })
+        Test("ref.cast traps for nofunc", {
+            ExpectThrows(Exception::Trap, run(funcs_module("",
+                "ref.func $f ref.cast (ref nofunc) drop")));
+        })
+        Test("ref.cast succeeds for func", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "ref.func $f ref.cast (ref func) drop i32.const 1"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 1);
+        })
+        Test("br_on_cast to nofunc does not branch", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "block $h (result (ref nofunc)) ref.func $f"
+                "   br_on_cast $h (ref null func) (ref nofunc)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 111); // fell through: $f is not a nofunc
+        })
+        Test("br_on_cast to func branches", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "block $h (result (ref func)) ref.func $f"
+                "   br_on_cast $h (ref null func) (ref func)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 222); // branched: $f is a func
+        })
+        Test("br_on_cast_fail to nofunc branches", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "block $h (result (ref null func)) ref.func $f"
+                "   br_on_cast_fail $h (ref null func) (ref nofunc)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 222); // branched: $f fails the nofunc cast
+        })
+        Test("br_on_cast_fail to func does not branch", {
+            std::vector<Value> r = run(funcs_module("(result i32)",
+                "block $h (result (ref null func)) ref.func $f"
+                "   br_on_cast_fail $h (ref null func) (ref func)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222"));
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 111); // fell through: $f passes the func cast
+        })
+    })
+    // #40: noextern is the bottom of the extern hierarchy (null only), so a
+    // non-null externref must not match it. See run_extern for why the value
+    // comes from a host-imported global; the (ref extern) controls confirm the
+    // externref branch is actually reached with a non-null value.
+    Category("non-null externref against the bottom type noextern (#40)", {
+        Test("ref.test is 0 for noextern and 1 for extern", {
+            std::vector<Value> r = run_extern("(result i32 i32)",
+                "global.get $ext ref.test (ref noextern)"
+                " global.get $ext ref.test (ref extern)");
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), 0); // noextern: no match
+            ExpectEq(i32_at(r, 1), 1); // extern: matches
+        })
+        Test("ref.cast traps for noextern", {
+            ExpectThrows(Exception::Trap, run_extern("",
+                "global.get $ext ref.cast (ref noextern) drop"));
+        })
+        Test("ref.cast succeeds for extern", {
+            std::vector<Value> r = run_extern("(result i32)",
+                "global.get $ext ref.cast (ref extern) drop i32.const 1");
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 1);
+        })
+        Test("br_on_cast to noextern does not branch", {
+            std::vector<Value> r = run_extern("(result i32)",
+                "block $h (result (ref noextern)) global.get $ext"
+                "   br_on_cast $h (ref null extern) (ref noextern)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222");
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 111); // fell through: not a noextern
+        })
+        Test("br_on_cast to extern branches", {
+            std::vector<Value> r = run_extern("(result i32)",
+                "block $h (result (ref extern)) global.get $ext"
+                "   br_on_cast $h (ref null extern) (ref extern)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222");
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 222); // branched: it is an extern
+        })
+        Test("br_on_cast_fail to noextern branches", {
+            std::vector<Value> r = run_extern("(result i32)",
+                "block $h (result (ref null extern)) global.get $ext"
+                "   br_on_cast_fail $h (ref null extern) (ref noextern)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222");
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 222); // branched: fails the noextern cast
+        })
+        Test("br_on_cast_fail to extern does not branch", {
+            std::vector<Value> r = run_extern("(result i32)",
+                "block $h (result (ref null extern)) global.get $ext"
+                "   br_on_cast_fail $h (ref null extern) (ref extern)"
+                "   drop i32.const 111 return end"
+                " drop i32.const 222");
+            AssertEq(r.size(), 1U);
+            ExpectEq(i32_at(r, 0), 111); // fell through: passes the extern cast
         })
     })
 };

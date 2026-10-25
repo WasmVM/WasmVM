@@ -94,7 +94,11 @@ static bool is_reference(const Value& val){
 static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const ModuleInst& module, const Store& store){
     const std::vector<SubType>& types = module.types;
     if(std::holds_alternative<funcref_t>(val)){
-        if((heaptype == heaptype_func) || (heaptype == heaptype_nofunc)){
+        // nofunc is the bottom of the function hierarchy: its only value is
+        // null, so a non-null funcref (callers reach this predicate only for
+        // non-null refs) never matches it (#40). Only the top abstract type
+        // func matches unconditionally.
+        if(heaptype == heaptype_func){
             return true;
         }
         // A concrete function type. The function matches when its type is a
@@ -117,7 +121,9 @@ static bool ref_matches_heaptype(const Value& val, int32_t heaptype, const Modul
         return funcinst.type == types[heaptype].func();
     }
     if(std::holds_alternative<externref_t>(val)){
-        return (heaptype == heaptype_extern) || (heaptype == heaptype_noextern);
+        // noextern is the bottom of the extern hierarchy (null-only), so a
+        // non-null externref never matches it (#40).
+        return heaptype == heaptype_extern;
     }
     if(std::holds_alternative<exnref_t>(val)){
         return heaptype == heaptype_exn;
