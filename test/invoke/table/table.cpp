@@ -29,6 +29,9 @@
 #include <sstream>
 #include <string>
 #include <vector>
+#include <atomic>
+#include <cstdlib>
+#include <new>
 
 using namespace WasmVM;
 using namespace Testing;
@@ -76,6 +79,39 @@ bool traps(const std::string& wat) {
 }
 
 } // namespace
+
+// #36: a non-null table.grow failure can only be std::bad_alloc -- the element
+// bound (2^32-1) is far below vector<Value>::max_size() (~7.69e17, sizeof(Value)
+// ==24), so no size request can make resize throw std::length_error, and a real
+// bad_alloc would need tens of GiB. To reach the new catch without that, this
+// test executable replaces the global operator new: when armed it throws
+// std::bad_alloc for the one large allocation table.grow's resize makes. The
+// positive-control test proves the replacement really intercepts an allocation
+// made inside libWasmVM.dylib (where Table_grow runs). Small allocations, and
+// everything while disarmed, go straight to malloc, so the rest of the harness
+// is untouched. Both flags are constant-initialized (false/0), safe even if
+// operator new runs before dynamic init.
+namespace {
+    constexpr std::size_t grow_alloc_threshold = 16u << 20; // 16 MiB
+    std::atomic<bool>        fail_big_alloc{false};
+    std::atomic<std::size_t> biggest_alloc{0};
+}
+void* operator new(std::size_t size) {
+    if (size >= grow_alloc_threshold) {
+        std::size_t prev = biggest_alloc.load();
+        while (size > prev && !biggest_alloc.compare_exchange_weak(prev, size)) {}
+        if (fail_big_alloc.load()) {
+            throw std::bad_alloc();
+        }
+    }
+    void* p = std::malloc(size ? size : 1);
+    if (p == nullptr) {
+        throw std::bad_alloc();
+    }
+    return p;
+}
+void operator delete(void* p) noexcept { std::free(p); }
+void operator delete(void* p, std::size_t) noexcept { std::free(p); }
 
 Suite invoke_table {
     Category("table.grow", {
@@ -293,6 +329,48 @@ Suite invoke_table {
             ExpectThrows(Exception::Exception, run(
                 "(module (memory i64 140737488355328)"
                 " (func (export \"f\") (result i64) memory.size 0))"));
+        })
+    })
+    // #36: table.grow's resize can throw std::bad_alloc (the only failure a
+    // table can hit; see the operator-new note above). It used to escape and
+    // abort; it must answer -1 and leave the table unchanged.
+    Category("table.grow when the host cannot allocate (#36)", {
+        // Positive control: with the override disarmed, a real grow of
+        // 1,000,000 funcref slots is 1,000,000 * sizeof(Value) == 24,000,000
+        // bytes, one allocation above the 16 MiB threshold. The grow succeeds
+        // and biggest_alloc shows the replaced operator new saw that request --
+        // and it is the vector resize inside libWasmVM.dylib that makes it, so
+        // the override is in force there. Nothing else in this run allocates
+        // that much, so an armed throw below hits the resize, not some other
+        // allocation.
+        Test("the replaced operator new intercepts table.grow's allocation", {
+            fail_big_alloc.store(false);
+            biggest_alloc.store(0);
+            std::vector<Value> r = run(
+                "(module (table 0 funcref) (func (export \"f\") (result i32 i32)"
+                " ref.null func i32.const 1000000 table.grow 0 table.size 0))");
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), 0);        // old length
+            ExpectEq(i32_at(r, 1), 1000000);  // grown
+            Assert(biggest_alloc.load() >= 1000000u * sizeof(Value));
+        })
+        // The fix itself: arm the override so the resize throws std::bad_alloc.
+        // table.grow must answer -1 and leave the table at its old length.
+        Test("table.grow answers -1 when the allocation throws bad_alloc", {
+            fail_big_alloc.store(true);
+            std::vector<Value> r;
+            try {
+                r = run(
+                    "(module (table 0 funcref) (func (export \"f\") (result i32 i32)"
+                    " ref.null func i32.const 1000000 table.grow 0 table.size 0))");
+            } catch (...) {
+                fail_big_alloc.store(false); // disarm even if it escaped (no catch)
+                throw;
+            }
+            fail_big_alloc.store(false);
+            AssertEq(r.size(), 2U);
+            ExpectEq(i32_at(r, 0), -1); // allocation failed
+            ExpectEq(i32_at(r, 1), 0);  // table unchanged
         })
     })
 };

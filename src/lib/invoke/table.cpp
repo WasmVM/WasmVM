@@ -7,6 +7,8 @@
 #include "RunVisitor.hpp"
 #include "exception.hpp"
 #include <algorithm>
+#include <new>
+#include <stdexcept>
 
 using namespace WasmVM;
 
@@ -75,7 +77,23 @@ void RunVisitor::operator()(Instr::Table_grow& instr){
     return;
   }
   const size_t old_len = table.elems.size();
-  table.elems.resize(len, ref);
+  // Within the element bound but more than the host can give: the spec answers
+  // -1 and leaves the table unchanged. resize on the vector<Value> can throw
+  // std::bad_alloc; catch it so the failure returns -1 instead of escaping and
+  // aborting the process (#36, the table analogue of memory.grow's #27 fix).
+  // No max_size() pre-check is added: the bound above keeps len below 2^32-1
+  // (~4.29e9), far under vector<Value>::max_size() (~7.69e17 on this host, with
+  // sizeof(Value)==24), so resize can never throw std::length_error for a
+  // table; it is caught only as an inert safety net.
+  try {
+    table.elems.resize(len, ref);
+  } catch(const std::bad_alloc&) {
+    label.values.emplace<i32_t>(-1);
+    return;
+  } catch(const std::length_error&) {
+    label.values.emplace<i32_t>(-1);
+    return;
+  }
   table.type.limits.min = len;
   // Return the OLD length (per spec), as memory.grow does.
   label.values.emplace<i32_t>((i32_t)(u32_t)old_len);
