@@ -130,6 +130,39 @@ std::vector<Value> run_single(const std::string& wat) {
     throw Exception::Exception("module has no exported function 'f'");
 }
 
+// #42: an embedder builds a StructObj/ArrayObj directly via gc_new and may leave
+// `canon` at its default. The object enters a module through an imported anyref
+// global; the consumer's "f" tests or casts it against its own concrete type
+// (local type 0, so CanonId 0 in a fresh single-module store). With set_canon,
+// the object's canon is stamped to that CanonId before the run -- the positive
+// control, so a 0/trap for the unset case is the reserved default being rejected
+// and not the object simply never matching anything. The single-module runners
+// above cannot inject a host-built object, so this one is local here.
+template<typename Obj>
+std::vector<Value> run_embedder_obj(const std::string& consumer, bool set_canon) {
+    static std::list<ModuleInst> instances;
+    static std::list<Store>      stores;
+    Store& store = stores.emplace_back();
+    GcPtr<Obj> obj = gc_new<Obj>(); // canon left at its default (unset)
+    index_t gaddr = store.globals.size();
+    store.globals.push_back(GlobalInst{ValueType(ValueType::anyref), Value(obj)});
+    WasmModule module = parse_valid(consumer);
+    ModuleInst& instance = instances.emplace_back();
+    std::vector<ExternVal> imports = { ExternVal{ ExternVal::ExternType::Global, gaddr } };
+    module_instanciate(instance, store, module, imports);
+    if (set_canon) {
+        obj->canon = instance.type_ids.at(0); // the CanonId the consumer's type 0 resolved to
+    }
+    for (ExportInst& exported : instance.exports) {
+        if (exported.name == "f" && exported.value.type == ExternVal::ExternType::Func) {
+            Stack stack(store);
+            stack.invoke(exported.value.addr, {});
+            return stack.run();
+        }
+    }
+    throw Exception::Exception("module has no exported function 'f'");
+}
+
 // $t is a non-final function type; $g declares $t as supertype with a refined
 // (result-covariant) signature; $h has $g's exact shape but declares no
 // supertype. ref.func on a function of each, then ref.test against (ref $t).
@@ -325,6 +358,43 @@ Suite invoke_canon {
             std::vector<Value> r = run_pair(producer_func_subtype, consumer_func_subtype);
             AssertEq(r.size(), 1U);
             ExpectEq(i32_at(r, 0), 1);
+        })
+    })
+    // #42: an object an embedder builds directly, leaving canon unset, must not
+    // match a concrete type. It carries the reserved index_npos default; the
+    // positive control stamps the right CanonId and then it matches.
+    Category("an embedder object with unset canon matches no concrete type (#42)", {
+        Test("ref.test on an unset-canon struct is 0, and 1 once canon is set", {
+            const std::string m =
+                "(module (type $s (struct (field i32)))"
+                " (import \"a\" \"o\" (global $o anyref))"
+                " (func (export \"f\") (result i32) global.get $o ref.test (ref $s)))";
+            ExpectEq(i32_at(run_embedder_obj<StructObj>(m, false), 0), 0); // unset: no match
+            ExpectEq(i32_at(run_embedder_obj<StructObj>(m, true), 0), 1);  // canon set: matches
+        })
+        Test("ref.cast on an unset-canon struct traps, and succeeds once canon is set", {
+            const std::string m =
+                "(module (type $s (struct (field i32)))"
+                " (import \"a\" \"o\" (global $o anyref))"
+                " (func (export \"f\") (result i32) global.get $o ref.cast (ref $s) drop i32.const 1))";
+            ExpectThrows(Exception::Trap, run_embedder_obj<StructObj>(m, false)); // unset: trap
+            ExpectEq(i32_at(run_embedder_obj<StructObj>(m, true), 0), 1);         // canon set: no trap
+        })
+        Test("ref.test on an unset-canon array is 0, and 1 once canon is set", {
+            const std::string m =
+                "(module (type $a (array (mut i32)))"
+                " (import \"a\" \"o\" (global $o anyref))"
+                " (func (export \"f\") (result i32) global.get $o ref.test (ref $a)))";
+            ExpectEq(i32_at(run_embedder_obj<ArrayObj>(m, false), 0), 0);
+            ExpectEq(i32_at(run_embedder_obj<ArrayObj>(m, true), 0), 1);
+        })
+        Test("ref.cast on an unset-canon array traps, and succeeds once canon is set", {
+            const std::string m =
+                "(module (type $a (array (mut i32)))"
+                " (import \"a\" \"o\" (global $o anyref))"
+                " (func (export \"f\") (result i32) global.get $o ref.cast (ref $a) drop i32.const 1))";
+            ExpectThrows(Exception::Trap, run_embedder_obj<ArrayObj>(m, false));
+            ExpectEq(i32_at(run_embedder_obj<ArrayObj>(m, true), 0), 1);
         })
     })
 };
