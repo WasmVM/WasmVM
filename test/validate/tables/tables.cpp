@@ -220,4 +220,22 @@ Suite validate_tables {
                                  "reference type mismatch"));
         })
     })
+    // WasmVM has no table64, so a table is i32 and the spec bounds min and max
+    // within 2^32-1. max was bounded at 2^48, letting an i32 table's max in
+    // (2^32, 2^48] wrongly validate; min was already correct (#41).
+    Category("an i32 table's max is bounded at 2^32-1 (#41)", {
+        Test("a max of 2^32 or more is rejected", {
+            Expect(rejected_with("(module (table 1 4294967296 funcref))",
+                                 "table size too large"));
+            // Well inside the old 2^48 window, also rejected now.
+            Expect(rejected_with("(module (table 1 300000000000 funcref))",
+                                 "table size too large"));
+        })
+        Test("a max of 2^32-1 is accepted", {
+            // Positive control: the largest in-range max validates, so the
+            // rejection above is the bound landing at the right value, not a
+            // blanket refusal of large numbers.
+            Expect(accepted("(module (table 1 4294967295 funcref))"));
+        })
+    })
 };
