@@ -223,8 +223,11 @@ struct StructObj : public GcObject {
     index_t typeidx;
     // The Store-wide identity of `typeidx`, stamped when the object is
     // allocated. A cast compares this, not `typeidx`, which only means
-    // something inside the module that allocated the object.
-    CanonId canon = 0;
+    // something inside the module that allocated the object. The default is the
+    // reserved "unset" id index_npos (never a real CanonId): an embedder that
+    // builds the object directly and leaves canon unset then matches no concrete
+    // type, instead of aliasing whatever type holds CanonId 0 (#42).
+    CanonId canon = index_npos;
     // One per field, in declaration order. A packed field is held as an i32
     // already truncated to its width; struct.get_s / _u extend it on the way
     // out.
@@ -235,7 +238,7 @@ struct ArrayObj : public GcObject {
     void gc_children(void (*visit)(GcObject*, void*), void* context) const override;
     void gc_clear_children() override;
     index_t typeidx;
-    CanonId canon = 0; // Store-wide identity of `typeidx`; see StructObj::canon
+    CanonId canon = index_npos; // Store-wide identity of `typeidx`; unset default index_npos, see StructObj::canon (#42)
     std::vector<Value> elems; // packed elements as for StructObj::fields
 };
 
