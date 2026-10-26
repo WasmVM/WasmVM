@@ -251,12 +251,33 @@ Suite invoke_table {
             AssertEq(results.size(), 2U);
             ExpectEq(i32_at(results, 0), -1);
             ExpectEq(i32_at(results, 1), 1);
-            // One page short of the bound is allowed.
-            std::vector<Value> ok = run(
-                "(module (memory 1) (func (export \"f\") (result i32)"
-                " i32.const 65535 memory.grow 0))");
-            AssertEq(ok.size(), 1U);
-            ExpectEq(i32_at(ok, 0), 1);
+            // One page short of the bound (65536 pages exactly) passes the bound
+            // check and reaches the 4 GiB allocation. Committing it took ~84 s
+            // (measured; ~99.6% of invoke_table), so instead arm the operator-new
+            // override (added for #36) to throw std::bad_alloc on that allocation.
+            // memory.grow then answers -1, but the override having SEEN a 4 GiB
+            // request proves the bound let 65536 pages through: a `>=` bound would
+            // return -1 before allocating and biggest_alloc would stay 0. The
+            // trade-off is deliberate (#37): that 4 GiB can really be allocated
+            // and zero-filled is no longer tested; the reason is time.
+            fail_big_alloc.store(true);
+            biggest_alloc.store(0);
+            std::vector<Value> ok;
+            try {
+                ok = run(
+                    "(module (memory 1) (func (export \"f\") (result i32 i32)"
+                    " i32.const 65535 memory.grow 0 memory.size 0))");
+            } catch (...) {
+                fail_big_alloc.store(false); // disarm even if it escaped
+                throw;
+            }
+            fail_big_alloc.store(false);
+            AssertEq(ok.size(), 2U);
+            ExpectEq(i32_at(ok, 0), -1); // forced allocation failure -> -1
+            ExpectEq(i32_at(ok, 1), 1);  // memory unchanged at its one page
+            // The bound let 65536 pages reach the 4 GiB (65536 * 65536 B)
+            // allocation; a `>=` bound would never have tried it.
+            Assert(biggest_alloc.load() >= (std::size_t)65536 * 65536);
         })
     })
     Category("growing past what the host can allocate", {
