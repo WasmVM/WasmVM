@@ -52,6 +52,9 @@ void RunVisitor::operator()(Instr::Ref_null& instr){
 void RunVisitor::operator()(Instr::Ref_func& instr){
     Frame& frame = stack.frames.top();
     Label& label = frame.labels.top();
+    if(instr.index >= frame.module.funcaddrs.size()){
+        throw Exception::Exception("function index out of range in ref.func");
+    }
     label.values.emplace<funcref_t>(frame.module.funcaddrs[instr.index]);
 }
 

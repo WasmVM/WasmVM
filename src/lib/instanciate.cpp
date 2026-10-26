@@ -20,6 +20,9 @@ static void init_table(std::vector<Value>::iterator it, const WasmElem& elem, Mo
                 *it = default_value(elem.type, moduleInst.types);
             },
             [&](Instr::Ref_func& ins){
+                if(ins.index >= moduleInst.funcaddrs.size()){
+                    throw Exception::Exception("function index out of range in element segment ref.func");
+                }
                 index_t funcaddr = moduleInst.funcaddrs[ins.index];
                 if(funcaddr >= store.funcs.size()){
                     throw Exception::Exception("invalid function address in ref.func");
@@ -242,6 +245,9 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                 // A funcref holds a store address, as ref.func at run time and
                 // an elem segment both store: the module's own index only
                 // matches it while nothing precedes the module in the store.
+                if(instr.index >= moduleInst.funcaddrs.size()){
+                    throw Exception::Exception("function index out of range in global initializer ref.func");
+                }
                 globalinst.value.emplace<funcref_t>(moduleInst.funcaddrs[instr.index]);
             },
             [&](Instr::Global_get instr){
@@ -263,6 +269,9 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         exportinst.name = export_.name;
         switch(export_.desc){
             case WasmExport::DescType::func :
+                if(export_.index >= moduleInst.funcaddrs.size()){
+                    throw Exception::Exception("function index out of range in function export");
+                }
                 if(moduleInst.funcaddrs[export_.index] >= store.funcs.size()){
                     throw Exception::Exception("exported function not exist in store");
                 }
