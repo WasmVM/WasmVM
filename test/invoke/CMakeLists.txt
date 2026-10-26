@@ -34,6 +34,7 @@ add_invoke_suite(gc_collect)
 add_invoke_suite(canon)
 add_invoke_suite(table)
 add_invoke_suite(global_init)
+add_invoke_suite(force_bounds)
 # Outer backstop for the interrupt suite's infinite-loop fixtures: a broken
 # interrupt gate must read as a red test, not hang the whole test run.
 set_property(TEST invoke_interrupt PROPERTY TIMEOUT 20)

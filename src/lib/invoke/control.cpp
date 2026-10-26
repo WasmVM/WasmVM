@@ -270,6 +270,9 @@ void RunVisitor::operator()(Instr::Return&){
 void RunVisitor::operator()(Instr::Call& instr){
   Frame& frame = stack.frames.top();
   Label& label = frame.labels.top();
+  if(instr.index >= frame.module.funcaddrs.size()){
+    throw Exception::Exception("function index out of range in call");
+  }
   index_t funcaddr = frame.module.funcaddrs[instr.index];
   FuncType& type = stack.store.funcs[funcaddr].type;
   std::vector<Value> args;
@@ -286,6 +289,9 @@ void RunVisitor::operator()(Instr::Call& instr){
 void RunVisitor::operator()(Instr::Return_call& instr){
     Frame& frame = stack.frames.top();
     Label& label = frame.labels.top();
+    if(instr.index >= frame.module.funcaddrs.size()){
+        throw Exception::Exception("function index out of range in return_call");
+    }
     index_t funcaddr = frame.module.funcaddrs[instr.index];
     FuncType& type = stack.store.funcs[funcaddr].type;
     std::vector<Value> args;
