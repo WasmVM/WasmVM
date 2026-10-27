@@ -361,7 +361,7 @@ Suite invoke_table {
         // 2,000,000 * sizeof(Value) bytes. sizeof(Value) depends on the standard
         // library's std::variant layout -- 16 on libstdc++, 24 on libc++ -- so
         // the count is chosen so count * sizeof(Value) clears the 16 MiB override
-        // threshold on either (32 MiB and 48 MiB respectively); a smaller count
+        // threshold on either; a smaller count
         // whose product fell under the threshold would leave the override blind
         // to this allocation. The grow succeeds and biggest_alloc shows the
         // replaced operator new saw that request -- it is the vector resize inside
