@@ -357,23 +357,27 @@ Suite invoke_table {
     // abort; it must answer -1 and leave the table unchanged.
     Category("table.grow when the host cannot allocate (#36)", {
         // Positive control: with the override disarmed, a real grow of
-        // 1,000,000 funcref slots is 1,000,000 * sizeof(Value) == 24,000,000
-        // bytes, one allocation above the 16 MiB threshold. The grow succeeds
-        // and biggest_alloc shows the replaced operator new saw that request --
-        // and it is the vector resize inside libWasmVM.dylib that makes it, so
-        // the override is in force there. Nothing else in this run allocates
-        // that much, so an armed throw below hits the resize, not some other
-        // allocation.
+        // 2,000,000 reference slots makes one vector resize of
+        // 2,000,000 * sizeof(Value) bytes. sizeof(Value) depends on the standard
+        // library's std::variant layout -- 16 on libstdc++, 24 on libc++ -- so
+        // the count is chosen so count * sizeof(Value) clears the 16 MiB override
+        // threshold on either (32 MiB and 48 MiB respectively); a smaller count
+        // whose product fell under the threshold would leave the override blind
+        // to this allocation. The grow succeeds and biggest_alloc shows the
+        // replaced operator new saw that request -- it is the vector resize inside
+        // libWasmVM that makes it, so the override is in force there. Nothing else
+        // in this run allocates that much, so an armed throw below hits the
+        // resize, not some other allocation.
         Test("the replaced operator new intercepts table.grow's allocation", {
             fail_big_alloc.store(false);
             biggest_alloc.store(0);
             std::vector<Value> r = run(
                 "(module (table 0 funcref) (func (export \"f\") (result i32 i32)"
-                " ref.null func i32.const 1000000 table.grow 0 table.size 0))");
+                " ref.null func i32.const 2000000 table.grow 0 table.size 0))");
             AssertEq(r.size(), 2U);
             ExpectEq(i32_at(r, 0), 0);        // old length
-            ExpectEq(i32_at(r, 1), 1000000);  // grown
-            Assert(biggest_alloc.load() >= 1000000u * sizeof(Value));
+            ExpectEq(i32_at(r, 1), 2000000);  // grown
+            Assert(biggest_alloc.load() >= 2000000u * sizeof(Value));
         })
         // The fix itself: arm the override so the resize throws std::bad_alloc.
         // table.grow must answer -1 and leave the table at its old length.
@@ -383,7 +387,7 @@ Suite invoke_table {
             try {
                 r = run(
                     "(module (table 0 funcref) (func (export \"f\") (result i32 i32)"
-                    " ref.null func i32.const 1000000 table.grow 0 table.size 0))");
+                    " ref.null func i32.const 2000000 table.grow 0 table.size 0))");
             } catch (...) {
                 fail_big_alloc.store(false); // disarm even if it escaped (no catch)
                 throw;
