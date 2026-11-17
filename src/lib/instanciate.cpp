@@ -312,8 +312,14 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
     for(size_t idx = 0; idx < module.elems.size(); ++idx){
         const WasmElem& elem = module.elems[idx];
         switch(elem.mode.type){
-            case WasmElem::ElemMode::Mode::declarative :
-            break;
+            case WasmElem::ElemMode::Mode::declarative : {
+                // A declarative segment is dropped at instantiation; it still
+                // owns its index in the module's element index space.
+                index_t address = store.elems.size();
+                ElemInst& eleminst = store.elems.emplace_back();
+                moduleInst.elemaddrs.emplace_back(address);
+                eleminst.type = elem.type;
+            }break;
             case WasmElem::ElemMode::Mode::passive : {
                 index_t address = store.elems.size();
                 ElemInst& eleminst = store.elems.emplace_back();
@@ -340,6 +346,12 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                     throw Exception::Exception("elem type not match table type");
                 }
                 init_table(table.elems.begin() + offset, elem, moduleInst, store);
+                // An active segment is dropped once copied; it still owns its
+                // index in the module's element index space.
+                index_t address = store.elems.size();
+                ElemInst& eleminst = store.elems.emplace_back();
+                moduleInst.elemaddrs.emplace_back(address);
+                eleminst.type = elem.type;
             break;
         }
     }
@@ -366,6 +378,10 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
                     throw Exception::Exception("insufficient size while initialize memory");
                 }
                 std::copy(data.init.begin(), data.init.end(), memory.data.begin() + offset);
+                // An active segment is dropped once copied; it still owns its
+                // index in the module's data index space.
+                moduleInst.dataaddrs.emplace_back(store.datas.size());
+                store.datas.emplace_back();
             break;
         }
     }
