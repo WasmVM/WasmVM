@@ -36,6 +36,11 @@ ModuleQueue::ModuleQueue(
     std::set<std::filesystem::path> ancestors;
     std::set<std::filesystem::path> members;
     std::function<void(std::filesystem::path)> find_deps = [&](std::filesystem::path file_path){
+        // Imports are walked one entry at a time, so a module that imports N things
+        // from one dependency reaches it N times. Decode it only the first time.
+        if(members.contains(file_path)){
+            return;
+        }
         Node node;
         node.file_path = file_path;
         std::ifstream istream(file_path, std::ios::binary | std::ios::in);
