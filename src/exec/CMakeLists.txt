@@ -54,6 +54,9 @@ if(BUILD_HOST_MODULES)
 target_link_libraries(wasmvm
     WasmVM_host
 )
+# WasmVM_host.dll, and the WasmVM.dll it links, must sit next to wasmvm.exe on
+# Windows, or the exec tests that run wasmvm hang (cmake/CopyDlls.cmake).
+wasmvm_copy_dlls(wasmvm WasmVM_host WasmVM)
 endif(BUILD_HOST_MODULES)
 
 target_compile_definitions(wasmvm PUBLIC DEFAULT_MODULE_PATH="${DEFAULT_MODULE_PATH}")
