@@ -26,6 +26,14 @@ Highlights since v1.5:
   unsigned; a saturating truncation returns the value it truncates to (with
   tests); an embedder can catch what the library throws, LTO or not;
   `--force` bounds-checks function indices before indexing `funcaddrs[]`.
+- **Segments and module loading**: every data and element segment owns its
+  index at instantiation, so `memory.init` / `table.init` /
+  `array.new_data` / `array.new_elem` and the other segment instructions
+  reach the right segment when a passive one follows an active or
+  declarative one; active and declarative segments are empty after
+  instantiation. The `wasmvm` CLI decodes each imported module once
+  instead of once per import entry, which cut load time for modules with
+  many imports from one dependency from minutes to seconds.
 
 ## Install guides
 
