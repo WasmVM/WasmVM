@@ -63,6 +63,8 @@ if(CONSOLE_COLOR)
   add_compile_definitions(CONSOLE_COLOR)
 endif(CONSOLE_COLOR)
 
+include(CopyDlls)
+
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")
 if(BUILD_HOST_MODULES)
   add_subdirectory(host)
