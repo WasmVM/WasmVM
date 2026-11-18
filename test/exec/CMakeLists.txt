@@ -23,6 +23,8 @@ macro(add_exec_test_suite suite_name)
   set_property(TEST exec_suite_${suite_name} PROPERTY
     ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
   )
+  # On Windows, WasmVM.dll must sit next to the test binary (cmake/CopyDlls.cmake).
+  wasmvm_copy_dlls(exec_suite_${suite_name}_target WasmVM)
 endmacro(add_exec_test_suite)
 
 add_exec_test_suite(commandparser ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp)
