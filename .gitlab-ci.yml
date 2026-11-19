@@ -13,11 +13,16 @@ workflow:
     - if: $CI_COMMIT_BRANCH
 
 stages:
+  - toolchain
   - build
   - docs
 
 variables:
   GIT_DEPTH: "50"
+  # Prebuilt toolchain image from test/Dockerfile. TOOLCHAIN_TAG must equal
+  # `sha256sum test/Dockerfile | cut -c1-16`; toolchain-image checks it.
+  TOOLCHAIN_TAG: a2f36aa2088eb3aa
+  TOOLCHAIN_IMAGE: $CI_REGISTRY_IMAGE/ci-toolchain:$TOOLCHAIN_TAG
   # Console colours emit ANSI escapes that are not valid XML, which corrupts
   # the ctest JUnit report GitLab parses for the MR test widget.
   CMAKE_OPTS: >-
@@ -26,16 +31,49 @@ variables:
     -D CONSOLE_COLOR=OFF
     -D BUILD_DOCS=OFF
 
-.cmake_build:
-  stage: build
-  image: ubuntu:22.04
+# Builds and pushes TOOLCHAIN_IMAGE with kaniko (no privileged runner needed).
+# Runs automatically when test/Dockerfile changes; on the default branch it can
+# also be started by hand to rebuild the same tag (e.g. for Ubuntu updates).
+# Being in an earlier stage, it finishes before the build jobs pull the image.
+toolchain-image:
+  stage: toolchain
+  image:
+    name: gcr.io/kaniko-project/executor:v1.24.0-debug
+    entrypoint: [""]
   interruptible: true
   timeout: 30m
-  before_script:
-    - apt-get update -qq
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [test/Dockerfile]
+    - if: $CI_COMMIT_BRANCH
+      changes: [test/Dockerfile]
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+      when: manual
+      allow_failure: true
+  script:
+    - actual="$(sha256sum test/Dockerfile | cut -c1-16)"
     - >-
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-      gcc g++ clang cmake ninja-build binutils git
+      if [ "$actual" != "$TOOLCHAIN_TAG" ]; then
+      echo "TOOLCHAIN_TAG is $TOOLCHAIN_TAG but test/Dockerfile hashes to $actual; update .gitlab-ci.yml.";
+      exit 1;
+      fi
+    - mkdir -p /kaniko/.docker
+    - >-
+      printf '{"auths":{"%s":{"auth":"%s"}}}'
+      "$CI_REGISTRY"
+      "$(printf '%s:%s' "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" | base64 | tr -d '\n')"
+      > /kaniko/.docker/config.json
+    - >-
+      /kaniko/executor
+      --context "dir://$CI_PROJECT_DIR/test"
+      --dockerfile "$CI_PROJECT_DIR/test/Dockerfile"
+      --destination "$TOOLCHAIN_IMAGE"
+
+.cmake_build:
+  stage: build
+  image: $TOOLCHAIN_IMAGE
+  interruptible: true
+  timeout: 30m
   script:
     - cmake -S . -B build $CMAKE_OPTS -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX -D WASMVM_DEBUG=$WASMVM_DEBUG
     - cmake --build build --parallel
@@ -61,7 +99,7 @@ build:
 # this job to `pages`, move the html to `public/`, and artifact that path.
 docs:
   stage: docs
-  image: ubuntu:22.04
+  image: $TOOLCHAIN_IMAGE
   interruptible: true
   timeout: 15m
   rules:
@@ -69,13 +107,6 @@ docs:
       changes: [docs/**/*]
     - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
       changes: [docs/**/*]
-  before_script:
-    - apt-get update -qq
-    # gcc/g++ are needed even here: project() enables C/CXX, so configure fails
-    # without a compiler even though `docs` is a custom target.
-    - >-
-      DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
-      gcc g++ cmake ninja-build git python3-sphinx
   script:
     - cmake -S . -B build -G Ninja -D CMAKE_BUILD_TYPE=Release -D BUILD_TESTS=OFF
     - cmake --build build --target docs
