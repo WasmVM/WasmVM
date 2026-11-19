@@ -185,7 +185,12 @@ int main(int argc, char const *argv[]){
                             [&](Json::Value::Object& start_obj){
                                 std::optional<index_t> index;
                                 if(start_obj.contains("index")){
-                                    index.emplace((index_t)start_obj["index"].get<Json::Value::Number>());
+                                    Json::Value& index_value = start_obj["index"];
+                                    if(index_value.type() == Json::Value::Type::Integer){
+                                        index.emplace((index_t)index_value.get<Json::Value::Integer>());
+                                    }else{
+                                        index.emplace((index_t)index_value.get<Json::Value::Number>());
+                                    }
                                 }
                                 start_config.emplace_back(start_obj["path"].get<std::string>(), index);
                             }

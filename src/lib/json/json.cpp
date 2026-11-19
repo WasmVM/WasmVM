@@ -3,6 +3,10 @@
 // license that can be found in the LICENSE file.
 
 #include <cctype>
+#include <charconv>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
 #include <optional>
 #include <functional>
 #include <json.hpp>
@@ -10,6 +14,80 @@
 
 using namespace Json;
 using namespace WasmVM::Exception;
+
+// The four hex digits after "\u", as a UTF-16 code unit.
+static uint32_t read_code_unit(std::istream& fin){
+    uint32_t unit = 0;
+    for(int i = 0; i < 4; ++i){
+        int ch = fin.get();
+        if(!std::isxdigit(ch)){
+            throw Exception("JSON: invalid \\u escape in string");
+        }
+        unit = (unit << 4) | (uint32_t)(std::isdigit(ch) ? (ch - '0') : (std::tolower(ch) - 'a' + 10));
+    }
+    return unit;
+}
+
+static void append_utf8(std::string& out, uint32_t cp){
+    if(cp < 0x80){
+        out += (char)cp;
+    }else if(cp < 0x800){
+        out += (char)(0xC0 | (cp >> 6));
+        out += (char)(0x80 | (cp & 0x3F));
+    }else if(cp < 0x10000){
+        out += (char)(0xE0 | (cp >> 12));
+        out += (char)(0x80 | ((cp >> 6) & 0x3F));
+        out += (char)(0x80 | (cp & 0x3F));
+    }else{
+        out += (char)(0xF0 | (cp >> 18));
+        out += (char)(0x80 | ((cp >> 12) & 0x3F));
+        out += (char)(0x80 | ((cp >> 6) & 0x3F));
+        out += (char)(0x80 | (cp & 0x3F));
+    }
+}
+
+// Quote and escape a string for output: '"', '\\' and the control characters
+// must be escaped; every other byte, UTF-8 included, is written as is.
+static void write_string(std::ostream& stream, const std::string& data){
+    static const char hex[] = "0123456789abcdef";
+    stream << '"';
+    for(char c : data){
+        switch(c){
+            case '"': stream << "\\\""; break;
+            case '\\': stream << "\\\\"; break;
+            case '\b': stream << "\\b"; break;
+            case '\f': stream << "\\f"; break;
+            case '\n': stream << "\\n"; break;
+            case '\r': stream << "\\r"; break;
+            case '\t': stream << "\\t"; break;
+            default:
+                if((unsigned char)c < 0x20){
+                    stream << "\\u00" << hex[(c >> 4) & 0xF] << hex[c & 0xF];
+                }else{
+                    stream << c;
+                }
+            break;
+        }
+    }
+    stream << '"';
+}
+
+// The shortest "%g" form that reads back as the same double. It always keeps
+// a '.' or an exponent, so the output parses back as a Number, not an Integer.
+static std::string format_number(double data){
+    char buf[32];
+    for(int precision = 15; precision <= 17; ++precision){
+        std::snprintf(buf, sizeof(buf), "%.*g", precision, data);
+        if(std::strtod(buf, nullptr) == data){
+            break;
+        }
+    }
+    std::string text = buf;
+    if(text.find_first_of(".eEn") == std::string::npos){
+        text += ".0";
+    }
+    return text;
+}
 
 std::istream& Json::operator>>(std::istream& fin, Value& elem){
     std::function<void(Value&)> parse_value = [&](Value& val){
@@ -75,17 +153,22 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
                                 literal += '\t';
                             break;
                             case 'u':{
-                                std::string udigits(4, '\0');
-                                fin.read(udigits.data(), 4);
-                                size_t count = 0;
-                                wchar_t uchar = std::stoi(udigits, &count, 16);
-                                if(count != 4){
-                                    throw Exception("JSON: invalid character value in string");
+                                uint32_t cp = read_code_unit(fin);
+                                if(cp >= 0xDC00 && cp <= 0xDFFF){
+                                    throw Exception("JSON: unpaired surrogate in string");
                                 }
-                                if(uchar > 0xff){
-                                    literal += (char)((uchar >> 8) & 0xff);
+                                if(cp >= 0xD800 && cp <= 0xDBFF){
+                                    // A high surrogate must be followed by "\u" and a low one.
+                                    if(fin.get() != '\\' || fin.get() != 'u'){
+                                        throw Exception("JSON: unpaired surrogate in string");
+                                    }
+                                    uint32_t low = read_code_unit(fin);
+                                    if(low < 0xDC00 || low > 0xDFFF){
+                                        throw Exception("JSON: unpaired surrogate in string");
+                                    }
+                                    cp = 0x10000 + ((cp - 0xD800) << 10) + (low - 0xDC00);
                                 }
-                                literal += (char)(uchar & 0xff);
+                                append_utf8(literal, cp);
                             }break;
                             default:
                                 throw Exception("JSON: unknown escape sequence in string");
@@ -109,6 +192,9 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             case '9':
             case '-':{ // Number
                 std::string literal;
+                if(ch == '-'){ // sign
+                    literal += ch; ch = fin.get();
+                }
                 while((ch >= '0') && (ch <= '9')){ // integer
                     literal += ch; ch = fin.get();
                 }
@@ -128,7 +214,26 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
                     }
                 }
                 fin.unget();
-                val.value.emplace<Value::Number>(std::stod(literal));
+                const char* first = literal.data();
+                const char* last = first + literal.size();
+                if(literal.find_first_of(".eE") == std::string::npos){
+                    Value::Integer integer = 0;
+                    auto [ptr, ec] = std::from_chars(first, last, integer);
+                    if(ec == std::errc() && ptr == last){
+                        val.value.emplace<Value::Integer>(integer);
+                        break;
+                    }
+                    // Out of 64-bit range: falls through to a double.
+                }
+                char* end = nullptr;
+                double number = std::strtod(first, &end);
+                if(literal.empty() || end != last){
+                    throw Exception("JSON: invalid number '" + literal + "'");
+                }
+                if(!std::isfinite(number)){
+                    throw Exception("JSON: number out of range '" + literal + "'");
+                }
+                val.value.emplace<Value::Number>(number);
             }break;
             case 't':{ // true
                 char remain[4];
@@ -218,10 +323,13 @@ std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
             stream << (data ? "true" : "false");
         },
         [&](Value::Number data){
+            stream << format_number(data);
+        },
+        [&](Value::Integer data){
             stream << data;
         },
         [&](Value::String data){
-            stream << '"' << data << '"';
+            write_string(stream, data);
         },
         [&](Value::Array data){
             stream << "[";
@@ -256,7 +364,8 @@ std::ostream& Json::operator<<(std::ostream& stream, const Value& val){
                     if(has_newline){
                         stream << std::endl << indent_output;
                     }
-                    stream << '"' << it->first << "\": " << it->second;
+                    write_string(stream, it->first);
+                    stream << ": " << it->second;
                 }
                 if(has_newline){
                     stream << std::endl;

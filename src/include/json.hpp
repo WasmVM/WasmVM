@@ -7,6 +7,7 @@
 #include <map>
 #include <iostream>
 #include <type_traits>
+#include <cstdint>
 #include <exception.hpp>
 
 namespace Json {
@@ -34,11 +35,14 @@ struct Value {
     using String = std::string;
     using Array = std::vector<Value>;
     using Object = std::map<String, Value>;
+    // A number written without a fraction or an exponent that fits in 64 bits
+    // parses as Integer; every other number is a Number (double).
+    using Integer = int64_t;
 
     Value() : value(Object()){}
 
     enum class Type {
-        Null, Bool, Number, String, Array, Object
+        Null, Bool, Number, String, Array, Object, Integer
     };
     constexpr Type type(){
         return static_cast<const Type>(value.index());
@@ -58,7 +62,7 @@ struct Value {
     }
 
 private:
-    std::variant<Null, Bool, Number, String, Array, Object> value;
+    std::variant<Null, Bool, Number, String, Array, Object, Integer> value;
 
     friend std::istream& operator>>(std::istream&, Value&);
     friend std::ostream& operator<<(std::ostream&, const Value&);
