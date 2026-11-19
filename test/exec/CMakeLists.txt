@@ -28,6 +28,7 @@ macro(add_exec_test_suite suite_name)
 endmacro(add_exec_test_suite)
 
 add_exec_test_suite(commandparser ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp)
+add_exec_test_suite(json)
 add_exec_test_suite(linker ${PROJECT_SOURCE_DIR}/src/exec/Linker.cpp)
 
 # Limits of memory and table imports, matched by the wasmvm CLI (issue #26).
