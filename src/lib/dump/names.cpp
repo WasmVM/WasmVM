@@ -46,7 +46,7 @@ static const std::string* find(const WasmNames::IndirectNameMap& map, index_t ou
     return (found != map.end()) ? find(found->second, inner) : nullptr;
 }
 
-DumpNames::DumpNames(const WasmModule& module){
+DumpNames::DumpNames(const WasmModule& module, bool keep_param_names){
     const WasmNames& source = module.names;
     if(source.module && Parse::is_id_name(source.module.value())){
         names.module = source.module;
@@ -80,7 +80,7 @@ DumpNames::DumpNames(const WasmModule& module){
         if(idx >= param_counts.size() || param_counts[idx] == index_npos){
             continue;
         }
-        WasmNames::NameMap kept = printable(inner, param_counts[idx]);
+        WasmNames::NameMap kept = printable(inner, keep_param_names ? 0 : param_counts[idx]);
         if(!kept.empty()){
             names.locals[idx] = kept;
         }

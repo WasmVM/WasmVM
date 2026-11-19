@@ -1,0 +1,10 @@
+(func $main (type 0) (local $x i32)
+  i32.const 2
+  i32.const 3
+  call $add
+  local.set $x
+  block $done
+    local.get $x
+    global.set $counter
+  end
+end

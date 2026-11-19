@@ -97,6 +97,12 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
         switch(ch){
             case '{':{ // Object
                 Value::Object& object = val.value.emplace<Value::Object>();
+                // An empty object may hold whitespace: "{ }".
+                while(((ch = fin.get()) == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
+                if(ch == '}'){
+                    break;
+                }
+                fin.unget();
                 while(((ch = fin.get()) != '}') && (object.empty() || (ch == ','))){
                     if(object.empty()){
                         fin.unget();
@@ -118,6 +124,12 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             }break;
             case '[':{ // Array
                 Value::Array& array = val.value.emplace<Value::Array>();
+                // An empty array, possibly holding whitespace: "[]", "[ ]".
+                while(((ch = fin.get()) == ' ') || (ch == '\t') || (ch == '\r') || (ch == '\n'));
+                if(ch == ']'){
+                    break;
+                }
+                fin.unget();
                 do{
                     parse_value(array.emplace_back());
                     ch = fin.get();

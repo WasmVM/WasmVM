@@ -19,6 +19,11 @@
 #include "ModuleQueue.hpp"
 #include "color.hpp"
 
+#ifdef WASMVM_DEBUG
+#include <Debugger.hpp>
+#include "dap/DapServer.hpp"
+#endif
+
 using namespace WasmVM;
 
 static std::vector<ExternVal> match_imports(Store& store, std::map<std::filesystem::path, ModuleInst>& moduleinsts, ModuleQueue::Node& node){
@@ -114,6 +119,52 @@ static std::vector<ExternVal> match_imports(Store& store, std::map<std::filesyst
     return externvals;
 }
 
+#ifdef WASMVM_DEBUG
+// `wasmvm --dap [addr:]port`: the same instantiation as without it, driven by
+// a DAP client (#54). Every module is decoded first, so the client sees every
+// function's source before the first start function runs.
+static int run_with_dap(const std::string& spec, Store& store, std::map<std::filesystem::path, ModuleInst>& moduleinsts, ModuleQueue& module_queue, const char* argv0){
+    std::vector<ModuleQueue::Node> nodes;
+    while(!module_queue.empty()){
+        nodes.emplace_back(module_queue.pop());
+    }
+    Dap::Listener listener(Dap::Endpoint::parse(spec));
+    std::cerr << std::filesystem::path(argv0).filename().string() << ": DAP server listening on " << listener.address() << std::endl;
+    Dap::Server server(listener.accept(), store);
+    listener.close();
+    for(ModuleQueue::Node& node : nodes){
+        server.add_module(node.file_path, node.module);
+    }
+    server.start();
+    if(!server.wait_configured()){
+        server.finish(1);
+        return 1;
+    }
+    int exit_code = 0;
+    try {
+        for(size_t index = 0; index < nodes.size(); ++index){
+            ModuleQueue::Node& node = nodes[index];
+            std::vector<ExternVal> externvals = match_imports(store, moduleinsts, node);
+            try {
+                moduleinsts.emplace(node.file_path, ModuleInst());
+                server.before_instantiate(index, moduleinsts[node.file_path]);
+                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals, &server);
+                server.after_instantiate(index);
+            }catch(Exception::Exception &e){
+                throw Exception::Exception(node.file_path.filename().string() + ": " + e.what());
+            }
+        }
+    }catch(Exception::Exception &e){
+        std::cerr << std::filesystem::path(argv0).filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
+        exit_code = -1;
+    }catch(Dap::Server::Terminate&){
+        exit_code = 1;
+    }
+    server.finish(exit_code);
+    return exit_code;
+}
+#endif
+
 int main(int argc, char const *argv[]){  
     // Parse argv
     CommandParser args(argc, argv, {
@@ -123,7 +174,10 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Fixed("main_module", "main WebAssembly module binary"),
         CommandParser::Fixed("args", "Arguments passed to main module", (unsigned int)index_npos),
-        CommandParser::Optional("--extra", "Path to find modules", (unsigned int)index_npos, "-e")
+        CommandParser::Optional("--extra", "Path to find modules", (unsigned int)index_npos, "-e"),
+#ifdef WASMVM_DEBUG
+        CommandParser::Optional("--dap", "Debug with a DAP client: listen on [address:]port (default address 127.0.0.1)", 1u),
+#endif
     },
         "wasmvm : WasmVM WebAssembly virtual machine"
     );
@@ -180,6 +234,12 @@ int main(int argc, char const *argv[]){
         host_modules_instanciate(moduleinsts, store);
         #endif
         ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent, run_validate);
+
+#ifdef WASMVM_DEBUG
+        if(args["dap"]){
+            return run_with_dap(std::get<std::string>(args["dap"].value()), store, moduleinsts, module_queue, argv[0]);
+        }
+#endif
 
         // Instanciate
         while(!module_queue.empty()){

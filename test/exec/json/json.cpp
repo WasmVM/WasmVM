@@ -104,4 +104,52 @@ Suite json {
             Expect(parse_throws("\"\\u00g0\""));
         })
     })
+    Category("empty_container", {
+        Test("empty_array_parses", {
+            Json::Value value = parse("[]");
+            Assert(value.type() == Json::Value::Type::Array);
+            Expect(value.get<Json::Value::Array>().empty());
+        })
+        Test("empty_array_with_whitespace_parses", {
+            Json::Value value = parse("[ \n]");
+            Assert(value.type() == Json::Value::Type::Array);
+            Expect(value.get<Json::Value::Array>().empty());
+        })
+        Test("empty_object_with_whitespace_parses", {
+            Json::Value value = parse("{ \t}");
+            Assert(value.type() == Json::Value::Type::Object);
+            Expect(value.get<Json::Value::Object>().empty());
+        })
+        Test("nested_empty_array_parses", {
+            Json::Value value = parse("{\"lines\":[],\"source\":{}}");
+            Assert(value.type() == Json::Value::Type::Object);
+            Json::Value::Object& object = value.get<Json::Value::Object>();
+            Assert(object["lines"].type() == Json::Value::Type::Array);
+            Expect(object["lines"].get<Json::Value::Array>().empty());
+        })
+        Test("unclosed_array_is_rejected", {
+            Expect(parse_throws("[ "));
+        })
+    })
+    Category("construct", {
+        Test("scalars", {
+            ExpectEq(print(Json::Value(Json::Value::Null())), std::string("null"));
+            ExpectEq(print(Json::Value(true)), std::string("true"));
+            ExpectEq(print(Json::Value(-7)), std::string("-7"));
+            ExpectEq(print(Json::Value((uint32_t)4000000000u)), std::string("4000000000"));
+            ExpectEq(print(Json::Value(2.5)), std::string("2.5"));
+            ExpectEq(print(Json::Value("a\"b")), std::string("\"a\\\"b\""));
+        })
+        Test("integer_type", {
+            Json::Value value((size_t)3);
+            Expect(value.type() == Json::Value::Type::Integer);
+        })
+        Test("containers_round_trip", {
+            Json::Value value(Json::Value::Object {
+                {"seq", 1},
+                {"body", Json::Value::Array {Json::Value("x"), Json::Value(false)}},
+            });
+            ExpectEq(print(parse(print(value))), print(value));
+        })
+    })
 };
