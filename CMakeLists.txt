@@ -71,6 +71,14 @@ if(WASMVM_DEBUG)
   add_compile_definitions(WASMVM_DEBUG)
 endif(WASMVM_DEBUG)
 
+# Profiler support (Profiler.hpp, #61), independent of WASMVM_DEBUG. Like it,
+# the macro changes the Stack layout, so code built against the installed
+# headers must define WASMVM_PROFILE exactly when the library was built with it.
+set(WASMVM_PROFILE OFF CACHE BOOL "Build profiler support")
+if(WASMVM_PROFILE)
+  add_compile_definitions(WASMVM_PROFILE)
+endif(WASMVM_PROFILE)
+
 include(CopyDlls)
 
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")

@@ -125,6 +125,9 @@ add_library(WasmVM_exec OBJECT
 if(WASMVM_DEBUG)
   target_sources(WasmVM_exec PRIVATE invoke/debugger.cpp)
 endif(WASMVM_DEBUG)
+if(WASMVM_PROFILE)
+  target_sources(WasmVM_exec PRIVATE invoke/profiler.cpp)
+endif(WASMVM_PROFILE)
 set_property(TARGET WasmVM_exec PROPERTY POSITION_INDEPENDENT_CODE 1)
 if(NOT MSVC)
 target_precompile_headers(WasmVM_exec PRIVATE

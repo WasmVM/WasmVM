@@ -7,6 +7,9 @@
 #include <vector>
 #include <exception.hpp>
 #include "exception.hpp"
+#ifdef WASMVM_PROFILE
+#include <Profiler.hpp>
+#endif
 
 using namespace WasmVM;
 

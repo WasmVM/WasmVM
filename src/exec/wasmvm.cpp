@@ -23,8 +23,93 @@
 #include <Debugger.hpp>
 #include "dap/DapServer.hpp"
 #endif
+#ifdef WASMVM_PROFILE
+#include <Profiler.hpp>
+#include <cstdlib>
+#include <optional>
+#endif
 
 using namespace WasmVM;
+
+#ifdef WASMVM_PROFILE
+// `wasmvm --profile <prefix>` (#61). The profiler lives in static storage and
+// the report is also written from an atexit handler: sys_proc.exit calls
+// std::exit inside a host function, so main never returns then.
+static std::optional<Profiler> profiler;
+static std::string profile_prefix;
+static std::string profile_program;
+static bool profile_written = false;
+
+// Writes <prefix>.json and <prefix>.folded once; false if either failed.
+static bool write_profile(){
+    if(!profiler || profile_written){
+        return true;
+    }
+    profile_written = true;
+    profiler->finish();
+    bool ok = true;
+    const std::string json_path = profile_prefix + ".json";
+    {
+        std::ofstream json(json_path);
+        if(json){
+            json << profiler->report() << std::endl;
+        }
+        if(!json){
+            std::cerr << profile_program << ": " COLOR_Error ": cannot write " << json_path << std::endl;
+            ok = false;
+        }
+    }
+    const std::string folded_path = profile_prefix + ".folded";
+    {
+        std::ofstream folded(folded_path);
+        if(folded){
+            folded << profiler->folded();
+            folded.flush();
+        }
+        if(!folded){
+            std::cerr << profile_program << ": " COLOR_Error ": cannot write " << folded_path << std::endl;
+            ok = false;
+        }
+    }
+    return ok;
+}
+
+static void write_profile_at_exit(){
+    write_profile();
+}
+
+// The exit code main returns, once the profile is written: a profile that
+// cannot be written turns success into -1.
+static int profile_exit_code(int code){
+    if(!write_profile() && code == 0){
+        return -1;
+    }
+    return code;
+}
+#endif
+
+// The observers every start function runs under.
+static Observers run_observers(){
+    Observers observers;
+#ifdef WASMVM_PROFILE
+    if(profiler){
+        observers.profiler = &*profiler;
+    }
+#endif
+    return observers;
+}
+
+// The name the profile gives a module's functions.
+static void name_module(const ModuleInst& moduleinst, const std::filesystem::path& path){
+#ifdef WASMVM_PROFILE
+    if(profiler){
+        profiler->set_module_name(moduleinst, path.filename().string());
+    }
+#else
+    (void)moduleinst;
+    (void)path;
+#endif
+}
 
 static std::vector<ExternVal> match_imports(Store& store, std::map<std::filesystem::path, ModuleInst>& moduleinsts, ModuleQueue::Node& node){
     std::vector<ExternVal> externvals;
@@ -148,7 +233,10 @@ static int run_with_dap(const std::string& spec, Store& store, std::map<std::fil
             try {
                 moduleinsts.emplace(node.file_path, ModuleInst());
                 server.before_instantiate(index, moduleinsts[node.file_path]);
-                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals, &server);
+                name_module(moduleinsts[node.file_path], node.file_path);
+                Observers observers = run_observers();
+                observers.debugger = &server;
+                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals, observers);
                 server.after_instantiate(index);
             }catch(Exception::Exception &e){
                 throw Exception::Exception(node.file_path.filename().string() + ": " + e.what());
@@ -178,6 +266,9 @@ int main(int argc, char const *argv[]){
 #ifdef WASMVM_DEBUG
         CommandParser::Optional("--dap", "Debug with a DAP client: listen on [address:]port (default address 127.0.0.1)", 1u),
 #endif
+#ifdef WASMVM_PROFILE
+        CommandParser::Optional("--profile", "Write a profile to <prefix>.json and <prefix>.folded", 1u),
+#endif
     },
         "wasmvm : WasmVM WebAssembly virtual machine"
     );
@@ -190,6 +281,15 @@ int main(int argc, char const *argv[]){
         std::cerr << "WasmVM version " WASMVM_VERSION << std::endl;
         return 0;
     }
+
+#ifdef WASMVM_PROFILE
+    if(args["profile"]){
+        profiler.emplace();
+        profile_prefix = std::get<std::string>(args["profile"].value());
+        profile_program = std::filesystem::path(argv[0]).filename().string();
+        std::atexit(write_profile_at_exit);
+    }
+#endif
 
     try {
         // Specify paths
@@ -232,12 +332,19 @@ int main(int argc, char const *argv[]){
                 wasmvm_args.push_back(std::move(a));
         }
         host_modules_instanciate(moduleinsts, store);
+        for(auto& [path, moduleinst] : moduleinsts){
+            name_module(moduleinst, path);
+        }
         #endif
         ModuleQueue module_queue(main_module, moduleinsts, extra_paths, system_path, check_parent, run_validate);
 
 #ifdef WASMVM_DEBUG
         if(args["dap"]){
-            return run_with_dap(std::get<std::string>(args["dap"].value()), store, moduleinsts, module_queue, argv[0]);
+            int code = run_with_dap(std::get<std::string>(args["dap"].value()), store, moduleinsts, module_queue, argv[0]);
+#ifdef WASMVM_PROFILE
+            code = profile_exit_code(code);
+#endif
+            return code;
         }
 #endif
 
@@ -247,7 +354,8 @@ int main(int argc, char const *argv[]){
             std::vector<ExternVal> externvals = match_imports(store, moduleinsts, node);
             try {
                 moduleinsts.emplace(node.file_path, ModuleInst());
-                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals);
+                name_module(moduleinsts[node.file_path], node.file_path);
+                module_instanciate(moduleinsts[node.file_path], store, node.module, externvals, run_observers());
             }catch(Exception::Exception &e){
                 throw Exception::Exception(node.file_path.filename().string() + ": " + e.what());
             }
@@ -255,7 +363,15 @@ int main(int argc, char const *argv[]){
         
     }catch(Exception::Exception &e){
         std::cerr << std::filesystem::path(argv[0]).filename().string() << ": " COLOR_Error ": " << e.what() << std::endl;
+#ifdef WASMVM_PROFILE
+        return profile_exit_code(-1);
+#else
         return -1;
+#endif
     }
+#ifdef WASMVM_PROFILE
+    return profile_exit_code(0);
+#else
     return 0;
+#endif
 }

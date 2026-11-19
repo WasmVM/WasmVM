@@ -11,6 +11,7 @@
 #include <exception.hpp>
 #include <instances/Store.hpp>
 #include <instances/ModuleInst.hpp>
+#include <instances/Stack.hpp>
 
 #define WASMVM_VERSION "v1.6"
 
@@ -21,13 +22,8 @@ std::ostream& module_dump(const WasmModule& module, std::ostream& stream);
 std::ostream& module_encode(const WasmModule& module, std::ostream& stream);
 WasmModule module_decode(std::istream& stream);
 std::optional<Exception::Exception> module_validate(const WasmModule& module);
-#ifdef WASMVM_DEBUG
-struct Debugger;
-/// \param debugger Optional; the start function runs under it (<Debugger.hpp>).
-ModuleInst& module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externval, Debugger* debugger = nullptr);
-#else
-ModuleInst& module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externval);
-#endif
+/// \param observers Optional; the start function runs under them (see Observers in <instances/Stack.hpp>).
+ModuleInst& module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externval, Observers observers = {});
 
 }
 

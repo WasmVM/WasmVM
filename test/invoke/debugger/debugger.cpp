@@ -102,7 +102,7 @@ Guest load(const std::string& wat, std::vector<hostfunc_t> hosts = {}, Debugger*
         throw *error;
     }
     ModuleInst& instance = instances.emplace_back();
-    module_instanciate(instance, store, module, externs, debugger);
+    module_instanciate(instance, store, module, externs, Observers{debugger});
     for (ExportInst& exported : instance.exports) {
         if (exported.name == "f" && exported.value.type == ExternVal::ExternType::Func) {
             return Guest{&store, &instance, exported.value.addr};
@@ -112,7 +112,7 @@ Guest load(const std::string& wat, std::vector<hostfunc_t> hosts = {}, Debugger*
 }
 
 std::vector<Value> run(const Guest& guest, Debugger* debugger, const std::atomic<bool>* interrupt = nullptr) {
-    Stack stack(*guest.store, interrupt, debugger);
+    Stack stack(*guest.store, interrupt, Observers{debugger});
     stack.invoke(guest.f, {});
     return stack.run();
 }
@@ -321,7 +321,7 @@ Suite debugger {
         Test("a host trap with no wasm caller stops with no instruction position", {
             Guest guest = load(traps_in_host, {&trapping_host});
             Recorder dbg;
-            Stack stack(*guest.store, nullptr, &dbg);
+            Stack stack(*guest.store, nullptr, Observers{&dbg});
             stack.invoke(0, {}); // the host function itself, store address 0
             ExpectThrows(Exception::Trap, stack.run());
             ExpectEq(dbg.trace, std::string("Trap@0:<-1>/1"));
@@ -332,7 +332,7 @@ Suite debugger {
         Test("an uncaught throw stops with frames intact, then throws Uncaught", {
             Guest guest = load(throws_uncaught);
             Recorder dbg;
-            Stack stack(*guest.store, nullptr, &dbg);
+            Stack stack(*guest.store, nullptr, Observers{&dbg});
             stack.invoke(guest.f, {});
             ExpectThrows(Exception::Uncaught, stack.run());
             ExpectEq(dbg.trace, std::string("Exception@0:1/2"));

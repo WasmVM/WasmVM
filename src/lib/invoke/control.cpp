@@ -169,6 +169,11 @@ void RunVisitor::operator()(Instr::End&){
   frame.labels.pop();
   if(frame.labels.empty()){
     // function return
+#ifdef WASMVM_PROFILE
+    if(stack.observers.profiler != nullptr){
+      stack.observers.profiler->on_exit();
+    }
+#endif
     stack.frames.pop();
     if(stack.frames.empty()){
       stack.results = results;
@@ -259,6 +264,11 @@ void RunVisitor::operator()(Instr::Return&){
   if(arity > 0){
     results.assign(values.end() - arity, values.end());
   }
+#ifdef WASMVM_PROFILE
+  if(stack.observers.profiler != nullptr){
+    stack.observers.profiler->on_exit();
+  }
+#endif
   stack.frames.pop();
   if(stack.frames.empty()){
     stack.results = results;
@@ -303,6 +313,11 @@ void RunVisitor::operator()(Instr::Return_call& instr){
         }
     }
     // Pop current frame (tail call: discard current frame)
+#ifdef WASMVM_PROFILE
+    if(stack.observers.profiler != nullptr){
+        stack.observers.profiler->on_exit();
+    }
+#endif
     stack.frames.pop();
     stack.invoke(funcaddr, args);
 }
@@ -335,6 +350,11 @@ void RunVisitor::operator()(Instr::Return_call_indirect& instr){
         }
     }
     // Pop current frame (tail call: discard current frame)
+#ifdef WASMVM_PROFILE
+    if(stack.observers.profiler != nullptr){
+        stack.observers.profiler->on_exit();
+    }
+#endif
     stack.frames.pop();
     stack.invoke(funcaddr, args);
 }

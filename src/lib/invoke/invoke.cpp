@@ -9,6 +9,9 @@
 #ifdef WASMVM_DEBUG
 #include <Debugger.hpp>
 #endif
+#ifdef WASMVM_PROFILE
+#include <Profiler.hpp>
+#endif
 #include <iterator>
 #include <optional>
 
@@ -41,10 +44,30 @@ void Stack::invoke(index_t funcaddr, std::vector<Value> args){
         pc.current = 0;
         pc.continuation = func.body.size() - 1;
     }
+#ifdef WASMVM_PROFILE
+    if(observers.profiler != nullptr){
+        observers.profiler->on_enter(funcaddr);
+    }
+#endif
 }
 
 std::vector<Value> Stack::run(){
     RunVisitor visitor(*this);
+#ifdef WASMVM_PROFILE
+    // One section per run(). However run() ends -- return, trap, uncaught
+    // exception, interrupt -- the frames still open exit as it ends.
+    struct ProfileSection {
+        Profiler* profiler;
+        ~ProfileSection(){
+            if(profiler != nullptr){
+                profiler->end_stack();
+            }
+        }
+    } profile_section {observers.profiler};
+    if(observers.profiler != nullptr){
+        observers.profiler->begin_stack(*this);
+    }
+#endif
     while(!frames.empty()){
         if((interrupt != nullptr) && interrupt->load(std::memory_order_relaxed)){
             throw Exception::interrupted();
@@ -62,8 +85,13 @@ std::vector<Value> Stack::run(){
             }
 #ifdef WASMVM_DEBUG
             const Debugger::Position position {frame.funcaddr, (index_t)label.pc->current};
-            if(debugger != nullptr){
-                debugger->before_instr(*this, position);
+            if(observers.debugger != nullptr){
+                observers.debugger->before_instr(*this, position);
+            }
+#endif
+#ifdef WASMVM_PROFILE
+            if(observers.profiler != nullptr){
+                observers.profiler->on_instr(func.body[label.pc->current].opcode);
             }
 #endif
             try {
@@ -93,16 +121,26 @@ std::vector<Value> Stack::run(){
                 }
                 if(!handler){
 #ifdef WASMVM_DEBUG
-                    if(debugger != nullptr){
-                        debugger->uncaught(*this, position, thrown.exn);
+                    if(observers.debugger != nullptr){
+                        observers.debugger->uncaught(*this, position, thrown.exn);
                     }
 #endif
                     while(!frames.empty()){
+#ifdef WASMVM_PROFILE
+                        if(observers.profiler != nullptr){
+                            observers.profiler->on_exit();
+                        }
+#endif
                         frames.pop();
                     }
                     throw Exception::Uncaught(thrown.exn);
                 }
                 for(size_t i = 0; i < handler->frame_depth; ++i){
+#ifdef WASMVM_PROFILE
+                    if(observers.profiler != nullptr){
+                        observers.profiler->on_exit();
+                    }
+#endif
                     frames.pop();
                 }
                 Frame& f = frames.top();
@@ -138,8 +176,8 @@ std::vector<Value> Stack::run(){
             }
 #ifdef WASMVM_DEBUG
             catch (Exception::Trap& trap) {
-                if(debugger != nullptr){
-                    debugger->trapped(*this, position, trap);
+                if(observers.debugger != nullptr){
+                    observers.debugger->trapped(*this, position, trap);
                 }
                 throw;
             }
@@ -151,7 +189,7 @@ std::vector<Value> Stack::run(){
             try {
                 results = func(*this);
             } catch (Exception::Trap& trap) {
-                if(debugger != nullptr){
+                if(observers.debugger != nullptr){
                     // A host function has no instructions: report the call
                     // instruction in the wasm frame that called it (its pc has
                     // already moved past it). An entry host function has no
@@ -161,12 +199,17 @@ std::vector<Value> Stack::run(){
                     if(caller != frames.rend() && !caller->labels.empty() && caller->labels.top().pc){
                         position = {caller->funcaddr, (index_t)(caller->labels.top().pc->current - 1)};
                     }
-                    debugger->trapped(*this, position, trap);
+                    observers.debugger->trapped(*this, position, trap);
                 }
                 throw;
             }
 #else
             auto results = func(*this);
+#endif
+#ifdef WASMVM_PROFILE
+            if(observers.profiler != nullptr){
+                observers.profiler->on_exit();
+            }
 #endif
             frames.pop();
             if(frames.empty()){
