@@ -179,3 +179,41 @@ foreach(case as_readwasm ld_readwasm as_strip ld_strip)
     ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
   )
 endforeach()
+
+# The DAP server behind `wasmvm --dap` (#54), only in debugger builds. The
+# suite compiles the server's sources for its direct tests and starts the real
+# wasmvm for the session tests; the .wat fixtures are assembled with wasmvm-as
+# at build time.
+if(WASMVM_DEBUG)
+  set(DAP_SRC ${CMAKE_CURRENT_LIST_DIR}/dap)
+  set(DAP_BIN ${CMAKE_CURRENT_BINARY_DIR}/dap)
+  set(DAP_WASM)
+  foreach(module main trap)
+    add_custom_command(
+      OUTPUT ${DAP_BIN}/${module}.wasm
+      COMMAND ${CMAKE_COMMAND} -E make_directory ${DAP_BIN}
+      COMMAND $<TARGET_FILE:wasmvm-as> ${DAP_SRC}/${module}.wat
+        -o ${DAP_BIN}/${module}.wasm
+      DEPENDS wasmvm-as ${DAP_SRC}/${module}.wat
+    )
+    list(APPEND DAP_WASM ${DAP_BIN}/${module}.wasm)
+  endforeach()
+  add_custom_target(exec_dap_modules ALL DEPENDS ${DAP_WASM})
+  find_package(Threads REQUIRED)
+  add_exec_test_suite(dap
+    ${PROJECT_SOURCE_DIR}/src/exec/dap/DapServer.cpp
+    ${PROJECT_SOURCE_DIR}/src/exec/dap/Framing.cpp
+    ${PROJECT_SOURCE_DIR}/src/exec/dap/Socket.cpp
+  )
+  target_include_directories(exec_suite_dap_target PRIVATE ${PROJECT_SOURCE_DIR}/src/lib)
+  target_link_libraries(exec_suite_dap_target Threads::Threads)
+  if(WIN32)
+    target_link_libraries(exec_suite_dap_target ws2_32)
+  endif(WIN32)
+  target_compile_definitions(exec_suite_dap_target PRIVATE
+    WASMVM_BIN="$<TARGET_FILE:wasmvm>"
+    DAP_FIXTURES="${DAP_BIN}"
+    DAP_SOURCE_DIR="${DAP_SRC}"
+  )
+  add_dependencies(exec_suite_dap_target wasmvm exec_dap_modules)
+endif(WASMVM_DEBUG)

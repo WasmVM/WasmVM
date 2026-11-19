@@ -50,6 +50,22 @@ add_executable(wasmvm
 target_link_libraries(wasmvm
     ${WASMVM_LINK_LIB}
 )
+# The DAP server (#54) exists only in debugger builds. It uses the dump
+# functions from src/lib for the virtual WAT, a thread for requests, and
+# Winsock on Windows.
+if(WASMVM_DEBUG)
+  target_sources(wasmvm PRIVATE
+    dap/DapServer.cpp
+    dap/Framing.cpp
+    dap/Socket.cpp
+  )
+  target_include_directories(wasmvm PRIVATE ${PROJECT_SOURCE_DIR}/src/lib)
+  find_package(Threads REQUIRED)
+  target_link_libraries(wasmvm Threads::Threads)
+  if(WIN32)
+    target_link_libraries(wasmvm ws2_32)
+  endif(WIN32)
+endif(WASMVM_DEBUG)
 if(BUILD_HOST_MODULES)
 target_link_libraries(wasmvm
     WasmVM_host

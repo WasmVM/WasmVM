@@ -25,9 +25,12 @@ enum class DumpSpace { func, table, mem, global, elem, data, tag, type, local, l
 //
 // While a DumpNames::Scope is alive, the dump functions on this thread print
 // through it; with none, they print indices as before.
+//
+// `keep_param_names` keeps the parameter names too, for text that is shown and
+// not parsed back (the debugger's virtual source, #54).
 class DumpNames {
 public:
-    explicit DumpNames(const WasmModule& module);
+    explicit DumpNames(const WasmModule& module, bool keep_param_names = false);
 
     struct Scope {
         explicit Scope(DumpNames& names);
