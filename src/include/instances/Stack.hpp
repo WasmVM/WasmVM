@@ -23,6 +23,13 @@ struct Label {
         /// Takes every value, bottom first, and leaves the label empty.
         std::vector<Value> get();
         void insert(std::vector<Value>);
+        /// Read-only walk: begin()/end() bottom to top, rbegin()/rend() top to bottom.
+        using const_iterator = std::stack<Value>::container_type::const_iterator;
+        using const_reverse_iterator = std::stack<Value>::container_type::const_reverse_iterator;
+        const_iterator begin() const { return c.cbegin(); }
+        const_iterator end() const { return c.cend(); }
+        const_reverse_iterator rbegin() const { return c.crbegin(); }
+        const_reverse_iterator rend() const { return c.crend(); }
     };
 
     struct Counters : public std::pair<size_t, size_t> {
@@ -45,7 +52,16 @@ struct Label {
 
 struct Frame {
     Frame(ModuleInst& module, index_t funcaddr) : module(module), funcaddr(funcaddr){}
-    std::stack<Label> labels;
+    struct Labels : public std::stack<Label> {
+        /// Read-only walk: begin()/end() bottom to top, rbegin()/rend() top to bottom.
+        using const_iterator = std::stack<Label>::container_type::const_iterator;
+        using const_reverse_iterator = std::stack<Label>::container_type::const_reverse_iterator;
+        const_iterator begin() const { return c.cbegin(); }
+        const_iterator end() const { return c.cend(); }
+        const_reverse_iterator rbegin() const { return c.crbegin(); }
+        const_reverse_iterator rend() const { return c.crend(); }
+    };
+    Labels labels;
     std::vector<Value> locals;
     ModuleInst& module;
     index_t funcaddr;
@@ -71,7 +87,16 @@ struct Stack {
     std::vector<Value> run();
     Store& store;
     const std::atomic<bool>* interrupt;
-    std::stack<Frame> frames;
+    struct Frames : public std::stack<Frame> {
+        /// Read-only walk: begin()/end() bottom to top, rbegin()/rend() top to bottom.
+        using const_iterator = std::stack<Frame>::container_type::const_iterator;
+        using const_reverse_iterator = std::stack<Frame>::container_type::const_reverse_iterator;
+        const_iterator begin() const { return c.cbegin(); }
+        const_iterator end() const { return c.cend(); }
+        const_reverse_iterator rbegin() const { return c.crbegin(); }
+        const_reverse_iterator rend() const { return c.crend(); }
+    };
+    Frames frames;
     std::vector<Value> results;
 };
 
