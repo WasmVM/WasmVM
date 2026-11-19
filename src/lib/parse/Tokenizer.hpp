@@ -14,6 +14,9 @@
 namespace WasmVM {
 namespace Parse {
 
+// True when `name` reads back as one Id token once prefixed with '$'.
+bool is_id_name(const std::string& name);
+
 class Tokenizer {
 public:
     explicit Tokenizer(std::istream& stream);

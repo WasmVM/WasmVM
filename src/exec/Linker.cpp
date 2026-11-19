@@ -197,6 +197,18 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
 
     // Exports
     module_entry.exports.insert(module_entry.exports.begin(), module.exports.begin(), module.exports.end());
+
+    // Names
+    module_entry.names = module.names;
+    for(const WasmImport& import : module.imports){
+        std::visit(overloaded {
+            [&](index_t){ module_entry.import_count.func += 1; },
+            [&](TableType){ module_entry.import_count.table += 1; },
+            [&](MemType){ module_entry.import_count.mem += 1; },
+            [&](GlobalType){ module_entry.import_count.global += 1; },
+            [&](TagType){ module_entry.import_count.tag += 1; },
+        }, import.desc);
+    }
 }
 
 #define trace_extern_entries(DESCS) \
@@ -260,6 +272,9 @@ WasmModule Linker::get(){
         trace_extern_entries(globals)
         trace_extern_entries(tags)
     }
+
+    /** Names, through the same remap as the indices **/
+    link_names();
 
     /** Update indices **/
     // Funcs
@@ -341,6 +356,85 @@ WasmModule Linker::get(){
         }
     }
     return output;
+}
+
+// Names follow each module's index remap. When several sources name one
+// output index -- an import resolved to another module's definition, the
+// same import merged, plain function types merged across modules -- the
+// defining side wins, otherwise the first linked module. Equal names from
+// different modules are kept as they are. The output module and the start
+// function compose_start_funcs creates get no name.
+void Linker::link_names(){
+    WasmNames& names = output.names;
+    names = WasmNames();
+
+    // The output index of a module's local index, if it has one.
+    auto resolve = [](const std::vector<Descriptor>& descs, index_t idx, index_t import_base) -> std::optional<index_t> {
+        if(idx >= descs.size()){
+            return std::nullopt;
+        }
+        const IndexEntry* entry = std::get_if<IndexEntry>(&descs[idx]);
+        if(!entry){
+            return std::nullopt;
+        }
+        return (entry->kind == IndexEntry::Address) ? (entry->index + import_base) : entry->index;
+    };
+    // Every module's names of one space: definitions first, then imports,
+    // each in link order; the first name an output index gets stays.
+    auto space_of = [&]<typename T>(std::map<index_t, T>& target,
+                       std::map<index_t, T> WasmNames::* member,
+                       std::vector<Descriptor> ModuleEntry::* descs,
+                       auto count_of, index_t import_base){
+        for(bool definitions : {true, false}){
+            for(ModuleEntry& module_entry : modules){
+                index_t count = count_of(module_entry);
+                for(auto& [idx, value] : module_entry.names.*member){
+                    if((idx >= count) != definitions){
+                        continue;
+                    }
+                    std::optional<index_t> out = resolve(module_entry.*descs, idx, import_base);
+                    if(out && !target.contains(out.value())){
+                        target[out.value()] = value;
+                    }
+                }
+            }
+        }
+    };
+    auto funcs   = [](ModuleEntry& m){ return m.import_count.func; };
+    auto tables  = [](ModuleEntry& m){ return m.import_count.table; };
+    auto mems    = [](ModuleEntry& m){ return m.import_count.mem; };
+    auto globals = [](ModuleEntry& m){ return m.import_count.global; };
+    auto tags    = [](ModuleEntry& m){ return m.import_count.tag; };
+    space_of(names.funcs, &WasmNames::funcs, &ModuleEntry::funcs, funcs, import_counter.func);
+    space_of(names.locals, &WasmNames::locals, &ModuleEntry::funcs, funcs, import_counter.func);
+    space_of(names.labels, &WasmNames::labels, &ModuleEntry::funcs, funcs, import_counter.func);
+    space_of(names.tables, &WasmNames::tables, &ModuleEntry::tables, tables, import_counter.table);
+    space_of(names.mems, &WasmNames::mems, &ModuleEntry::mems, mems, import_counter.mem);
+    space_of(names.globals, &WasmNames::globals, &ModuleEntry::globals, globals, import_counter.global);
+    space_of(names.tags, &WasmNames::tags, &ModuleEntry::tags, tags, import_counter.tag);
+    space_of(names.tag_params, &WasmNames::tag_params, &ModuleEntry::tags, tags, import_counter.tag);
+
+    // Types, elems and datas are each module's own definitions: they remap
+    // directly, the first linked module naming a shared type.
+    auto direct = [&]<typename T>(std::map<index_t, T>& target,
+                     std::map<index_t, T> WasmNames::* member,
+                     std::vector<index_t> ModuleEntry::* remap){
+        for(ModuleEntry& module_entry : modules){
+            for(auto& [idx, value] : module_entry.names.*member){
+                if(idx < (module_entry.*remap).size()){
+                    index_t out = (module_entry.*remap)[idx];
+                    if(!target.contains(out)){
+                        target[out] = value;
+                    }
+                }
+            }
+        }
+    };
+    direct(names.types, &WasmNames::types, &ModuleEntry::types);
+    direct(names.fields, &WasmNames::fields, &ModuleEntry::types);
+    direct(names.type_params, &WasmNames::type_params, &ModuleEntry::types);
+    direct(names.elems, &WasmNames::elems, &ModuleEntry::elems);
+    direct(names.datas, &WasmNames::datas, &ModuleEntry::datas);
 }
 
 void Linker::resolve_imports(std::unordered_map<std::string, std::unordered_map<std::string, ExternEntry>> &export_map, std::vector<Descriptor> &descs){

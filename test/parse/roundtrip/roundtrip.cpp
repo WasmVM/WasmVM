@@ -633,8 +633,8 @@ Suite roundtrip_suite {
         })
         Test("the dump spells what the parser reads", {
             std::istringstream in(
-                "(module (type $s (struct))"
-                " (type (func (param (ref $s) (ref null $s) (ref any) structref) (result funcref))))");
+                "(module (type (struct))"
+                " (type (func (param (ref 0) (ref null 0) (ref any) structref) (result funcref))))");
             WasmModule m = module_parse(in);
             const std::string text = text_of(m);
             Expect(text.find("(param (ref 0) (ref null 0) (ref any) structref)") != std::string::npos);
@@ -712,8 +712,8 @@ Suite roundtrip_suite {
         })
         Test("the dump spells the forms the parser reads", {
             std::istringstream in(
-                "(module (rec (type $a (sub (struct (field $x (mut i8)) (field i16))))"
-                " (type (sub final $a (struct (field (mut i8)) (field i16))))) (type (array (mut f32))))");
+                "(module (rec (type (sub (struct (field (mut i8)) (field i16))))"
+                " (type (sub final 0 (struct (field (mut i8)) (field i16))))) (type (array (mut f32))))");
             WasmModule m = module_parse(in);
             const std::string text = text_of(m);
             Expect(text.find("  (rec\n") != std::string::npos);

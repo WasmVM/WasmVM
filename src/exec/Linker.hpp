@@ -56,6 +56,15 @@ private:
         std::vector<index_t> datas;
         std::vector<WasmExport> exports;
         std::optional<index_t> start;
+        WasmNames names;
+        // How many of each index space are this module's imports.
+        struct {
+            index_t func = 0;
+            index_t table = 0;
+            index_t mem = 0;
+            index_t global = 0;
+            index_t tag = 0;
+        } import_count;
     };
 
     std::vector<ModuleEntry> modules;
@@ -85,6 +94,7 @@ private:
     void instr_update_indices(WasmInstr& instr, ModuleEntry& module_entry);
     void instr_update_indices(ConstInstr& instr, ModuleEntry& module_entry);
     void compose_start_funcs();
+    void link_names();
 };
 
 }

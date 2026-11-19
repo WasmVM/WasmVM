@@ -277,6 +277,14 @@ Token Tokenizer::scan_string() {
     return Token{TokenType::String, text, start_line, start_col};
 }
 
+bool WasmVM::Parse::is_id_name(const std::string& name) {
+    if (name.empty()) return false;
+    for (char c : name) {
+        if (!is_keyword_char(c)) return false;
+    }
+    return true;
+}
+
 Token Tokenizer::scan_id() {
     size_t start_line = line_, start_col = col_;
     std::string text;

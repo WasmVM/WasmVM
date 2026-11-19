@@ -15,6 +15,7 @@ add_library(WasmVM_textfmt OBJECT
     dump/elem.cpp
     dump/data.cpp
     dump/global.cpp
+    dump/names.cpp
 )
 target_include_directories(WasmVM_textfmt
     PUBLIC ${CMAKE_CURRENT_LIST_DIR}
@@ -47,6 +48,7 @@ add_library(WasmVM_binfmt OBJECT
     encode/export.cpp
     encode/elem.cpp
     encode/data.cpp
+    encode/name.cpp
     # decode
     decode/decode.cpp
     decode/type.cpp
@@ -61,6 +63,7 @@ add_library(WasmVM_binfmt OBJECT
     decode/start.cpp
     decode/elem.cpp
     decode/data.cpp
+    decode/name.cpp
 )
 set_property(TARGET WasmVM_binfmt PROPERTY POSITION_INDEPENDENT_CODE 1)
 if(NOT MSVC)

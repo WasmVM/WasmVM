@@ -78,7 +78,7 @@ void ParseContext::parse_module() {
             tok_.consume(); // '('
             tok_.consume(); // 'module'
             // optional Id
-            if (tok_.peek().type == TokenType::Id) tok_.consume();
+            if (tok_.peek().type == TokenType::Id) module_id_ = tok_.consume().text;
             // modulefields until ')'
             while (!tok_.at_eof() && tok_.peek().type != TokenType::RParen)
                 parse_modulefield();
@@ -155,6 +155,7 @@ index_t ParseContext::parse_typedef() {
             throw Exception::Parse("duplicated type id '" + id + "'", tok_.location());
         type_map_[id] = typeidx;
     }
+    typedefs_.push_back(typeidx);
     types_.emplace_back(parse_subtype(typeidx));
     tok_.expect(TokenType::RParen);
     return typeidx;
@@ -639,8 +640,11 @@ std::string ParseContext::parse_label() {
         if (label_map_.contains(id))
             throw Exception::Parse("duplicated label id '" + id + "'", tok_.location());
         label_map_[id] = block_level_;
+        // Every block, labelled or not, takes the next function-wide index.
+        func_labels_[func_map_.records.size() - 1][label_count_++] = id;
         return id;
     }
+    label_count_ += 1;
     return {};
 }
 
@@ -783,7 +787,10 @@ void ParseContext::parse_importsection() {
             func_map_.id_map[id] = func_map_.records.size();
         }
         func_map_.records.emplace_back(IndexSpace::Type::Import);
-        import.desc = parse_typeuse();
+        index_t typeidx = parse_typeuse();
+        import.desc = typeidx;
+        if (typeidx < types_.size()) // a missing type is the validator's to report
+            func_locals_[func_map_.records.size() - 1] = types_[typeidx].second;
     } else if (kw.text == "table") {
         if (tok_.peek().type == TokenType::Id) {
             std::string id = tok_.consume().text;
@@ -819,7 +826,10 @@ void ParseContext::parse_importsection() {
             tag_map_.id_map[id] = tag_map_.records.size();
         }
         tag_map_.records.emplace_back(IndexSpace::Type::Import);
-        import.desc = TagType{parse_typeuse()};
+        index_t typeidx = parse_typeuse();
+        import.desc = TagType{typeidx};
+        if (typeidx < types_.size()) // a missing type is the validator's to report
+            tag_params_[tag_map_.records.size() - 1] = types_[typeidx].second;
     } else {
         throw Exception::Parse("unknown import desc '" + kw.text + "'", {kw.line, kw.column});
     }
@@ -852,8 +862,11 @@ void ParseContext::parse_funcsection() {
         func_map_.records.emplace_back(IndexSpace::Type::Import);
         auto [imod, iname] = parse_importabbr();
         WasmImport& imp = module_.imports.emplace_back();
-        imp.desc = parse_typeuse();
+        index_t typeidx = parse_typeuse();
+        imp.desc = typeidx;
         imp.module = imod; imp.name = iname;
+        if (typeidx < types_.size()) // a missing type is the validator's to report
+            func_locals_[func_idx] = types_[typeidx].second;
     } else {
         func_map_.records.emplace_back(IndexSpace::Type::Normal);
         WasmFunc& func = module_.funcs.emplace_back();
@@ -883,8 +896,10 @@ void ParseContext::parse_funcsection() {
             func.body.insert(func.body.end(), instrs.begin(), instrs.end());
         }
         func.body.emplace_back(Instr::End());
+        func_locals_[func_idx] = local_map_;
         local_map_.clear();
         label_map_.clear();
+        label_count_ = 0;
     }
     tok_.expect(TokenType::RParen);
 }
@@ -1199,5 +1214,7 @@ void ParseContext::parse_tagsection() {
     // existing () -> () if the module already has one.
     index_t typeidx = parse_typeuse();
     module_.tags.push_back(typeidx);
+    if (typeidx < types_.size()) // a missing type is the validator's to report
+        tag_params_[tag_map_.records.size() - 1] = types_[typeidx].second;
     tok_.expect(TokenType::RParen);
 }

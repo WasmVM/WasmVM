@@ -79,65 +79,51 @@ int main(int argc, char const *argv[]){
             module_dump(decoded_module, std::cout);
             return 0;
         }
+        // Selected sections, named like the full dump
+        DumpNames names(decoded_module);
+        DumpNames::Scope scope(names);
         // Type
         if(args["type"]){
-            for(const SubType& type : decoded_module.types){
-                std::cout << type;
+            // Each type on its own line, rec groups not shown (as before)
+            for(index_t i = 0; i < decoded_module.types.size(); ++i){
+                dump_subtype(std::cout, decoded_module.types[i], "  ", i);
             }
         }
         // Import
         if(args["import"]){
-            for(const WasmImport& import : decoded_module.imports){
-                std::cout << import;
-            }
+            dump_imports(std::cout, decoded_module);
         }
         // Func
         if(args["func"]){
-            for(const WasmFunc& func : decoded_module.funcs){
-                std::cout << func;
-            }
+            dump_funcs(std::cout, decoded_module);
         }
         // Table
         if(args["table"]){
-            for(const TableType& table : decoded_module.tables){
-                std::cout << table;
-            }
+            dump_tables(std::cout, decoded_module);
         }
         // Memory
         if(args["memory"]){
-            for(const MemType& mem : decoded_module.mems){
-                std::cout << mem;
-            }
+            dump_mems(std::cout, decoded_module);
         }
         // Global
         if(args["global"]){
-            for(const WasmGlobal& global : decoded_module.globals){
-                std::cout << global;
-            }
+            dump_globals(std::cout, decoded_module);
         }
         // Export
         if(args["export"]){
-            for(const WasmExport& ex : decoded_module.exports){
-                std::cout << ex;
-            }
+            dump_exports(std::cout, decoded_module);
         }
         // Start
         if(args["start"]){
-            if(decoded_module.start){
-                std::cout << "  (start " << decoded_module.start.value() << ")" << std::endl;
-            }
+            dump_start(std::cout, decoded_module);
         }
         // Elem
         if(args["elem"]){
-            for(const WasmElem& elem : decoded_module.elems){
-                std::cout << elem;
-            }
+            dump_elems(std::cout, decoded_module);
         }
         // Data
         if(args["data"]){
-            for(const WasmData& data : decoded_module.datas){
-                std::cout << data;
-            }
+            dump_datas(std::cout, decoded_module);
         }
 
     }catch(Exception::Decode &e){

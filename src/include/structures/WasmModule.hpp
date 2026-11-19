@@ -11,6 +11,7 @@
 #include <structures/WasmElem.hpp>
 #include <structures/WasmData.hpp>
 #include <structures/WasmGlobal.hpp>
+#include <structures/WasmNames.hpp>
 
 namespace WasmVM {
 
@@ -27,6 +28,7 @@ struct WasmModule {
     std::optional<index_t> start;
     std::vector<WasmElem> elems;
     std::vector<WasmData> datas;
+    WasmNames names; // custom "name" section
 };
 
 }

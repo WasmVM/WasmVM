@@ -52,6 +52,8 @@ WasmModule WasmVM::module_decode(std::istream& istream){
     stream >> Decode::Code(module.funcs);
     // Datas
     stream >> Decode::Data(module.datas);
+    // Custom sections after the last section (where the name section sits)
+    Decode::read_custom_sections(stream);
     return module;
 }
 
@@ -69,12 +71,17 @@ size_t Decode::Stream::location(){
     return loc;
 }
 
+void Decode::read_custom_sections(Stream& stream){
+    while(stream.peek() == (byte_t)0x00){
+        read_custom_section(stream);
+    }
+}
+
 Stream& Decode::operator>>(Stream& stream, Decode::Section&& section){
-    byte_t id_val = stream.peek();
-    if(id_val == section.id){
+    // Custom sections may sit before any section, any number in a row.
+    read_custom_sections(stream);
+    if(stream.peek() == section.id){
         return section.read(stream);
-    }else if(id_val == (byte_t)0x00){
-        return Decode::Section().read(stream);
     }
     return stream;
 }
