@@ -6,6 +6,11 @@
 #include "exception.hpp"
 #include "RunVisitor.hpp"
 #include <instances/TagInst.hpp>
+#ifdef WASMVM_DEBUG
+#include <Debugger.hpp>
+#endif
+#include <iterator>
+#include <optional>
 
 using namespace WasmVM;
 
@@ -55,65 +60,114 @@ std::vector<Value> Stack::run(){
             if(label.pc->current >= func.body.size()){
                 throw Exception::no_end_of_func();
             }
+#ifdef WASMVM_DEBUG
+            const Debugger::Position position {frame.funcaddr, (index_t)label.pc->current};
+            if(debugger != nullptr){
+                debugger->before_instr(*this, position);
+            }
+#endif
             try {
                 visitor.run(func.body[label.pc->current++]);
             } catch (WasmThrow& thrown) {
-                bool handled = false;
-                while(!frames.empty() && !handled){
-                    Frame& f = frames.top();
-                    while(!f.labels.empty() && !handled){
-                        Label& lbl = f.labels.top();
-                        for(auto& ce : lbl.catches){
-                            bool matches = false;
-                            if(ce.kind == Label::CatchEntry::CatchAll || ce.kind == Label::CatchEntry::CatchAllRef){
-                                matches = true;
-                            } else if(ce.tag_addr == thrown.exn->tag_addr){
-                                matches = true;
-                            }
-                            if(matches){
-                                // Push catch values onto try_table label
-                                if(ce.kind == Label::CatchEntry::Catch){
-                                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
-                                } else if(ce.kind == Label::CatchEntry::CatchRef){
-                                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
-                                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
-                                } else if(ce.kind == Label::CatchEntry::CatchAllRef){
-                                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
-                                }
-                                // Branch to the catch target. Per spec, label_idx
-                                // is relative to the context enclosing the
-                                // try_table, so its own label pops first and then
-                                // label_idx more.
-                                std::vector<Value> values = lbl.values.get();
-                                for(index_t i = ce.label_idx + 1; i > 0; --i){
-                                    f.labels.pop();
-                                }
-                                Label& target = f.labels.top();
-                                if(target.arity > 0){
-                                    target.values.insert(std::vector<Value>(values.end() - target.arity, values.end()));
-                                }
-                                if(target.pc){
-                                    target.pc->current = target.pc->continuation;
-                                }
-                                handled = true;
+                // Find the handler first, without popping anything, and unwind
+                // only once the outcome is known: an uncaught throw is then
+                // reported with every frame still intact.
+                struct Handler {
+                    size_t frame_depth; // frames above the handler's frame
+                    size_t label_depth; // labels above the try_table label in it
+                    Label::CatchEntry entry;
+                };
+                std::optional<Handler> handler;
+                size_t frame_depth = 0;
+                for(auto f = frames.rbegin(); f != frames.rend() && !handler; ++f, ++frame_depth){
+                    size_t label_depth = 0;
+                    for(auto l = f->labels.rbegin(); l != f->labels.rend() && !handler; ++l, ++label_depth){
+                        for(const Label::CatchEntry& ce : l->catches){
+                            if(ce.kind == Label::CatchEntry::CatchAll || ce.kind == Label::CatchEntry::CatchAllRef
+                                || ce.tag_addr == thrown.exn->tag_addr){
+                                handler.emplace(Handler {frame_depth, label_depth, ce});
                                 break;
                             }
                         }
-                        if(!handled){
-                            f.labels.pop();
-                        }
                     }
-                    if(!handled){
+                }
+                if(!handler){
+#ifdef WASMVM_DEBUG
+                    if(debugger != nullptr){
+                        debugger->uncaught(*this, position, thrown.exn);
+                    }
+#endif
+                    while(!frames.empty()){
                         frames.pop();
                     }
-                }
-                if(!handled){
                     throw Exception::Uncaught(thrown.exn);
                 }
+                for(size_t i = 0; i < handler->frame_depth; ++i){
+                    frames.pop();
+                }
+                Frame& f = frames.top();
+                for(size_t i = 0; i < handler->label_depth; ++i){
+                    f.labels.pop();
+                }
+                Label& lbl = f.labels.top();
+                const Label::CatchEntry& ce = handler->entry;
+                // Push catch values onto try_table label
+                if(ce.kind == Label::CatchEntry::Catch){
+                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
+                } else if(ce.kind == Label::CatchEntry::CatchRef){
+                    for(auto& v : thrown.exn->values) lbl.values.emplace(v);
+                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
+                } else if(ce.kind == Label::CatchEntry::CatchAllRef){
+                    lbl.values.emplace(Value(exnref_t(thrown.exn)));
+                }
+                // Branch to the catch target. Per spec, label_idx
+                // is relative to the context enclosing the
+                // try_table, so its own label pops first and then
+                // label_idx more.
+                std::vector<Value> values = lbl.values.get();
+                for(index_t i = ce.label_idx + 1; i > 0; --i){
+                    f.labels.pop();
+                }
+                Label& target = f.labels.top();
+                if(target.arity > 0){
+                    target.values.insert(std::vector<Value>(values.end() - target.arity, values.end()));
+                }
+                if(target.pc){
+                    target.pc->current = target.pc->continuation;
+                }
             }
+#ifdef WASMVM_DEBUG
+            catch (Exception::Trap& trap) {
+                if(debugger != nullptr){
+                    debugger->trapped(*this, position, trap);
+                }
+                throw;
+            }
+#endif
         }else{
             hostfunc_t func = std::get<hostfunc_t>(funcinst.body);
+#ifdef WASMVM_DEBUG
+            std::vector<Value> results;
+            try {
+                results = func(*this);
+            } catch (Exception::Trap& trap) {
+                if(debugger != nullptr){
+                    // A host function has no instructions: report the call
+                    // instruction in the wasm frame that called it (its pc has
+                    // already moved past it). An entry host function has no
+                    // caller: its own funcaddr, instr (index_t)-1.
+                    Debugger::Position position {frame.funcaddr, (index_t)-1};
+                    auto caller = std::next(frames.rbegin());
+                    if(caller != frames.rend() && !caller->labels.empty() && caller->labels.top().pc){
+                        position = {caller->funcaddr, (index_t)(caller->labels.top().pc->current - 1)};
+                    }
+                    debugger->trapped(*this, position, trap);
+                }
+                throw;
+            }
+#else
             auto results = func(*this);
+#endif
             frames.pop();
             if(frames.empty()){
                 this->results = results;
