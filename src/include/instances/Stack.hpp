@@ -16,6 +16,10 @@
 
 namespace WasmVM {
 
+#ifdef WASMVM_DEBUG
+struct Debugger;
+#endif
+
 struct Label {
 
     struct Values : public std::stack<Value> {
@@ -76,7 +80,13 @@ struct Stack {
     ///   Note: the flag is polled between instructions, so a host function
     ///   (hostfunc_t) is never interrupted mid-call; long-running host functions
     ///   may poll stack.interrupt themselves.
+#ifdef WASMVM_DEBUG
+    /// \param debugger Optional debugger (<Debugger.hpp>), owned by the
+    ///   embedder; run() stops through it between wasm instructions.
+    Stack(Store& store, const std::atomic<bool>* interrupt = nullptr, Debugger* debugger = nullptr) : store(store), interrupt(interrupt), debugger(debugger){}
+#else
     Stack(Store& store, const std::atomic<bool>* interrupt = nullptr) : store(store), interrupt(interrupt){}
+#endif
     void invoke(index_t funcaddr, std::vector<Value> args);
     /// Runs until the frame stack is empty and returns the results.
     /// Throws (all declared in the public <exception.hpp>):
@@ -87,6 +97,9 @@ struct Stack {
     std::vector<Value> run();
     Store& store;
     const std::atomic<bool>* interrupt;
+#ifdef WASMVM_DEBUG
+    Debugger* debugger;
+#endif
     struct Frames : public std::stack<Frame> {
         /// Read-only walk: begin()/end() bottom to top, rbegin()/rend() top to bottom.
         using const_iterator = std::stack<Frame>::container_type::const_iterator;

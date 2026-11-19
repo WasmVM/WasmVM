@@ -1,8 +1,9 @@
 # CI for WasmVM on GitLab.
 #
 # Mirrors the build+test matrix of .github/workflows/main.yml (gcc and clang,
-# Release, ctest). The instance runners are untagged with run_untagged=true,
-# so no `tags:` key is needed here.
+# Release, ctest), and additionally builds each compiler with WASMVM_DEBUG off
+# and on; main.yml builds only the default (off). The instance runners are
+# untagged with run_untagged=true, so no `tags:` key is needed here.
 
 workflow:
   rules:
@@ -36,7 +37,7 @@ variables:
       DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends
       gcc g++ clang cmake ninja-build binutils git
   script:
-    - cmake -S . -B build $CMAKE_OPTS -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX
+    - cmake -S . -B build $CMAKE_OPTS -D CMAKE_C_COMPILER=$CC -D CMAKE_CXX_COMPILER=$CXX -D WASMVM_DEBUG=$WASMVM_DEBUG
     - cmake --build build --parallel
     - ctest --test-dir build --output-on-failure --output-junit ctest-report.xml
   artifacts:
@@ -51,8 +52,10 @@ build:
     matrix:
       - CC: gcc
         CXX: g++
+        WASMVM_DEBUG: ["OFF", "ON"]
       - CC: clang
         CXX: clang++
+        WASMVM_DEBUG: ["OFF", "ON"]
 
 # Catches Sphinx errors; does not publish. To serve on GitLab Pages, rename
 # this job to `pages`, move the html to `public/`, and artifact that path.

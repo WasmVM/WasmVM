@@ -86,7 +86,11 @@ static offset_t eval_offset(const std::optional<ConstInstr>& instr, ModuleInst& 
     }
 }
 
+#ifdef WASMVM_DEBUG
+ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externvals, Debugger* debugger){
+#else
 ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, const WasmModule& module, std::vector<ExternVal> externvals){
+#endif
     // Check external value
     if(externvals.size() != module.imports.size()){
         throw Exception::Exception("external value count not match import count");
@@ -396,7 +400,11 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
         if(start_addr >= store.funcs.size()){
             throw Exception::Exception("start function not exist in store");
         }
+#ifdef WASMVM_DEBUG
+        Stack stack(store, nullptr, debugger);
+#else
         Stack stack(store);
+#endif
         stack.invoke(start_addr, {});
         stack.run();
     }

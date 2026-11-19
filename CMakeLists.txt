@@ -63,6 +63,14 @@ if(CONSOLE_COLOR)
   add_compile_definitions(CONSOLE_COLOR)
 endif(CONSOLE_COLOR)
 
+# Debugger support (Debugger.hpp). The macro changes the Stack layout and the
+# Stack / module_instanciate signatures, so code built against the installed
+# headers must define WASMVM_DEBUG exactly when the library was built with it.
+set(WASMVM_DEBUG OFF CACHE BOOL "Build debugger support")
+if(WASMVM_DEBUG)
+  add_compile_definitions(WASMVM_DEBUG)
+endif(WASMVM_DEBUG)
+
 include(CopyDlls)
 
 set(BUILD_HOST_MODULES ON CACHE BOOL "Build host modules of WasmVM")

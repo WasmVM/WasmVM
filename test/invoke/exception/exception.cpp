@@ -80,5 +80,20 @@ Suite invoke_exception {
             AssertEq(r.size(), (size_t)1);
             ExpectEq(std::get<i32_t>(r[0]), (i32_t)7);
         })
+        Test("a throw from a callee unwinds its frame and the labels above the try_table", {
+            // The handler search finds the try_table first and unwinds after
+            // (#53): one frame ($inner) and one label (the inner block) lie
+            // above it, and both must go before the catch branches to $h.
+            std::vector<Value> r = run(
+                "(module (type (func (param i32))) (tag $t0 (type 0)) "
+                "(func $inner i32.const 7 throw $t0) "
+                "(func (export \"f\") (result i32) "
+                "block $h (result i32) "
+                "  try_table (catch $t0 $h) block call $inner end end "
+                "  i32.const 0 "
+                "end))");
+            AssertEq(r.size(), (size_t)1);
+            ExpectEq(std::get<i32_t>(r[0]), (i32_t)7);
+        })
     })
 };
