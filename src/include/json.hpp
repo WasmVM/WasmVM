@@ -40,6 +40,17 @@ struct Value {
     using Integer = int64_t;
 
     Value() : value(Object()){}
+    // Values built in code, e.g. for messages that are written out.
+    Value(Null) : value(Null()){}
+    Value(Bool data) : value(data){}
+    Value(Number data) : value(data){}
+    Value(String data) : value(std::move(data)){}
+    Value(const char* data) : value(String(data)){}
+    Value(Array data) : value(std::move(data)){}
+    Value(Object data) : value(std::move(data)){}
+    /// Any integer type other than bool; converted to Integer (int64_t).
+    template<typename T> requires (std::is_integral_v<T> && !std::is_same_v<T, bool>)
+    Value(T data) : value((Integer)data){}
 
     enum class Type {
         Null, Bool, Number, String, Array, Object, Integer
