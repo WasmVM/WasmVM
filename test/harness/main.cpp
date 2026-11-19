@@ -72,12 +72,14 @@ struct Runner {
 };
 
 int main(void){
-    if(Suite::suite.has_value() == false){
+    // No registered suite means the tests never ran: fail, so it cannot read
+    // as a pass.
+    if(Suite::registered().has_value() == false){
         std::cerr << "=== " COLOR_Warning " Empty testsuite ===" << std::endl;
-        return 0;
+        return 1;
     }
 
-    Suite& suite = *Suite::suite;
+    Suite& suite = *Suite::registered();
 
     for(SuiteItem item : suite.items){
         std::visit(Runner(0, suite.failed), item);
