@@ -73,6 +73,7 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--start", "Specify start function.\t\nFormat: all | <module>:<func_index>[,<module>:<func_index>]...", 1, "-s"),
         CommandParser::Optional("--exports", "Specify explicit exports", 1, "-e"),
         CommandParser::Optional("--imports", "Specify explicit imports", 1, "-i"),
+        CommandParser::Optional("--strip-names", "Omit the name section", std::string()),
         CommandParser::Fixed("output", "File name of output module"),
         CommandParser::Fixed("modules", "Path of modules", (unsigned int)index_npos)
     },
@@ -337,7 +338,11 @@ int main(int argc, char const *argv[]){
 
         // Encode
         std::ofstream output_file(output_path, std::ios::binary | std::ios::trunc);
-        module_encode(linker.get(), output_file);
+        WasmModule linked = linker.get();
+        if(args["strip-names"]){
+            linked.names = WasmNames();
+        }
+        module_encode(linked, output_file);
         output_file.close();
         
     }catch(Exception::Exception &e){

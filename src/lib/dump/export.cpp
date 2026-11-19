@@ -25,6 +25,14 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmExport& export_
             stream << " (tag ";
         break;
     }
-    stream << export_.index << ") )" << std::endl;
+    DumpSpace space = DumpSpace::func;
+    switch(export_.desc){
+        case WasmExport::DescType::func :   space = DumpSpace::func; break;
+        case WasmExport::DescType::global : space = DumpSpace::global; break;
+        case WasmExport::DescType::mem :    space = DumpSpace::mem; break;
+        case WasmExport::DescType::table :  space = DumpSpace::table; break;
+        case WasmExport::DescType::tag :    space = DumpSpace::tag; break;
+    }
+    dump_ref(stream, space, export_.index) << ") )" << std::endl;
     return stream;
 }

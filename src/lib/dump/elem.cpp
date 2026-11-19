@@ -7,10 +7,16 @@
 using namespace WasmVM;
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmElem& elem){
-    stream << "  (elem ";
+    return dump_elem(stream, elem, nullptr);
+}
+
+std::ostream& WasmVM::dump_elem(std::ostream& stream, const WasmElem& elem, const std::string* name){
+    stream << "  (elem";
+    dump_def_name(stream, name) << " ";
     switch(elem.mode.type){
         case WasmElem::ElemMode::Mode::active :
-            stream << "(table " << elem.mode.tableidx.value() << ") ";
+            stream << "(table ";
+            dump_ref(stream, DumpSpace::table, elem.mode.tableidx.value()) << ") ";
             stream << "(offset " << elem.mode.offset.value() << ") ";
         break;
         case WasmElem::ElemMode::Mode::declarative :

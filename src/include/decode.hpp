@@ -34,6 +34,7 @@ struct Stream {
         return stream;
     }
     friend class Section;
+    friend void read_custom_section(Stream& stream);
     
     byte_t peek();
     size_t location();
@@ -41,7 +42,14 @@ private:
     std::istream& istream;
     WasmModule& module;
     std::unordered_map<ValueType, index_t> typemap;
+    bool name_section_seen = false;
 };
+
+// Reads one custom section (id 0) at the stream's position: the "name"
+// section fills the module's names, any other is skipped.
+void read_custom_section(Stream& stream);
+// Reads every custom section at the stream's position, one after another.
+void read_custom_sections(Stream& stream);
 
 template <typename T>
 Stream& operator>>(Stream& stream, T& value);

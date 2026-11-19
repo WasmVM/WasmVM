@@ -51,6 +51,21 @@ private:
     std::vector<std::tuple<index_t, size_t, Token>> pending_supers_;
     index_t block_level_ = 0;
 
+    // ── Name section sources (turned into module_.names in post_process) ────
+    // The module's own id, if any.
+    std::optional<std::string> module_id_;
+    // types_ indices written as (type ...) definitions, as opposed to the
+    // types a typeuse creates: only those get type parameter names.
+    std::vector<index_t> typedefs_;
+    // Ids resolved as locals of each function (params included), keyed by
+    // the function's index before post_process moves imports first.
+    std::map<index_t, std::map<std::string, index_t>> func_locals_;
+    // Label ids of each function by function-wide, source-order label index.
+    std::map<index_t, std::map<index_t, std::string>> func_labels_;
+    index_t label_count_ = 0;
+    // Parameter ids of each tag's typeuse, keyed like func_locals_.
+    std::map<index_t, std::map<std::string, index_t>> tag_params_;
+
     Tokenizer& tok_;
 
     // ── Module / section parsers ────────────────────────────────────────────
@@ -166,6 +181,12 @@ private:
     // ── Post-processing (same logic as original post_process.cpp) ────────────
     void post_process();
     std::unordered_map<index_t, index_t> reorder_map(IndexSpace& space);
+    void fill_names(const std::unordered_map<index_t, index_t>& typemap,
+                    const std::unordered_map<index_t, index_t>& funcmap,
+                    const std::unordered_map<index_t, index_t>& tablemap,
+                    const std::unordered_map<index_t, index_t>& memorymap,
+                    const std::unordered_map<index_t, index_t>& globalmap,
+                    const std::unordered_map<index_t, index_t>& tagmap);
 };
 
 } // namespace Parse

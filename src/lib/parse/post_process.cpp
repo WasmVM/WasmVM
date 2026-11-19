@@ -62,6 +62,7 @@ void ParseContext::post_process() {
     std::unordered_map<index_t, index_t> memorymap  = reorder_map(mem_map_);
     std::unordered_map<index_t, index_t> globalmap  = reorder_map(global_map_);
     std::unordered_map<index_t, index_t> tagmap     = reorder_map(tag_map_);
+    fill_names(typemap, funcmap, tablemap, memorymap, globalmap, tagmap);
 
     // funcs
     for (WasmFunc& func : module_.funcs) {
@@ -236,5 +237,79 @@ void ParseContext::post_process() {
     // tags
     for (index_t& tag : module_.tags) {
         if (typemap.contains(tag)) tag = typemap[tag];
+    }
+}
+
+// Strips the '$' a text id starts with: the name section holds the bare name.
+static std::string id_name(const std::string& id) {
+    return (!id.empty() && id[0] == '$') ? id.substr(1) : id;
+}
+
+// Builds module_.names from the ids the text gave, in the final index
+// spaces: imports moved first, plain function types deduplicated. When
+// several ids land on one index (identical function types folded together),
+// the earliest definition keeps its name.
+void ParseContext::fill_names(const std::unordered_map<index_t, index_t>& typemap,
+                              const std::unordered_map<index_t, index_t>& funcmap,
+                              const std::unordered_map<index_t, index_t>& tablemap,
+                              const std::unordered_map<index_t, index_t>& memorymap,
+                              const std::unordered_map<index_t, index_t>& globalmap,
+                              const std::unordered_map<index_t, index_t>& tagmap) {
+    WasmNames& names = module_.names;
+    auto map_of = [](const std::unordered_map<index_t, index_t>& map, index_t idx) {
+        auto found = map.find(idx);
+        return (found != map.end()) ? found->second : idx;
+    };
+    auto invert = [](const std::map<std::string, index_t>& ids) {
+        WasmNames::NameMap result;
+        for (auto& [id, idx] : ids) result[idx] = id_name(id);
+        return result;
+    };
+    auto fill_space = [&](WasmNames::NameMap& target, const std::map<std::string, index_t>& ids,
+                          const std::unordered_map<index_t, index_t>* remap) {
+        for (auto& [id, idx] : ids) {
+            target[remap ? map_of(*remap, idx) : idx] = id_name(id);
+        }
+    };
+
+    if (module_id_) names.module = id_name(module_id_.value());
+    fill_space(names.funcs, func_map_.id_map, &funcmap);
+    fill_space(names.tables, table_map_.id_map, &tablemap);
+    fill_space(names.mems, mem_map_.id_map, &memorymap);
+    fill_space(names.globals, global_map_.id_map, &globalmap);
+    fill_space(names.tags, tag_map_.id_map, &tagmap);
+    fill_space(names.elems, elem_map_, nullptr);
+    fill_space(names.datas, data_map_, nullptr);
+
+    // Types: the earliest of several folded-together definitions wins.
+    {
+        std::map<index_t, std::string> by_source; // source index -> id
+        for (auto& [id, idx] : type_map_) by_source[idx] = id;
+        for (auto& [idx, id] : by_source) {
+            index_t target = map_of(typemap, idx);
+            if (!names.types.contains(target)) names.types[target] = id_name(id);
+        }
+    }
+    // Field names of struct definitions and parameter names of function
+    // type definitions; typeuse-made types are not definitions.
+    for (index_t idx : typedefs_) {
+        const auto& [type, ids] = types_[idx];
+        if (ids.empty()) continue;
+        index_t target = map_of(typemap, idx);
+        if (type.is_struct()) {
+            if (!names.fields.contains(target)) names.fields[target] = invert(ids);
+        } else if (type.is_func()) {
+            if (!names.type_params.contains(target)) names.type_params[target] = invert(ids);
+        }
+    }
+    for (auto& [idx, ids] : func_locals_) {
+        if (!ids.empty()) names.locals[map_of(funcmap, idx)] = invert(ids);
+    }
+    for (auto& [idx, labels] : func_labels_) {
+        WasmNames::NameMap& target = names.labels[map_of(funcmap, idx)];
+        for (auto& [labelidx, id] : labels) target[labelidx] = id_name(id);
+    }
+    for (auto& [idx, ids] : tag_params_) {
+        if (!ids.empty()) names.tag_params[map_of(tagmap, idx)] = invert(ids);
     }
 }

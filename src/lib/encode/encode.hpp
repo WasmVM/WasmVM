@@ -94,6 +94,10 @@ struct DataCount : public Section {
     DataCount(const std::vector<WasmData>& funcs);
 };
 
+struct Name : public Section {
+    Name(const WasmNames& names);
+};
+
 } // namespace Encode
 } // namespace WasmVM
 

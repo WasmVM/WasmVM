@@ -3,6 +3,7 @@
 
 #include <Types.hpp>
 #include <vector>
+#include <structures/WasmNames.hpp>
 
 #include "ExportInst.hpp"
 
@@ -21,6 +22,8 @@ struct ModuleInst {
     std::vector<index_t> dataaddrs;
     std::vector<index_t> tagaddrs;
     std::vector<ExportInst> exports; 
+    // Copied from the WasmModule's name section at instantiation.
+    WasmNames names;
 
     void reset();
 };

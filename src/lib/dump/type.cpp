@@ -16,7 +16,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const ValueType& type){
             stream << "null ";
         }
         if(type.is_concrete()){
-            return stream << type.typeidx << ")";
+            return dump_ref(stream, DumpSpace::type, type.typeidx) << ")";
         }
         switch(type.kind){
             case ValueType::funcref:       stream << "func"; break;
@@ -102,11 +102,27 @@ static std::ostream& dump_field(std::ostream& stream, const FieldType& field){
     return dump_storage(stream, field.storage);
 }
 
-static std::ostream& dump_comptype(std::ostream& stream, const CompType& comp){
+// `typeidx` is the definition's own index, which names its parameters and
+// fields; a function type with none prints as before.
+static std::ostream& dump_comptype(std::ostream& stream, const CompType& comp, std::optional<index_t> typeidx = std::nullopt){
+    const DumpNames* names = DumpNames::current();
     std::visit(overloaded {
         [&](const FuncType& type){
             stream << "(func";
-            if(!type.params.empty()){
+            bool named = false;
+            if(names && typeidx){
+                for(index_t i = 0; i < type.params.size(); ++i){
+                    named = named || names->type_param(typeidx.value(), i);
+                }
+            }
+            if(named){
+                // A named parameter takes a (param ...) of its own.
+                for(index_t i = 0; i < type.params.size(); ++i){
+                    stream << " (param";
+                    dump_def_name(stream, names->type_param(typeidx.value(), i));
+                    stream << " " << type.params[i] << ")";
+                }
+            }else if(!type.params.empty()){
                 stream << " (param";
                 for(auto& param : type.params){
                     stream << " " << param;
@@ -124,9 +140,14 @@ static std::ostream& dump_comptype(std::ostream& stream, const CompType& comp){
         },
         [&](const StructType& type){
             stream << "(struct";
-            for(const FieldType& field : type.fields){
+            for(index_t i = 0; i < type.fields.size(); ++i){
                 stream << " (field ";
-                dump_field(stream, field);
+                if(names && typeidx){
+                    if(const std::string* name = names->field(typeidx.value(), i)){
+                        stream << "$" << *name << " ";
+                    }
+                }
+                dump_field(stream, type.fields[i]);
                 stream << ")";
             }
             stream << " )";
@@ -146,8 +167,14 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const FuncType& type){
     return stream << " )" << std::endl;
 }
 
-std::ostream& WasmVM::dump_subtype(std::ostream& stream, const SubType& type, const char* indent){
+std::ostream& WasmVM::dump_subtype(std::ostream& stream, const SubType& type, const char* indent, std::optional<index_t> typeidx){
     stream << indent << "(type ";
+    if(DumpNames* names = DumpNames::current(); names && typeidx){
+        // Defined before its body: a type may refer to itself.
+        if(const std::string* name = names->define(DumpSpace::type, typeidx.value())){
+            stream << "$" << *name << " ";
+        }
+    }
     // A final subtype with no supertype is its bare composite type.
     bool sub = !type.final || !type.supers.empty();
     if(sub){
@@ -156,10 +183,10 @@ std::ostream& WasmVM::dump_subtype(std::ostream& stream, const SubType& type, co
             stream << "final ";
         }
         for(index_t super : type.supers){
-            stream << super << " ";
+            dump_ref(stream, DumpSpace::type, super) << " ";
         }
     }
-    dump_comptype(stream, type.comp);
+    dump_comptype(stream, type.comp, typeidx);
     if(sub){
         stream << " )";
     }
@@ -171,7 +198,12 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const SubType& type){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
-    stream << "  (table " << table.limits.min;
+    return dump_table(stream, table, nullptr);
+}
+
+std::ostream& WasmVM::dump_table(std::ostream& stream, const TableType& table, const std::string* name){
+    stream << "  (table";
+    dump_def_name(stream, name) << " " << table.limits.min;
     if(table.limits.max.has_value()){
         stream << " " << table.limits.max.value();
     }
@@ -180,7 +212,12 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const TableType& table){
 }
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const MemType& mem){
-    stream << "  (memory ";
+    return dump_mem(stream, mem, nullptr);
+}
+
+std::ostream& WasmVM::dump_mem(std::ostream& stream, const MemType& mem, const std::string* name){
+    stream << "  (memory";
+    dump_def_name(stream, name) << " ";
     if(mem.is64) stream << "i64 ";
     stream << mem.min;
     if(mem.max.has_value()){

@@ -160,3 +160,22 @@ set_property(TEST exec_import_match_reject PROPERTY
 set_property(TEST exec_import_match_reject PROPERTY
   ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
 )
+
+# Name section (issue #51): the library side by the harness suite, the CLI
+# chains wasmvm-as / wasmvm-ld / readwasm by run_names.cmake.
+add_exec_test_suite(names ${PROJECT_SOURCE_DIR}/src/exec/Linker.cpp)
+foreach(case as_readwasm ld_readwasm as_strip ld_strip)
+  add_test(NAME exec_names_${case}
+    COMMAND ${CMAKE_COMMAND}
+      -DCASE=${case}
+      -DAS=$<TARGET_FILE:wasmvm-as>
+      -DLD=$<TARGET_FILE:wasmvm-ld>
+      -DREADWASM=$<TARGET_FILE:readwasm>
+      -DSRC=${CMAKE_CURRENT_LIST_DIR}/names
+      -DBIN=${CMAKE_CURRENT_BINARY_DIR}/names/${case}
+      -P ${CMAKE_CURRENT_LIST_DIR}/names/run_names.cmake
+  )
+  set_property(TEST exec_names_${case} PROPERTY
+    ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+  )
+endforeach()

@@ -45,6 +45,8 @@ std::ostream& WasmVM::module_encode(const WasmModule& module, std::ostream& ostr
     Encode::Code(module.funcs).write(ostream);
     // Data
     Encode::Data(module.datas).write(ostream);
+    // Name (custom section, after the data section)
+    Encode::Name(module.names).write(ostream);
     return ostream;
 }
 

@@ -5,6 +5,7 @@
 #include "dump.hpp"
 #include <Util.hpp>
 #include <cmath>
+#include <sstream>
 
 using namespace WasmVM;
 
@@ -15,10 +16,13 @@ struct InstrVisitor {
     std::ostream& operator()(const T&){ \
         return stream << S; \
     }
-#define OneIndexInstr(T, S) \
+#define RefInstr(T, S, SPACE) \
     std::ostream& operator()(const T& instr){ \
-        return stream << S << " " << instr.index; \
+        stream << S << " "; \
+        return dump_ref(stream, DumpSpace::SPACE, instr.index); \
     }
+// The memidx of a load or store stays a number: the text parser reads only
+// a number in that place.
 #define MemoryInstr(T, S) \
     std::ostream& operator()(const T& instr){ \
         return stream << S << " " << instr.memidx << " offset=" << (u64_t)instr.offset << " align=" << (u32_t)instr.align; \
@@ -27,7 +31,12 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::Unreachable, "unreachable")
     AtomicInstr(WasmVM::Instr::Nop, "nop")
     AtomicInstr(WasmVM::Instr::Else, "else")
-    AtomicInstr(WasmVM::Instr::End, "end")
+    std::ostream& operator()(const WasmVM::Instr::End&){
+        if(DumpNames* names = DumpNames::current()){
+            names->close_label();
+        }
+        return stream << "end";
+    }
     AtomicInstr(WasmVM::Instr::Return, "return")
     AtomicInstr(WasmVM::Instr::Throw_ref, "throw_ref")
     AtomicInstr(WasmVM::Instr::Ref_is_null, "ref.is_null")
@@ -40,14 +49,14 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::Extern_convert_any, "extern.convert_any")
     AtomicInstr(WasmVM::Instr::Array_len, "array.len")
 
-    OneIndexInstr(WasmVM::Instr::Struct_new, "struct.new")
-    OneIndexInstr(WasmVM::Instr::Struct_new_default, "struct.new_default")
-    OneIndexInstr(WasmVM::Instr::Array_new, "array.new")
-    OneIndexInstr(WasmVM::Instr::Array_new_default, "array.new_default")
-    OneIndexInstr(WasmVM::Instr::Array_get, "array.get")
-    OneIndexInstr(WasmVM::Instr::Array_get_s, "array.get_s")
-    OneIndexInstr(WasmVM::Instr::Array_get_u, "array.get_u")
-    OneIndexInstr(WasmVM::Instr::Array_set, "array.set")
+    RefInstr(WasmVM::Instr::Struct_new, "struct.new", type)
+    RefInstr(WasmVM::Instr::Struct_new_default, "struct.new_default", type)
+    RefInstr(WasmVM::Instr::Array_new, "array.new", type)
+    RefInstr(WasmVM::Instr::Array_new_default, "array.new_default", type)
+    RefInstr(WasmVM::Instr::Array_get, "array.get", type)
+    RefInstr(WasmVM::Instr::Array_get_s, "array.get_s", type)
+    RefInstr(WasmVM::Instr::Array_get_u, "array.get_u", type)
+    RefInstr(WasmVM::Instr::Array_set, "array.set", type)
     AtomicInstr(WasmVM::Instr::Drop, "drop")
     AtomicInstr(WasmVM::Instr::I32_eqz, "i32.eqz")
     AtomicInstr(WasmVM::Instr::I32_eq, "i32.eq")
@@ -186,31 +195,31 @@ struct InstrVisitor {
     AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_s, "i64.trunc_sat_f64_s")
     AtomicInstr(WasmVM::Instr::I64_trunc_sat_f64_u, "i64.trunc_sat_f64_u")
 
-    OneIndexInstr(WasmVM::Instr::Throw, "throw")
-    OneIndexInstr(WasmVM::Instr::Call, "call")
-    OneIndexInstr(WasmVM::Instr::Call_ref, "call_ref")
-    OneIndexInstr(WasmVM::Instr::Return_call, "return_call")
-    OneIndexInstr(WasmVM::Instr::Return_call_ref, "return_call_ref")
-    OneIndexInstr(WasmVM::Instr::Br, "br")
-    OneIndexInstr(WasmVM::Instr::Br_if, "br_if")
-    OneIndexInstr(WasmVM::Instr::Br_on_null, "br_on_null")
-    OneIndexInstr(WasmVM::Instr::Br_on_non_null, "br_on_non_null")
-    OneIndexInstr(WasmVM::Instr::Ref_func, "ref.func")
-    OneIndexInstr(WasmVM::Instr::Local_get, "local.get")
-    OneIndexInstr(WasmVM::Instr::Local_set, "local.set")
-    OneIndexInstr(WasmVM::Instr::Local_tee, "local.tee")
-    OneIndexInstr(WasmVM::Instr::Global_get, "global.get")
-    OneIndexInstr(WasmVM::Instr::Global_set, "global.set")
-    OneIndexInstr(WasmVM::Instr::Table_get, "table.get")
-    OneIndexInstr(WasmVM::Instr::Table_set, "table.set")
-    OneIndexInstr(WasmVM::Instr::Table_size, "table.size")
-    OneIndexInstr(WasmVM::Instr::Table_grow, "table.grow")
-    OneIndexInstr(WasmVM::Instr::Table_fill, "table.fill")
-    OneIndexInstr(WasmVM::Instr::Elem_drop, "elem.drop")
-    OneIndexInstr(WasmVM::Instr::Memory_size, "memory.size")
-    OneIndexInstr(WasmVM::Instr::Memory_grow, "memory.grow")
-    OneIndexInstr(WasmVM::Instr::Memory_fill, "memory.fill")
-    OneIndexInstr(WasmVM::Instr::Data_drop, "data.drop")
+    RefInstr(WasmVM::Instr::Throw, "throw", tag)
+    RefInstr(WasmVM::Instr::Call, "call", func)
+    RefInstr(WasmVM::Instr::Call_ref, "call_ref", type)
+    RefInstr(WasmVM::Instr::Return_call, "return_call", func)
+    RefInstr(WasmVM::Instr::Return_call_ref, "return_call_ref", type)
+    RefInstr(WasmVM::Instr::Br, "br", label)
+    RefInstr(WasmVM::Instr::Br_if, "br_if", label)
+    RefInstr(WasmVM::Instr::Br_on_null, "br_on_null", label)
+    RefInstr(WasmVM::Instr::Br_on_non_null, "br_on_non_null", label)
+    RefInstr(WasmVM::Instr::Ref_func, "ref.func", func)
+    RefInstr(WasmVM::Instr::Local_get, "local.get", local)
+    RefInstr(WasmVM::Instr::Local_set, "local.set", local)
+    RefInstr(WasmVM::Instr::Local_tee, "local.tee", local)
+    RefInstr(WasmVM::Instr::Global_get, "global.get", global)
+    RefInstr(WasmVM::Instr::Global_set, "global.set", global)
+    RefInstr(WasmVM::Instr::Table_get, "table.get", table)
+    RefInstr(WasmVM::Instr::Table_set, "table.set", table)
+    RefInstr(WasmVM::Instr::Table_size, "table.size", table)
+    RefInstr(WasmVM::Instr::Table_grow, "table.grow", table)
+    RefInstr(WasmVM::Instr::Table_fill, "table.fill", table)
+    RefInstr(WasmVM::Instr::Elem_drop, "elem.drop", elem)
+    RefInstr(WasmVM::Instr::Memory_size, "memory.size", mem)
+    RefInstr(WasmVM::Instr::Memory_grow, "memory.grow", mem)
+    RefInstr(WasmVM::Instr::Memory_fill, "memory.fill", mem)
+    RefInstr(WasmVM::Instr::Data_drop, "data.drop", data)
 
     MemoryInstr(WasmVM::Instr::I32_load, "i32.load")
     MemoryInstr(WasmVM::Instr::I64_load, "i64.load")
@@ -236,62 +245,98 @@ struct InstrVisitor {
     MemoryInstr(WasmVM::Instr::I64_store16, "i64.store16")
     MemoryInstr(WasmVM::Instr::I64_store32, "i64.store32")
 
+    // A block's own label, printed after its keyword. Opened before its
+    // body, so a branch inside resolves against it.
+    void open_label(){
+        if(DumpNames* names = DumpNames::current()){
+            dump_def_name(stream, names->open_label());
+        }
+    }
+    void block_type(const std::optional<index_t>& type){
+        if(type){
+            stream << " (type ";
+            dump_ref(stream, DumpSpace::type, type.value());
+            stream << ")";
+        }
+    }
     std::ostream& operator()(const WasmVM::Instr::Try_table& instr){
         stream << "try_table";
-        if(instr.type){
-            stream << " (type " << instr.type.value() << ")";
-        }
+        // The catch clauses' labels resolve outside the try_table's own
+        // label, so it opens only after them; its name still prints first.
+        const std::string* label = nullptr;
+        DumpNames* names = DumpNames::current();
+        std::stringstream catches;
         for(const WasmVM::Instr::TryCatchEntry& ce : instr.catches){
             switch(ce.kind){
                 case WasmVM::Instr::TryCatchEntry::Catch:
-                    stream << " (catch " << ce.tag_idx << " " << ce.label_idx << ")";
+                    catches << " (catch ";
+                    dump_ref(catches, DumpSpace::tag, ce.tag_idx) << " ";
+                    dump_ref(catches, DumpSpace::label, ce.label_idx) << ")";
                 break;
                 case WasmVM::Instr::TryCatchEntry::CatchRef:
-                    stream << " (catch_ref " << ce.tag_idx << " " << ce.label_idx << ")";
+                    catches << " (catch_ref ";
+                    dump_ref(catches, DumpSpace::tag, ce.tag_idx) << " ";
+                    dump_ref(catches, DumpSpace::label, ce.label_idx) << ")";
                 break;
                 case WasmVM::Instr::TryCatchEntry::CatchAll:
-                    stream << " (catch_all " << ce.label_idx << ")";
+                    catches << " (catch_all ";
+                    dump_ref(catches, DumpSpace::label, ce.label_idx) << ")";
                 break;
                 case WasmVM::Instr::TryCatchEntry::CatchAllRef:
-                    stream << " (catch_all_ref " << ce.label_idx << ")";
+                    catches << " (catch_all_ref ";
+                    dump_ref(catches, DumpSpace::label, ce.label_idx) << ")";
                 break;
             }
         }
-        return stream;
+        if(names){
+            label = names->open_label();
+        }
+        dump_def_name(stream, label);
+        block_type(instr.type);
+        return stream << catches.str();
     }
     std::ostream& operator()(const WasmVM::Instr::Block& instr){
         stream << "block";
-        if(instr.type){
-            stream << " (type " << instr.type.value() << ")";
-        }
+        open_label();
+        block_type(instr.type);
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::Loop& instr){
         stream << "loop";
-        if(instr.type){
-            stream << " (type " << instr.type.value() << ")";
-        }
+        open_label();
+        block_type(instr.type);
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::If& instr){
         stream << "if";
-        if(instr.type){
-            stream << " (type " << instr.type.value() << ")";
-        }
+        open_label();
+        block_type(instr.type);
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::Br_table& instr){
         stream << "br_table";
         for(index_t index : instr.indices){
-            stream << " " << index;
+            stream << " ";
+            dump_ref(stream, DumpSpace::label, index);
         }
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::Call_indirect& instr){
-        return stream << "call_indirect " << instr.tableidx << " " << instr.typeidx;
+        stream << "call_indirect ";
+        dump_ref(stream, DumpSpace::table, instr.tableidx) << " ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Return_call_indirect& instr){
-        return stream << "return_call_indirect " << instr.tableidx << " " << instr.typeidx;
+        stream << "return_call_indirect ";
+        dump_ref(stream, DumpSpace::table, instr.tableidx) << " ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx);
+    }
+    // A non-negative heap type is a type index.
+    std::ostream& heaptype(int32_t ht){
+        if(ht >= 0){
+            return dump_ref(stream, DumpSpace::type, (index_t)ht);
+        }
+        return stream << ht;
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_null& instr){
         stream << "ref.null ";
@@ -307,59 +352,87 @@ struct InstrVisitor {
             case heaptype_none:     return stream << "none";
             case heaptype_nofunc:   return stream << "nofunc";
             case heaptype_noextern: return stream << "noextern";
-            default:                return stream << instr.heaptype;
+            default:                return heaptype(instr.heaptype);
         }
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_test& instr){
-        return stream << "ref.test " << instr.heaptype;
+        stream << "ref.test ";
+        return heaptype(instr.heaptype);
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_test_null& instr){
-        return stream << "ref.test null " << instr.heaptype;
+        stream << "ref.test null ";
+        return heaptype(instr.heaptype);
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_cast& instr){
-        return stream << "ref.cast " << instr.heaptype;
+        stream << "ref.cast ";
+        return heaptype(instr.heaptype);
     }
     std::ostream& operator()(const WasmVM::Instr::Ref_cast_null& instr){
-        return stream << "ref.cast null " << instr.heaptype;
+        stream << "ref.cast null ";
+        return heaptype(instr.heaptype);
     }
     std::ostream& operator()(const WasmVM::Instr::Br_on_cast& instr){
-        return stream << "br_on_cast " << instr.labelidx << " " << instr.src_heaptype << " " << instr.dst_heaptype;
+        stream << "br_on_cast ";
+        dump_ref(stream, DumpSpace::label, instr.labelidx);
+        return stream << " " << instr.src_heaptype << " " << instr.dst_heaptype;
     }
     std::ostream& operator()(const WasmVM::Instr::Br_on_cast_fail& instr){
-        return stream << "br_on_cast_fail " << instr.labelidx << " " << instr.src_heaptype << " " << instr.dst_heaptype;
+        stream << "br_on_cast_fail ";
+        dump_ref(stream, DumpSpace::label, instr.labelidx);
+        return stream << " " << instr.src_heaptype << " " << instr.dst_heaptype;
     }
     std::ostream& operator()(const WasmVM::Instr::Struct_get& instr){
-        return stream << "struct.get " << instr.typeidx << " " << instr.fieldidx;
+        stream << "struct.get ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_field_ref(stream, instr.typeidx, instr.fieldidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Struct_get_s& instr){
-        return stream << "struct.get_s " << instr.typeidx << " " << instr.fieldidx;
+        stream << "struct.get_s ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_field_ref(stream, instr.typeidx, instr.fieldidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Struct_get_u& instr){
-        return stream << "struct.get_u " << instr.typeidx << " " << instr.fieldidx;
+        stream << "struct.get_u ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_field_ref(stream, instr.typeidx, instr.fieldidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Struct_set& instr){
-        return stream << "struct.set " << instr.typeidx << " " << instr.fieldidx;
+        stream << "struct.set ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_field_ref(stream, instr.typeidx, instr.fieldidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_new_fixed& instr){
-        return stream << "array.new_fixed " << instr.typeidx << " " << instr.n;
+        stream << "array.new_fixed ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx) << " " << instr.n;
     }
     std::ostream& operator()(const WasmVM::Instr::Array_new_data& instr){
-        return stream << "array.new_data " << instr.typeidx << " " << instr.dataidx;
+        stream << "array.new_data ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_ref(stream, DumpSpace::data, instr.dataidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_new_elem& instr){
-        return stream << "array.new_elem " << instr.typeidx << " " << instr.elemidx;
+        stream << "array.new_elem ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_ref(stream, DumpSpace::elem, instr.elemidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_fill& instr){
-        return stream << "array.fill " << instr.typeidx;
+        stream << "array.fill ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_copy& instr){
-        return stream << "array.copy " << instr.dst_typeidx << " " << instr.src_typeidx;
+        stream << "array.copy ";
+        dump_ref(stream, DumpSpace::type, instr.dst_typeidx) << " ";
+        return dump_ref(stream, DumpSpace::type, instr.src_typeidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_init_data& instr){
-        return stream << "array.init_data " << instr.typeidx << " " << instr.dataidx;
+        stream << "array.init_data ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_ref(stream, DumpSpace::data, instr.dataidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Array_init_elem& instr){
-        return stream << "array.init_elem " << instr.typeidx << " " << instr.elemidx;
+        stream << "array.init_elem ";
+        dump_ref(stream, DumpSpace::type, instr.typeidx) << " ";
+        return dump_ref(stream, DumpSpace::elem, instr.elemidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Select& instr){
         stream << "select";
@@ -373,16 +446,25 @@ struct InstrVisitor {
         return stream;
     }
     std::ostream& operator()(const WasmVM::Instr::Table_copy& instr){
-        return stream << "table.copy " << instr.dstidx << " " << instr.srcidx;
+        stream << "table.copy ";
+        dump_ref(stream, DumpSpace::table, instr.dstidx) << " ";
+        return dump_ref(stream, DumpSpace::table, instr.srcidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Table_init& instr){
-        return stream << "table.init " << instr.tableidx << " " << instr.elemidx;
+        // The tableidx stays a number: the text parser reads only a number
+        // in that place.
+        stream << "table.init " << instr.tableidx << " ";
+        return dump_ref(stream, DumpSpace::elem, instr.elemidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Memory_copy& instr){
-        return stream << "memory.copy " << instr.dstidx << " " << instr.srcidx;
+        stream << "memory.copy ";
+        dump_ref(stream, DumpSpace::mem, instr.dstidx) << " ";
+        return dump_ref(stream, DumpSpace::mem, instr.srcidx);
     }
     std::ostream& operator()(const WasmVM::Instr::Memory_init& instr){
-        return stream << "memory.init " << instr.memidx << " " << instr.dataidx;
+        stream << "memory.init ";
+        dump_ref(stream, DumpSpace::mem, instr.memidx) << " ";
+        return dump_ref(stream, DumpSpace::data, instr.dataidx);
     }
     std::ostream& operator()(const WasmVM::Instr::I32_const& instr){
         return stream << "i32.const " << instr.value;
@@ -434,7 +516,7 @@ struct InstrVisitor {
     
 
 #undef AtomicInstr
-#undef OneIndexInstr
+#undef RefInstr
 #undef MemoryInstr
 
 private:

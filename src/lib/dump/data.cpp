@@ -9,10 +9,16 @@
 using namespace WasmVM;
 
 std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmData& data){
-    stream << "  (data ";
+    return dump_data(stream, data, nullptr);
+}
+
+std::ostream& WasmVM::dump_data(std::ostream& stream, const WasmData& data, const std::string* name){
+    stream << "  (data";
+    dump_def_name(stream, name) << " ";
     switch(data.mode.type){
         case WasmData::DataMode::Mode::active :
-            stream << "(memory " << data.mode.memidx.value() << ") ";
+            stream << "(memory ";
+            dump_ref(stream, DumpSpace::mem, data.mode.memidx.value()) << ") ";
             stream << "(offset " << data.mode.offset.value() << ") ";
         break;
         default:

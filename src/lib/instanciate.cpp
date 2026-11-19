@@ -94,6 +94,7 @@ ModuleInst& WasmVM::module_instanciate(ModuleInst& moduleInst, Store& store, con
 
     // Reset moduleInst
     moduleInst.reset();
+    moduleInst.names = module.names;
 
     // Insert external values
     for(size_t i = 0; i < externvals.size(); ++i){
@@ -413,4 +414,5 @@ void ModuleInst::reset(){
     dataaddrs.clear();
     tagaddrs.clear();
     exports.clear();
+    names = WasmNames();
 }

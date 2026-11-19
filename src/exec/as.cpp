@@ -21,6 +21,7 @@ int main(int argc, char const *argv[]){
         CommandParser::Optional("--version", "Show version", "-v"),
         CommandParser::Optional("--force", "Skip validation", "-f"),
         CommandParser::Optional("--output", "Output file name", 1, "-o"),
+        CommandParser::Optional("--strip-names", "Omit the name section", std::string()),
         CommandParser::Fixed("input_file", "Input file in WebAssembly text format"),
     },
         "wasmvm-as : WasmVM assembler"
@@ -65,6 +66,10 @@ int main(int argc, char const *argv[]){
             if(validate_result){
                 throw validate_result.value();
             }
+        }
+
+        if(args["strip-names"]){
+            parsed_module.names = WasmNames();
         }
 
         // Encode
