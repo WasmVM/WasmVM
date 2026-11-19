@@ -31,6 +31,31 @@ variables:
     -D CONSOLE_COLOR=OFF
     -D BUILD_DOCS=OFF
 
+# The registry serves a Cloudflare Origin CA certificate, which is not in
+# public trust stores. Fetch that root with a TLS-validating curl (busybox
+# wget in the kaniko image does not validate certificates) and hand it to
+# toolchain-image. Runs on every default-branch pipeline so the manual
+# rebuild there always has it.
+registry-ca:
+  stage: toolchain
+  image: curlimages/curl:8.23.0
+  interruptible: true
+  timeout: 5m
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+      changes: [test/Dockerfile]
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_COMMIT_BRANCH
+      changes: [test/Dockerfile]
+  script:
+    - >-
+      curl -fsSL --proto '=https' -o registry-ca.pem
+      https://developers.cloudflare.com/ssl/static/origin_ca_rsa_root.pem
+  artifacts:
+    expire_in: 1 day
+    paths:
+      - registry-ca.pem
+
 # Builds and pushes TOOLCHAIN_IMAGE with kaniko (no privileged runner needed).
 # Runs automatically when test/Dockerfile changes; on the default branch it can
 # also be started by hand to rebuild the same tag (e.g. for Ubuntu updates).
@@ -42,6 +67,7 @@ toolchain-image:
     entrypoint: [""]
   interruptible: true
   timeout: 30m
+  needs: [registry-ca]
   rules:
     - if: $CI_PIPELINE_SOURCE == "merge_request_event"
       changes: [test/Dockerfile]
@@ -68,6 +94,7 @@ toolchain-image:
       --context "dir://$CI_PROJECT_DIR/test"
       --dockerfile "$CI_PROJECT_DIR/test/Dockerfile"
       --destination "$TOOLCHAIN_IMAGE"
+      --registry-certificate "$CI_REGISTRY=$CI_PROJECT_DIR/registry-ca.pem"
 
 .cmake_build:
   stage: build
