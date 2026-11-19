@@ -55,6 +55,12 @@ if(WASMVM_DEBUG)
   # must read as a red test, not hang the whole test run.
   set_property(TEST invoke_debugger PROPERTY TIMEOUT 20)
 endif(WASMVM_DEBUG)
+if(WASMVM_PROFILE)
+  add_invoke_suite(profiler)
+  # The interrupt test runs an infinite loop: a broken interrupt must read as a
+  # red test, not hang the whole test run.
+  set_property(TEST invoke_profiler PROPERTY TIMEOUT 20)
+endif(WASMVM_PROFILE)
 # Outer backstop for the interrupt suite's infinite-loop fixtures: a broken
 # interrupt gate must read as a red test, not hang the whole test run.
 set_property(TEST invoke_interrupt PROPERTY TIMEOUT 20)

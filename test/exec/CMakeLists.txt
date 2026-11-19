@@ -217,3 +217,26 @@ if(WASMVM_DEBUG)
   )
   add_dependencies(exec_suite_dap_target wasmvm exec_dap_modules)
 endif(WASMVM_DEBUG)
+
+# `wasmvm --profile` (#61), only in profiler builds, through the real wasmvm by
+# run_profile.cmake. The exit case needs the sys_proc host module.
+if(WASMVM_PROFILE)
+  set(PROFILE_CASES normal trap unwritable)
+  if(BUILD_HOST_MODULES)
+    list(APPEND PROFILE_CASES exit)
+  endif()
+  foreach(case ${PROFILE_CASES})
+    add_test(NAME exec_profile_${case}
+      COMMAND ${CMAKE_COMMAND}
+        -DCASE=${case}
+        -DAS=$<TARGET_FILE:wasmvm-as>
+        -DWASMVM=$<TARGET_FILE:wasmvm>
+        -DSRC=${CMAKE_CURRENT_LIST_DIR}/profile
+        -DBIN=${CMAKE_CURRENT_BINARY_DIR}/profile/${case}
+        -P ${CMAKE_CURRENT_LIST_DIR}/profile/run_profile.cmake
+    )
+    set_property(TEST exec_profile_${case} PROPERTY
+      ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+    )
+  endforeach()
+endif(WASMVM_PROFILE)

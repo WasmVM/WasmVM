@@ -6,8 +6,25 @@
 
 #include <Debugger.hpp>
 #include <instances/Stack.hpp>
+#ifdef WASMVM_PROFILE
+#include <Profiler.hpp>
+#endif
 
 using namespace WasmVM;
+
+// The time the guest stays stopped is not profiled (#61): pause the profiler
+// for the rest of the enclosing scope. Expanded inside Debugger's members, the
+// local struct may call Profiler's private pause/resume as they can.
+#ifdef WASMVM_PROFILE
+#define PROFILER_PAUSED(stack) \
+    struct ProfilerPause { \
+        Profiler* profiler; \
+        ~ProfilerPause(){ if(profiler != nullptr){ profiler->resume(); } } \
+    } profiler_pause {(stack).observers.profiler}; \
+    if(profiler_pause.profiler != nullptr){ profiler_pause.profiler->pause(); }
+#else
+#define PROFILER_PAUSED(stack)
+#endif
 
 // Out of line: the key function, so the typeinfo lives once, in the library
 // (see the note in <exception.hpp>).
@@ -55,15 +72,18 @@ void Debugger::before_instr(const Stack& stack, Position position){
         }
     }
     if(stop){
+        PROFILER_PAUSED(stack)
         step = on_stop(Stop {reason, position, stack, nullptr, nullptr});
         step_depth = depth;
     }
 }
 
 void Debugger::trapped(const Stack& stack, Position position, const Exception::Trap& trap){
+    PROFILER_PAUSED(stack)
     on_stop(Stop {Reason::Trap, position, stack, &trap, nullptr});
 }
 
 void Debugger::uncaught(const Stack& stack, Position position, GcPtr<WasmException> exn){
+    PROFILER_PAUSED(stack)
     on_stop(Stop {Reason::Exception, position, stack, nullptr, exn});
 }

@@ -19,6 +19,24 @@ namespace WasmVM {
 #ifdef WASMVM_DEBUG
 struct Debugger;
 #endif
+#ifdef WASMVM_PROFILE
+struct Profiler;
+#endif
+
+/// What watches a Stack while it runs, each owned by the embedder. A field
+/// exists only in builds with its option; with neither, the struct is empty.
+struct Observers {
+#ifdef WASMVM_DEBUG
+    /// Optional debugger (<Debugger.hpp>); run() stops through it between
+    /// wasm instructions.
+    Debugger* debugger = nullptr;
+#endif
+#ifdef WASMVM_PROFILE
+    /// Optional profiler (<Profiler.hpp>); run() reports every instruction,
+    /// function entry and exit to it, and never stops for it.
+    Profiler* profiler = nullptr;
+#endif
+};
 
 struct Label {
 
@@ -80,13 +98,8 @@ struct Stack {
     ///   Note: the flag is polled between instructions, so a host function
     ///   (hostfunc_t) is never interrupted mid-call; long-running host functions
     ///   may poll stack.interrupt themselves.
-#ifdef WASMVM_DEBUG
-    /// \param debugger Optional debugger (<Debugger.hpp>), owned by the
-    ///   embedder; run() stops through it between wasm instructions.
-    Stack(Store& store, const std::atomic<bool>* interrupt = nullptr, Debugger* debugger = nullptr) : store(store), interrupt(interrupt), debugger(debugger){}
-#else
-    Stack(Store& store, const std::atomic<bool>* interrupt = nullptr) : store(store), interrupt(interrupt){}
-#endif
+    /// \param observers The debugger and profiler attached to this Stack, if any.
+    Stack(Store& store, const std::atomic<bool>* interrupt = nullptr, Observers observers = {}) : store(store), interrupt(interrupt), observers(observers){}
     void invoke(index_t funcaddr, std::vector<Value> args);
     /// Runs until the frame stack is empty and returns the results.
     /// Throws (all declared in the public <exception.hpp>):
@@ -97,9 +110,7 @@ struct Stack {
     std::vector<Value> run();
     Store& store;
     const std::atomic<bool>* interrupt;
-#ifdef WASMVM_DEBUG
-    Debugger* debugger;
-#endif
+    Observers observers;
     struct Frames : public std::stack<Frame> {
         /// Read-only walk: begin()/end() bottom to top, rbegin()/rend() top to bottom.
         using const_iterator = std::stack<Frame>::container_type::const_iterator;

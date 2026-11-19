@@ -300,6 +300,11 @@ void RunVisitor::operator()(Instr::Return_call_ref& instr){
         }
     }
     // Pop current frame (tail call)
+#ifdef WASMVM_PROFILE
+    if(stack.observers.profiler != nullptr){
+        stack.observers.profiler->on_exit();
+    }
+#endif
     stack.frames.pop();
     stack.invoke(funcaddr, args);
 }
