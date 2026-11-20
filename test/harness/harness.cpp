@@ -8,7 +8,10 @@
 
 using namespace Testing;
 
-std::optional<Suite> Suite::suite = std::nullopt;
+std::optional<Suite>& Suite::registered(){
+    static std::optional<Suite> suite;
+    return suite;
+}
 
 Suite::Suite(std::initializer_list<SuiteItem> items) :
     items(items), total(0), failed(0)
@@ -23,7 +26,7 @@ Suite::Suite(std::initializer_list<SuiteItem> items) :
             }
         }, item);
     }
-    suite.emplace(*this);
+    registered().emplace(*this);
 }
 
 CategoryType::CategoryType(std::string name, std::initializer_list<SuiteItem> items) : 

@@ -40,7 +40,11 @@ struct Suite {
     
     Suite(std::initializer_list<SuiteItem> items);
 
-    static std::optional<Suite> suite;
+    // The suite a test file registered. A function-local static, built on
+    // first use: a namespace-scope static here would be initialized in
+    // harness.cpp's own dynamic-init pass, which (MSVC Debug, /Od) can run
+    // after the test file's Suite constructor and wipe the registration.
+    static std::optional<Suite>& registered();
 
     std::list<SuiteItem> items;
     size_t total, failed;
