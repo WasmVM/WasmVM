@@ -6,19 +6,51 @@ Stack
 
 .. cpp:struct:: WasmVM::Stack
 
-    .. cpp:function:: Stack(Store& store)
+    .. cpp:function:: Stack(Store& store, const std::atomic<bool>* interrupt = nullptr, Observers observers = {})
+
+        ``interrupt``: an optional flag owned by the embedder; when it reads
+        true, ``run()`` throws :cpp:struct:`WasmVM::Exception::interrupted`.
+        ``observers``: the debugger and profiler attached to this Stack, if
+        any.
+
     .. cpp:function:: void invoke(index_t funcaddr, std::vector<Value> args)
     .. cpp:function:: std::vector<Value> run()
     .. cpp:member:: Store& store
-    .. cpp:member:: std::stack<Frame> frames
+    .. cpp:member:: const std::atomic<bool>* interrupt
+    .. cpp:member:: Observers observers
+    .. cpp:member:: Frames frames
+
+        A ``std::stack<Frame>`` that can also be walked read-only:
+        ``begin()`` / ``end()`` from bottom to top, ``rbegin()`` / ``rend()``
+        from top to bottom. :cpp:member:`Frame::labels` and
+        :cpp:member:`Label::values` can be walked the same way.
+
     .. cpp:member:: std::vector<Value> results
+
+.. cpp:struct:: WasmVM::Observers
+
+    What watches a :cpp:struct:`WasmVM::Stack` while it runs, each owned by
+    the embedder. A member exists only in a build with its option; with
+    neither, the struct is empty. Code using the installed headers must
+    define ``WASMVM_DEBUG`` and ``WASMVM_PROFILE`` as the library was built.
+
+    .. cpp:member:: Debugger* debugger = nullptr
+
+        Only with ``WASMVM_DEBUG``. ``run()`` stops through it between wasm
+        instructions; see :cpp:struct:`WasmVM::Debugger`.
+
+    .. cpp:member:: Profiler* profiler = nullptr
+
+        Only with ``WASMVM_PROFILE``. ``run()`` reports every instruction,
+        function entry and exit to it, and never stops for it; see
+        :cpp:struct:`WasmVM::Profiler`.
 
 .. cpp:struct:: WasmVM::Frame
 
     Per-call activation frame pushed onto :cpp:member:`Stack::frames`.
 
     .. cpp:function:: Frame(ModuleInst& module, index_t funcaddr)
-    .. cpp:member:: std::stack<Label> labels
+    .. cpp:member:: Labels labels
     .. cpp:member:: std::vector<Value> locals
     .. cpp:member:: ModuleInst& module
     .. cpp:member:: index_t funcaddr
@@ -91,6 +123,10 @@ Instances
     .. cpp:member:: std::vector<index_t> dataaddrs
     .. cpp:member:: std::vector<index_t> tagaddrs
     .. cpp:member:: std::vector<ExportInst> exports
+    .. cpp:member:: WasmNames names
+
+        Copied from :cpp:member:`WasmVM::WasmModule::names` at instantiation;
+        indices are the module's own, not store addresses.
 
     .. cpp:function:: void reset()
 

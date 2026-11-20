@@ -9,7 +9,7 @@ wasmvm-ld
 Synopsis
 --------
 
-wasmvm-ld [-h | --help] [-v | --version] [-c | --config]? [-s | --start]? [-e | --exports]? [-i | --imports]? output modules...
+wasmvm-ld [-h | --help] [-v | --version] [-c | --config]? [-s | --start]? [-e | --exports]? [-i | --imports]? [--strip-names] output modules...
 
 Description
 -----------
@@ -17,6 +17,8 @@ Description
 ``wasmvm-ld`` link multiple WebAssembly (Wasm) binary files into single file. Imports/exports will be resolved in the output module. The addresses in each function and segments will be updated to referenced to the new ones in the output module.
 Besides, the linker can also collect the start function indices of linked modules, and compose a new start function in the output module.
 It can also be configured by a JSON file for more flexibility.
+
+Names in the linked modules' name sections are carried into the output with the new indices. When several modules name the same output index (an import resolved to another module's definition, the same import from several modules, or identical function types merged), the defining module's name is kept, otherwise the first linked module's. Equal names from different modules are kept as they are. The output module itself and the composed start function get no name. ``--strip-names`` leaves the name section out.
 
 Command line arguments and options
 ----------------------------------
@@ -78,6 +80,9 @@ Options
         --imports mod1.wasm:table1
 
         --imports mod1.wasm:table1,mod2.wasm:m1
+
+--strip-names
+    Omit the name section from the output.
 
 Configuration file
 ------------------

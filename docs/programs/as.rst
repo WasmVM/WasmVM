@@ -9,7 +9,7 @@ wasmvm-as
 Synopsis
 --------
 
-wasmvm-as [-h | --help] [-v | --version] [-f | --force] [-o | --output]? input_file
+wasmvm-as [-h | --help] [-v | --version] [-f | --force] [--strip-names] [-o | --output]? input_file
 
 Description
 -----------
@@ -17,6 +17,8 @@ Description
 ``wasmvm-as`` assembles WebAssembly (Wasm) text format to binary format. It'll parse Wasm text file (``.wat``) into Wasm modules, verify, and encode Wasm module into Wasm binary file (``.wasm``).
 While parsing Wasm text, it will also re-order import sections to the lower index, and fix the index of  influenced instructions or sections.
 This re-index is essential since import sections prior to functions, tables, memories and globals, so the indices may differ from the appearance in text format. The actual index is the one after applying this process.
+
+The ids written in the text (``$name``) are kept in the output's name section, so ``readwasm`` and the debugger can show them. ``--strip-names`` leaves the name section out.
 
 Command line arguments and options
 ----------------------------------
@@ -38,6 +40,9 @@ Options
 
 --force, -f
     Skip validation and just parse and encode the module.
+
+--strip-names
+    Omit the name section from the output.
 
 --output, -o
     Spcify the output file name. This will consume an additional argument as the file name.

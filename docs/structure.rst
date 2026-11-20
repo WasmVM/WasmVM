@@ -38,6 +38,17 @@ Data structures of WasmVM objects for general use.
 
     .. cpp:member:: std::vector<WasmData> datas
 
+    .. cpp:member:: WasmNames names
+
+        The custom ``name`` section, declared in ``structures/WasmNames.hpp``:
+        the spec's subsections (module, functions, locals) and the
+        extended-name-section proposal's (labels, types, tables, memories,
+        globals, elems, datas, fields, tags, type parameters, tag parameters).
+        Each maps an index, or a pair of indices, to a name; label indices are
+        function-wide, in source order. Empty when the module has no name
+        section. Filled by the decoder and by the text parser, and written by
+        the encoder.
+
 .. cpp:struct:: WasmVM::WasmFunc
 
     Function in WebAssembly

@@ -33,6 +33,34 @@ What's new in 1.3
 Unreleased
 ----------
 
+* The custom ``name`` section is kept: the decoder reads it into
+  ``WasmModule::names`` (the spec's subsections and the extended-name-section
+  proposal's), it is copied to ``ModuleInst::names`` at instantiation, and the
+  encoder writes it back. ``wasmvm-as`` fills it from the text's ids,
+  ``wasmvm-ld`` carries it through linking, ``readwasm`` prints the names, and
+  both ``wasmvm-as`` and ``wasmvm-ld`` take ``--strip-names``. A malformed
+  name section is dropped with a warning. Custom sections are now read at any
+  position, several in a row.
+* Debugger, under the new CMake option ``WASMVM_DEBUG``: the
+  :cpp:struct:`WasmVM::Debugger` class stops the guest between wasm
+  instructions at breakpoints, on steps, on pause, on a trap and on an
+  uncaught exception, and ``wasmvm --dap [address:]port`` drives it from a
+  Debug Adapter Protocol client over TCP. See :doc:`programs/vm`.
+* Profiler, under the new CMake option ``WASMVM_PROFILE``: the
+  :cpp:struct:`WasmVM::Profiler` class records instruction counts per
+  function and opcode, call counts and inclusive / exclusive time, and
+  ``wasmvm --profile <prefix>`` writes them to ``<prefix>.json`` and
+  ``<prefix>.folded``. See :doc:`programs/vm`.
+* :cpp:struct:`WasmVM::Stack` and ``module_instanciate`` take an
+  :cpp:struct:`WasmVM::Observers` parameter for the debugger and profiler;
+  its members depend on ``WASMVM_DEBUG`` and ``WASMVM_PROFILE``, so code
+  built against the installed headers must define them as the library was
+  built. ``Stack::frames``, ``Frame::labels`` and ``Label::values`` can be
+  walked read-only.
+* JSON, as read by ``wasmvm-ld --config``: negative numbers, 64-bit
+  integers, ``\u`` escapes and empty arrays and objects are parsed
+  correctly, and strings are escaped when written.
+
 * A table's and an elem segment's element type is a
   :cpp:struct:`WasmVM::ValueType` that has to be a reference, where it was a
   two-valued ``RefType``. Any reference type may now be named, and the

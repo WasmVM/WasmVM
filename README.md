@@ -32,6 +32,20 @@ mkdir build && cd build && cmake ..
 make -j4
 ```
 
+### Build options
+
+Pass these to CMake with `-D<option>=ON`. Both default to `OFF` and can be combined.
+
+* `WASMVM_DEBUG`: debugger support. Adds `wasmvm --dap [address:]port`, a Debug Adapter Protocol server, and the `Debugger` class in `Debugger.hpp`.
+
+* `WASMVM_PROFILE`: profiler support. Adds `wasmvm --profile <prefix>`, which writes `<prefix>.json` and `<prefix>.folded`, and the `Profiler` class in `Profiler.hpp`.
+
+The options change the members of `Observers` and so the layout of `Stack`, so code built against the installed headers must define `WASMVM_DEBUG` and `WASMVM_PROFILE` exactly as the library was built.
+
+```shell
+mkdir build && cd build && cmake -DWASMVM_DEBUG=ON -DWASMVM_PROFILE=ON ..
+```
+
 ## Run Unittests
 
 1. Run CMake

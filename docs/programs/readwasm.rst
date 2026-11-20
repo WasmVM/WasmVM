@@ -18,6 +18,8 @@ Description
 The binary file will be decoded, verified and then dump into standard output.
 Options are provided to toggle whether each section dumps or not.
 
+When the module has a name section, its names are printed as ``$name`` ids at definitions and references. A name is printed as a number instead when it could not be read back by ``wasmvm-as``: it is not a valid id, it repeats another name of the same kind, it names a parameter, it is referenced before its definition, or it is the memory index of a load or store or the table index of ``table.init``.
+
 Command line arguments and options
 ----------------------------------
 
