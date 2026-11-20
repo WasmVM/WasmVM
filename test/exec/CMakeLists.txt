@@ -181,7 +181,7 @@ foreach(case as_readwasm ld_readwasm as_strip ld_strip)
 endforeach()
 # readwasm's output assembles again, one fixture per printing form that once
 # did not.
-foreach(fixture dump_export_memory)
+foreach(fixture dump_export_memory dump_call_indirect)
   add_test(NAME exec_names_${fixture}
     COMMAND ${CMAKE_COMMAND}
       -DCASE=dump_reassembles
