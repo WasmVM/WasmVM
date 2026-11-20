@@ -141,6 +141,9 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             case '"':{ // String
                 std::string literal;
                 for(ch = fin.get(); ch != '"'; ch = fin.get()){
+                    if(ch == std::istream::traits_type::eof()){
+                        throw Exception("JSON: unclosed string");
+                    }
                     if(ch == '\\'){
                         ch = fin.get();
                         switch(ch){
