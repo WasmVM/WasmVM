@@ -141,6 +141,9 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
             case '"':{ // String
                 std::string literal;
                 for(ch = fin.get(); ch != '"'; ch = fin.get()){
+                    if(ch == std::istream::traits_type::eof()){
+                        throw Exception("JSON: unclosed string");
+                    }
                     if(ch == '\\'){
                         ch = fin.get();
                         switch(ch){
@@ -248,7 +251,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
                 val.value.emplace<Value::Number>(number);
             }break;
             case 't':{ // true
-                char remain[4];
+                char remain[4] = {}; // a short read at end of input leaves the rest '\0'
                 remain[3] = '\0';
                 fin.read(remain, 3);
                 if(remain[0] == 'r' && remain[1] == 'u' && remain[2] == 'e'){
@@ -258,7 +261,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
                 }
             }break;
             case 'f':{ // false
-                char remain[5];
+                char remain[5] = {}; // a short read at end of input leaves the rest '\0'
                 remain[4] = '\0';
                 fin.read(remain, 4);
                 if(remain[0] == 'a' && remain[1] == 'l' && remain[2] == 's' && remain[3] == 'e'){
@@ -268,7 +271,7 @@ std::istream& Json::operator>>(std::istream& fin, Value& elem){
                 }
             }break;
             case 'n':{ // null
-                char remain[4];
+                char remain[4] = {}; // a short read at end of input leaves the rest '\0'
                 remain[3] = '\0';
                 fin.read(remain, 3);
                 if(remain[0] == 'u' && remain[1] == 'l' && remain[2] == 'l'){

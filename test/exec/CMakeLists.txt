@@ -29,6 +29,8 @@ endmacro(add_exec_test_suite)
 
 add_exec_test_suite(commandparser ${PROJECT_SOURCE_DIR}/src/exec/CommandParser.cpp)
 add_exec_test_suite(json)
+# A parser loop that misses end of input hangs instead of failing (#55).
+set_property(TEST exec_suite_json PROPERTY TIMEOUT 20)
 add_exec_test_suite(linker ${PROJECT_SOURCE_DIR}/src/exec/Linker.cpp)
 
 # Limits of memory and table imports, matched by the wasmvm CLI (issue #26).

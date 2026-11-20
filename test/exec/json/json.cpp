@@ -104,6 +104,37 @@ Suite json {
             Expect(parse_throws("\"\\u00g0\""));
         })
     })
+    Category("unclosed_string", {
+        // Input that ends inside a string must throw, not loop (#55). A
+        // regression hangs here; the suite's ctest TIMEOUT turns that into a
+        // failure.
+        Test("unclosed_string_is_rejected", {
+            std::string message;
+            try {
+                parse("{\"output\":\"out");
+            } catch(WasmVM::Exception::Exception& e) {
+                message = e.what();
+            }
+            ExpectEq(message, std::string("JSON: unclosed string"));
+        })
+    })
+    Category("truncated_literal", {
+        // Input that ends inside true/false/null reads fewer bytes than the
+        // literal needs; the error names only the bytes that were there.
+        Test("truncated_literals_are_rejected", {
+            auto message_of = [](const std::string& text){
+                try {
+                    parse(text);
+                } catch(WasmVM::Exception::Exception& e) {
+                    return std::string(e.what());
+                }
+                return std::string();
+            };
+            ExpectEq(message_of("tr"), std::string("JSON: unknown token 'tr'"));
+            ExpectEq(message_of("fal"), std::string("JSON: unknown token 'fal'"));
+            ExpectEq(message_of("nu"), std::string("JSON: unknown token 'nu'"));
+        })
+    })
     Category("empty_container", {
         Test("empty_array_parses", {
             Json::Value value = parse("[]");
