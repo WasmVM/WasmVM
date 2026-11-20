@@ -323,13 +323,13 @@ struct InstrVisitor {
     }
     std::ostream& operator()(const WasmVM::Instr::Call_indirect& instr){
         stream << "call_indirect ";
-        dump_ref(stream, DumpSpace::table, instr.tableidx) << " ";
-        return dump_ref(stream, DumpSpace::type, instr.typeidx);
+        dump_ref(stream, DumpSpace::table, instr.tableidx) << " (type ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx) << ")";
     }
     std::ostream& operator()(const WasmVM::Instr::Return_call_indirect& instr){
         stream << "return_call_indirect ";
-        dump_ref(stream, DumpSpace::table, instr.tableidx) << " ";
-        return dump_ref(stream, DumpSpace::type, instr.typeidx);
+        dump_ref(stream, DumpSpace::table, instr.tableidx) << " (type ";
+        return dump_ref(stream, DumpSpace::type, instr.typeidx) << ")";
     }
     // A non-negative heap type is a type index.
     std::ostream& heaptype(int32_t ht){
