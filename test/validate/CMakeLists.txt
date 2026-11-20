@@ -22,6 +22,7 @@ endmacro(add_validate_suite)
 
 # Add tests under here
 add_validate_suite(exception)
+add_validate_suite(function_end)
 add_validate_suite(gc_types)
 add_validate_suite(instructions)
 add_validate_suite(tables)
