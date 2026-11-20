@@ -133,6 +133,11 @@ template<> void Validate::Validator::operator()<WasmFunc>(const WasmFunc& func){
     size_t instridx = 1;
     for(const WasmInstr& instr : func.body){
         try{
+            // The function's closing `end` pops its frame, so nothing may
+            // follow it; every case below assumes a frame is there (issue #49).
+            if(state.ctrls.empty()){
+                throw Exception::Exception("empty validate control stack");
+            }
             switch(instr.opcode){
                 // [] -> []
                 case Opcode::Elem_drop : {
