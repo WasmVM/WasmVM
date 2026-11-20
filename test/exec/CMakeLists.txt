@@ -179,6 +179,24 @@ foreach(case as_readwasm ld_readwasm as_strip ld_strip)
     ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
   )
 endforeach()
+# readwasm's output assembles again, one fixture per printing form that once
+# did not.
+foreach(fixture dump_export_memory)
+  add_test(NAME exec_names_${fixture}
+    COMMAND ${CMAKE_COMMAND}
+      -DCASE=dump_reassembles
+      -DFIXTURE=${fixture}.wat
+      -DAS=$<TARGET_FILE:wasmvm-as>
+      -DLD=$<TARGET_FILE:wasmvm-ld>
+      -DREADWASM=$<TARGET_FILE:readwasm>
+      -DSRC=${CMAKE_CURRENT_LIST_DIR}/names
+      -DBIN=${CMAKE_CURRENT_BINARY_DIR}/names/${fixture}
+      -P ${CMAKE_CURRENT_LIST_DIR}/names/run_names.cmake
+  )
+  set_property(TEST exec_names_${fixture} PROPERTY
+    ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+  )
+endforeach()
 
 # The DAP server behind `wasmvm --dap` (#54), only in debugger builds. The
 # suite compiles the server's sources for its direct tests and starts the real

@@ -16,7 +16,7 @@ std::ostream& WasmVM::operator<<(std::ostream& stream, const WasmExport& export_
             stream << " (global ";
         break;
         case WasmExport::DescType::mem :
-            stream << " (mem ";
+            stream << " (memory ";
         break;
         case WasmExport::DescType::table :
             stream << " (table ";
