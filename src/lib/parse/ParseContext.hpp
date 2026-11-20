@@ -113,7 +113,8 @@ private:
     // Returns true if the next tokens could start a typeuse clause.
     bool is_typeuse_start();
     // Parses typeuse, always returns an index (creates empty type if needed).
-    index_t parse_typeuse();
+    // `ids`, when given, receives the param ids the typeuse binds.
+    index_t parse_typeuse(std::map<std::string, index_t>* ids = nullptr);
 
     // Parses a param clause; returns either (id, type, loc) or list of types.
     // Returned as pair<string, vector<ValueType>>: id may be empty.

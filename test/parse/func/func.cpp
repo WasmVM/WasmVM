@@ -12,6 +12,19 @@
 
 using namespace WasmVM;
 using namespace Testing;
+using IndirectNameMap = WasmNames::IndirectNameMap;
+
+// The message of the Exception::Parse that parsing `text` throws, or "" when
+// it parses.
+static std::string parse_error(const std::string& text) {
+    std::istringstream source(text);
+    try {
+        module_parse(source);
+    } catch (Exception::Parse& e) {
+        return e.what();
+    }
+    return "";
+}
 
 Suite func {
     Test("normal", {
@@ -201,6 +214,72 @@ Suite func {
                 " local.get $a))");
             WasmModule module = module_parse(source);
             Expect(module_validate(module).has_value());
+        })
+    })
+    // Inline params and results next to (type x) restate x; they used to be
+    // appended to a copy of x, giving the function a new type (issue #60).
+    Category("a typeuse with (type x) and inline params or results is x", {
+        Test("inline params", {
+            std::istringstream source(
+                "(module (type $b (func (param i32))) (func (type $b) (param i32)))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+        })
+        Test("inline params, x inside a rec group", {
+            std::istringstream source(
+                "(module (rec (type $b (func (param i32)))) (func (type $b) (param i32)))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+        })
+        Test("inline results", {
+            std::istringstream source(
+                "(module (type $b (func (result i32))) (func (type $b) (result i32) i32.const 1))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("inline param ids name the locals, x's own ids do not", {
+            std::istringstream source(
+                "(module (type $b (func (param $p i32) (param $q i64)))"
+                " (func (type $b) (param $x i32) (param i64) local.get $x drop))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            const WasmInstr& get = module.funcs[0].body[0];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 0U);
+            Expect((module.names.locals == IndirectNameMap{{0, {{0, "x"}}}}));
+            ExpectEq(parse_error(
+                "(module (type $b (func (param $p i32))) (func (type $b) (param $x i32) local.get $p drop))"),
+                std::string("local id '$p' not found"));
+        })
+        Test("inline param ids name a tag's params", {
+            std::istringstream source(
+                "(module (type $t (func (param $p i32))) (tag (type $t) (param $a i32)))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.tags.size(), 1U);
+            ExpectEq(module.tags[0], 0U);
+            Expect((module.names.tag_params == IndirectNameMap{{0, {{0, "a"}}}}));
+        })
+        Test("inline params that do not match x", {
+            ExpectEq(parse_error("(module (type $b (func (param i32))) (func (type $b) (param f32)))"),
+                     std::string("inline params/results do not match type 0"));
+            ExpectEq(parse_error("(module (type $b (func (param i32))) (func (type $b) (param i32 i32)))"),
+                     std::string("inline params/results do not match type 0"));
+        })
+        Test("inline results that do not match x", {
+            ExpectEq(parse_error("(module (type (func)) (type $b (func (param i32))) (func (type $b) (param i32) (result i32) i32.const 1))"),
+                     std::string("inline params/results do not match type 1"));
+        })
+        Test("x not defined yet", {
+            ExpectEq(parse_error("(module (func (type 0) (param i32)) (type (func (param i32))))"),
+                     std::string("type 0 in typeuse is not defined yet"));
         })
     })
 };

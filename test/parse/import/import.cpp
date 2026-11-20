@@ -6,6 +6,8 @@
 #include <WasmVM.hpp>
 #include <exception.hpp>
 
+#include <sstream>
+
 using namespace WasmVM;
 using namespace Testing;
 
@@ -20,16 +22,8 @@ Suite import {
         Expect(type1.params.size() == 1);
         Expect(type1.params[0] == ValueType::i32);
         Expect(type1.results.size() == 0);
-        FuncType& type3 = test_module.types[2].func();
-        Expect(type3.params.size() == 2);
-        Expect(type3.params[0] == ValueType::i32);
-        Expect(type3.params[1] == ValueType::f32);
-        Expect(type3.results.size() == 0);
-        FuncType& type4 = test_module.types[3].func();
-        Expect(type4.params.size() == 1);
-        Expect(type4.params[0] == ValueType::i32);
-        Expect(type4.results.size() == 1);
-        Expect(type4.results[0] == ValueType::f64);
+        // func3 and func4 restate $ty1 inline: no new types (issue #60)
+        Expect(test_module.types.size() == 2);
         // imports
         WasmImport& imp0 = test_module.imports[0];
         Expect(std::holds_alternative<index_t>(imp0.desc));
@@ -48,14 +42,29 @@ Suite import {
         Expect(imp2.name == "func2");
         WasmImport& imp3 = test_module.imports[3];
         Expect(std::holds_alternative<index_t>(imp3.desc));
-        Expect(std::get<index_t>(imp3.desc) == 2);
+        Expect(std::get<index_t>(imp3.desc) == 1);
         Expect(imp3.module == "testmod");
         Expect(imp3.name == "func3");
         WasmImport& imp4 = test_module.imports[4];
         Expect(std::holds_alternative<index_t>(imp4.desc));
-        Expect(std::get<index_t>(imp4.desc) == 3);
+        Expect(std::get<index_t>(imp4.desc) == 1);
         Expect(imp4.module == "testmod");
         Expect(imp4.name == "func4");
+    })
+    // Inline params or results next to (type x) must restate x (issue #60).
+    Test("func: inline params that do not match the type", {
+        Throw(Exception::Parse, {
+            std::stringstream stream("(module (type $ty1 (func (param i32)))"
+                " (import \"testmod\" \"func3\" (func (type $ty1) (param f32))))");
+            module_parse(stream);
+        });
+    })
+    Test("func: inline results that do not match the type", {
+        Throw(Exception::Parse, {
+            std::stringstream stream("(module (type $ty1 (func (param i32)))"
+                " (import \"testmod\" \"func4\" (func (type $ty1) (result f64))))");
+            module_parse(stream);
+        });
     })
     Test("table", {
         ParseFile(test_module, "table.wat");
