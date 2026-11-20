@@ -419,7 +419,7 @@ bool ParseContext::is_typeuse_start() {
     return kw.text == "type" || kw.text == "param" || kw.text == "result";
 }
 
-index_t ParseContext::parse_typeuse() {
+index_t ParseContext::parse_typeuse(std::map<std::string, index_t>* ids) {
     index_t typeidx = 0;
     bool has_explicit_type = false;
 
@@ -453,7 +453,40 @@ index_t ParseContext::parse_typeuse() {
         has_params_results = true;
     }
 
-    if (!has_params_results) return typeidx;
+    if (!has_params_results) {
+        if (ids && typeidx < types_.size()) // a missing type is the validator's to report
+            *ids = types_[typeidx].second;
+        return typeidx;
+    }
+
+    // With (type x), the inline params and results restate x: the typeuse is
+    // x itself, and they have to match it. Only the inline param ids are
+    // bound; x's own ids are not.
+    if (has_explicit_type) {
+        if (typeidx >= types_.size())
+            throw Exception::Parse("type " + std::to_string(typeidx) + " in typeuse is not defined yet", tok_.location());
+        if (!types_[typeidx].first.is_func())
+            throw Exception::Parse("type index in typeuse is not a function type", tok_.location());
+        std::map<std::string, index_t> inline_ids;
+        std::vector<ValueType> params, results;
+        for (auto& [id, types] : params_list) {
+            if (!id.empty()) {
+                if (inline_ids.contains(id))
+                    throw Exception::Parse("duplicated param id '" + id + "'", tok_.location());
+                inline_ids[id] = params.size();
+            }
+            params.insert(params.end(), types.begin(), types.end());
+        }
+        for (auto& types : results_list) {
+            results.insert(results.end(), types.begin(), types.end());
+        }
+        const FuncType& functype = types_[typeidx].first.func();
+        if (params != functype.params || results != functype.results)
+            throw Exception::Parse("inline params/results do not match type " + std::to_string(typeidx), tok_.location());
+        if (ids)
+            *ids = params_list.empty() ? types_[typeidx].second : inline_ids;
+        return typeidx;
+    }
 
     // Create a new type by copying the base type and adding params/results.
     // Copy first to avoid reference invalidation when emplace_back reallocates.
@@ -475,6 +508,8 @@ index_t ParseContext::parse_typeuse() {
     for (auto& results : results_list) {
         functype.results.insert(functype.results.end(), results.begin(), results.end());
     }
+    if (ids)
+        *ids = new_type.second;
     return typeidx;
 }
 
@@ -787,10 +822,11 @@ void ParseContext::parse_importsection() {
             func_map_.id_map[id] = func_map_.records.size();
         }
         func_map_.records.emplace_back(IndexSpace::Type::Import);
-        index_t typeidx = parse_typeuse();
+        std::map<std::string, index_t> param_ids;
+        index_t typeidx = parse_typeuse(&param_ids);
         import.desc = typeidx;
         if (typeidx < types_.size()) // a missing type is the validator's to report
-            func_locals_[func_map_.records.size() - 1] = types_[typeidx].second;
+            func_locals_[func_map_.records.size() - 1] = param_ids;
     } else if (kw.text == "table") {
         if (tok_.peek().type == TokenType::Id) {
             std::string id = tok_.consume().text;
@@ -826,10 +862,11 @@ void ParseContext::parse_importsection() {
             tag_map_.id_map[id] = tag_map_.records.size();
         }
         tag_map_.records.emplace_back(IndexSpace::Type::Import);
-        index_t typeidx = parse_typeuse();
+        std::map<std::string, index_t> param_ids;
+        index_t typeidx = parse_typeuse(&param_ids);
         import.desc = TagType{typeidx};
         if (typeidx < types_.size()) // a missing type is the validator's to report
-            tag_params_[tag_map_.records.size() - 1] = types_[typeidx].second;
+            tag_params_[tag_map_.records.size() - 1] = param_ids;
     } else {
         throw Exception::Parse("unknown import desc '" + kw.text + "'", {kw.line, kw.column});
     }
@@ -862,20 +899,20 @@ void ParseContext::parse_funcsection() {
         func_map_.records.emplace_back(IndexSpace::Type::Import);
         auto [imod, iname] = parse_importabbr();
         WasmImport& imp = module_.imports.emplace_back();
-        index_t typeidx = parse_typeuse();
+        std::map<std::string, index_t> param_ids;
+        index_t typeidx = parse_typeuse(&param_ids);
         imp.desc = typeidx;
         imp.module = imod; imp.name = iname;
         if (typeidx < types_.size()) // a missing type is the validator's to report
-            func_locals_[func_idx] = types_[typeidx].second;
+            func_locals_[func_idx] = param_ids;
     } else {
         func_map_.records.emplace_back(IndexSpace::Type::Normal);
         WasmFunc& func = module_.funcs.emplace_back();
-        func.typeidx = parse_typeuse();
+        func.typeidx = parse_typeuse(&local_map_);
         // set local_map from param ids
         // A function's locals are indexed after its parameters, so a local id
         // names `params + n`, not `n`. The map starts as the parameter ids,
         // which already hold the right indices.
-        local_map_ = types_[func.typeidx].second;
         // A typeuse naming a struct or array type is the validator's to
         // report, with the index in the message; asking it for parameters
         // here would throw first and say less.
@@ -1212,9 +1249,10 @@ void ParseContext::parse_tagsection() {
     // type, not type index 0, and parse_typeuse creates that placeholder
     // itself when no (type N) is given; the later dedup folds it into an
     // existing () -> () if the module already has one.
-    index_t typeidx = parse_typeuse();
+    std::map<std::string, index_t> param_ids;
+    index_t typeidx = parse_typeuse(&param_ids);
     module_.tags.push_back(typeidx);
     if (typeidx < types_.size()) // a missing type is the validator's to report
-        tag_params_[tag_map_.records.size() - 1] = types_[typeidx].second;
+        tag_params_[tag_map_.records.size() - 1] = param_ids;
     tok_.expect(TokenType::RParen);
 }
