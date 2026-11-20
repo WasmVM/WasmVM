@@ -64,7 +64,7 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
         ){
             std::visit(overloaded {
                 [&](index_t& idx){
-                    idx = type_map[module.types[idx]];
+                    idx = module_entry.types[idx];
                     import_map[import.module][import.name] = import_counter.func++;
                 },
                 [&](TableType){
@@ -77,7 +77,7 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                     import_map[import.module][import.name] = import_counter.global++;
                 },
                 [&](TagType& tagtype){
-                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                    tagtype.typeidx = module_entry.types[tagtype.typeidx];
                     import_map[import.module][import.name] = import_counter.tag++;
                 },
             }, import.desc);
@@ -89,8 +89,7 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 .kind = IndexEntry::Import
             };
             std::visit(overloaded {
-                [&](index_t& idx){
-                    idx = type_map[module.types[idx]];
+                [&](index_t){
                     module_entry.funcs.emplace_back(entry);
                 },
                 [&](TableType){
@@ -102,15 +101,14 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                 [&](GlobalType){
                     module_entry.globals.emplace_back(entry);
                 },
-                [&](TagType& tagtype){
-                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                [&](TagType){
                     module_entry.tags.emplace_back(entry);
                 },
             }, import.desc);
         }else{
             std::visit(overloaded {
                 [&](index_t& idx){
-                    idx = type_map[module.types[idx]];
+                    idx = module_entry.types[idx];
                     module_entry.funcs.emplace_back(import);
                 },
                 [&](TableType){
@@ -123,7 +121,7 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
                     module_entry.globals.emplace_back(import);
                 },
                 [&](TagType& tagtype){
-                    tagtype.typeidx = type_map[module.types[tagtype.typeidx]];
+                    tagtype.typeidx = module_entry.types[tagtype.typeidx];
                     module_entry.tags.emplace_back(import);
                 },
             }, import.desc);
@@ -136,7 +134,7 @@ void Linker::consume(std::filesystem::path module_path, std::istream& stream){
             .index = (index_t)output.funcs.size(),
             .kind = IndexEntry::Address
         });
-        func.typeidx = type_map[module.types[func.typeidx]];
+        func.typeidx = module_entry.types[func.typeidx];
         module_index_list.funcs.emplace_back(module_index);
         output.funcs.emplace_back(func);
     }

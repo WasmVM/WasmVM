@@ -180,6 +180,24 @@ foreach(case as_readwasm ld_readwasm as_strip ld_strip)
   )
 endforeach()
 
+# Type indices that are not plain function types survive wasmvm-ld (issue
+# #59): wasmvm-as / wasmvm-ld / readwasm chained by run_linker_types.cmake.
+foreach(case rec_pending rec_explicit plain_after)
+  add_test(NAME exec_linker_types_${case}
+    COMMAND ${CMAKE_COMMAND}
+      -DCASE=${case}
+      -DAS=$<TARGET_FILE:wasmvm-as>
+      -DLD=$<TARGET_FILE:wasmvm-ld>
+      -DREADWASM=$<TARGET_FILE:readwasm>
+      -DSRC=${CMAKE_CURRENT_LIST_DIR}/linker_types
+      -DBIN=${CMAKE_CURRENT_BINARY_DIR}/linker_types/${case}
+      -P ${CMAKE_CURRENT_LIST_DIR}/linker_types/run_linker_types.cmake
+  )
+  set_property(TEST exec_linker_types_${case} PROPERTY
+    ENVIRONMENT "LD_LIBRARY_PATH=${CMAKE_BINARY_DIR}/src/lib"
+  )
+endforeach()
+
 # The DAP server behind `wasmvm --dap` (#54), only in debugger builds. The
 # suite compiles the server's sources for its direct tests and starts the real
 # wasmvm for the session tests; the .wat fixtures are assembled with wasmvm-as
