@@ -105,6 +105,7 @@ std::vector<WasmInstr> ParseContext::parse_blockinstr(const std::string& kw) {
             instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
         }
         block_level_ -= 1;
+        if (!label.empty()) label_map_.erase(label); // bound only inside its own block
         tok_.expect_keyword("end");
         if (tok_.peek().type == TokenType::Id) {
             Token closing = tok_.consume();
@@ -142,6 +143,7 @@ std::vector<WasmInstr> ParseContext::parse_blockinstr(const std::string& kw) {
         }
         block_level_ -= 1;
     }
+    if (!label.empty()) label_map_.erase(label); // bound only inside its own block
 
     tok_.expect_keyword("end");
     if (tok_.peek().type == TokenType::Id) {
@@ -179,6 +181,7 @@ std::vector<WasmInstr> ParseContext::parse_foldedinstr() {
             instrs.insert(instrs.end(), new_instrs.begin(), new_instrs.end());
         }
         block_level_ -= 1;
+        if (!label.empty()) label_map_.erase(label); // bound only inside its own block
         instrs.emplace_back(Instr::End());
     } else if (name == "if") {
         tok_.consume(); // consume 'if'
@@ -225,6 +228,7 @@ std::vector<WasmInstr> ParseContext::parse_foldedinstr() {
             tok_.expect(TokenType::RParen); // close else
         }
         block_level_ -= 1;
+        if (!label.empty()) label_map_.erase(label); // bound only inside its own block
         instrs.emplace_back(Instr::End());
     } else {
         // Plain folded: '(' plaininstr foldedinstr* ')'
