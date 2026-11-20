@@ -12,6 +12,18 @@
 using namespace WasmVM;
 using namespace Testing;
 
+// The message of the Exception::Parse that parsing `text` throws, or "" when
+// it parses.
+static std::string parse_error(const std::string& text) {
+    std::istringstream source(text);
+    try {
+        module_parse(source);
+    } catch (Exception::Parse& e) {
+        return e.what();
+    }
+    return "";
+}
+
 // Helpers: access WasmInstr immediates by category
 static auto& as_one(const WasmInstr& i) { return std::get<WasmInstr::OneIdx>(i.imm); }
 static auto& as_two(const WasmInstr& i) { return std::get<WasmInstr::TwoIdx>(i.imm); }
@@ -649,6 +661,42 @@ Suite instruction {
                 std::istringstream stream("(module (func (br $missing)))");
                 module_parse(stream);
             });
+        })
+    })
+    // A label used to stay bound after its block ended: a sibling block
+    // could not reuse it, and a later br could still name it (issue #58).
+    Category("a label is bound only inside its own block", {
+        Test("sibling blocks reuse a label", {
+            std::istringstream source("(module (func (block $l (br $l)) (block $l (br $l))))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            std::vector<index_t> brs;
+            for (const WasmInstr& instr : module.funcs[0].body) {
+                if (instr.opcode == Opcode::Br) brs.push_back(as_one(instr).index);
+            }
+            AssertEq(brs.size(), 2U);
+            ExpectEq(brs[0], 0U);
+            ExpectEq(brs[1], 0U);
+        })
+        Test("every kind of block releases its label", {
+            ExpectEq(parse_error(
+                "(module (tag $t) (func"
+                " block $l end loop $l end i32.const 0 if $l else end try_table $l end"
+                " (block $l) (loop $l) (if $l (i32.const 0) (then) (else)) (block $l)))"),
+                std::string(""));
+        })
+        Test("a br after the block cannot name its label", {
+            ExpectEq(parse_error("(module (func (block $l) (block (br $l))))"),
+                     std::string("label id '$l' not found"));
+            ExpectEq(parse_error("(module (func (block $l (nop)) (block (block (br $l)))))"),
+                     std::string("label id '$l' not found"));
+            ExpectEq(parse_error("(module (func block $l end block br $l end))"),
+                     std::string("label id '$l' not found"));
+        })
+        Test("sibling labels keep their function-wide indices", {
+            std::istringstream source("(module (func (block $l) (block) (block $l)))");
+            WasmModule module = module_parse(source);
+            Expect((module.names.labels == WasmNames::IndirectNameMap{{0, {{0, "l"}, {2, "l"}}}}));
         })
     })
     Test("folded", {
