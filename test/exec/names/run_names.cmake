@@ -7,6 +7,8 @@
 # ld_readwasm  wasmvm-as -> wasmvm-ld -> readwasm, likewise
 # as_strip     wasmvm-as --strip-names leaves no name for readwasm to print
 # ld_strip     wasmvm-ld --strip-names, likewise
+# dump_reassembles  wasmvm-as ${FIXTURE} -> readwasm --all, and that output
+#              reassembles to the same text
 
 file(MAKE_DIRECTORY ${BIN})
 
@@ -70,6 +72,10 @@ elseif(CASE STREQUAL "ld_strip")
   run(${LD} --strip-names --start all stripped.wasm link_b.wasm link_a.wasm)
   run(${READWASM} stripped.wasm)
   expect_no_names("${run_output}")
+elseif(CASE STREQUAL "dump_reassembles")
+  run(${AS} ${SRC}/${FIXTURE} -o dump.wasm)
+  run(${READWASM} --all dump.wasm)
+  expect_reassembles("${run_output}")
 else()
   message(FATAL_ERROR "unknown CASE '${CASE}'")
 endif()
