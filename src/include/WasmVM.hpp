@@ -13,7 +13,7 @@
 #include <instances/ModuleInst.hpp>
 #include <instances/Stack.hpp>
 
-#define WASMVM_VERSION "v1.6"
+#define WASMVM_VERSION "v1.7"
 
 namespace WasmVM {
 
