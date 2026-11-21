@@ -69,18 +69,13 @@ namespace Exception{
         GcPtr<WasmException> exn;
     };
 
+    // Defined in exception.cpp, not inline: `handler` is a static data member
+    // of the library, and an inline function that touches it fails to link
+    // against the Windows DLL, which exports functions but not data.
     struct Warning {
-        Warning(std::string msg){
-            if(handler){
-                handler->operator()(msg);
-            }
-        }
-        Warning(const char* msg){
-            Warning(std::string(msg));
-        }
-        static void regist(std::function<void(std::string)> handler){
-            Warning::handler.emplace(handler);
-        };
+        Warning(std::string msg);
+        Warning(const char* msg);
+        static void regist(std::function<void(std::string)> handler);
     private:
         static std::optional<std::function<void(std::string)>> handler;
     };

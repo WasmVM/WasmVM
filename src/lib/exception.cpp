@@ -8,6 +8,20 @@ using namespace WasmVM;
 
 std::optional<std::function<void(std::string)>> Exception::Warning::handler = std::nullopt;
 
+Exception::Warning::Warning(std::string msg){
+    if(handler){
+        handler->operator()(msg);
+    }
+}
+
+Exception::Warning::Warning(const char* msg){
+    Warning(std::string(msg));
+}
+
+void Exception::Warning::regist(std::function<void(std::string)> handler){
+    Warning::handler.emplace(handler);
+}
+
 Exception::unexpected_eof::unexpected_eof() :
     Exception(std::string("unexpected EOF")) {}
 
