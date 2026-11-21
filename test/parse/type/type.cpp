@@ -212,11 +212,15 @@ Suite type {
             Expect(test_module.types[4].supers.empty());
             Expect(test_module.types[4].is_func());
         })
-        Test("a supertype id outside a rec group must already exist", {
-            Throw(Exception::Parse, {
-                std::stringstream stream("(module (type $a (sub $b (struct))) (type $b (struct)))");
-                module_parse(stream);
-            });
+        // A type id scopes over the whole module, so the id resolves; a
+        // supertype defined after its subtype is the validator's to reject.
+        Test("a supertype id outside a rec group may name a later type", {
+            std::stringstream stream("(module (type $a (sub $b (struct))) (type $b (sub (struct))))");
+            WasmModule module = module_parse(stream);
+            AssertEq(module.types.size(), 2U);
+            AssertEq(module.types[0].supers.size(), 1U);
+            ExpectEq(module.types[0].supers[0], 1U);
+            Expect(module_validate(module).has_value());
         })
     })
     Category("rec", {

@@ -45,6 +45,17 @@ public:
     // Location of the current token.
     std::pair<size_t, size_t> location() const;
 
+    // A point in the token stream to come back to: the parser reads the
+    // source more than once, so that a module field can use a type defined
+    // further down.
+    struct Position {
+        size_t pos, line, col;
+        Token current, next;
+        bool next_valid;
+    };
+    Position position() const;
+    void rewind(const Position& position);
+
 private:
     std::string source_;
     size_t pos_;

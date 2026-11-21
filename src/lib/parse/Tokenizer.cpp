@@ -127,6 +127,19 @@ std::pair<size_t, size_t> Tokenizer::location() const {
     return {current_.line, current_.column};
 }
 
+Tokenizer::Position Tokenizer::position() const {
+    return Position{pos_, line_, col_, current_, next_, next_valid_};
+}
+
+void Tokenizer::rewind(const Position& position) {
+    pos_ = position.pos;
+    line_ = position.line;
+    col_ = position.col;
+    current_ = position.current;
+    next_ = position.next;
+    next_valid_ = position.next_valid;
+}
+
 // ── Internal scanning ─────────────────────────────────────────────────────────
 
 char Tokenizer::peek_char() const {
