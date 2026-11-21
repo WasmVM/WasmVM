@@ -277,9 +277,130 @@ Suite func {
             ExpectEq(parse_error("(module (type (func)) (type $b (func (param i32))) (func (type $b) (param i32) (result i32) i32.const 1))"),
                      std::string("inline params/results do not match type 1"));
         })
-        Test("x not defined yet", {
-            ExpectEq(parse_error("(module (func (type 0) (param i32)) (type (func (param i32))))"),
-                     std::string("type 0 in typeuse is not defined yet"));
+        Test("x defined later", {
+            std::istringstream source(
+                "(module (func (type 0) (param $x i32) local.get $x drop) (type (func (param i32))))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("x never defined", {
+            ExpectEq(parse_error("(module (func (type 1) (param i32)) (type (func (param i32))))"),
+                     std::string("type 1 in typeuse is not defined yet"));
+        })
+    })
+    // Declarations scope over the whole module, including the text before
+    // them, so (type x) may name a type defined further down (issue #62).
+    Category("a (type x) naming a type defined later is that type", {
+        Test("an empty function type", {
+            std::istringstream source("(module (func (type 0)) (type (func)))");
+            WasmModule module = module_parse(source);
+            ExpectEq(module.types.size(), 1U);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("a named local is indexed after the later type's parameters", {
+            std::istringstream source(
+                "(module (func (type 0) (local $l i64) local.get $l drop) (type (func (param i32))))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+            const WasmInstr& get = module.funcs[0].body[0];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 1U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("an index past the types defined so far", {
+            std::istringstream source(
+                "(module (type (func)) (func (type 1) (local $l i64) local.get $l drop)"
+                " (type (func (param i32))))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 1U);
+            const WasmInstr& get = module.funcs[0].body[0];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 1U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("the later type's parameter ids", {
+            std::istringstream source(
+                "(module (func (type $t) local.get $p drop) (type $t (func (param $p i32))))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 0U);
+            const WasmInstr& get = module.funcs[0].body[0];
+            Assert(get.opcode == Opcode::Local_get);
+            ExpectEq(std::get<WasmInstr::OneIdx>(get.imm).index, 0U);
+        })
+        Test("a type that is never defined is the validator's to report", {
+            std::istringstream source("(module (func (type 5)))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            ExpectEq(module.funcs[0].typeidx, 5U);
+            Expect(module_validate(module).has_value());
+        })
+    })
+    // Type definitions take the first type indices in the order written; a
+    // type an inline typeuse inserts goes at the end of the module.
+    Category("type definitions are numbered before inserted types", {
+        Test("a definition after an inline typeuse is still type 0", {
+            std::istringstream source(
+                "(module (func $a (param i32)) (type (func (result i32)))"
+                " (func $b (type 0) i32.const 7))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 2U);
+            ExpectEq(module.funcs[1].typeidx, 0U);
+            Assert(module.types.size() >= 1U);
+            Assert(module.types[0].is_func());
+            Expect((module.types[0].func().results == std::vector<ValueType>{ValueType::i32}));
+            Expect(module.types[0].func().params.empty());
+            Expect(!module_validate(module).has_value());
+        })
+    })
+    Category("a type id may be used before its definition", {
+        Test("in a function import", {
+            std::istringstream source("(module (import \"m\" \"f\" (func (type $t))) (type $t (func (param i32))))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.imports.size(), 1U);
+            Assert(std::holds_alternative<index_t>(module.imports[0].desc));
+            ExpectEq(std::get<index_t>(module.imports[0].desc), 0U);
+        })
+        Test("in a global's reference type", {
+            std::istringstream source("(module (global (ref null $t) (ref.null $t)) (type $t (struct)))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.globals.size(), 1U);
+            Expect(module.globals[0].type.type.is_concrete());
+            ExpectEq(module.globals[0].type.type.typeidx, 0U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("in another type's field", {
+            std::istringstream source(
+                "(module (type $a (struct (field (ref null $b)))) (type $b (struct)))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.types.size(), 2U);
+            Assert(module.types[0].is_struct());
+            const StructType& a = std::get<StructType>(module.types[0].comp);
+            AssertEq(a.fields.size(), 1U);
+            const ValueType& field = std::get<ValueType>(a.fields[0].storage);
+            Expect(field.is_concrete());
+            ExpectEq(field.typeidx, 1U);
+        })
+        Test("in an instruction", {
+            std::istringstream source(
+                "(module (func (result (ref $t)) struct.new $t) (type $t (struct)))");
+            WasmModule module = module_parse(source);
+            AssertEq(module.funcs.size(), 1U);
+            const WasmInstr& instr = module.funcs[0].body[0];
+            Assert(instr.opcode == Opcode::Struct_new);
+            ExpectEq(std::get<WasmInstr::OneIdx>(instr.imm).index, 0U);
+            Expect(!module_validate(module).has_value());
+        })
+        Test("an id that is never defined", {
+            ExpectEq(parse_error("(module (func (type $nope)))"),
+                     std::string("type id '$nope' not found"));
         })
     })
 };

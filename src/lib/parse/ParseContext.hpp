@@ -45,8 +45,8 @@ private:
     // in parse(). The map holds the param ids of a function type or the field
     // ids of a struct type, whichever the entry is.
     std::vector<std::pair<SubType, std::map<std::string, index_t>>> types_;
-    // A supertype named by an id that was not yet defined: inside a (rec ...)
-    // group a member may name a later member. Resolved when the group closes.
+    // A supertype named by an id that no type definition binds. Reported
+    // when the group (or the single definition) closes.
     // (type index, position in supers, the id token)
     std::vector<std::tuple<index_t, size_t, Token>> pending_supers_;
     index_t block_level_ = 0;
@@ -69,8 +69,27 @@ private:
     Tokenizer& tok_;
 
     // ── Module / section parsers ────────────────────────────────────────────
-    void parse_module();
+    // Calls `field` once per module field. parse() walks the fields three
+    // times: type ids first, then type definitions, then everything else, so
+    // a field can use a type defined further down.
+    void parse_module(void (ParseContext::*field)() = &ParseContext::parse_modulefield);
     void parse_modulefield();
+
+    // ── Reading the types ahead of the other fields ─────────────────────────
+    // Thrown when a walk ahead meets something it cannot step over (a field
+    // left open, a bad token). The walk stops; the full parse reaches the
+    // same place and reports it.
+    struct StopPrepass {};
+    bool prepass_ = false;
+    index_t prepass_typedefs_ = 0; // type definitions seen by collect_type_ids
+    void prepass(void (ParseContext::*field)());
+    // Field walkers for the two passes ahead.
+    void collect_type_ids();
+    void parse_type_definitions();
+    // Steps over one '(' ... ')' field, or the rest of one already opened
+    // `depth` levels deep.
+    void skip_field();
+    void skip_until_close(size_t depth);
 
     void parse_typesection();
     void parse_recsection();

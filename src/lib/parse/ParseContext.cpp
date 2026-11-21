@@ -57,6 +57,15 @@ std::string ParseContext::parse_string_to_bytes(const std::string& raw) {
 ParseContext::ParseContext(Tokenizer& tok) : tok_(tok) {}
 
 WasmModule ParseContext::parse() {
+    // Declarations and their ids scope over the whole module, including the
+    // text before them. So the type ids are bound first and the type
+    // definitions read next, in the order written: they take type indices
+    // 0, 1, ... and a type a typeuse inserts comes after all of them.
+    const Tokenizer::Position start = tok_.position();
+    prepass(&ParseContext::collect_type_ids);
+    tok_.rewind(start);
+    prepass(&ParseContext::parse_type_definitions);
+    tok_.rewind(start);
     parse_module();
     // Populate module_.types from internal types_ vector
     std::transform(types_.begin(), types_.end(), std::back_inserter(module_.types),
@@ -67,7 +76,7 @@ WasmModule ParseContext::parse() {
 
 // ── Module / module fields ────────────────────────────────────────────────────
 
-void ParseContext::parse_module() {
+void ParseContext::parse_module(void (ParseContext::*field)()) {
     if (tok_.at_eof()) return;
 
     // Either '(' 'module' Id? modulefield* ')' or plain modulefield*
@@ -81,7 +90,8 @@ void ParseContext::parse_module() {
             if (tok_.peek().type == TokenType::Id) module_id_ = tok_.consume().text;
             // modulefields until ')'
             while (!tok_.at_eof() && tok_.peek().type != TokenType::RParen)
-                parse_modulefield();
+                (this->*field)();
+            if (prepass_ && tok_.at_eof()) throw StopPrepass{};
             tok_.expect(TokenType::RParen, ")");
             return;
         }
@@ -94,7 +104,99 @@ void ParseContext::parse_module() {
     }
     // plain modulefield*
     while (!tok_.at_eof())
-        parse_modulefield();
+        (this->*field)();
+}
+
+void ParseContext::prepass(void (ParseContext::*field)()) {
+    prepass_ = true;
+    try {
+        parse_module(field);
+    } catch (StopPrepass&) {
+    } catch (...) {
+        prepass_ = false;
+        throw;
+    }
+    prepass_ = false;
+}
+
+void ParseContext::skip_field() {
+    if (tok_.peek().type != TokenType::LParen) throw StopPrepass{};
+    tok_.consume();
+    skip_until_close(1);
+}
+
+void ParseContext::skip_until_close(size_t depth) {
+    try {
+        while (depth > 0) {
+            if (tok_.at_eof()) throw StopPrepass{};
+            Token t = tok_.consume();
+            if (t.type == TokenType::LParen) ++depth;
+            else if (t.type == TokenType::RParen) --depth;
+        }
+    } catch (Exception::Parse&) { // a bad token: the full parse reports it
+        throw StopPrepass{};
+    }
+}
+
+// First pass: binds every type id to its index. Definitions are numbered in
+// the order written, a (rec ...) group's members one after another.
+void ParseContext::collect_type_ids() {
+    std::vector<std::pair<Token, std::pair<size_t, size_t>>> ids; // id, where a duplicate is reported
+    std::vector<index_t> indices;
+    index_t& next = prepass_typedefs_;
+    try {
+        if (tok_.peek().type != TokenType::LParen) throw StopPrepass{};
+        const Token& kw = tok_.peek2();
+        auto one_typedef = [&]() { // after '(' 'type'
+            if (tok_.peek().type == TokenType::Id) {
+                Token id = tok_.consume();
+                ids.emplace_back(id, tok_.location());
+                indices.push_back(next);
+            }
+            ++next;
+            skip_until_close(1);
+        };
+        if (kw.type == TokenType::Keyword && kw.text == "type") {
+            tok_.consume(); tok_.consume(); // '(' 'type'
+            one_typedef();
+        } else if (kw.type == TokenType::Keyword && kw.text == "rec") {
+            tok_.consume(); tok_.consume(); // '(' 'rec'
+            while (tok_.peek().type == TokenType::LParen) {
+                tok_.consume();
+                if (tok_.peek_keyword("type")) {
+                    tok_.consume();
+                    one_typedef();
+                } else {
+                    skip_until_close(1);
+                }
+            }
+            skip_until_close(1);
+        } else {
+            skip_field();
+        }
+    } catch (Exception::Parse&) { // a bad token: the full parse reports it
+        throw StopPrepass{};
+    }
+    for (size_t i = 0; i < ids.size(); ++i) {
+        const std::string& id = ids[i].first.text;
+        if (type_map_.contains(id))
+            throw Exception::Parse("duplicated type id '" + id + "'", ids[i].second);
+        type_map_[id] = indices[i];
+    }
+}
+
+// Second pass: reads the type definitions, every type id already bound.
+void ParseContext::parse_type_definitions() {
+    if (tok_.peek().type != TokenType::LParen) throw StopPrepass{};
+    const Token* kw = nullptr;
+    try {
+        kw = &tok_.peek2();
+    } catch (Exception::Parse&) {
+        throw StopPrepass{};
+    }
+    if (kw->type == TokenType::Keyword && kw->text == "type") parse_typesection();
+    else if (kw->type == TokenType::Keyword && kw->text == "rec") parse_recsection();
+    else skip_field();
 }
 
 void ParseContext::parse_modulefield() {
@@ -108,8 +210,7 @@ void ParseContext::parse_modulefield() {
         throw Exception::Parse("expected section keyword", {kw.line, kw.column});
 
     const std::string& name = kw.text;
-    if      (name == "type")   parse_typesection();
-    else if (name == "rec")    parse_recsection();
+    if      (name == "type" || name == "rec") skip_field(); // read ahead by parse()
     else if (name == "import") parse_importsection();
     else if (name == "func")   parse_funcsection();
     else if (name == "table")  parse_tablesection();
@@ -127,8 +228,8 @@ void ParseContext::parse_modulefield() {
 
 void ParseContext::parse_typesection() {
     parse_typedef();
-    // A bare type definition is a recursion group of one: an id it names as a
-    // supertype has to exist already.
+    // Every type id is bound before the definitions are read, so an id left
+    // pending here names no type at all.
     resolve_pending_supers();
 }
 
@@ -148,13 +249,8 @@ index_t ParseContext::parse_typedef() {
     tok_.expect(TokenType::LParen);
     tok_.expect_keyword("type");
     index_t typeidx = (index_t)types_.size();
-    // optional Id
-    if (tok_.peek().type == TokenType::Id) {
-        std::string id = tok_.consume().text;
-        if (type_map_.contains(id))
-            throw Exception::Parse("duplicated type id '" + id + "'", tok_.location());
-        type_map_[id] = typeidx;
-    }
+    // optional Id, already bound to typeidx by collect_type_ids
+    if (tok_.peek().type == TokenType::Id) tok_.consume();
     typedefs_.push_back(typeidx);
     types_.emplace_back(parse_subtype(typeidx));
     tok_.expect(TokenType::RParen);
@@ -915,8 +1011,10 @@ void ParseContext::parse_funcsection() {
         // which already hold the right indices.
         // A typeuse naming a struct or array type is the validator's to
         // report, with the index in the message; asking it for parameters
-        // here would throw first and say less.
-        const size_t param_count = types_[func.typeidx].first.is_func()
+        // here would throw first and say less. So is a type that is never
+        // defined: every definition has been read by now.
+        const size_t param_count =
+            (func.typeidx < types_.size() && types_[func.typeidx].first.is_func())
             ? types_[func.typeidx].first.func().params.size() : 0;
         // locals
         while (tok_.peek().type == TokenType::LParen &&
