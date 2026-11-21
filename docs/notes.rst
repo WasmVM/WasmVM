@@ -60,6 +60,41 @@ Unreleased
 * JSON, as read by ``wasmvm-ld --config``: negative numbers, 64-bit
   integers, ``\u`` escapes and empty arrays and objects are parsed
   correctly, and strings are escaped when written.
+* JSON: input that ends inside a string throws ``JSON: unclosed string``
+  instead of looping forever, and a truncated ``true`` / ``false`` /
+  ``null`` reports only the bytes that were there (#55).
+* The validator refuses any instruction after the ``end`` that closes a
+  function (``empty validate control stack``). Before, ``drop`` there
+  crashed the host -- a 25-byte ``.wasm`` was enough to crash ``wasmvm``
+  and ``readwasm`` -- and ``i32.const`` there passed as valid (#49).
+* ``wasmvm-as``, typeuses:
+
+  * ``(type x)`` followed by inline ``(param ...)`` / ``(result ...)`` is
+    ``x`` itself. The inline params and results must equal ``x``'s,
+    otherwise it is a parse error (``inline params/results do not match
+    type N``); only the inline param ids are bound. Before, a new type was
+    made with the params and results appended (#60).
+  * A ``(type x)`` may name a type defined later in the module, and every
+    type id may be used before its definition. Before, a numeric forward
+    ``(type N)`` in a function crashed the parser (#62).
+  * Types are numbered as the spec does: the type definitions first, in
+    the order written, then the types inline typeuses insert. Before, a
+    numeric ``(type N)`` after an inline typeuse could name the inserted
+    type (#63).
+  * A supertype defined after its subtype outside a ``rec`` group now
+    parses, and the validator rejects it.
+
+* ``wasmvm-as``, labels: a block label is bound only inside its own block,
+  so sibling blocks may reuse it. A ``br`` naming the label of a block
+  that has already closed is now ``label id '$l' not found``; before, it
+  could assemble to a branch to a different block (#58).
+* ``wasmvm-ld`` keeps each function's and tag's own type. A type that is
+  not a plain function type (in a ``rec`` group, with a supertype, or not
+  final) was relinked to type 0, and a later module's identical plain
+  function type could be folded into it too (#59).
+* ``readwasm`` prints an exported memory as ``(memory x)`` and the type of
+  ``call_indirect`` / ``return_call_indirect`` as ``(type x)``, so its
+  output assembles again (#56, #57).
 
 * A table's and an elem segment's element type is a
   :cpp:struct:`WasmVM::ValueType` that has to be a reference, where it was a

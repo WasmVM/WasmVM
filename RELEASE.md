@@ -26,7 +26,27 @@ Highlights since v1.6:
   walked read-only.
 - **JSON** (`wasmvm-ld --config`): negative numbers, 64-bit integers, `\u`
   escapes and empty arrays and objects are parsed correctly, and strings are
-  escaped when written.
+  escaped when written; input that ends inside a string throws instead of
+  hanging, and a truncated `true` / `false` / `null` no longer reads
+  uninitialized bytes.
+- **Validator**: an instruction after a function's closing `end` is refused;
+  before, a 25-byte module could crash `wasmvm` and `readwasm`.
+- **`wasmvm-as`** (behaviour changes):
+  - `(type x)` with inline params / results is `x` itself; mismatching
+    inline params or results are a parse error. Before, a new type was made
+    with them appended.
+  - A `(type x)` and every type id may refer to a type defined later in the
+    module; a numeric forward `(type N)` used to crash the parser.
+  - Types are numbered as in the spec: definitions first, then the types
+    inline typeuses insert.
+  - A block label is bound only inside its own block; sibling blocks may
+    reuse it, and a `br` to a closed block's label is an error instead of a
+    branch to another block.
+- **`wasmvm-ld`** keeps each function's and tag's own type; a function whose
+  type was in a `rec` group, had a supertype or was not final was relinked
+  to type 0.
+- **`readwasm`** prints `(memory x)` exports and `call_indirect` /
+  `return_call_indirect` types as `(type x)`, so its output reassembles.
 
 ## Install guides
 
